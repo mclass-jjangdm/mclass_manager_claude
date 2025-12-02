@@ -459,35 +459,67 @@ class TeacherPDFReportView(LoginRequiredMixin, View):
         attendances = Attendance.objects.filter(teacher=teacher).order_by('date')
         
         if attendances:
+            # Salary 모델에서 저장된 급여 정보 가져오기
+            saved_salaries = {
+                f"{s.year}-{s.month:02d}": s
+                for s in Salary.objects.filter(teacher=teacher)
+            }
+
             monthly_data = {}
             for attendance in attendances:
                 year_month = attendance.date.strftime("%Y-%m")
                 if year_month not in monthly_data:
-                    monthly_data[year_month] = {'hours': 0, 'amount': 0}
-                
+                    monthly_data[year_month] = {'hours': 0, 'base_amount': 0, 'additional_amount': 0}
+
                 if attendance.start_time and attendance.end_time:
                     start_datetime = datetime.combine(attendance.date, attendance.start_time)
                     end_datetime = datetime.combine(attendance.date, attendance.end_time)
-                    if end_datetime < start_datetime:  # 자정을정 경우
+                    if end_datetime < start_datetime:  # 자정을 넘긴 경우
                         end_datetime += timedelta(days=1)
                     work_hours = (end_datetime - start_datetime).total_seconds() / 3600
                     monthly_data[year_month]['hours'] += work_hours
-                    monthly_data[year_month]['amount'] += work_hours * teacher.base_salary
+                    monthly_data[year_month]['base_amount'] = int(monthly_data[year_month]['hours'] * teacher.base_salary)
 
-            attendance_data = [["년/월", "근무시간", "급여"]]
+            # 저장된 추가급여 정보 추가
+            for year_month in monthly_data.keys():
+                if year_month in saved_salaries:
+                    monthly_data[year_month]['additional_amount'] = saved_salaries[year_month].additional_amount
+
+            attendance_data = [["년/월", "근무시간", "기본급", "추가급여", "총 급여"]]
             total_hours = 0
+            total_base = 0
+            total_additional = 0
             total_amount = 0
-            for year_month, data in monthly_data.items():
+
+            for year_month in sorted(monthly_data.keys()):
+                data = monthly_data[year_month]
                 year, month = year_month.split('-')
                 hours = round(data['hours'], 1)
-                amount = round(data['amount'])
-                attendance_data.append([f"{year}년 {month}월", f"{hours}시간", f"{amount:,}원"])
-                total_hours += hours
-                total_amount += amount
-            
-            attendance_data.append(["총계", f"{total_hours:.1f}시간", f"{total_amount:,}원"])
+                base_amount = data['base_amount']
+                additional_amount = data['additional_amount']
+                total = base_amount + additional_amount
 
-            t = Table(attendance_data, colWidths=[60*mm, 50*mm, 60*mm])
+                attendance_data.append([
+                    f"{year}년 {month}월",
+                    f"{hours}시간",
+                    f"{base_amount:,}원",
+                    f"{additional_amount:,}원",
+                    f"{total:,}원"
+                ])
+                total_hours += hours
+                total_base += base_amount
+                total_additional += additional_amount
+                total_amount += total
+
+            attendance_data.append([
+                "총계",
+                f"{total_hours:.1f}시간",
+                f"{total_base:,}원",
+                f"{total_additional:,}원",
+                f"{total_amount:,}원"
+            ])
+
+            t = Table(attendance_data, colWidths=[40*mm, 35*mm, 35*mm, 35*mm, 35*mm])
             t.setStyle(TableStyle([
                 ('FONT', (0,0), (-1,-1), 'NanumGothic'),
                 ('FONTSIZE', (0,0), (-1,-1), 10),
@@ -635,37 +667,34 @@ class SalaryPDFReportView(LoginRequiredMixin, View):
         elements.append(Paragraph(title, styles['KoreanTitle']))
         elements.append(Spacer(1, 20))
 
-        # 급여 데이터 계산
-        teachers = Teacher.objects.filter(
-            attendance__date__range=[start_date, end_date]
-        ).distinct()
+        # 급여 데이터 계산 - Salary 모델에서 가져오기
+        salaries = Salary.objects.filter(year=year, month=month).select_related('teacher')
 
-        data = [['이름', '급여']]
+        data = [['이름', '기본급', '추가급여', '총 급여']]
+        total_base = 0
+        total_additional = 0
         total_amount = 0
 
-        for teacher in teachers:
-            attendances = Attendance.objects.filter(
-                teacher=teacher,
-                date__range=[start_date, end_date],
-                is_present=True,
-                start_time__isnull=False,
-                end_time__isnull=False
-            )
+        for salary in salaries:
+            total_base += salary.base_amount
+            total_additional += salary.additional_amount
+            total_amount += salary.total_amount
+            data.append([
+                salary.teacher.name,
+                f"{salary.base_amount:,}원",
+                f"{salary.additional_amount:,}원",
+                f"{salary.total_amount:,}원"
+            ])
 
-            work_hours = sum(
-                ((a.end_time.hour * 60 + a.end_time.minute) -
-                 (a.start_time.hour * 60 + a.start_time.minute))
-                for a in attendances
-            ) / 60
+        data.append([
+            "합계",
+            f"{total_base:,}원",
+            f"{total_additional:,}원",
+            f"{total_amount:,}원"
+        ])
 
-            salary = int(work_hours * (teacher.base_salary or 15000))
-            total_amount += salary
-            data.append([teacher.name, f"{salary:,}원"])
-
-        data.append(["합계", f"{total_amount:,}원"])
-
-        # 테이블 생성
-        col_widths = [TABLE_WIDTH * 0.4, TABLE_WIDTH * 0.4]
+        # 테이블 생성 (4개 컬럼: 이름, 기본급, 추가급여, 총 급여)
+        col_widths = [TABLE_WIDTH * 0.25, TABLE_WIDTH * 0.25, TABLE_WIDTH * 0.25, TABLE_WIDTH * 0.25]
         table = Table(data, colWidths=col_widths)
 
         # 테이블 스타일 설정
@@ -674,7 +703,7 @@ class SalaryPDFReportView(LoginRequiredMixin, View):
             ('FONTSIZE', (0, 0), (-1, -1), 10),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),  # 헤더 중앙 정렬
             ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # 이름 중앙 정렬
-            ('ALIGN', (1, 1), (1, -1), 'RIGHT'),   # 금액 우측 정렬
+            ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),  # 금액 컬럼들 우측 정렬
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('GRID', (0, 0), (-1, -1), 1, colors.grey),
             ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),  # 헤더 배경
