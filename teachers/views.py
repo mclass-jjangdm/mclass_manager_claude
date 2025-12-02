@@ -204,32 +204,30 @@ class SalaryCalculationView(LoginRequiredMixin, View):
         for teacher in teachers:
             work_hours, work_days = self.calculate_work_hours(teacher, year, month)
 
-            # 근무 시간이 있는 경우만 표시
-            if work_hours > 0:
-                base_amount = int(work_hours * teacher.base_salary)
+            base_amount = int(work_hours * teacher.base_salary)
 
-                # 기존 급여 레코드에서 추가급여 가져오기
-                try:
-                    existing_salary = Salary.objects.get(teacher=teacher, year=year, month=month)
-                    additional_amount = existing_salary.additional_amount
-                except Salary.DoesNotExist:
-                    additional_amount = 0
+            # 기존 급여 레코드에서 추가급여 가져오기
+            try:
+                existing_salary = Salary.objects.get(teacher=teacher, year=year, month=month)
+                additional_amount = existing_salary.additional_amount
+            except Salary.DoesNotExist:
+                additional_amount = 0
 
-                total_amount = base_amount + additional_amount
+            total_amount = base_amount + additional_amount
 
-                salary_data.append({
-                    'teacher': teacher,
-                    'teacher_id': teacher.id,
-                    'work_days': work_days,
-                    'work_hours': work_hours,
-                    'base_amount': base_amount,
-                    'additional_amount': additional_amount,
-                    'bank_name': teacher.bank.name if teacher.bank else None,
-                    'account_number': teacher.account_number,
-                    'total_amount': total_amount
-                })
+            salary_data.append({
+                'teacher': teacher,
+                'teacher_id': teacher.id,
+                'work_days': work_days,
+                'work_hours': work_hours,
+                'base_amount': base_amount,
+                'additional_amount': additional_amount,
+                'bank_name': teacher.bank.name if teacher.bank else None,
+                'account_number': teacher.account_number,
+                'total_amount': total_amount
+            })
 
-                total_salary += total_amount
+            total_salary += total_amount
 
         context = {
             'year': year,
@@ -257,21 +255,20 @@ class SalaryCalculationView(LoginRequiredMixin, View):
                         teacher = Teacher.objects.get(id=teacher_id)
                         work_hours, work_days = self.calculate_work_hours(teacher, year, month)
 
-                        if work_hours > 0:
-                            base_amount = int(work_hours * teacher.base_salary)
-                            total_amount = base_amount + additional_amount
+                        base_amount = int(work_hours * teacher.base_salary)
+                        total_amount = base_amount + additional_amount
 
-                            Salary.objects.update_or_create(
-                                teacher=teacher,
-                                year=year,
-                                month=month,
-                                defaults={
-                                    'work_days': work_days,
-                                    'base_amount': base_amount,
-                                    'additional_amount': additional_amount,
-                                    'total_amount': total_amount
-                                }
-                            )
+                        Salary.objects.update_or_create(
+                            teacher=teacher,
+                            year=year,
+                            month=month,
+                            defaults={
+                                'work_days': work_days,
+                                'base_amount': base_amount,
+                                'additional_amount': additional_amount,
+                                'total_amount': total_amount
+                            }
+                        )
 
                 messages.success(request, '급여가 성공적으로 저장되었습니다.')
         except Exception as e:
