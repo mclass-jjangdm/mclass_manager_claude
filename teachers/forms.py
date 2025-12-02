@@ -5,8 +5,8 @@ from .models import Teacher
 class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
-        fields = ['name', 'gender', 'phone_number', 'email', 'hire_date', 'resignation_date', 
-                 'base_salary', 'additional_salary', 'bank', 'account_number']
+        fields = ['name', 'gender', 'phone_number', 'email', 'hire_date', 'resignation_date',
+                 'base_salary', 'bank', 'account_number']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -37,10 +37,6 @@ class TeacherForm(forms.ModelForm):
                 'class': 'form-input',
                 'placeholder': '시급'
             }),
-            'additional_salary': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'placeholder': '추가 급여'
-            }),
             'bank': forms.Select(attrs={
                 'class': 'form-input'
             }),
@@ -54,7 +50,6 @@ class TeacherForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # 필수가 아닌 필드들 설정
         self.fields['resignation_date'].required = False
-        self.fields['additional_salary'].required = False
         self.fields['email'].required = False
         self.fields['bank'].required = False
         self.fields['account_number'].required = False

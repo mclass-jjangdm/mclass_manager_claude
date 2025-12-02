@@ -10,6 +10,7 @@ env/
 venv/
 db.sqlite3
 media/
+staticfiles/
 
 # VS Code
 .vscode/
@@ -20,9 +21,22 @@ media/
 # Debug logs
 debug.log
 
+# Claude Code
+.claude/
 
-check_db.py
-db_migration.py
-fix_phone_column.py
-.claude
-.vscode
+# Python cache
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# OS
+Thumbs.db
+*.swp
+*.swo
+*~

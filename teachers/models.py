@@ -33,7 +33,6 @@ class Teacher(models.Model):
     bank = models.ForeignKey('common.Bank', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='거래은행')
     account_number = models.CharField(max_length=20, blank=True, null=True, verbose_name='급여계좌')
     base_salary = models.IntegerField(blank=True, null=True, verbose_name='급여기준', default=15000)
-    additional_salary = models.IntegerField(blank=True, null=True, verbose_name='추가급여', default=0)
     other_info = models.TextField(blank=True, null=True, verbose_name='기타')
     is_active = models.BooleanField(default=True, verbose_name="재직 중")
     extra_field1 = models.CharField(max_length=100, blank=True, null=True, verbose_name='예비1')

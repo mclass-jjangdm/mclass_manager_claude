@@ -194,50 +194,42 @@ class SalaryCalculationView(LoginRequiredMixin, View):
     def get(self, request):
         year = int(request.GET.get('year', timezone.now().year))
         month = int(request.GET.get('month', timezone.now().month))
-        
+
         salary_data = []
         total_salary = 0
 
         # 해당 월에 근무한 선생님들만 필터링
         teachers = self.get_active_teachers_for_month(year, month)
-        
-        try:
-            with transaction.atomic():
-                for teacher in teachers:
-                    work_hours, work_days = self.calculate_work_hours(teacher, year, month)
-                    
-                    # 근무 시간이 있는 경우만 급여 계산
-                    if work_hours > 0:
-                        base_amount = int(work_hours * teacher.base_salary)
-                        additional_amount = teacher.additional_salary or 0
-                        total_amount = base_amount + additional_amount
 
-                        # Create or update salary record
-                        salary, created = Salary.objects.update_or_create(
-                            teacher=teacher,
-                            year=year,
-                            month=month,
-                            defaults={
-                                'work_days': work_days,
-                                'base_amount': base_amount,
-                                'additional_amount': additional_amount,
-                                'total_amount': total_amount
-                            }
-                        )
+        for teacher in teachers:
+            work_hours, work_days = self.calculate_work_hours(teacher, year, month)
 
-                        salary_data.append({
-                            'teacher': teacher,
-                            'work_days': work_days,
-                            'work_hours': work_hours,
-                            'bank_name': teacher.bank.name if teacher.bank else None,
-                            'account_number': teacher.account_number,
-                            'total_amount': total_amount
-                        })
-                        
-                        total_salary += total_amount
+            # 근무 시간이 있는 경우만 표시
+            if work_hours > 0:
+                base_amount = int(work_hours * teacher.base_salary)
 
-        except Exception as e:
-            messages.error(request, f'급여 계산 중 오류가 발생했습니다: {str(e)}')
+                # 기존 급여 레코드에서 추가급여 가져오기
+                try:
+                    existing_salary = Salary.objects.get(teacher=teacher, year=year, month=month)
+                    additional_amount = existing_salary.additional_amount
+                except Salary.DoesNotExist:
+                    additional_amount = 0
+
+                total_amount = base_amount + additional_amount
+
+                salary_data.append({
+                    'teacher': teacher,
+                    'teacher_id': teacher.id,
+                    'work_days': work_days,
+                    'work_hours': work_hours,
+                    'base_amount': base_amount,
+                    'additional_amount': additional_amount,
+                    'bank_name': teacher.bank.name if teacher.bank else None,
+                    'account_number': teacher.account_number,
+                    'total_amount': total_amount
+                })
+
+                total_salary += total_amount
 
         context = {
             'year': year,
@@ -249,6 +241,43 @@ class SalaryCalculationView(LoginRequiredMixin, View):
         }
 
         return render(request, self.template_name, context)
+
+    def post(self, request):
+        year = int(request.POST.get('year', timezone.now().year))
+        month = int(request.POST.get('month', timezone.now().month))
+
+        try:
+            with transaction.atomic():
+                # 각 선생님의 추가급여 업데이트
+                for key, value in request.POST.items():
+                    if key.startswith('additional_amount_'):
+                        teacher_id = int(key.split('_')[-1])
+                        additional_amount = int(value) if value else 0
+
+                        teacher = Teacher.objects.get(id=teacher_id)
+                        work_hours, work_days = self.calculate_work_hours(teacher, year, month)
+
+                        if work_hours > 0:
+                            base_amount = int(work_hours * teacher.base_salary)
+                            total_amount = base_amount + additional_amount
+
+                            Salary.objects.update_or_create(
+                                teacher=teacher,
+                                year=year,
+                                month=month,
+                                defaults={
+                                    'work_days': work_days,
+                                    'base_amount': base_amount,
+                                    'additional_amount': additional_amount,
+                                    'total_amount': total_amount
+                                }
+                            )
+
+                messages.success(request, '급여가 성공적으로 저장되었습니다.')
+        except Exception as e:
+            messages.error(request, f'급여 저장 중 오류가 발생했습니다: {str(e)}')
+
+        return redirect(f'{request.path}?year={year}&month={month}')
 
 
 class SalaryTableView(LoginRequiredMixin, View):
