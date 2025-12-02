@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}교재 데이터 가져오기 - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg p-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold text-gray-900">교재 데이터 가져오기</h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        
+        <div>
+            <label for="{{ form.file.id_for_label }}" 
+                   class="block text-sm font-medium text-gray-700">
+                {{ form.file.label }}
+            </label>
+            {{ form.file }}
+            {% if form.file.help_text %}
+                <p class="mt-1 text-sm text-gray-500">{{ form.file.help_text }}</p>
+            {% endif %}
+            {% if form.file.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.file.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'books:book_list' %}" 
+               class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm">
+                취소
+            </a>
+            <button type="submit" 
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
+                가져오기
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

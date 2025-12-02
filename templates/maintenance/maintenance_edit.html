@@ -1,0 +1,57 @@
+{% extends 'maintenance/base_maintenance.html' %}
+{% load humanize %}
+
+{% block title %}관리비 수정 - MClass Manager{% endblock %}
+
+{% block maintenance_content %}
+<div class="content-card max-w-2xl mx-auto">
+    <div class="card-header">
+        <h1 class="text-xl font-semibold text-gray-900">관리비 수정</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            {{ object.room.number }}호 {{ object.date|date:"Y년 n월" }} 관리비
+        </p>
+    </div>
+
+    <div class="card-body">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 gap-6">
+                <div>
+                    <label class="form-label">부과금액</label>
+                    {{ form.charge }}
+                    {% if form.charge.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.charge.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="form-label">납부일자</label>
+                    {{ form.date_paid }}
+                    {% if form.date_paid.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.date_paid.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="form-label">메모</label>
+                    {{ form.memo }}
+                    {% if form.memo.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.memo.errors }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <a href="{% url 'maintenance:monthly_report' %}?year={{ object.date.year }}&month={{ object.date.month }}" 
+                   class="form-button bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    취소
+                </a>
+                <button type="submit" class="form-button">
+                    수정하기
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

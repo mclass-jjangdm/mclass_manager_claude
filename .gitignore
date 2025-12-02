@@ -1,0 +1,28 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+.DS_Store
+.env
+.venv
+env/
+venv/
+db.sqlite3
+media/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Debug logs
+debug.log
+
+
+check_db.py
+db_migration.py
+fix_phone_column.py
+.claude
+.vscode

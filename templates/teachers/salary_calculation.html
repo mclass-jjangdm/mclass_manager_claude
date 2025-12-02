@@ -1,0 +1,134 @@
+{% extends 'teachers/base_teachers.html' %}
+{% load humanize %}
+
+{% block title %}급여 계산 - MClass Manager{% endblock %}
+
+{% block teacher_content %}
+<div class="space-y-6">
+    <!-- 조회 폼 -->
+    <div class="content-card">
+        <div class="card-header">
+            <h1 class="text-xl font-semibold text-gray-900">급여 계산</h1>
+        </div>
+        <div class="card-body">
+            <form method="get" class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label for="year" class="form-label">년도</label>
+                    <select name="year" id="year" class="form-input min-w-[120px]">
+                        {% for y in years %}
+                            <option value="{{ y }}" {% if y == year %}selected{% endif %}>
+                                {{ y }}년
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="month" class="form-label">월</label>
+                    <select name="month" id="month" class="form-input min-w-[120px]">
+                        {% for m in months %}
+                            <option value="{{ m }}" {% if m == month %}selected{% endif %}>
+                                {{ m }}월
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="form-button">
+                        조회하기
+                    </button>
+                </div>
+                <!-- Add this near the submit button -->
+                <a href="{% url 'teachers:salary_pdf_report' year=year month=month %}" 
+                   class="form-button bg-green-600 hover:bg-green-700" 
+                   target="_blank">
+                    PDF 출력
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- 급여 테이블 -->
+    <div class="content-card">
+        <div class="card-body">
+            <div class="overflow-x-auto">
+                <table class="content-table">
+                    <thead>
+                        <tr>
+                            <th class="text-center">선생님</th>
+                            <th class="text-center">은행</th>
+                            <th class="text-center">계좌번호</th>
+                            <th style="text-align: right;">근무일수</th>
+                            <th style="text-align: right;">근무시간</th>
+                            <th style="text-align: right;">급여</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 재직 중인 선생님 -->
+                        {% for data in salary_data %}
+                            {% if data.teacher.is_active %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="text-center">
+                                        {{ data.teacher.name }}
+                                        <!-- <a href="{% url 'teachers:teacher_detail' data.teacher.id %}"
+                                           class="link-primary">
+                                            {{ data.teacher.name }}
+                                        </a> -->
+                                    </td>
+                                    <td class="text-center">{{ data.bank_name|default:"-" }}</td>
+                                    <td>{{ data.account_number|default:"-" }}</td>
+                                    <td style="text-align: right;">{{ data.work_days }}일</td>
+                                    <td style="text-align: right;">{{ data.work_hours|floatformat:1 }}시간</td>
+                                    <td style="text-align: right;">{{ data.total_amount|intcomma }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- 퇴직한 선생님 - 색상 변경 -->
+                        {% for data in salary_data %}
+                            {% if not data.teacher.is_active %}
+                                <tr class="hover:bg-gray-50 bg-red-100">
+                                    <td class="text-center text-gray-500" style="color: gray;">
+                                        {{ data.teacher.name }}
+                                    </td>
+                                    <td class="text-center text-gray-500" style="color: gray;">{{ data.bank_name|default:"-" }}</td>
+                                    <td class="text-gray-500" style="color: gray;">{{ data.account_number|default:"-" }}</td>
+                                    <td style="text-align: right; color: gray;">{{ data.work_days }}일</td>
+                                    <td style="text-align: right; color: gray;">{{ data.work_hours|floatformat:1 }}시간</td>
+                                    <td style="text-align: right; color: gray;">{{ data.total_amount|intcomma }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-gray-50">
+                            <td colspan="5" class="text-right font-semibold">
+                                총 급여 합계
+                            </td>
+                            <td class="text-right font-semibold text-indigo-600" style="text-align: right;">
+                                {{ total_salary|intcomma }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 도움말 -->
+    <div class="bg-blue-50 rounded-lg p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3 flex-1">
+                <p class="text-sm text-blue-700">
+                    급여는 시급 × 근무시간으로 계산됩니다. 근무시간은 매일의 출퇴근 시간을 기준으로 산정됩니다.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

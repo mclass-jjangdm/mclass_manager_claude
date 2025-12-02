@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white shadow rounded-lg p-6">
+    <h1 class="text-2xl font-semibold text-gray-900 mb-6">{{ title }}</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 gap-6 mb-6">
+            {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" 
+                       class="block text-sm font-medium text-gray-700 mb-1">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                <p class="mt-1 text-sm text-red-600">
+                    {{ field.errors.0 }}
+                </p>
+                {% endif %}
+                {% if field.help_text %}
+                <p class="mt-1 text-sm text-gray-500">
+                    {{ field.help_text }}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="flex justify-end space-x-4">
+            <a href="{% url 'books:book_list' %}" 
+               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                취소
+            </a>
+            <button type="submit" 
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                저장
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

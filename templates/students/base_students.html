@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+<!-- Custom CSS -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/custom.css' %}"> 
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 서브 네비게이션 -->
+    <div class="bg-white shadow-sm">
+        <div class="container">
+            <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Students">
+                <a href="{% url 'students:student_list' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">
+                    학생 목록
+                </a>
+                <a href="{% url 'students:student_create' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'student_create' %}active{% endif %}">
+                    학생 등록
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="container">
+        {% block student_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

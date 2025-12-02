@@ -1,0 +1,21 @@
+{% extends 'bookstore/base_bookstore.html' %}
+
+{% block bookstore_content %}
+<div class="max-w-3xl mx-auto bg-white shadow rounded-lg p-6">
+    <h1 class="text-2xl font-semibold text-gray-900 mb-6">도서 재고 삭제 확인</h1>
+
+    <p>
+        정말로 "{{ stock.book.name }}" 도서 재고를 삭제하시겠습니까?
+    </p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+            삭제
+        </button>
+        <a href="{% url 'bookstore:stock_list' %}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+            취소
+        </a>
+    </form>
+</div>
+{% endblock %}

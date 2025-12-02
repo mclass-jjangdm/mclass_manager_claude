@@ -1,0 +1,123 @@
+{% extends 'bookstore/base_bookstore.html' %}
+
+{% block bookstore_content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-bold mb-4">
+        {% if form.instance.pk %}교재 정보 수정{% else %}교재 입고 등록{% endif %}
+    </h1>
+    
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- 입고 일자 -->
+        <div class="content-card">
+            <div class="card-header">입고 일자</div>
+            <div class="card-body">
+                <div class="form-group">
+                    <input type="date" 
+                           id="{{ form.received_date.id_for_label }}"
+                           name="{{ form.received_date.name }}"
+                           value="{{ form.received_date.value|date:'Y-m-d'|default:'' }}"
+                           class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- 기본 정보 -->
+        <div class="content-card">
+            <div class="card-header">기본 정보</div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="form-label">도서명</label>
+                        <select id="{{ form.book.id_for_label }}" 
+                                name="{{ form.book.name }}"
+                                class="form-input">
+                            <!-- <option value="">---------</option> -->
+                            {% for choice in form.book.field.choices %}
+                                <option value="{{ choice.0 }}" {% if form.book.value == choice.0 %}selected{% endif %}>
+                                    {{ choice.1 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">수량</label>
+                        <input type="number" 
+                               id="{{ form.quantity.id_for_label }}"
+                               name="{{ form.quantity.name }}"
+                               value="{{ form.quantity.value|default:'' }}"
+                               class="form-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 가격 정보 -->
+        <div class="content-card">
+            <div class="card-header">가격 정보</div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="form-group">
+                        <label class="form-label">정가</label>
+                        <input type="number" 
+                               id="{{ form.list_price.id_for_label }}"
+                               name="{{ form.list_price.name }}"
+                               value="{{ form.list_price.value|default:'' }}"
+                               class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">단가</label>
+                        <input type="number" 
+                               id="{{ form.unit_price.id_for_label }}"
+                               name="{{ form.unit_price.name }}"
+                               value="{{ form.unit_price.value|default:'' }}"
+                               class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">판매가</label>
+                        <input type="number" 
+                               id="{{ form.selling_price.id_for_label }}"
+                               name="{{ form.selling_price.name }}"
+                               value="{{ form.selling_price.value|default:'' }}"
+                               class="form-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 비고 -->
+        <div class="content-card">
+            <div class="card-header">비고</div>
+            <div class="card-body">
+                <textarea id="{{ form.memo.id_for_label }}" 
+                          name="{{ form.memo.name }}" 
+                          class="form-input"
+                          rows="4">{{ form.notes.value|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- 버튼 -->
+        <div class="flex justify-end space-x-3">
+            <a href="{% url 'bookstore:stock_list' %}" 
+               class="form-button bg-gray-500 hover:bg-gray-600">
+                취소
+            </a>
+            <button type="submit" class="form-button">
+                {% if form.instance.pk %}수정{% else %}등록{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bookSelect = document.getElementById('{{ form.book.id_for_label }}');
+});
+</script>
+{% endblock %}
+{% endblock %}

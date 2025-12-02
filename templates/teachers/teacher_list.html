@@ -1,0 +1,103 @@
+{# teachers/templates/teachers/teacher_list.html #}
+{% extends 'teachers/base_teachers.html' %}
+
+{% block title %}선생님 목록 - MClass Manager{% endblock %}
+
+{% block teacher_content %}
+<div class="content-card">
+    <div class="card-header">
+        <div class="flex items-center justify-between">
+            <h1 class="text-xl font-semibold text-gray-900">선생님 목록</h1>
+            <div class="flex items-center space-x-4">
+                <form method="get" class="flex items-center">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="show_inactive" 
+                               {% if show_inactive %}checked{% endif %}
+                               class="form-checkbox h-4 w-4 text-indigo-600"
+                               onchange="this.form.submit()">
+                        <span class="ml-2 text-sm text-gray-600">퇴사자 포함</span>
+                    </label>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="overflow-x-auto">
+            <table class="content-table">
+                <thead>
+                    <tr>
+                        <th>이름</th>
+                        <th>전화번호</th>
+                        <th>이메일</th>
+                        <th>입사일</th>
+                        <th>상태</th>
+                        <th>퇴사일</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if active_teachers %}
+                        {% for teacher in active_teachers %}
+                        <tr>
+                            <td>
+                                {{ teacher.name }}
+                            </td>
+                            <td>{{ teacher.get_formatted_phone_number|default:"-" }}</td>
+                            <td>{{ teacher.email|default:"-" }}</td>
+                            <td>{{ teacher.hire_date|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="status-badge status-badge-success">
+                                    재직 중
+                                </span>
+                            </td>
+                            <td>-</td>
+                            <td>
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'teachers:teacher_update' teacher.pk %}" 
+                                       class="link-primary">수정</a>
+                                    <a href="{% url 'teachers:teacher_pdf_report' teacher.pk %}"
+                                       class="link-primary" target="_blank">보고서</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if show_inactive and inactive_teachers %}
+                        <tr class="border-t border-gray-300">
+                            <td colspan="7" class="text-center py-4 text-gray-500 font-bold">
+                                퇴사자
+                            </td>
+                        </tr>
+                        {% for teacher in inactive_teachers %}
+                        <tr>
+                            <td>
+                                {{ teacher.name }}
+                            </td>
+                            <td>{{ teacher.get_formatted_phone_number|default:"-" }}</td>
+                            <td>{{ teacher.email|default:"-" }}</td>
+                            <td>{{ teacher.hire_date|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="status-badge status-badge-error">
+                                    퇴사
+                                </span>
+                            </td>
+                            <td>{{ teacher.resignation_date|date:"Y-m-d" }}</td> 
+                            <td>
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'teachers:teacher_update' teacher.pk %}" 
+                                       class="link-primary">수정</a>
+                                    <a href="{% url 'teachers:teacher_pdf_report' teacher.pk %}"
+                                       class="link-primary" target="_blank">보고서</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

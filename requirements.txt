@@ -1,0 +1,20 @@
+# Core Django Framework
+Django==5.0.8
+
+# Database
+mysqlclient==2.2.10
+
+# PDF Generation
+reportlab==4.2.2
+
+# Data Import/Export
+django-import-export==4.1.1
+
+# Form Handling
+django-crispy-forms==2.3
+crispy-bootstrap4==2024.10
+
+# Utilities
+Pillow==10.4.0
+python-dateutil==2.9.0.post0
+pytz==2024.2

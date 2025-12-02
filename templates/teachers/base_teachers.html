@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+
+<!-- Custom CSS -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'teachers/teachers.css' %}">
+
+{% block extra_css %}
+{% endblock %}
+
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 서브 네비게이션 -->
+    <div class="bg-white shadow-sm">
+        <div class="container">
+            <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Teachers">
+                <a href="{% url 'teachers:teacher_list' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'teacher_list' %}active{% endif %}">
+                    선생님 목록
+                </a>
+                <a href="{% url 'teachers:teacher_create' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'teacher_create' %}active{% endif %}">
+                    선생님 등록
+                </a>
+                <a href="{% url 'teachers:attendance_create' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'attendance_create' %}active{% endif %}">
+                    근무 기록
+                </a>
+                <a href="{% url 'teachers:salary_calculation' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'salary_calculation' %}active{% endif %}">
+                    급여 계산
+                </a>
+                <a href="{% url 'teachers:salary_table' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'salary_table' %}active{% endif %}">
+                    급여 내역
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="container">
+        {% block teacher_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

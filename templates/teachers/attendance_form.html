@@ -1,0 +1,158 @@
+{% extends 'teachers/base_teachers.html' %}
+
+{% block title %}근무 기록 - MClass Manager{% endblock %}
+
+{% block teacher_content %}
+<div class="space-y-6">
+    <!-- 근무 입력 폼 -->
+    <div class="content-card">
+        <div class="card-header">
+            <h3 class="text-xl font-semibold text-gray-900">입력</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- 날짜 선택 -->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="form-label" for="{{ form.date.id_for_label }}">날짜</label>
+                        {{ form.date }}
+                    </div>
+                </div>
+
+                <!-- 근무 기록 테이블 -->
+                <div class="overflow-x-auto">
+                    <table class="content-table">
+                        <thead>
+                            <tr>
+                                <th>선생님</th>
+                                <th>근무여부</th>
+                                <th>시작</th>
+                                <th>종료</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for field in form %}
+                                {% if field.name != 'date' %}
+                                    {% if 'is_present' in field.name %}
+                                        <tr>
+                                            <td class="font-medium">{{ field.label }}</td>
+                                            <td>
+                                                <div class="flex items-center">
+                                                    {{ field }}
+                                                    <label for="{{ field.id_for_label }}" class="ml-2 text-sm text-gray-600">
+                                                        수업
+                                                    </label>
+                                                </div>
+                                            </td>
+                                    {% elif 'start_time' in field.name %}
+                                            <td>{{ field }}</td>
+                                    {% elif 'end_time' in field.name %}
+                                            <td>{{ field }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="form-button">
+                        저장하기
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 월별 근무 기록 -->
+    <div class="content-card">
+        <div class="card-header">
+            <h3 class="text-xl font-semibold text-gray-900">{{ current_month }} 기록</h3>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {% for teacher, data in teacher_records.items %}
+                    <div class="content-card">
+                        <div class="card-header bg-gray-50">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-lg font-medium text-gray-900">{{ teacher.name }}</h4>
+                                <span class="text-sm text-gray-600">
+                                    총 근무시간: {{ data.total_hours|floatformat:1 }} 시간
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="overflow-x-auto">
+                                <table class="content-table">
+                                    <thead>
+                                        <tr>
+                                            <th>날짜</th>
+                                            <th>시작</th>
+                                            <th>종료</th>
+                                            <th>근무시간</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for record in data.records %}
+                                            <tr>
+                                                <td>{{ record.date|date:"Y-m-d" }}</td>
+                                                <td>{{ record.start_time|time:"H:i" }}</td>
+                                                <td>{{ record.end_time|time:"H:i" }}</td>
+                                                <td>
+                                                    {% if record.work_hours is not None %}
+                                                        {{ record.work_hours|floatformat:2 }} 시간
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="content-card">
+                        <div class="card-body">
+                            <p class="text-gray-500 text-center">이번 달은 근무 기록이 없습니다.</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 근무여부 체크박스 이벤트 처리
+        const checkboxes = document.querySelectorAll('input[type="checkbox"][name*="is_present"]');
+        checkboxes.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            const timeInputs = row.querySelectorAll('input[type="time"]');
+            
+            // 초기 상태 설정
+            timeInputs.forEach(input => {
+                input.disabled = !checkbox.checked;
+            });
+            
+            // 체크박스 변경 이벤트
+            checkbox.addEventListener('change', function() {
+                timeInputs.forEach(input => {
+                    input.disabled = !this.checked;
+                    if (!this.checked) {
+                        input.value = '';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

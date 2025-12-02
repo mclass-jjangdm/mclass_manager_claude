@@ -1,0 +1,76 @@
+{% extends 'students/base_students.html' %}
+
+{% block student_content %}
+<div class="bg-white shadow rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-semibold text-gray-900">학생 상세 정보</h1>
+        <div class="space-x-2">
+            <a href="{% url 'students:student_files' student.pk %}" 
+                class="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                    파일 관리
+            </a>
+            <a href="{% url 'students:student_update' student.pk %}" 
+               class="bg-indigo-500 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
+                학생 정보 수정
+            </a>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <tbody class="bg-white divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">이름</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.name }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">고유번호</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.student_id }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">학교</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.school.name|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">학년</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.grade|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">학생 전화번호</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.phone_number|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">이메일</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.email|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">성별</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.get_gender_display|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">부모님 전화번호</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.parent_phone|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">현금영수증용 번호</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.receipt_number|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">첫수업 날짜</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.first_class_date|date:"Y-m-d"|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">그만 둔 날짜</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.quit_date|date:"Y-m-d"|default:"" }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50 text-sm">
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600 font-medium">기타</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">{{ student.etc|truncatewords:10|default:"" }}</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+    
+{% endblock %}
+

@@ -1,0 +1,104 @@
+{% extends 'bookstore/base_bookstore.html' %}
+
+{% block bookstore_content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-bold mb-4">
+        {% if form.instance.pk %}도서 지급 수정{% else %}도서 지급 등록{% endif %}
+    </h1>
+    
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- 출고 일자 -->
+        <div class="content-card">
+            <div class="card-header">지급 일자</div>
+            <div class="card-body">
+                <div class="form-group">
+                    <input type="date" 
+                           id="{{ form.issued_date.id_for_label }}"
+                           name="{{ form.issued_date.name }}"
+                           value="{{ form.issued_date.value|date:'Y-m-d'|default:'' }}"
+                           class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- 기본 정보 -->
+        <div class="content-card">
+            <div class="card-header">기본 정보</div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 재고 선택 -->
+                    <div class="form-group">
+                        <label class="form-label">교재 이름</label>
+                        <select id="{{ form.book_stock.id_for_label }}" 
+                                name="{{ form.book_stock.name }}"
+                                class="form-input">
+                            <!-- <option value="">---------</option> -->
+                            {% for choice in form.book_stock.field.queryset %}
+                                <option value="{{ choice.id }}" {% if form.book_stock.value == choice.id %}selected{% endif %}>
+                                    {{ choice.book.name }} (재고: {{ choice.quantity }}권)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- 학생 선택 -->
+                    <div class="form-group">
+                        <label class="form-label">학생 이름</label>
+                        <select id="{{ form.student.id_for_label }}" 
+                                name="{{ form.student.name }}"
+                                class="form-input">
+                            {% for choice in form.student.field.queryset %}
+                                <option value="{{ choice.id }}" {% if form.student.value == choice.id %}selected{% endif %}>
+                                    {{ choice.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- 수량 -->
+                    <div class="form-group">
+                        <label class="form-label">수량</label>
+                        <input type="number" 
+                               id="{{ form.quantity.id_for_label }}"
+                               name="{{ form.quantity.name }}"
+                               value="{{ form.quantity.value|default:1 }}"
+                               class="form-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 비고 -->
+        <div class="content-card">
+            <div class="card-header">메모</div>
+            <div class="card-body">
+                <textarea id="{{ form.memo.id_for_label }}" 
+                          name="{{ form.memo.name }}" 
+                          class="form-input"
+                          rows="4">{{ form.memo.value|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- 버튼 -->
+        <div class="flex justify-end space-x-3">
+            <a href="{% url 'bookstore:book_issue_list' %}" 
+               class="form-button bg-gray-500 hover:bg-gray-600">
+                취소
+            </a>
+            <button type="submit" class="form-button">
+                {% if form.instance.pk %}수정{% else %}등록{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 필요한 추가 JavaScript가 있다면 여기에 작성합니다.
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "maintenance/base_maintenance.html" %}
+{% load form_tags %}
+
+{% block title %}관리비 등록 - MClass Manager{% endblock %}
+
+{% block maintenance_content %}
+<div class="content-card">
+    <div class="card-header">
+        <h1 class="text-xl font-semibold text-gray-900">관리비 등록</h1>
+    </div>
+    
+    <div class="card-body">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- 공통 부과년월 -->
+            <div class="max-w-sm">
+                <label class="form-label">부과년월</label>
+                {{ form.date }}
+                {% if form.date.errors %}
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ form.date.errors }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- 호실별 입력 테이블 -->
+            <div class="overflow-x-auto">
+                <table class="content-table min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="text-center w-20">호실</th>
+                            <th class="text-center w-40">금액</th>
+                            <th class="text-center w-40">납부일</th>
+                            <th class="text-center">메모</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for room in rooms %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="text-center font-medium">{{ room.number }}</td>
+                            <td class="p-2">
+                                <input type="number" 
+                                       name="charge_{{ room.id }}" 
+                                       class="form-input w-full text-right"
+                                       min="0"
+                                       placeholder="금액 입력">
+                            </td>
+                            <td class="p-2">
+                                <input type="date" 
+                                       name="date_paid_{{ room.id }}" 
+                                       class="form-input w-full">
+                            </td>
+                            <td class="p-2">
+                                <input type="text" 
+                                       name="memo_{{ room.id }}" 
+                                       class="form-input w-full"
+                                       placeholder="메모 입력">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-center pt-6">
+                <button type="submit" class="form-button px-8">
+                    입력하기
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    /* 입력 필드 크기 조정 */
+    .form-input {
+        padding: 0.5rem;
+        height: 2.5rem;
+        font-size: 0.875rem;
+    }
+
+    /* 테이블 셀 패딩 */
+    .content-table td {
+        padding: 0.75rem;
+    }
+
+    /* 호실 열 고정 너비 */
+    .w-20 {
+        width: 5rem;
+    }
+
+    /* 금액, 납부일 열 고정 너비 */
+    .w-40 {
+        width: 10rem;
+    }
+
+    /* 반응형 조정 */
+    @media (max-width: 640px) {
+        .form-input {
+            font-size: 0.75rem;
+            padding: 0.375rem;
+            height: 2.25rem;
+        }
+    }
+</style>
+{% endblock %}
+{% endblock %}

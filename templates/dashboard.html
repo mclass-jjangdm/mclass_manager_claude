@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+        <div class="border-4 border-dashed border-gray-200 rounded-lg p-4">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">
+                환영합니다, {{ user.username }}님
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 학생 관리 -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <h3 class="text-lg font-medium text-gray-900">학생 관리</h3>
+                        <p class="mt-1 text-sm text-gray-500">학생 정보 및 출결 관리</p>
+                        <div class="mt-4">
+                            <a href="{% url 'students:student_list' %}" 
+                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                바로가기 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 선생님 관리 -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <h3 class="text-lg font-medium text-gray-900">선생님 관리</h3>
+                        <p class="mt-1 text-sm text-gray-500">선생님 정보 및 급여 관리</p>
+                        <div class="mt-4">
+                            <a href="{% url 'teachers:teacher_list' %}" 
+                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                바로가기 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 관리비 -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <h3 class="text-lg font-medium text-gray-900">관리비</h3>
+                        <p class="mt-1 text-sm text-gray-500">관리비 등록 및 조회</p>
+                        <div class="mt-4">
+                            <a href="{% url 'maintenance:create' %}" 
+                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                바로가기 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 교재 관리 -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <h3 class="text-lg font-medium text-gray-900">교재 정보</h3>
+                        <p class="mt-1 text-sm text-gray-500">교재 정보 입력 및 조회</p>
+                        <div class="mt-4">
+                            <a href="{% url 'books:book_list' %}" 
+                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                바로가기 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- 교재 지급 현황 -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <h3 class="text-lg font-medium text-gray-900">교재 지급 현황</h3>
+                        <p class="mt-1 text-sm text-gray-500">교재 지급 현황 및 조회</p>
+                        <div class="mt-4">
+                            <a href="{% url 'bookstore:stock_list' %}" 
+                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                바로가기 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- 납부부 현황 -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <h3 class="text-lg font-medium text-gray-900">납부 현황</h3>
+                        <p class="mt-1 text-sm text-gray-500">납부부 현황 및 조회</p>
+                        <div class="mt-4">
+                            <a href="{% url 'payment:dashboard' %}" 
+                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                바로가기 →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

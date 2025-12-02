@@ -1,0 +1,113 @@
+{% extends 'bookstore/base_bookstore.html' %}
+
+{% block title %}재고 정보{% endblock %}
+
+{% load humanize %}
+
+{% block bookstore_content %}
+
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-semibold text-gray-900 mb-6">{{ total_quantity }} | {{ book.name }} </h1>
+
+    <div class="grid grid-cols-1 gap-6 mb-6">
+        <div>
+            <label for="total_quantity" class="block text-sm font-medium text-red-700">
+                현재 재고
+            </label>
+            <span class="mt-1 block text-sm text-black-1000">{{ total_quantity }}</span>
+        </div>        
+        <div>
+            <label for="subject" class="block text-sm font-medium text-gray-700">
+                과목
+            </label>
+            <span class="mt-1 block text-sm text-gray-900">{{ book.subject }}</span>
+        </div>
+        <div>
+            <label for="publisher" class="block text-sm font-medium text-gray-700">
+                출판사
+            </label>
+            <span class="mt-1 block text-sm text-gray-900">{{ book.publisher }}</span>
+        </div>
+        <div>
+            <label for="isbn" class="block text-sm font-medium text-gray-700">
+                ISBN
+            </label>
+            <span class="mt-1 block text-sm text-gray-900">{{ book.isbn }}</span>
+        </div>        
+        <div class="flex items-center space-x-4">
+            <div class="text-center">
+                <label for="qr_code" class="block text-sm font-medium text-gray-700">
+                    QR code
+                </label>
+                <img src="{{ book.qr_code.url }}" alt="QR Code" class="mx-auto max-h-32">
+            </div>
+            <div class="text-center">
+                <label for="barcode" class="block text-sm font-medium text-gray-700">
+                    bar code
+                </label>
+                <img src="{{ book.barcode.url }}" alt="Barcode" class="mx-auto max-h-32">
+                {% if book.isbn %}
+                <p class="text-sm text-gray-500 mt-2">ISBN: {{ book.isbn }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <label for="unique_code" class="block text-sm font-medium text-gray-700">
+                고유 코드
+            </label>
+            <span class="mt-1 block text-sm text-gray-900">{{ book.unique_code }}</span>
+        </div>
+        <div>
+            <label for="memo" class="block text-sm font-medium text-gray-700">
+                메모
+            </label>
+            <span class="mt-1 block text-sm text-gray-900">{{ book.memo }}</span>
+        </div>
+    </div>
+
+    <!-- 동일 교재 다른 입고 정보 -->
+    <div class="content-card">
+        <div class="card-header">재고 내역</div>
+        <div class="card-body overflow-x-auto">
+            <table class="content-table">
+                <thead>
+                    <tr>
+                        <th>입고 날짜</th>
+                        <th>수량</th>
+                        <th>정가</th>
+                        <th>단가</th>
+                        <th>판매가</th>
+                        <th>메모</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in stock_list %}
+                        <tr>
+                            <td>{{ stock.received_date|date:"Y-m-d" }}</td>
+                            <td>{{ stock.quantity }}</td>
+                            <td class="text-right">{{ stock.list_price|floatformat:0|intcomma }}원</td>
+                            <td class="text-right">{{ stock.unit_price|floatformat:0|intcomma }}원</td>
+                            <td class="text-right">{{ stock.selling_price|floatformat:0|intcomma }}원</td>
+                            <td>{{ stock.memo|default:"-" }}</td>
+                            <td class="space-x-2">
+                                {% if stock.quantity > 0 %}
+                                    <a href="{% url 'bookstore:stock_return' stock_id=stock.pk %}" 
+                                       class="text-blue-600 hover:text-blue-800">반품</a>
+                                {% else %}
+                                    <span class="text-gray-400 cursor-not-allowed" 
+                                          title="수량이 0인 재고는 반품할 수 없습니다">반품</span>
+                                {% endif %}
+                                <a href="{% url 'bookstore:stock_update' pk=stock.pk %}" 
+                                   class="text-green-600 hover:text-green-800">수정</a>
+                                <a href="{% url 'bookstore:stock_delete' pk=stock.pk %}" 
+                                   class="text-red-600 hover:text-red-800">삭제</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

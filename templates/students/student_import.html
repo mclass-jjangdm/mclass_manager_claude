@@ -1,0 +1,55 @@
+{% extends 'students/base_students.html' %}
+
+{% block title %}학생 엑셀 파일 가져오기 - {{ block.super }}{% endblock %}
+
+{% block student_content %}
+<div class="content-card max-w-3xl mx-auto">
+    <div class="card-header">
+        <h1 class="text-xl font-semibold text-gray-900">학생 엑셀 파일 가져오기</h1>
+    </div>
+    
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="form-errors"> 
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>{{ field }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label for="{{ form.file.id_for_label }}" 
+                       class="block text-sm font-medium text-gray-700">
+                    {{ form.file.label }}
+                </label>
+                {{ form.file }}
+                {% if form.file.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.file.help_text }}</p>
+                {% endif %}
+                {% if form.file.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.file.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-4">
+                <a href="{% url 'students:student_list' %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    취소
+                </a>
+                <button type="submit" class="form-button">
+                    가져오기
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

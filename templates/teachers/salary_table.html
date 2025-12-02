@@ -1,0 +1,113 @@
+{% extends 'teachers/base_teachers.html' %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block title %}급여 내역 ({{ year }}년) - MClass Manager{% endblock %}
+
+{% block teacher_content %}
+<div class="space-y-6">
+    <!-- 연도 선택 -->
+    <div class="content-card">
+        <div class="card-header">
+            <div class="sm:flex justify-between items-center space-y-4 sm:space-y-0">
+                <h1 class="text-xl font-semibold text-gray-900">
+                    {{ year }}년 급여 내역
+                </h1>
+                <div class="flex items-center space-x-2">
+                    <form method="get" class="flex items-center space-x-2">
+                        <label for="year" class="text-sm font-medium text-gray-700"></label>
+                        <select name="year" 
+                                id="year" 
+                                class="form-input py-1 min-w-[120px]"
+                                onchange="this.form.submit()"
+                                {% if not year_range %}disabled{% endif %}>
+                            {% for y in year_range %}
+                                <option value="{{ y }}" {% if y == year %}selected{% endif %}>
+                                    {{ y }}년
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            {% if salary_table %}
+            <div class="overflow-x-auto">
+                <table class="content-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="whitespace-nowrap sticky left-0 bg-gray-50 z-10 border-r font-medium">선생님</th>
+                            {% for month in months %}
+                                <th class="whitespace-nowrap font-medium text-right" style="text-align: right;">{{ month }}월</th>
+                            {% endfor %}
+                            <th class="whitespace-nowrap bg-gray-50 font-medium text-right" style="text-align: right;">합계</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in salary_table %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="font-medium sticky left-0 bg-white z-10 border-r">
+                                    {{ row.teacher.name }}
+                                    {% if not row.teacher.is_active %}
+                                        <span class="text-xs text-gray-500" style="color: red">(퇴직)</span>
+                                    {% endif %}
+                                </td>
+                                {% for month in months %}
+                                    <td class="whitespace-nowrap" style="text-align: right;">
+                                        {{ row|get_item:month|default:0|intcomma }}
+                                    </td>
+                                {% endfor %}
+                                <td class="font-medium whitespace-nowrap bg-gray-50" style="text-align: right;">
+                                    {{ row.total|intcomma }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-indigo-50 font-semibold">
+                            <td class="text-center sticky left-0 bg-indigo-50 z-10 border-r">월별 합계</td>
+                            {% for month in months %}
+                                <td class="text-right whitespace-nowrap" style="text-align: right;">
+                                    {{ salary_table|sum_column:month|default:0|intcomma }}
+                                </td>
+                            {% endfor %}
+                            <td class="text-right whitespace-nowrap bg-indigo-100" style="text-align: right;">
+                                {{ grand_total|intcomma }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-500">
+                {{ year }}년도의 급여 데이터가 없습니다.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 도움말 -->
+    <div class="bg-blue-50 rounded-lg p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3 flex-1">
+                <h3 class="text-sm font-medium text-blue-800">도움말</h3>
+                <div class="mt-2 text-sm text-blue-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>각 월의 급여는 해당 월의 근무시간 × 시급으로 계산됩니다.</li>
+                        <li>연간 합계는 각 월의 급여 총액입니다.</li>
+                        <li>연도 선택 메뉴에는 급여 기록이 있는 연도만 표시됩니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
