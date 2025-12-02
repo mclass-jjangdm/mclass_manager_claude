@@ -458,14 +458,16 @@ class TeacherPDFReportView(LoginRequiredMixin, View):
 
         attendances = Attendance.objects.filter(teacher=teacher).order_by('date')
         
-        if attendances:
-            # Salary 모델에서 저장된 급여 정보 가져오기
-            saved_salaries = {
-                f"{s.year}-{s.month:02d}": s
-                for s in Salary.objects.filter(teacher=teacher)
-            }
+        # Salary 모델에서 저장된 급여 정보 가져오기
+        saved_salaries = {
+            f"{s.year}-{s.month:02d}": s
+            for s in Salary.objects.filter(teacher=teacher)
+        }
 
-            monthly_data = {}
+        monthly_data = {}
+
+        # 출근 기록이 있는 경우 근무시간 계산
+        if attendances:
             for attendance in attendances:
                 year_month = attendance.date.strftime("%Y-%m")
                 if year_month not in monthly_data:
@@ -480,11 +482,21 @@ class TeacherPDFReportView(LoginRequiredMixin, View):
                     monthly_data[year_month]['hours'] += work_hours
                     monthly_data[year_month]['base_amount'] = int(monthly_data[year_month]['hours'] * teacher.base_salary)
 
-            # 저장된 추가급여 정보 추가
-            for year_month in monthly_data.keys():
-                if year_month in saved_salaries:
-                    monthly_data[year_month]['additional_amount'] = saved_salaries[year_month].additional_amount
+        # 저장된 급여 정보 추가 (근무 기록이 없어도 추가급여만 있는 경우 포함)
+        for year_month, salary in saved_salaries.items():
+            if year_month not in monthly_data:
+                # 근무 기록은 없지만 급여 데이터가 있는 경우
+                monthly_data[year_month] = {
+                    'hours': 0,
+                    'base_amount': salary.base_amount,
+                    'additional_amount': salary.additional_amount
+                }
+            else:
+                # 근무 기록이 있는 경우 추가급여만 업데이트
+                monthly_data[year_month]['additional_amount'] = salary.additional_amount
 
+        # 월별 데이터가 있는 경우 테이블 생성
+        if monthly_data:
             attendance_data = [["년/월", "근무시간", "기본급", "추가급여", "총 급여"]]
             total_hours = 0
             total_base = 0
