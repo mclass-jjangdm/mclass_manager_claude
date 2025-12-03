@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # MySQL 데이터베이스
+  db:
+    image: mysql:8.0
+    container_name: mclass_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-mclass_manager_db}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_general_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django 애플리케이션
+  web:
+    build: .
+    container_name: mclass_web
+    restart: always
+    command: gunicorn mclass_manager.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME:-mclass_manager_db}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-changeme}
+      - DB_HOST=db
+      - DB_PORT=3306
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+
+volumes:
+  mysql_data:
+  static_volume:
+  media_volume:

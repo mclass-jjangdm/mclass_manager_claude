@@ -1,0 +1,61 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.venv
+venv
+env
+
+# Django
+*.log
+db.sqlite3
+staticfiles
+media
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Testing
+.coverage
+htmlcov
+.pytest_cache
+
+# Documentation
+*.md
+docs/
+
+# Backup files
+*.bak
+*.backup
+backup_data.json
+
+# CSV/Excel files (exclude sample data)
+*.csv
+*.xlsx

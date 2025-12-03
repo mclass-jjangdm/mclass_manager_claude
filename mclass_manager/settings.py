@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
-import mclass_settings
+try:
+    import mclass_settings
+except ImportError:
+    mclass_settings = None
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,12 +34,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = mclass_settings.SECRET_KEY
+SECRET_KEY = os.environ.get('SECRET_KEY', mclass_settings.SECRET_KEY if mclass_settings else 'django-insecure-dev-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -103,11 +106,11 @@ WSGI_APPLICATION = 'mclass_manager.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mclass_manager_db',
-        'USER': 'root',
-        'PASSWORD': mclass_settings.db_password, 
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': os.environ.get('DB_NAME', 'mclass_manager_db'),
+        'USER': os.environ.get('DB_USER', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', mclass_settings.db_password if mclass_settings else ''),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'; SET CHARACTER SET utf8mb4; SET collation_connection = 'utf8mb4_general_ci';",
