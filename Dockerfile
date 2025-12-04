@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     libpq-dev \
     netcat-openbsd \
+    default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # requirements.txt 복사 및 패키지 설치

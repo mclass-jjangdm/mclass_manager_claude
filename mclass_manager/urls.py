@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 from .views import IndexView
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
+from common.views import db_backup
 
 
 admin.site.site_header = "엠클래스수학과학전문학원"  # 로그인 페이지와 관리자 페이지 상단의 타이틀
@@ -31,6 +32,7 @@ admin.site.index_title = "m'class manager"  # 관리자 페이지의 메인 타�
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
+    path('admin/db-backup/', db_backup, name='db_backup'),
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(template_name='index.html'), name='login'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
@@ -40,6 +42,7 @@ urlpatterns = [
     path('books/', include('books.urls')),
     path('bookstore/', include('bookstore.urls')),
     path('payment/', include('payment.urls')),
+    path('admin/db-backup/', db_backup, name='db_backup'),
 ]
 
 if settings.DEBUG:
