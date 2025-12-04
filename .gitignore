@@ -40,3 +40,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+
+db_backup/

@@ -4,7 +4,7 @@ services:
   # MySQL 데이터베이스
   db:
     image: mysql:8.0
-    container_name: mclass_db
+    container_name: mclass_db_main
     restart: always
     environment:
       MYSQL_DATABASE: ${DB_NAME:-mclass_manager_db}
@@ -14,7 +14,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     command: --default-authentication-plugin=mysql_native_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -25,7 +25,7 @@ services:
   # Django 애플리케이션
   web:
     build: .
-    container_name: mclass_web
+    container_name: mclass_web_main
     restart: always
     command: gunicorn mclass_manager.wsgi:application --bind 0.0.0.0:8000 --workers 3
     volumes:
@@ -33,7 +33,7 @@ services:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - DEBUG=${DEBUG:-False}
       - SECRET_KEY=${SECRET_KEY}

@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev \
     pkg-config \
     libpq-dev \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # requirements.txt 복사 및 패키지 설치
@@ -34,6 +35,8 @@ EXPOSE 8000
 
 # 엔트리포인트 스크립트 실행 권한 부여
 COPY entrypoint.sh /entrypoint.sh
+# 윈도우 줄바꿈 제거 명령어
+RUN sed -i 's/\r$//g' /entrypoint.sh  
 RUN chmod +x /entrypoint.sh
 
 # 엔트리포인트 설정
