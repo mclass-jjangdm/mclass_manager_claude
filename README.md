@@ -1,85 +1,58 @@
-# MClass Manager
+# MClass Manager (엠클래스 학원 관리 시스템)
 
-MClass Manager는 학생 및 수업 관리를 위한 Django 기반 웹 애플리케이션입니다.
+**MClass Manager**는 학원 운영을 효율적으로 돕기 위해 개발된 통합 관리 시스템입니다. 학생 및 강사 관리부터 교재 재고, 수납, 급여 정산까지 학원 운영에 필요한 핵심 기능을 제공합니다.
 
-## 프로젝트 설정
+## 📖 프로젝트 소개
 
-이 프로젝트를 로컬 환경에서 설정하고 실행하는 방법은 다음과 같습니다.
+이 프로젝트는 Django와 MySQL을 기반으로 구축되었으며, Docker를 통해 손쉽게 배포하고 운영할 수 있도록 설계되었습니다. 데이터의 엑셀 가져오기/내보내기, PDF 보고서 생성, 바코드/QR 코드를 활용한 교재 관리 등 실무에 최적화된 기능들을 포함하고 있습니다.
 
-### 1. 가상 환경 설정 및 활성화
+## 🚀 주요 기능
 
-프로젝트의 의존성을 시스템의 다른 부분과 격리하기 위해 가상 환경을 사용하는 것을 권장합니다.
+### 1. 👨‍🎓 학생 관리 (Students)
+- **학생 정보 관리:** 인적사항, 학교, 학년, 상담 내역 기록
+- **엑셀 연동:** 대량의 학생 데이터를 엑셀로 일괄 등록 및 내보내기 지원
+- **파일 첨부:** 학생별 개인 파일 관리 기능
+- **상태 관리:** 재원/퇴원/휴원 상태에 따른 필터링 및 관리
 
+### 2. 👩‍🏫 강사 관리 (Teachers)
+- **근태 관리:** 일별 출퇴근 기록 및 근무 시간 자동 계산
+- **급여 정산:** 근무 시간과 기본급/추가급을 기반으로 월별 급여 자동 산출
+- **보고서 생성:** 급여 명세서 및 근무 내역서 PDF 자동 생성 및 출력
+- **강사 정보:** 이력 및 담당 과목 관리
+
+### 3. 📚 교재 및 서점 관리 (Books & Bookstore)
+- **교재 등록:** 바코드/QR 코드를 활용한 교재 정보 관리
+- **재고 관리:** 입고, 출고, 반품 처리를 통한 실시간 재고 파악
+- **지급 현황:** 학생별 교재 지급 내역 및 미납 내역 추적
+
+### 4. 💰 수납 관리 (Payment)
+- **수납 내역:** 교재비 및 교육비 수납 내역 기록
+- **현황 파악:** 기간별 수납 현황 대시보드 제공
+
+### 5. 🛠 시설 관리 (Maintenance)
+- **강의실 관리:** 강의실별 유지보수 내역 및 상태 기록
+- **기자재 관리:** 학원 내 비품 및 기자재 관리
+
+## 🛠 기술 스택 (Tech Stack)
+
+- **Backend:** Python 3.13, Django 5.2
+- **Database:** MySQL 8.0
+- **Infrastructure:** Docker, Docker Compose
+- **Major Libraries:**
+  - `pandas`: 데이터 엑셀 처리 및 분석
+  - `reportlab`: PDF 문서 생성
+  - `python-barcode` / `qrcode`: 교재 관리용 코드 생성
+  - `whitenoise`: 정적 파일 서빙
+
+## 💻 설치 및 실행 방법 (Docker)
+
+이 프로젝트는 Docker 환경에서 실행하는 것을 권장합니다.
+
+### 사전 요구사항
+- Docker
+- Docker Compose
+
+### 1. 저장소 클론
 ```bash
-# Python 가상 환경 생성
-python -m venv venv
-
-# Windows에서 가상 환경 활성화
-.\venv\Scripts\activate
-
-# macOS/Linux에서 가상 환경 활성화
-# source venv/bin/activate
-```
-
-### 2. 필수 라이브러리 설치
-
-프로젝트 루트 디렉터리에 있는 `requirements.txt` 파일을 사용하여 필요한 모든 라이브러리를 설치합니다.
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. 데이터베이스 마이그레이션
-
-모델 변경 사항을 데이터베이스에 적용합니다.
-
-```bash
-python manage.py migrate
-```
-
-### 4. 개발 서버 실행
-
-다음 명령어를 사용하여 Django 개발 서버를 시작합니다.
-
-```bash
-python manage.py runserver
-```
-
-서버가 실행되면 웹 브라우저에서 `http://127.0.0.1:8000/` 주소로 접속하여 애플리케이션을 확인할 수 있습니다.
-
-## 문제 해결 가이드
-
-프로젝트 설정 또는 실행 중 발생할 수 있는 몇 가지 일반적인 문제와 해결 방법입니다.
-
-### `ModuleNotFoundError`
-
-`python manage.py runserver` 실행 시 `ModuleNotFoundError`가 발생하는 경우, 이는 필요한 라이브러리가 설치되지 않았기 때문입니다.
-
-이 프로젝트에서는 다음과 같은 라이브러리 누락으로 에러가 발생했습니다.
-
-*   `barcode`
-*   `qrcode`
-*   `reportlab`
-*   `pandas`
-
-**해결 방법:**
-
-1.  `requirements.txt` 파일에 누락된 라이브러리 이름을 추가합니다.
-2.  `pip install -r requirements.txt` 명령어를 실행하여 모든 라이브러리를 다시 설치합니다.
-
-### `requirements.txt` 인코딩 문제
-
-`pip install -r requirements.txt` 실행 중 `UnicodeDecodeError`가 발생한다면, 이는 `requirements.txt` 파일의 인코딩 문제일 수 있습니다.
-
-**해결 방법:**
-
-파일을 열어 다른 이름으로 저장(Save As)을 선택하고, 인코딩을 **UTF-8**로 지정하여 다시 저장합니다.
-
-### 프로젝트 용량 문제
-
-프로젝트 초기 설정 시 `.conda` 가상 환경 폴더가 프로젝트 내부에 포함되어 용량이 비정상적으로 큰 문제가 있었습니다.
-
-**해결 방법:**
-
-*   프로젝트 루트의 `.conda` 폴더를 삭제했습니다. 가상 환경은 프로젝트 디렉터리 외부에 별도로 관리하는 것이 좋습니다.
-*   `__pycache__` 폴더들을 모두 삭제했습니다. 이 폴더들은 Python이 자동으로 생성하는 캐시 파일이며, 삭제해도 안전합니다.
+git clone [https://github.com/mclass-jjangdm/mclass-manager.git](https://github.com/mclass-jjangdm/mclass-manager.git)
+cd mclass-manager
