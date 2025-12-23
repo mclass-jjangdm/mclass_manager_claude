@@ -40,6 +40,7 @@ urlpatterns = [
     path('students/', include('students.urls')),
     path('maintenance/', include('maintenance.urls')),
     path('payment/', include('payment.urls')),
+    path('bookstore/', include('bookstore.urls')),
 ]
 
 if settings.DEBUG:
