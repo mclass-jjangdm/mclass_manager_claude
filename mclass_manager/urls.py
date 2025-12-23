@@ -39,10 +39,7 @@ urlpatterns = [
     path('teachers/', include('teachers.urls')),
     path('students/', include('students.urls')),
     path('maintenance/', include('maintenance.urls')),
-    path('books/', include('books.urls')),
-    path('bookstore/', include('bookstore.urls')),
     path('payment/', include('payment.urls')),
-    path('admin/db-backup/', db_backup, name='db_backup'),
 ]
 
 if settings.DEBUG:

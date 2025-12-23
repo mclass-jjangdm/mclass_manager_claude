@@ -2,7 +2,6 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.utils import timezone
 from students.models import Student
-from bookstore.models import BookStock, BookDistribution
 from django.db.models import Sum, F
 
 class Payment(models.Model):
@@ -62,11 +61,8 @@ class Payment(models.Model):
 
     @property
     def total_amount(self):
-        """'bookstore' 앱의 정보를 기반으로 총 금액 계산"""
-        total = BookDistribution.objects.filter(student=self.student).aggregate(
-            total_amount=Sum(F('book_stock__selling_price') * F('quantity'))
-        )['total_amount'] or 0
-        return total
+        """총 금액 반환"""
+        return self.paid_amount or 0
 
     class Meta:
         verbose_name = '결제'
@@ -84,46 +80,6 @@ class Payment(models.Model):
             self.status = 'partial'
         else:
             self.status = 'pending'
-        super().save(*args, **kwargs)
-
-
-class BookPayment(models.Model):
-    """교재 결제 정보"""
-    payment = models.ForeignKey(
-        Payment,
-        on_delete=models.CASCADE,
-        verbose_name='결제'
-    )
-    book_distribution = models.OneToOneField(
-        BookDistribution,
-        on_delete=models.CASCADE,
-        verbose_name='교재 판매'
-    )
-    original_price = models.PositiveIntegerField(
-        validators=[MinValueValidator(0)],
-        verbose_name='원래 가격'
-    )
-    discounted_price = models.PositiveIntegerField(
-        validators=[MinValueValidator(0)],
-        verbose_name='할인된 가격'
-    )
-    
-    class Meta:
-        verbose_name = '교재 결제'
-        verbose_name_plural = '교재 결제 목록'
-
-    def __str__(self):
-        return f"{self.payment.student.name} - {self.book_distribution.book_stock.book.name}"
-
-    def save(self, *args, **kwargs):
-        """최초 저장 시 Payment 레코드 생성"""
-        if not self.pk and not hasattr(self, 'payment'):
-            payment = Payment.objects.create(
-                student=self.book_distribution.student,
-                total_amount=self.discounted_price,
-                due_date=timezone.now() + timezone.timedelta(days=30)  # 기본 30일 납부 기한
-            )
-            self.payment = payment
         super().save(*args, **kwargs)
 
 
