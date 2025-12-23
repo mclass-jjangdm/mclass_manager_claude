@@ -25,7 +25,7 @@ services:
     build: .
     container_name: mclass_web_main
     restart: always
-    command: gunicorn mclass_manager.wsgi:application --bind 0.0.0.0:8000 --workers 3 --workers 3 --timeout 120
+    command: gunicorn mclass_manager.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 300
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
