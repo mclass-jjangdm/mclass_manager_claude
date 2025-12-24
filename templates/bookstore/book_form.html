@@ -12,7 +12,7 @@
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="id_created_at" class="form-label">📅 등록일 (입고일)</label>
+                <label for="id_created_at" class="form-label"> 등록일 (입고일)</label>
                 {{ form.created_at }}
             </div>
 
@@ -42,7 +42,7 @@
 
             <div class="form-group" style="background-color: #F9FAFB; padding: 15px; border-radius: 8px; border: 1px solid #E5E7EB;">
                 <label for="id_supplier" class="form-label" style="color: #4338CA;">
-                    🏢 구매처 (공급사)
+                    구매처 (공급사)
                 </label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <div style="flex-grow: 1;">
@@ -50,7 +50,7 @@
                     </div>
                     <a href="#" id="add-supplier-btn" class="btn btn-outline"
                        style="white-space: nowrap; padding: 10px 15px; font-size: 0.9rem;">
-                        + 새 구매처
+                        새 구매처
                     </a>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                 <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px; font-size: 1rem;">
                     저장하기
                 </button>
-                <a href="{% url 'book_list' %}" class="btn btn-outline" style="padding: 12px; font-size: 1rem;">
+                <a href="{% url 'bookstore:book_list' %}" class="btn btn-outline" style="padding: 12px; font-size: 1rem;">
                     취소
                 </a>
             </div>
@@ -190,10 +190,10 @@
                 });
 
                 // 현재 입력값들을 쿼리 스트링으로 만듦
-                const returnUrl = "{% url 'book_create' %}?" + params.toString();
+                const returnUrl = "{% url 'bookstore:book_create' %}?" + params.toString();
 
                 // next 파라미터에 담아서 이동
-                const targetUrl = "{% url 'supplier_create' %}?next=" + encodeURIComponent(returnUrl);
+                const targetUrl = "{% url 'bookstore:supplier_create' %}?next=" + encodeURIComponent(returnUrl);
                 window.location.href = targetUrl;
             });
         }

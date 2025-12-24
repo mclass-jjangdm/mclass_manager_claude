@@ -15,7 +15,7 @@
             {% csrf_token %}
 
             <div style="background-color: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #c62828;">
-                <strong>⚠️ 주의:</strong> 반품 처리 시 재고가 즉시 감소합니다.
+                <strong>주의:</strong> 반품 처리 시 재고가 즉시 감소합니다.
             </div>
 
             <div style="margin-bottom: 20px;">
@@ -57,7 +57,7 @@
                 <button type="submit" class="btn" style="background-color: #e53935; padding: 10px 40px; font-size: 1.1rem;">
                     반품 확정
                 </button>
-                <a href="{% url 'book_list' %}" class="btn" style="background-color: #757575; margin-left: 10px;">취소</a>
+                <a href="{% url 'bookstore:book_list' %}" class="btn" style="background-color: #757575; margin-left: 10px;">취소</a>
             </div>
         </form>
     </div>

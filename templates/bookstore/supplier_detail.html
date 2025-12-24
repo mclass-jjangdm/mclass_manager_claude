@@ -6,7 +6,7 @@
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h2 style="margin:0; color: #4527a0;">🏢 {{ supplier.name }} 상세 정보</h2>
-    <a href="{% url 'supplier_list' %}" class="btn" style="background-color: #757575;">← 목록으로</a>
+    <a href="{% url 'bookstore:supplier_list' %}" class="btn" style="background-color: #757575;">← 목록으로</a>
 </div>
 
 <div class="info-card" style="background-color: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; margin-bottom: 30px;">
@@ -32,7 +32,7 @@
             <span style="float: right; font-size: 0.9rem; color: #666;">총액: <strong>{{ total_to_pay|intcomma }}원</strong></span>
         </h3>
 
-        <form method="POST" action="{% url 'supplier_settle' supplier.pk %}">
+        <form method="POST" action="{% url 'bookstore:supplier_settle' supplier.pk %}">
             {% csrf_token %}
 
             <div style="background-color: #fff3e0; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: flex-end; align-items: center;">
@@ -83,7 +83,7 @@
             <span style="float: right; font-size: 0.9rem; color: #666;">총액: <strong>{{ total_to_refund|intcomma }}원</strong></span>
         </h3>
 
-        <form method="POST" action="{% url 'supplier_settle' supplier.pk %}">
+        <form method="POST" action="{% url 'bookstore:supplier_settle' supplier.pk %}">
             {% csrf_token %}
 
             <div style="background-color: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: flex-end; align-items: center;">
@@ -133,7 +133,7 @@
 
 <h3 style="color: #2e7d32; margin-bottom: 15px;">✅ 정산(입금/환불) 완료 기록</h3>
 
-<form method="POST" action="{% url 'supplier_payment_cancel' supplier.pk %}">
+<form method="POST" action="{% url 'bookstore:supplier_payment_cancel' supplier.pk %}">
     {% csrf_token %}
 
     <div style="text-align: right; margin-bottom: 10px;">

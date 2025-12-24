@@ -39,7 +39,7 @@
                     <div style="flex-grow: 1;">
                         {{ form.supplier }}
                     </div>
-                    <a href="{% url 'supplier_create' %}?next={{ request.get_full_path|urlencode }}"
+                    <a href="{% url 'bookstore:supplier_create' %}?next={{ request.get_full_path|urlencode }}"
                        class="btn"
                        style="font-size: 0.8rem; padding: 8px 12px; background-color: #3949ab; color: white; text-decoration: none; white-space: nowrap;">
                         + 새 구매처 등록
@@ -70,7 +70,7 @@
                 <button type="submit" class="btn" style="background-color: #2e7d32; color: white; padding: 12px 40px; font-size: 1.1rem; border: none; border-radius: 5px; cursor: pointer;">
                     + 입고 처리
                 </button>
-                <a href="{% url 'book_list' %}" class="btn" style="background-color: #757575; color: white; margin-left: 10px; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
+                <a href="{% url 'bookstore:book_list' %}" class="btn" style="background-color: #757575; color: white; margin-left: 10px; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
                     취소
                 </a>
             </div>

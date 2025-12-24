@@ -25,6 +25,9 @@ qrcode==8.2
 pytz==2025.2
 tablib==3.8.0
 
+# API Client
+requests==2.31.0
+
 # Server
 gunicorn==23.0.0
 whitenoise==6.8.2

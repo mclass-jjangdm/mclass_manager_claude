@@ -7,10 +7,10 @@
         <span style="color:#673ab7;">●</span> 도서 상세 정보
     </h2>
     <div>
-        <a href="{% url 'book_restock' book.pk %}" class="btn" style="background-color: #2e7d32; margin-right: 5px;">
+        <a href="{% url 'bookstore:book_restock' book.pk %}" class="btn" style="background-color: #2e7d32; margin-right: 5px;">
             + 재고 입고
         </a>
-        <a href="{% url 'book_update' book.pk %}" class="btn" style="background-color: #ff9800;">
+        <a href="{% url 'bookstore:book_update' book.pk %}" class="btn" style="background-color: #ff9800;">
             정보 수정
         </a>
     </div>
@@ -102,6 +102,6 @@
 </table>
 
 <div style="margin-top: 30px; text-align: center;">
-    <a href="{% url 'book_list' %}" class="btn" style="background-color: #757575;">← 목록으로 돌아가기</a>
+    <a href="{% url 'bookstore:book_list' %}" class="btn" style="background-color: #757575;">← 목록으로 돌아가기</a>
 </div>
 {% endblock %}

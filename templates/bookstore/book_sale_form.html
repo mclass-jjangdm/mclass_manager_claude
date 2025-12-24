@@ -86,7 +86,7 @@
         // 교재별 가격 정보를 자바스크립트 객체로 저장
         const bookPrices = {
             {% for book in form.fields.book.queryset %}
-                "{{ book.pk }}": {{ book.price }},
+                "{{ book.pk }}": "{{ book.price|default:0 }}",
             {% endfor %}
         };
 

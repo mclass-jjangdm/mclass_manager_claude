@@ -70,11 +70,11 @@ def book_create(request):
                     memo="신규 도서 등록 (초기 재고)"
                 )
             messages.success(request, f"'{book.title}' 도서가 등록되었습니다.")
-            return redirect('book_list')
+            return redirect('bookstore:book_list')
     else:
         # [핵심] URL 파라미터(?isbn=...&title=...)를 폼 초기값으로 설정
         initial_data = {
-            'created_at': timezone.localtime(timezone.now()).date(),
+            'created_at': timezone.now().date(),      # timezone.localtime(timezone.now()).date(),
             'isbn': request.GET.get('isbn', ''),
             'title': request.GET.get('title', ''),
             'author': request.GET.get('author', ''),
@@ -106,11 +106,11 @@ def book_update(request, pk):
         form = BookForm(request.POST, instance=book)
         if form.is_valid():
             form.save()
-            return redirect('book_list')
+            return redirect('bookstore:book_list')
     else:
         form = BookForm(instance=book)
 
-    return render(request, 'bookstore/book_form.html', {'form': form, 'title': f'📚 교재 정보 수정: {book.title}'})
+    return render(request, 'bookstore/book_form.html', {'form': form, 'title': f'교재 정보 수정: {book.title}'})
 
 
 def book_delete(request, pk):
@@ -118,10 +118,10 @@ def book_delete(request, pk):
     book = get_object_or_404(Book, pk=pk)
     if request.method == 'POST':
         book.delete()
-        return redirect('book_list')
+        return redirect('bookstore:book_list')
 
     # GET 요청 시에는 그냥 목록으로 (혹은 삭제 확인 페이지)
-    return redirect('book_list')
+    return redirect('bookstore:book_list')
 
 
 def book_restock(request, pk):
@@ -136,7 +136,7 @@ def book_restock(request, pk):
             log.save()  # 모델 save()에서 재고 증가 및 총액 계산
 
             messages.success(request, f"'{book.title}' {log.quantity}권이 입고되었습니다.")
-            return redirect('book_list')
+            return redirect('bookstore:book_list')
     else:
         # 오늘 날짜를 기본 지급일로 설정
         form = BookStockLogForm(initial={
@@ -178,14 +178,13 @@ def book_return(request, pk):
             log.book = book
             log.save()
             messages.warning(request, f"'{book.title}' {abs(log.quantity)}권이 반품 처리되었습니다. (현재 재고: {book.stock}권)")
-            return redirect('book_list')
+            return redirect('bookstore:book_list')
     else:
         form = BookReturnForm(initial={
             'cost_price': book.cost_price,
 
             # [핵심 수정] UTC 시간을 한국 시간(Local Time)으로 변환 후 날짜 추출
-            'payment_date': timezone.localtime(timezone.now()).date(),
-
+            'payment_date': timezone.now().date(),         # timezone.localtime(timezone.now()).date(),
             'memo': '재고 반품'
         })
 
@@ -276,13 +275,13 @@ def supplier_create(request):
                 return redirect(next_url)
 
             # 없으면 원래대로 목록으로 이동
-            return redirect('supplier_list')
+            return redirect('bookstore:supplier_list')
     else:
         form = BookSupplierForm()
 
     return render(request, 'bookstore/supplier_form.html', {
         'form': form,
-        'title': '🏢 새 구매처 등록'
+        'title': '새 구매처 등록'
     })
 
 
@@ -293,11 +292,11 @@ def supplier_update(request, pk):
         form = BookSupplierForm(request.POST, instance=supplier)
         if form.is_valid():
             form.save()
-            return redirect('supplier_list')
+            return redirect('bookstore:supplier_list')
     else:
         form = BookSupplierForm(instance=supplier)
 
-    return render(request, 'bookstore/supplier_form.html', {'form': form, 'title': f'🏢 구매처 수정: {supplier.name}'})
+    return render(request, 'bookstore/supplier_form.html', {'form': form, 'title': f'구매처 수정: {supplier.name}'})
 
 
 def supplier_delete(request, pk):
@@ -306,8 +305,8 @@ def supplier_delete(request, pk):
     if request.method == 'POST':
         supplier.delete()
         messages.success(request, "구매처 정보가 삭제되었습니다.")
-        return redirect('supplier_list')
-    return redirect('supplier_list')
+        return redirect('bookstore:supplier_list')
+    return redirect('bookstore:supplier_list')
 
 
 def supplier_detail(request, pk):
@@ -345,7 +344,7 @@ def supplier_detail(request, pk):
         'paid_logs': paid_logs,
         'total_to_pay': total_to_pay,  # 변경
         'total_to_refund': total_to_refund,  # 변경
-        'today': timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
+        'today': timezone.now().strftime('%Y-%m-%d'),           # timezone.localtime(timezone.now()).strftime('%Y-%m-%d')
     })
 
 
@@ -369,7 +368,7 @@ def supplier_payment_cancel(request, pk):
         else:
             messages.error(request, "취소할 내역을 선택해주세요.")
 
-    return redirect('supplier_detail', pk=pk)
+    return redirect('bookstore:supplier_detail', pk=pk)
 
 
 def supplier_settle(request, pk):
@@ -383,7 +382,7 @@ def supplier_settle(request, pk):
 
         if not selected_ids:
             messages.error(request, "정산할 내역을 선택해주세요.")
-            return redirect('supplier_detail', pk=pk)
+            return redirect('bookstore:supplier_detail', pk=pk)
 
         # 2. 업데이트 (정산 완료 처리 + 날짜 기록)
         updated_count = BookStockLog.objects.filter(
@@ -393,7 +392,7 @@ def supplier_settle(request, pk):
 
         messages.success(request, f"{updated_count}건의 내역이 정산 처리되었습니다. (지급일: {payment_date})")
 
-    return redirect('supplier_detail', pk=pk)
+    return redirect('bookstore:supplier_detail', pk=pk)
 
 
 def search_book_api(request):
@@ -462,7 +461,7 @@ def search_book_api(request):
                     'publisher': publisher,
                     'price': price,
                 }
-                print(f"🎉 최종 데이터 매핑 성공: {result}")
+                print(f"최종 데이터 매핑 성공: {result}")
                 return JsonResponse(result)
             else:
                 return JsonResponse({'error': '도서 정보 리스트가 비어있습니다.'}, status=404)
@@ -494,7 +493,7 @@ def book_sale_create(request, student_pk):
                 with transaction.atomic():
                     # 2. 판매 날짜 설정
                     if sale.is_paid:
-                        sale.payment_date = timezone.localtime(timezone.now()).date()
+                        sale.payment_date = timezone.now().date()       #timezone.localtime(timezone.now()).date()
                     sale.save()
 
                     # 3. 재고 차감
@@ -520,7 +519,7 @@ def book_sale_create(request, student_pk):
     else:
         # 초기값에 오늘 날짜(한국 시간) 넣어주기
         form = BookSaleForm(initial={
-            'sale_date': timezone.localtime(timezone.now()).date()
+            'sale_date': timezone.now().date()      #timezone.localtime(timezone.now()).date()
         })
 
     return render(request, 'bookstore/book_sale_form.html', {

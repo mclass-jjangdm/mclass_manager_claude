@@ -6,7 +6,7 @@
 {% block content %}
 <div style="width: 100%;">
     <div style="margin-bottom: 20px; text-align: center;">
-        <form method="GET" action="{% url 'book_list' %}" style="display: flex; gap: 10px; justify-content: center;">
+        <form method="GET" action="{% url 'bookstore:book_list' %}" style="display: flex; gap: 10px; justify-content: center;">
             <input type="text" name="q" value="{{ query }}"
                    id="search_query"
                    placeholder="도서명, 저자 또는 바코드(ISBN)"
@@ -16,14 +16,14 @@
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h2 style="color: #4527a0; margin: 0;">📚 교재 목록</h2>
+        <h2 style="color: #4527a0; margin: 0;"> 교재 목록</h2>
 
         <div style="display: flex; gap: 10px;">
-            <a href="{% url 'book_upload' %}" class="btn" style="background-color: #2e7d32;">
-                📂 교재 일괄 등록
+            <a href="{% url 'bookstore:book_upload' %}" class="btn" style="background-color: #2e7d32;">
+                교재 일괄 등록
             </a>
-            <a href="{% url 'book_create' %}" class="btn" style="background-color: #ff9800;">
-                + 신규 교재 입고
+            <a href="{% url 'bookstore:book_create' %}" class="btn" style="background-color: #ff9800;">
+                신규 교재 입고
             </a>
         </div>
     </div>
@@ -44,7 +44,7 @@
             <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding: 12px; color: #666; font-size: 0.9rem;">{{ book.isbn }}</td>
                 <td style="padding: 12px; font-weight: bold;">
-                    <a href="{% url 'book_update' book.pk %}" style="text-decoration: none; color: #333;">
+                    <a href="{% url 'bookstore:book_update' book.pk %}" style="text-decoration: none; color: #333;">
                         {{ book.title }}
                     </a>
                 </td>
@@ -59,8 +59,8 @@
                 <td style="padding: 12px; text-align: right;">{{ book.price|intcomma }}원</td>
                 <td style="padding: 12px; text-align: center;">
                     <div style="display: flex; gap: 5px; justify-content: center;">
-                        <a href="{% url 'book_restock' book.pk %}" class="btn" style="background-color: #2196f3; padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;">추가입고</a>
-                        <a href="{% url 'book_return' book.pk %}" class="btn" style="background-color: #e53935; padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;">반품</a>
+                        <a href="{% url 'bookstore:book_restock' book.pk %}" class="btn" style="background-color: #2196f3; padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;">추가입고</a>
+                        <a href="{% url 'bookstore:book_return' book.pk %}" class="btn" style="background-color: #e53935; padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;">반품</a>
                     </div>
                 </td>
             </tr>
@@ -68,7 +68,7 @@
             <tr>
                 <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
                     {% if query %}
-                        <p style="font-size: 1.1rem; color: #d32f2f; font-weight: bold;">🔍 '{{ query }}' 검색 결과가 없습니다.</p>
+                        <p style="font-size: 1.1rem; color: #d32f2f; font-weight: bold;"> '{{ query }}' 검색 결과가 없습니다.</p>
                         <p>잠시 후 신규 등록 페이지로 이동합니다...</p>
                     {% else %}
                         <p>등록된 교재가 없습니다.</p>
@@ -111,7 +111,7 @@
             setTimeout(function() {
                 if (confirm("검색된 교재가 없습니다.\n\n'신규 교재 입고' 페이지로 이동하시겠습니까?")) {
                     const isbnValue = searchInput.value;
-                    window.location.href = "{% url 'book_create' %}?isbn=" + encodeURIComponent(isbnValue);
+                    window.location.href = "{% url 'bookstore:book_create' %}?isbn=" + encodeURIComponent(isbnValue);
                 } else {
                     if (searchInput) searchInput.focus();
                 }
