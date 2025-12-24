@@ -71,6 +71,14 @@
       >
         학생 등록
       </a>
+      <button
+        onclick="sendBulkSMS()"
+        id="sms-button"
+        class="bg-purple-500 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled
+      >
+        선택한 학생에게 문자 발송
+      </button>
     </div>
   </div>
 
@@ -78,6 +86,16 @@
     <table class="min-w-full content-table divide-y divide-gray-200">
       <thead class="bg-gray-50">
         <tr>
+          <th
+            class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            <input
+              type="checkbox"
+              id="select-all"
+              class="form-checkbox h-4 w-4 text-indigo-600"
+              onclick="toggleAllCheckboxes()"
+            />
+          </th>
           <th
             class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
           >
@@ -150,6 +168,14 @@
         <tr
           class="hover:bg-gray-50 text-sm {% if not student.is_active %}inactive-student{% endif %}"
         >
+          <td class="px-4 py-2 whitespace-nowrap">
+            <input
+              type="checkbox"
+              class="student-checkbox form-checkbox h-4 w-4 text-indigo-600"
+              value="{{ student.pk }}"
+              onchange="updateSMSButton()"
+            />
+          </td>
           <td class="px-4 py-2 whitespace-nowrap text-gray-600">
             {{ student.name }}
           </td>
@@ -201,7 +227,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="13" class="px-4 py-2 text-center text-sm text-gray-500">
+          <td colspan="14" class="px-4 py-2 text-center text-sm text-gray-500">
             등록된 학생이 없습니다.
           </td>
         </tr>
@@ -228,4 +254,45 @@
 </div>
 {% endif %}
 </div>
+
+<script>
+  // 전체 선택 체크박스 토글
+  function toggleAllCheckboxes() {
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAll.checked;
+    });
+    updateSMSButton();
+  }
+
+  // SMS 버튼 활성화/비활성화
+  function updateSMSButton() {
+    const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+    const smsButton = document.getElementById('sms-button');
+    const count = checkboxes.length;
+
+    if (count > 0) {
+      smsButton.disabled = false;
+      smsButton.textContent = `선택한 학생(${count}명)에게 문자 발송`;
+    } else {
+      smsButton.disabled = true;
+      smsButton.textContent = '선택한 학생에게 문자 발송';
+    }
+  }
+
+  // SMS 발송 페이지로 이동
+  function sendBulkSMS() {
+    const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+    if (checkboxes.length === 0) {
+      alert('발송 대상 학생을 선택해주세요.');
+      return;
+    }
+
+    const studentIds = Array.from(checkboxes).map(cb => cb.value).join(',');
+    const url = "{% url 'students:bulk_sms_send' %}?student_ids=" + studentIds;
+    window.location.href = url;
+  }
+</script>
+
 {% endblock %}  

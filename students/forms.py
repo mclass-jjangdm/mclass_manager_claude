@@ -94,8 +94,59 @@ class StudentImportForm(forms.Form):
     def clean_file(self):
         file = self.cleaned_data['file']
         ext = file.name.split('.')[-1].lower()
-        
+
         if ext not in ['xlsx', 'xls', 'csv']:
             raise forms.ValidationError('엑셀 파일(.xlsx, .xls) 또는 CSV 파일(.csv)만 업로드 가능합니다.')
-        
+
         return file
+
+
+class BulkSMSForm(forms.Form):
+    TARGET_CHOICES = [
+        ('student', '학생'),
+        ('parent', '학부모'),
+        ('both', '학생 + 학부모'),
+    ]
+
+    student_ids = forms.CharField(
+        widget=forms.HiddenInput(),
+        required=True,
+    )
+
+    target = forms.ChoiceField(
+        choices=TARGET_CHOICES,
+        initial='student',
+        label='발송 대상',
+        widget=forms.RadioSelect,
+    )
+
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-input',
+            'placeholder': '전송할 메시지를 입력하세요',
+            'rows': 5,
+            'maxlength': 2000,
+        }),
+        label='메시지',
+        max_length=2000,
+    )
+
+    def clean_student_ids(self):
+        student_ids = self.cleaned_data.get('student_ids', '')
+        if not student_ids:
+            raise forms.ValidationError('발송 대상 학생을 선택해주세요.')
+
+        # 콤마로 구분된 ID를 리스트로 변환
+        try:
+            id_list = [int(id.strip()) for id in student_ids.split(',') if id.strip()]
+            if not id_list:
+                raise ValueError
+            return id_list
+        except (ValueError, AttributeError):
+            raise forms.ValidationError('잘못된 학생 ID 형식입니다.')
+
+    def clean_message(self):
+        message = self.cleaned_data.get('message', '').strip()
+        if not message:
+            raise forms.ValidationError('메시지를 입력해주세요.')
+        return message

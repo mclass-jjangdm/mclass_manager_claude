@@ -3,13 +3,15 @@ from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView
 from .models import Student, School  # Import School model
-from .forms import StudentForm, StudentImportForm
+from .forms import StudentForm, StudentImportForm, BulkSMSForm
 import pandas as pd
 from django.http import HttpResponse
 from .models import Student, StudentFile
 import datetime
+from common.utils import send_sms
 
 
 class StudentListView(LoginRequiredMixin, ListView):
@@ -210,10 +212,76 @@ def student_files(request, pk):
 def delete_student_file(request, file_id):
     file = get_object_or_404(StudentFile, id=file_id)
     student_pk = file.student.pk
-    
+
     if request.method == 'POST':
         file.file.delete()  # 실제 파일 삭제
         file.delete()       # DB 레코드 삭제
         messages.success(request, '파일이 삭제되었습니다.')
-    
+
     return redirect('students:student_files', pk=student_pk)
+
+
+@login_required
+def bulk_sms_send(request):
+    """여러 학생/학부모에게 일괄 문자 발송"""
+
+    if request.method == 'POST':
+        form = BulkSMSForm(request.POST)
+        if form.is_valid():
+            student_ids = form.cleaned_data['student_ids']
+            target = form.cleaned_data['target']
+            message = form.cleaned_data['message']
+
+            # 선택된 학생들 조회
+            students = Student.objects.filter(pk__in=student_ids)
+
+            success_count = 0
+            fail_messages = []
+
+            for student in students:
+                # 학생에게 발송
+                if target in ['student', 'both'] and student.phone_number:
+                    phone = student.phone_number.replace('-', '').strip()
+                    is_success, msg = send_sms(phone, message)
+                    if is_success:
+                        success_count += 1
+                    else:
+                        fail_messages.append(f"{student.name}(학생): {msg}")
+
+                # 학부모에게 발송
+                if target in ['parent', 'both'] and student.parent_phone:
+                    phone = student.parent_phone.replace('-', '').strip()
+                    is_success, msg = send_sms(phone, message)
+                    if is_success:
+                        success_count += 1
+                    else:
+                        fail_messages.append(f"{student.name}(학부모): {msg}")
+
+            # 결과 메시지 처리
+            if success_count > 0:
+                messages.success(request, f"{success_count}건의 문자를 발송했습니다.")
+
+            if fail_messages:
+                for f_msg in fail_messages[:10]:  # 최대 10개까지만 표시
+                    messages.error(request, f_msg)
+                if len(fail_messages) > 10:
+                    messages.error(request, f"외 {len(fail_messages) - 10}건의 발송 실패")
+
+            return redirect('students:student_list')
+    else:
+        # GET 요청: 선택된 학생 ID들을 가져옴
+        student_ids = request.GET.get('student_ids', '')
+        if not student_ids:
+            messages.error(request, '발송 대상 학생을 선택해주세요.')
+            return redirect('students:student_list')
+
+        # 선택된 학생들 조회
+        id_list = [int(id.strip()) for id in student_ids.split(',') if id.strip()]
+        students = Student.objects.filter(pk__in=id_list)
+
+        form = BulkSMSForm(initial={'student_ids': student_ids})
+
+    return render(request, 'students/bulk_sms_form.html', {
+        'form': form,
+        'students': students,
+    })
