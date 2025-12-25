@@ -13,13 +13,29 @@
     <div class="bg-white shadow-sm">
         <div class="container">
             <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Students">
-                <a href="{% url 'students:student_list' %}" 
+                <a href="{% url 'students:student_list' %}"
                    class="nav-link {% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">
                     학생 목록
                 </a>
-                <a href="{% url 'students:student_create' %}" 
+                <a href="{% url 'students:student_create' %}"
                    class="nav-link {% if request.resolver_match.url_name == 'student_create' %}active{% endif %}">
                     학생 등록
+                </a>
+                <a href="{% url 'students:bulk_sms_send' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'bulk_sms_send' %}active{% endif %}">
+                    문자 발송
+                </a>
+                <a href="{% url 'students:student_import' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'student_import' %}active{% endif %}">
+                    데이터 가져오기
+                </a>
+                <a href="{% url 'students:student_export' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'student_export' %}active{% endif %}">
+                    데이터 내보내기
+                </a>                
+                <a href="{% url 'students:grade_promotion_confirm' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'grade_promotion_confirm' %}active{% endif %}">
+                    학년 일괄 증가
                 </a>
             </nav>
         </div>

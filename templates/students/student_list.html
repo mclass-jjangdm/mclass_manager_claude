@@ -3,8 +3,9 @@
 {% block student_content %}
 
 <div class="mb-6">
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-gray-800">학생 목록</h1>
+
         <div class="flex items-center space-x-4">
             <!-- 검색 폼 -->
             <form method="get" class="flex items-center">
@@ -51,49 +52,33 @@
         </div>
     </div>
 
-    <!-- 액션 버튼 & 그룹화 옵션 -->
-    <div class="flex justify-between items-center">
-        <div class="space-x-2">
-            <a href="{% url 'students:student_import' %}"
-               class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                데이터 가져오기
-            </a>
-            <a href="{% url 'students:student_export' %}"
-               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                데이터 내보내기
-            </a>
-            <a href="{% url 'students:student_create' %}"
-               class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                학생 등록
-            </a>
-            <a href="{% url 'students:bulk_sms_send' %}"
-               class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                문자 발송
-            </a>
-        </div>
-
-        <div class="flex items-center space-x-4">
-            <!-- 그룹화 선택 -->
-            <form method="get" class="flex items-center">
-                {% if search_query %}
-                <input type="hidden" name="search" value="{{ search_query }}" />
-                {% endif %}
-                {% if show_inactive %}
-                <input type="hidden" name="show_inactive" value="on" />
-                {% endif %}
-                <label class="text-sm text-gray-600 mr-2">그룹:</label>
-                <select name="group_by" onchange="this.form.submit()" class="form-select rounded-md border-gray-300 text-sm">
-                    <option value="grade" {% if group_by == 'grade' %}selected{% endif %}>학년별</option>
-                    <option value="school" {% if group_by == 'school' %}selected{% endif %}>학교별</option>
-                </select>
-            </form>
-
-            <a href="{% url 'students:grade_promotion_confirm' %}"
-               class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded text-xs font-medium"
-               title="연 1회 학년 증가 작업">
-                학년 일괄 증가
-            </a>
-        </div>
+    <!-- 그룹화 옵션 (강조) -->
+    <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+        <form method="get" class="flex items-center">
+            {% if search_query %}
+            <input type="hidden" name="search" value="{{ search_query }}" />
+            {% endif %}
+            {% if show_inactive %}
+            <input type="hidden" name="show_inactive" value="on" />
+            {% endif %}
+            <label class="text-base font-semibold text-indigo-900 mr-4">정렬 방식:</label>
+            <div class="flex space-x-3">
+                <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="group_by" value="grade"
+                           {% if group_by == 'grade' %}checked{% endif %}
+                           onchange="this.form.submit()"
+                           class="form-radio h-5 w-5 text-indigo-600">
+                    <span class="ml-2 text-base text-indigo-900 font-medium">학년별</span>
+                </label>
+                <label class="inline-flex items-center cursor-pointer">
+                    <input type="radio" name="group_by" value="school"
+                           {% if group_by == 'school' %}checked{% endif %}
+                           onchange="this.form.submit()"
+                           class="form-radio h-5 w-5 text-indigo-600">
+                    <span class="ml-2 text-base text-indigo-900 font-medium">학교별</span>
+                </label>
+            </div>
+        </form>
     </div>
 </div>
 
