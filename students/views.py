@@ -19,24 +19,59 @@ class StudentListView(LoginRequiredMixin, ListView):
     template_name = 'students/student_list.html'
     success_url = reverse_lazy('students:student_list')
     context_object_name = 'students'
-    paginate_by = 20
 
     def get_queryset(self):
-        queryset = Student.objects.all()
+        queryset = Student.objects.select_related('school')
         search_query = self.request.GET.get('search', '')
         show_inactive = self.request.GET.get('show_inactive') == 'on'
-        
+
         if search_query:
             queryset = queryset.filter(name__icontains=search_query)
         if not show_inactive:
             queryset = queryset.filter(is_active=True)
-            
-        return queryset.order_by('-is_active', '-first_class_date')
+
+        return queryset.order_by('-is_active', 'grade', 'name')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['show_inactive'] = self.request.GET.get('show_inactive') == 'on'
         context['search_query'] = self.request.GET.get('search', '')
+
+        # 정렬 방식 가져오기 (기본값: grade)
+        group_by = self.request.GET.get('group_by', 'grade')
+        context['group_by'] = group_by
+
+        # 학생 그룹화
+        students = self.get_queryset()
+        from collections import defaultdict
+
+        if group_by == 'school':
+            # 학교별 그룹화
+            grouped = defaultdict(list)
+            for student in students:
+                school_name = student.school.name if student.school else '미지정'
+                grouped[school_name].append(student)
+            context['grouped_students'] = dict(sorted(grouped.items()))
+        else:
+            # 학년별 그룹화 (기본)
+            grade_order = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12', '졸업']
+            grouped = defaultdict(list)
+            for student in students:
+                grade = student.grade if student.grade else '미지정'
+                grouped[grade].append(student)
+
+            # 학년 순서대로 정렬
+            sorted_grouped = {}
+            for grade in grade_order:
+                if grade in grouped:
+                    sorted_grouped[grade] = grouped[grade]
+            # 미지정이나 기타 학년 추가
+            for grade, student_list in grouped.items():
+                if grade not in grade_order:
+                    sorted_grouped[grade] = student_list
+
+            context['grouped_students'] = sorted_grouped
+
         return context
 
 
