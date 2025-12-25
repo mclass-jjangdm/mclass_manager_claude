@@ -93,6 +93,7 @@ class TeacherDetailView(LoginRequiredMixin, DetailView):
         # 총 근무 시간 계산 및 각 레코드에 근무 시간 추가
         total_hours = 0
         total_minutes = 0
+        work_days = 0
         for record in attendance_records:
             if record.start_time and record.end_time and record.is_present:
                 start = timezone.datetime.combine(record.date, record.start_time)
@@ -104,6 +105,7 @@ class TeacherDetailView(LoginRequiredMixin, DetailView):
                 record.work_hours = f"{h}시간 {m}분"
                 total_hours += h
                 total_minutes += m
+                work_days += 1
             else:
                 record.work_hours = "-"
 
@@ -111,12 +113,18 @@ class TeacherDetailView(LoginRequiredMixin, DetailView):
         total_hours += total_minutes // 60
         total_minutes = total_minutes % 60
 
+        # 예상 급여 계산 (시급 * 총 근무 시간)
+        total_work_hours_decimal = total_hours + (total_minutes / 60)
+        estimated_salary = int(teacher.base_salary * total_work_hours_decimal)
+
         context['attendance_records'] = attendance_records
         context['current_year'] = year
         context['current_month'] = month
         context['total_hours'] = total_hours
         context['total_minutes'] = total_minutes
         context['total_work_hours'] = f"{total_hours}시간 {total_minutes}분"
+        context['work_days'] = work_days
+        context['estimated_salary'] = estimated_salary
 
         # 이전/다음 달 계산
         if month == 1:
@@ -132,6 +140,70 @@ class TeacherDetailView(LoginRequiredMixin, DetailView):
         else:
             context['next_year'] = year
             context['next_month'] = month + 1
+
+        # 월별 급여 내역 조회
+        monthly_salaries = Salary.objects.filter(
+            teacher=teacher
+        ).order_by('-year', '-month')
+
+        # 각 월의 근무 시간 계산
+        for salary in monthly_salaries:
+            salary_month_start = timezone.datetime(salary.year, salary.month, 1).date()
+            if salary.month == 12:
+                salary_month_end = timezone.datetime(salary.year + 1, 1, 1).date() - timedelta(days=1)
+            else:
+                salary_month_end = timezone.datetime(salary.year, salary.month + 1, 1).date() - timedelta(days=1)
+
+            month_records = Attendance.objects.filter(
+                teacher=teacher,
+                date__range=[salary_month_start, salary_month_end],
+                is_present=True,
+                start_time__isnull=False,
+                end_time__isnull=False
+            )
+
+            month_hours = 0
+            month_minutes = 0
+            for rec in month_records:
+                start = timezone.datetime.combine(rec.date, rec.start_time)
+                end = timezone.datetime.combine(rec.date, rec.end_time)
+                duration = end - start
+                hours = duration.total_seconds() / 3600
+                month_hours += int(hours)
+                month_minutes += int((hours - int(hours)) * 60)
+
+            month_hours += month_minutes // 60
+            month_minutes = month_minutes % 60
+            salary.work_hours = f"{month_hours}시간 {month_minutes}분"
+
+        # 총 급여 합계
+        total_salary_amount = sum(s.total_amount for s in monthly_salaries)
+        total_salary_days = sum(s.work_days for s in monthly_salaries)
+
+        # 총 근무 시간 계산
+        all_records = Attendance.objects.filter(
+            teacher=teacher,
+            is_present=True,
+            start_time__isnull=False,
+            end_time__isnull=False
+        )
+        all_hours = 0
+        all_minutes = 0
+        for rec in all_records:
+            start = timezone.datetime.combine(rec.date, rec.start_time)
+            end = timezone.datetime.combine(rec.date, rec.end_time)
+            duration = end - start
+            hours = duration.total_seconds() / 3600
+            all_hours += int(hours)
+            all_minutes += int((hours - int(hours)) * 60)
+
+        all_hours += all_minutes // 60
+        all_minutes = all_minutes % 60
+
+        context['monthly_salaries'] = monthly_salaries
+        context['total_salary_amount'] = total_salary_amount
+        context['total_salary_days'] = total_salary_days
+        context['total_salary_hours'] = f"{all_hours}시간 {all_minutes}분"
 
         return context
 
