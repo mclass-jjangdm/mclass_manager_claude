@@ -176,6 +176,12 @@ def book_return(request, pk):
             log = form.save(commit=False)
             log.quantity = -abs(log.quantity)  # 음수 변환
             log.book = book
+
+            # 재고 체크
+            if book.stock + log.quantity < 0:
+                messages.error(request, f"재고가 부족합니다. 현재 재고: {book.stock}권, 반품 요청: {abs(log.quantity)}권")
+                return redirect('bookstore:book_return', pk=pk)
+
             log.save()
             messages.warning(request, f"'{book.title}' {abs(log.quantity)}권이 반품 처리되었습니다. (현재 재고: {book.stock}권)")
             return redirect('bookstore:book_list')
