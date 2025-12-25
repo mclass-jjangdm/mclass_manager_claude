@@ -168,10 +168,20 @@
                         <td class="px-4 py-3 text-sm text-right text-gray-700">{{ sale.price|intcomma }}원</td>
                         <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">{{ sale.get_total_price|intcomma }}원</td>
                         <td class="px-4 py-3 text-center">
-                            <a href="{% url 'bookstore:book_sale_update' sale.pk %}"
-                               class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors">
-                                수정
-                            </a>
+                            <div class="flex gap-1 justify-center">
+                                <form method="POST" action="{% url 'bookstore:book_sale_cancel' sale.pk %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                            onclick="return confirm('납부를 취소하시겠습니까? 미납금에 다시 추가됩니다.');">
+                                        납부 취소
+                                    </button>
+                                </form>
+                                <a href="{% url 'bookstore:book_sale_update' sale.pk %}"
+                                   class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors">
+                                    수정
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

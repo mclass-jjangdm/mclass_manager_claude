@@ -34,4 +34,7 @@ urlpatterns = [
 
     # 판매 기록 수정 URL
     path('sale/<int:pk>/edit/', views.book_sale_update, name='book_sale_update'),
+
+    # 납부 취소 URL
+    path('sale/<int:pk>/cancel/', views.book_sale_cancel, name='book_sale_cancel'),
 ]

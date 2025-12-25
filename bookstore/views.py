@@ -639,3 +639,33 @@ def book_sale_update(request, pk):
         'student': student
     })
 
+
+def book_sale_cancel(request, pk):
+    """납부 취소 - 납부 완료를 미납으로 되돌림"""
+    sale = get_object_or_404(BookSale, pk=pk)
+    student = sale.student
+
+    if request.method == 'POST':
+        if not sale.is_paid:
+            messages.warning(request, '이미 미납 상태입니다.')
+            return redirect('students:student_detail', pk=student.pk)
+
+        try:
+            with transaction.atomic():
+                # 납부 완료 → 미납으로 변경
+                sale.is_paid = False
+                sale.payment_date = None
+                sale.save()
+
+                # 학생 미납금 증가
+                total_price = sale.get_total_price()
+                student.unpaid_amount += total_price
+                student.save()
+
+                messages.success(request, f"'{sale.book.title}' 납부가 취소되었습니다. 미납금에 추가되었습니다.")
+
+        except Exception as e:
+            messages.error(request, f'처리 중 오류 발생: {e}')
+
+    return redirect('students:student_detail', pk=student.pk)
+
