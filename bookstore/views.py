@@ -571,3 +571,69 @@ def book_sale_settle(request, pk):
 
     return redirect('students:student_detail', pk=sale.student.pk)
 
+
+def book_sale_update(request, pk):
+    """판매 기록 수정"""
+    sale = get_object_or_404(BookSale, pk=pk)
+    student = sale.student
+    original_quantity = sale.quantity
+    original_book = sale.book
+    original_is_paid = sale.is_paid
+    original_total = sale.get_total_price()
+
+    if request.method == 'POST':
+        form = BookSaleForm(request.POST, instance=sale)
+        if form.is_valid():
+            updated_sale = form.save(commit=False)
+
+            try:
+                with transaction.atomic():
+                    # 1. 교재가 변경되었거나 수량이 변경된 경우 재고 조정
+                    if original_book != updated_sale.book or original_quantity != updated_sale.quantity:
+                        # 원래 교재 재고 복원
+                        original_book.stock += original_quantity
+                        original_book.save()
+
+                        # 새 교재 재고 차감
+                        new_book = updated_sale.book
+                        if new_book.stock < updated_sale.quantity:
+                            messages.error(request, f"재고가 부족합니다. (현재 재고: {new_book.stock}권)")
+                            return redirect('bookstore:book_sale_update', pk=pk)
+
+                        new_book.stock -= updated_sale.quantity
+                        new_book.save()
+
+                    # 2. 납부 상태 변경 처리
+                    new_is_paid = updated_sale.is_paid
+                    new_total = updated_sale.get_total_price()
+
+                    # 미납 → 납부 완료
+                    if not original_is_paid and new_is_paid:
+                        updated_sale.payment_date = timezone.now().date()
+                        student.unpaid_amount -= new_total
+                    # 납부 완료 → 미납
+                    elif original_is_paid and not new_is_paid:
+                        updated_sale.payment_date = None
+                        student.unpaid_amount += new_total
+                    # 미납 상태 유지, 금액만 변경
+                    elif not original_is_paid and not new_is_paid:
+                        student.unpaid_amount = student.unpaid_amount - original_total + new_total
+                    # 납부 완료 상태 유지 (금액 변경은 미납금에 영향 없음)
+
+                    student.save()
+                    updated_sale.save()
+
+                    messages.success(request, '판매 기록이 수정되었습니다.')
+                    return redirect('students:student_detail', pk=student.pk)
+
+            except Exception as e:
+                messages.error(request, f'처리 중 오류 발생: {e}')
+    else:
+        form = BookSaleForm(instance=sale)
+
+    return render(request, 'bookstore/book_sale_update.html', {
+        'form': form,
+        'sale': sale,
+        'student': student
+    })
+

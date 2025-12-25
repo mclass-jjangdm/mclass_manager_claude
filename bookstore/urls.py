@@ -31,4 +31,7 @@ urlpatterns = [
 
     # [추가] 개별 납부 처리 URL
     path('sale/<int:pk>/settle/', views.book_sale_settle, name='book_sale_settle'),
+
+    # 판매 기록 수정 URL
+    path('sale/<int:pk>/edit/', views.book_sale_update, name='book_sale_update'),
 ]
