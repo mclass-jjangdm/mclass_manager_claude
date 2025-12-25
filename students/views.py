@@ -61,8 +61,24 @@ class StudentCreateView(LoginRequiredMixin, CreateView):
 
 
 def student_detail(request, pk):
+    from bookstore.models import BookSale
+
     student = get_object_or_404(Student, pk=pk)
-    context = {'student': student}
+
+    # 교재 구매 내역 조회
+    unpaid_sales = BookSale.objects.filter(student=student, is_paid=False).select_related('book').order_by('-sale_date')
+    paid_sales = BookSale.objects.filter(student=student, is_paid=True).select_related('book').order_by('-payment_date')
+
+    # 총 납부 금액 계산
+    total_paid = sum(sale.get_total_price() for sale in paid_sales)
+
+    context = {
+        'student': student,
+        'unpaid_sales': unpaid_sales,
+        'paid_sales': paid_sales,
+        'total_unpaid': student.unpaid_amount,
+        'total_paid': total_paid,
+    }
     return render(request, 'students/student_detail.html', context)
 
 
