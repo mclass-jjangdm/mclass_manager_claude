@@ -1,0 +1,119 @@
+{% extends 'students/base_students.html' %}
+
+{% block student_content %}
+<div class="bg-white shadow rounded-lg p-6">
+  <h1 class="text-2xl font-semibold text-gray-900 mb-6">문자 일괄 발송</h1>
+
+  <!-- 선택된 학생 목록 -->
+  <div class="mb-6">
+    <h2 class="text-lg font-semibold text-gray-700 mb-3">발송 대상 학생 ({{ students.count }}명)</h2>
+    <div class="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {% for student in students %}
+        <div class="bg-white rounded px-3 py-2 text-sm shadow-sm">
+          <div class="font-semibold text-gray-800">{{ student.name }}</div>
+          <div class="text-gray-500 text-xs">
+            {% if student.phone_number %}학생: {{ student.phone_number }}{% endif %}
+            {% if student.parent_phone %}
+              {% if student.phone_number %}<br>{% endif %}
+              학부모: {{ student.parent_phone }}
+            {% endif %}
+            {% if not student.phone_number and not student.parent_phone %}
+              <span class="text-red-500">전화번호 없음</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 문자 발송 폼 -->
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- student_ids hidden field -->
+    {{ form.student_ids }}
+
+    <!-- 발송 대상 선택 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        {{ form.target.label }}
+      </label>
+      <div class="space-y-2">
+        {% for radio in form.target %}
+        <label class="inline-flex items-center mr-6">
+          {{ radio.tag }}
+          <span class="ml-2 text-sm text-gray-700">{{ radio.choice_label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% if form.target.errors %}
+      <p class="mt-1 text-sm text-red-600">{{ form.target.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <!-- 메시지 입력 -->
+    <div>
+      <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+        {{ form.message.label }}
+        <span class="text-gray-500 text-xs">(최대 2000자)</span>
+      </label>
+      {{ form.message }}
+      <div class="mt-1 flex justify-between text-xs text-gray-500">
+        <span id="char-count">0 / 2000</span>
+        <span id="byte-count">0 bytes (SMS: ~80 bytes, LMS: ~2000 bytes)</span>
+      </div>
+      {% if form.message.errors %}
+      <p class="mt-1 text-sm text-red-600">{{ form.message.errors.0 }}</p>
+      {% endif %}
+    </div>
+
+    <!-- 버튼 -->
+    <div class="flex justify-end space-x-3">
+      <a
+        href="{% url 'students:student_list' %}"
+        class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-md text-sm font-medium"
+      >
+        취소
+      </a>
+      <button
+        type="submit"
+        class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-md text-sm font-medium"
+      >
+        문자 발송
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // 메시지 글자 수 카운터
+  const messageField = document.getElementById('{{ form.message.id_for_label }}');
+  const charCount = document.getElementById('char-count');
+  const byteCount = document.getElementById('byte-count');
+
+  function updateCount() {
+    const text = messageField.value;
+    const chars = text.length;
+
+    // 바이트 계산 (한글 3바이트, 영문 1바이트로 대략 계산)
+    let bytes = 0;
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i);
+      if (char > 127) {
+        bytes += 3; // 한글, 특수문자
+      } else {
+        bytes += 1; // 영문, 숫자
+      }
+    }
+
+    charCount.textContent = `${chars} / 2000`;
+    byteCount.textContent = `${bytes} bytes (SMS: ~80 bytes, LMS: ~2000 bytes)`;
+  }
+
+  messageField.addEventListener('input', updateCount);
+  updateCount();
+</script>
+
+{% endblock %}

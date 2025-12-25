@@ -201,3 +201,10 @@ LOGGING = {
 }
 
 
+# Aligo SMS API 설정
+# 환경변수 또는 mclass_settings 모듈에서 가져옴
+SMS_API_KEY = os.environ.get('SMS_API_KEY', getattr(mclass_settings, 'SMS_API_KEY', None) if mclass_settings else None)
+SMS_USER_ID = os.environ.get('SMS_USER_ID', getattr(mclass_settings, 'SMS_USER_ID', None) if mclass_settings else None)
+SMS_SENDER_NUMBER = os.environ.get('SMS_SENDER_NUMBER', getattr(mclass_settings, 'SMS_SENDER_NUMBER', None) if mclass_settings else None)
+
+
