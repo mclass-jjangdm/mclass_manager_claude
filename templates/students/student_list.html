@@ -36,12 +36,7 @@
           <input
             type="checkbox"
             name="show_inactive"
-            {%
-            if
-            show_inactive
-            %}checked{%
-            endif
-            %}
+            {% if show_inactive %}checked{% endif %}
             class="form-checkbox h-4 w-4 text-indigo-600"
             onchange="this.form.submit()"
           />
