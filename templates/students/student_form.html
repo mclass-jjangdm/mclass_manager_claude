@@ -1,43 +1,300 @@
 {% extends 'students/base_students.html' %}
 
-{% block title %}{% if form.instance.pk %}학생 정보 수정{% else %}학생 등록{% endif %} - MClass Manager{% endblock %}
+{% block title %}{% if form.instance.pk %}학생 정보 수정{% else %}학생 등록{% endif %}{% endblock %}
 
 {% block student_content %}
-<div class="content-card max-w-3xl mx-auto">
-    <div class="card-header">
-        <h1 class="text-xl font-semibold text-gray-900">
-            {% if form.instance.pk %}학생 정보 수정{% else %}학생 등록{% endif %}
-        </h1>
-    </div>
-    
-    <div class="card-body">
-        <form method="post" class="space-y-6">
-            {% csrf_token %}
-            <div class="form-errors"> 
-                {% if form.errors %}
-                    <div class="alert alert-danger">
-                        <ul>
-                            {% for field, errors in form.errors.items %}
-                                {% for error in errors %}
-                                    <li>{{ field }}: {{ error }}</li>
-                                {% endfor %}
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-            </div>
-            {{ form.as_p }}
-            <div class="flex justify-end space-x-4 pt-4">
-                <a href="{% url 'students:student_list' %}" 
-                   class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    취소
-                </a>
-                <button type="submit" class="form-button">
-                    저장
-                </button>
-                
-            </div>
-        </form>
+<!-- 헤더 -->
+<div class="mb-6">
+    <h2 class="text-3xl font-bold text-gray-800">
+        {% if form.instance.pk %}학생 정보 수정{% else %}학생 등록{% endif %}
+    </h2>
+    <p class="mt-2 text-sm text-gray-600">
+        {% if form.instance.pk %}
+        학생 정보를 수정합니다. 필수 항목은 <span class="text-red-600">*</span>로 표시됩니다.
+        {% else %}
+        새로운 학생을 등록합니다. 필수 항목은 <span class="text-red-600">*</span>로 표시됩니다.
+        {% endif %}
+    </p>
+</div>
+
+<!-- 에러 메시지 -->
+{% if form.errors %}
+<div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">입력 오류가 있습니다</h3>
+            <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 </div>
+{% endif %}
+
+<!-- 폼 -->
+<form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- 기본 정보 섹션 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+            기본 정보
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 이름 -->
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    이름 <span class="text-red-600">*</span>
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 성별 -->
+            <div>
+                <label for="{{ form.gender.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    성별
+                </label>
+                <select id="{{ form.gender.id_for_label }}" name="{{ form.gender.name }}" class="form-input">
+                    <option value="">선택하세요</option>
+                    <option value="M" {% if form.gender.value == 'M' %}selected{% endif %}>남성</option>
+                    <option value="F" {% if form.gender.value == 'F' %}selected{% endif %}>여성</option>
+                </select>
+                {% if form.gender.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.gender.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 학교 -->
+            <div>
+                <label for="{{ form.school.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    학교
+                </label>
+                <select id="{{ form.school.id_for_label }}" name="{{ form.school.name }}" class="form-input">
+                    <option value="">선택하세요</option>
+                    {% for school in form.school.field.queryset %}
+                    <option value="{{ school.pk }}" {% if form.school.value == school.pk %}selected{% endif %}>
+                        {{ school.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if form.school.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.school.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 학년 -->
+            <div>
+                <label for="{{ form.grade.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    학년
+                </label>
+                <select id="{{ form.grade.id_for_label }}" name="{{ form.grade.name }}" class="form-input">
+                    <option value="">선택하세요</option>
+                    {% for value, label in form.grade.field.choices %}
+                        {% if value %}
+                        <option value="{{ value }}" {% if form.grade.value == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% if form.grade.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.grade.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 연락처 정보 섹션 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+            연락처 정보
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 학생 전화번호 -->
+            <div>
+                <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    학생 전화번호
+                </label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.phone_number.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 이메일 -->
+            <div>
+                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    이메일
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 부모님 전화번호 -->
+            <div>
+                <label for="{{ form.parent_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    부모님 전화번호
+                </label>
+                {{ form.parent_phone }}
+                {% if form.parent_phone.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.parent_phone.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 현금영수증용 번호 -->
+            <div>
+                <label for="{{ form.receipt_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    현금영수증용 번호
+                </label>
+                {{ form.receipt_number }}
+                {% if form.receipt_number.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.receipt_number.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">부모님 전화번호가 자동으로 설정됩니다</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 인터뷰 정보 섹션 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+            인터뷰 정보
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 인터뷰 날짜 -->
+            <div>
+                <label for="{{ form.interview_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    인터뷰 날짜
+                </label>
+                {{ form.interview_date }}
+                {% if form.interview_date.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.interview_date.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 인터뷰 평가 -->
+            <div>
+                <label for="{{ form.interview_score.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    인터뷰 평가 (1-10)
+                </label>
+                {{ form.interview_score }}
+                {% if form.interview_score.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.interview_score.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 인터뷰 정보 -->
+            <div class="md:col-span-2">
+                <label for="{{ form.interview_info.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    인터뷰 정보
+                </label>
+                {{ form.interview_info }}
+                {% if form.interview_info.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.interview_info.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 수업 정보 섹션 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+            수업 정보
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 첫수업 날짜 -->
+            <div>
+                <label for="{{ form.first_class_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    첫수업 날짜
+                </label>
+                {{ form.first_class_date }}
+                {% if form.first_class_date.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.first_class_date.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 그만 둔 날짜 -->
+            <div>
+                <label for="{{ form.quit_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    그만 둔 날짜
+                </label>
+                {{ form.quit_date }}
+                {% if form.quit_date.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.quit_date.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">입력 시 자동으로 퇴원 처리됩니다</p>
+            </div>
+
+            <!-- 미납금 -->
+            <div>
+                <label for="{{ form.unpaid_amount.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    미납금
+                </label>
+                {{ form.unpaid_amount }}
+                {% if form.unpaid_amount.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.unpaid_amount.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">원 단위로 입력하세요</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 기타 정보 섹션 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+            기타 정보
+        </h3>
+        <div class="grid grid-cols-1 gap-6">
+            <!-- 기타 -->
+            <div>
+                <label for="{{ form.etc.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    기타
+                </label>
+                {{ form.etc }}
+                {% if form.etc.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.etc.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 개인 파일 -->
+            <div>
+                <label for="{{ form.personal_file.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    개인 파일
+                </label>
+                {{ form.personal_file }}
+                {% if form.personal_file.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.personal_file.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500">학생 관련 파일을 업로드할 수 있습니다</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="flex gap-3 justify-center pt-4">
+        <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+            {% if form.instance.pk %}수정 완료{% else %}등록{% endif %}
+        </button>
+        <a href="{% url 'students:student_list' %}"
+           class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+            취소
+        </a>
+    </div>
+</form>
+
 {% endblock %}
