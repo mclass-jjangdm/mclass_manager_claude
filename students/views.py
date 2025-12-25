@@ -276,67 +276,82 @@ def delete_student_file(request, file_id):
 
 @login_required
 def bulk_sms_send(request):
-    """여러 학생/학부모에게 일괄 문자 발송"""
+    """여러 학생/학부모에게 일괄 문자 발송 - 독립 페이지"""
 
     if request.method == 'POST':
-        form = BulkSMSForm(request.POST)
-        if form.is_valid():
-            student_ids = form.cleaned_data['student_ids']
-            target = form.cleaned_data['target']
-            message = form.cleaned_data['message']
+        student_ids = request.POST.getlist('student_ids')
+        target = request.POST.get('target')
+        message = request.POST.get('message')
 
-            # 선택된 학생들 조회
-            students = Student.objects.filter(pk__in=student_ids)
-
-            success_count = 0
-            fail_messages = []
-
-            for student in students:
-                # 학생에게 발송
-                if target in ['student', 'both'] and student.phone_number:
-                    phone = student.phone_number.replace('-', '').strip()
-                    is_success, msg = send_sms(phone, message)
-                    if is_success:
-                        success_count += 1
-                    else:
-                        fail_messages.append(f"{student.name}(학생): {msg}")
-
-                # 학부모에게 발송
-                if target in ['parent', 'both'] and student.parent_phone:
-                    phone = student.parent_phone.replace('-', '').strip()
-                    is_success, msg = send_sms(phone, message)
-                    if is_success:
-                        success_count += 1
-                    else:
-                        fail_messages.append(f"{student.name}(학부모): {msg}")
-
-            # 결과 메시지 처리
-            if success_count > 0:
-                messages.success(request, f"{success_count}건의 문자를 발송했습니다.")
-
-            if fail_messages:
-                for f_msg in fail_messages[:10]:  # 최대 10개까지만 표시
-                    messages.error(request, f_msg)
-                if len(fail_messages) > 10:
-                    messages.error(request, f"외 {len(fail_messages) - 10}건의 발송 실패")
-
-            return redirect('students:student_list')
-    else:
-        # GET 요청: 선택된 학생 ID들을 가져옴
-        student_ids = request.GET.get('student_ids', '')
         if not student_ids:
             messages.error(request, '발송 대상 학생을 선택해주세요.')
-            return redirect('students:student_list')
+            return redirect('students:bulk_sms_send')
+
+        if not message:
+            messages.error(request, '메시지를 입력해주세요.')
+            return redirect('students:bulk_sms_send')
 
         # 선택된 학생들 조회
-        id_list = [int(id.strip()) for id in student_ids.split(',') if id.strip()]
-        students = Student.objects.filter(pk__in=id_list)
+        students = Student.objects.filter(pk__in=student_ids, is_active=True)
 
-        form = BulkSMSForm(initial={'student_ids': student_ids})
+        success_count = 0
+        fail_messages = []
 
-    return render(request, 'students/bulk_sms_form.html', {
-        'form': form,
-        'students': students,
+        for student in students:
+            # 학생에게 발송
+            if target in ['student', 'both'] and student.phone_number:
+                phone = student.phone_number.replace('-', '').strip()
+                is_success, msg = send_sms(phone, message)
+                if is_success:
+                    success_count += 1
+                else:
+                    fail_messages.append(f"{student.name}(학생): {msg}")
+
+            # 학부모에게 발송
+            if target in ['parent', 'both'] and student.parent_phone:
+                phone = student.parent_phone.replace('-', '').strip()
+                is_success, msg = send_sms(phone, message)
+                if is_success:
+                    success_count += 1
+                else:
+                    fail_messages.append(f"{student.name}(학부모): {msg}")
+
+        # 결과 메시지 처리
+        if success_count > 0:
+            messages.success(request, f"{success_count}건의 문자를 발송했습니다.")
+
+        if fail_messages:
+            for f_msg in fail_messages[:10]:  # 최대 10개까지만 표시
+                messages.error(request, f_msg)
+            if len(fail_messages) > 10:
+                messages.error(request, f"외 {len(fail_messages) - 10}건의 발송 실패")
+
+        return redirect('students:bulk_sms_send')
+
+    # GET 요청: 모든 재원 중인 학생 목록 표시
+    students = Student.objects.filter(is_active=True).select_related('school').order_by('grade', 'name')
+
+    # 학년별 그룹화
+    from collections import defaultdict
+    grade_order = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12']
+    grouped = defaultdict(list)
+
+    for student in students:
+        grade = student.grade if student.grade else '미지정'
+        grouped[grade].append(student)
+
+    # 학년 순서대로 정렬
+    sorted_grouped = {}
+    for grade in grade_order:
+        if grade in grouped:
+            sorted_grouped[grade] = grouped[grade]
+    # 미지정 추가
+    for grade, student_list in grouped.items():
+        if grade not in grade_order:
+            sorted_grouped[grade] = student_list
+
+    return render(request, 'students/bulk_sms_page.html', {
+        'grouped_students': sorted_grouped,
     })
 
 
