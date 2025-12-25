@@ -160,9 +160,14 @@ def book_detail(request, pk):
     # 해당 도서의 모든 입고 기록을 최신순으로 조회
     stock_logs = book.stock_logs.all().order_by('-created_at')
 
+    # 해당 교재의 판매(지급) 이력 조회
+    from bookstore.models import BookSale
+    sales = BookSale.objects.filter(book=book).select_related('student').order_by('-sale_date')
+
     return render(request, 'bookstore/book_detail.html', {
         'book': book,
-        'stock_logs': stock_logs
+        'stock_logs': stock_logs,
+        'sales': sales
     })
 
 
