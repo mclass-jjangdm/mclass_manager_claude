@@ -17,6 +17,17 @@
            class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             정보 수정
         </a>
+        {% if teacher.is_active %}
+        <a href="{% url 'teachers:teacher_resign' teacher.id %}"
+           class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            퇴사 처리
+        </a>
+        {% else %}
+        <a href="{% url 'teachers:teacher_rehire' teacher.id %}"
+           class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            재입사 처리
+        </a>
+        {% endif %}
     </div>
 </div>
 

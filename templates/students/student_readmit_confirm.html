@@ -1,0 +1,81 @@
+{% extends 'students/base_students.html' %}
+
+{% block title %}학생 재입원 처리{% endblock %}
+
+{% block student_content %}
+<div class="max-w-2xl mx-auto">
+    <!-- 헤더 -->
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-800">학생 재입원 처리</h2>
+        <p class="mt-2 text-sm text-gray-600">
+            정말로 {{ student.name }} 학생을 재입원 처리하시겠습니까?
+        </p>
+    </div>
+
+    <!-- 학생 정보 카드 -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="space-y-3">
+            <div class="flex">
+                <span class="w-32 text-gray-600 font-medium">이름:</span>
+                <span class="text-gray-900 font-semibold">{{ student.name }}</span>
+            </div>
+            <div class="flex">
+                <span class="w-32 text-gray-600 font-medium">학교:</span>
+                <span>{{ student.school.name|default:"-" }}</span>
+            </div>
+            <div class="flex">
+                <span class="w-32 text-gray-600 font-medium">학년:</span>
+                <span>{{ student.grade|default:"-" }}</span>
+            </div>
+            <div class="flex">
+                <span class="w-32 text-gray-600 font-medium">첫수업 날짜:</span>
+                <span>{{ student.first_class_date|date:"Y-m-d"|default:"-" }}</span>
+            </div>
+            <div class="flex">
+                <span class="w-32 text-gray-600 font-medium">퇴원일:</span>
+                <span>{{ student.quit_date|date:"Y-m-d"|default:"-" }}</span>
+            </div>
+            <div class="flex">
+                <span class="w-32 text-gray-600 font-medium">현재 상태:</span>
+                <span class="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                    퇴원
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 정보 메시지 -->
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    재입원 처리 시 다음 사항이 적용됩니다:
+                </p>
+                <ul class="mt-2 text-sm text-blue-700 list-disc list-inside">
+                    <li>퇴원일이 삭제됩니다</li>
+                    <li>학생 상태가 '재원중'으로 변경됩니다</li>
+                    <li>수업 및 교재 관리를 다시 시작할 수 있습니다</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 버튼 -->
+    <form method="post" class="flex gap-3 justify-center">
+        {% csrf_token %}
+        <button type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+            재입원 처리
+        </button>
+        <a href="{% url 'students:student_detail' student.pk %}"
+           class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+            취소
+        </a>
+    </form>
+</div>
+{% endblock %}

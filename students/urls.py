@@ -18,4 +18,6 @@ urlpatterns = [
     path('<int:pk>/send-sms/', views.student_send_sms, name='student_send_sms'),
     path('<int:pk>/send-sms-parent/', views.student_send_sms_parent, name='student_send_sms_parent'),
     path('file/<int:file_id>/delete/', views.delete_student_file, name='delete_student_file'),
+    path('<int:pk>/quit/', views.student_quit, name='student_quit'),
+    path('<int:pk>/readmit/', views.student_readmit, name='student_readmit'),
 ]

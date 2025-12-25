@@ -15,4 +15,6 @@ urlpatterns = [
     path('teacher/<int:teacher_id>/pdf/', views.TeacherPDFReportView.as_view(), name='teacher_pdf_report'),
     path('salary/pdf/<int:year>/<int:month>/', views.SalaryPDFReportView.as_view(), name='salary_pdf_report'),
     path('<int:pk>/send-email/', views.teacher_send_email, name='teacher_send_email'),
+    path('<int:pk>/resign/', views.teacher_resign, name='teacher_resign'),
+    path('<int:pk>/rehire/', views.teacher_rehire, name='teacher_rehire'),
 ]

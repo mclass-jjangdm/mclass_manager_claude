@@ -18,6 +18,17 @@
            class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             정보 수정
         </a>
+        {% if student.is_active %}
+        <a href="{% url 'students:student_quit' student.pk %}"
+           class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            퇴원 처리
+        </a>
+        {% else %}
+        <a href="{% url 'students:student_readmit' student.pk %}"
+           class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            재입원 처리
+        </a>
+        {% endif %}
     </div>
 </div>
 

@@ -940,3 +940,33 @@ def teacher_send_email(request, pk):
         'teacher': teacher,
     }
     return render(request, 'teachers/teacher_email_form.html', context)
+
+
+@login_required
+def teacher_resign(request, pk):
+    """교사 퇴사 처리"""
+    teacher = get_object_or_404(Teacher, pk=pk)
+    
+    if request.method == 'POST':
+        teacher.resignation_date = timezone.now().date()
+        teacher.is_active = False
+        teacher.save()
+        messages.success(request, f'{teacher.name} 교사가 퇴사 처리되었습니다.')
+        return redirect('teachers:teacher_detail', pk=pk)
+    
+    return render(request, 'teachers/teacher_resign_confirm.html', {'teacher': teacher})
+
+
+@login_required
+def teacher_rehire(request, pk):
+    """교사 재입사 처리"""
+    teacher = get_object_or_404(Teacher, pk=pk)
+    
+    if request.method == 'POST':
+        teacher.resignation_date = None
+        teacher.is_active = True
+        teacher.save()
+        messages.success(request, f'{teacher.name} 교사가 재입사 처리되었습니다.')
+        return redirect('teachers:teacher_detail', pk=pk)
+    
+    return render(request, 'teachers/teacher_rehire_confirm.html', {'teacher': teacher})

@@ -568,3 +568,35 @@ def grade_promotion_execute(request):
         f'학년 증가가 완료되었습니다. (진급: {updated_count}명, 졸업: {graduated_count}명)'
     )
     return redirect('students:student_list')
+
+
+@login_required
+def student_quit(request, pk):
+    """학생 퇴원 처리"""
+    from django.utils import timezone
+
+    student = get_object_or_404(Student, pk=pk)
+
+    if request.method == 'POST':
+        student.quit_date = timezone.now().date()
+        student.is_active = False
+        student.save()
+        messages.success(request, f'{student.name} 학생이 퇴원 처리되었습니다.')
+        return redirect('students:student_detail', pk=pk)
+
+    return render(request, 'students/student_quit_confirm.html', {'student': student})
+
+
+@login_required
+def student_readmit(request, pk):
+    """학생 재입원 처리"""
+    student = get_object_or_404(Student, pk=pk)
+
+    if request.method == 'POST':
+        student.quit_date = None
+        student.is_active = True
+        student.save()
+        messages.success(request, f'{student.name} 학생이 재입원 처리되었습니다.')
+        return redirect('students:student_detail', pk=pk)
+
+    return render(request, 'students/student_readmit_confirm.html', {'student': student})
