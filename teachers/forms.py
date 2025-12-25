@@ -3,6 +3,24 @@ from django import forms
 from .models import Teacher
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+
 class TeacherEmailForm(forms.Form):
     subject = forms.CharField(
         max_length=200,
@@ -19,6 +37,11 @@ class TeacherEmailForm(forms.Form):
             'rows': 10,
             'placeholder': '이메일 내용을 입력하세요'
         })
+    )
+    attachments = MultipleFileField(
+        label='첨부파일',
+        required=False,
+        help_text='여러 파일을 선택할 수 있습니다.'
     )
 
 class TeacherForm(forms.ModelForm):

@@ -743,7 +743,7 @@ class SalaryPDFReportView(LoginRequiredMixin, View):
 
 def teacher_send_email(request, pk):
     """교사에게 이메일 발송"""
-    from django.core.mail import send_mail
+    from django.core.mail import EmailMessage
     from django.conf import settings
     from .forms import TeacherEmailForm
 
@@ -754,7 +754,7 @@ def teacher_send_email(request, pk):
         return redirect('teachers:teacher_detail', pk=pk)
 
     if request.method == 'POST':
-        form = TeacherEmailForm(request.POST)
+        form = TeacherEmailForm(request.POST, request.FILES)
         if form.is_valid():
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
@@ -763,16 +763,36 @@ def teacher_send_email(request, pk):
             from_email = settings.DEFAULT_FROM_EMAIL if request.user.username == 'admin' else settings.EMAIL_HOST_USER
 
             try:
-                send_mail(
+                # EmailMessage 객체 생성
+                email = EmailMessage(
                     subject=subject,
-                    message=message,
+                    body=message,
                     from_email=from_email,
-                    recipient_list=[teacher.email],
-                    fail_silently=False,
+                    to=[teacher.email],
                 )
+
+                # 첨부파일 처리
+                files = request.FILES.getlist('attachments')
+                for file in files:
+                    email.attach(file.name, file.read(), file.content_type)
+
+                # 이메일 전송
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f'Sending email to {teacher.email} from {from_email}')
+
+                result = email.send(fail_silently=False)
+
+                logger.info(f'Email send result: {result}')
+
                 messages.success(request, f'{teacher.name} 교사에게 이메일을 성공적으로 발송했습니다.')
                 return redirect('teachers:teacher_detail', pk=pk)
             except Exception as e:
+                import logging
+                import traceback
+                logger = logging.getLogger(__name__)
+                logger.error(f'Email sending failed: {str(e)}')
+                logger.error(traceback.format_exc())
                 messages.error(request, f'이메일 발송 중 오류가 발생했습니다: {str(e)}')
     else:
         form = TeacherEmailForm()
