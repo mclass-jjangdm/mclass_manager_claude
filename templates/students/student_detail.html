@@ -118,7 +118,7 @@
                         <td class="px-4 py-3 text-center">
                             <form method="POST" action="{% url 'bookstore:book_sale_settle' sale.pk %}" style="display: inline;">
                                 {% csrf_token %}
-                                <input type="hidden" name="payment_date" value="{{ today }}">
+                                <input type="hidden" name="payment_date" value="{{ today|date:'Y-m-d' }}">
                                 <button type="submit"
                                         class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-xs transition-colors">
                                     납부
