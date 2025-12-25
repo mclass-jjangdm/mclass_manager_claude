@@ -669,3 +669,36 @@ def book_sale_cancel(request, pk):
 
     return redirect('students:student_detail', pk=student.pk)
 
+
+def book_sale_delete(request, pk):
+    """판매 취소 - 판매 기록을 완전히 삭제하고 재고 복원"""
+    sale = get_object_or_404(BookSale, pk=pk)
+    student = sale.student
+    book = sale.book
+    quantity = sale.quantity
+    total_price = sale.get_total_price()
+    is_paid = sale.is_paid
+    book_title = sale.book.title
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # 1. 재고 복원
+                book.stock += quantity
+                book.save()
+
+                # 2. 미납 상태였다면 미납금 차감
+                if not is_paid:
+                    student.unpaid_amount -= total_price
+                    student.save()
+
+                # 3. 판매 기록 삭제
+                sale.delete()
+
+                messages.success(request, f"'{book_title}' 판매가 취소되었습니다. 재고가 복원되었습니다.")
+
+        except Exception as e:
+            messages.error(request, f'처리 중 오류 발생: {e}')
+
+    return redirect('students:student_detail', pk=student.pk)
+

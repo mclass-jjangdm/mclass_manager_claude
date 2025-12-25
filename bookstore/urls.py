@@ -37,4 +37,7 @@ urlpatterns = [
 
     # 납부 취소 URL
     path('sale/<int:pk>/cancel/', views.book_sale_cancel, name='book_sale_cancel'),
+
+    # 판매 취소 (삭제) URL
+    path('sale/<int:pk>/delete/', views.book_sale_delete, name='book_sale_delete'),
 ]
