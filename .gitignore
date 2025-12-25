@@ -41,5 +41,8 @@ Thumbs.db
 *.swo
 *~
 
+# Security - Never commit sensitive credentials
+mclass_settings.py
+.env.local
 
 db_backup/
