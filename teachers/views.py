@@ -739,3 +739,46 @@ class SalaryPDFReportView(LoginRequiredMixin, View):
         response.write(pdf)
 
         return response
+
+
+def teacher_send_email(request, pk):
+    """교사에게 이메일 발송"""
+    from django.core.mail import send_mail
+    from django.conf import settings
+    from .forms import TeacherEmailForm
+
+    teacher = get_object_or_404(Teacher, pk=pk)
+
+    if not teacher.email:
+        messages.error(request, '해당 교사의 이메일 주소가 등록되어 있지 않습니다.')
+        return redirect('teachers:teacher_detail', pk=pk)
+
+    if request.method == 'POST':
+        form = TeacherEmailForm(request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+
+            # 발신자 이메일 설정 (admin 사용자인 경우 jjangdm@mclass.co.kr 사용)
+            from_email = settings.DEFAULT_FROM_EMAIL if request.user.username == 'admin' else settings.EMAIL_HOST_USER
+
+            try:
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=from_email,
+                    recipient_list=[teacher.email],
+                    fail_silently=False,
+                )
+                messages.success(request, f'{teacher.name} 교사에게 이메일을 성공적으로 발송했습니다.')
+                return redirect('teachers:teacher_detail', pk=pk)
+            except Exception as e:
+                messages.error(request, f'이메일 발송 중 오류가 발생했습니다: {str(e)}')
+    else:
+        form = TeacherEmailForm()
+
+    context = {
+        'form': form,
+        'teacher': teacher,
+    }
+    return render(request, 'teachers/teacher_email_form.html', context)

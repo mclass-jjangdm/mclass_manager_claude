@@ -207,4 +207,15 @@ SMS_API_KEY = os.environ.get('SMS_API_KEY', getattr(mclass_settings, 'SMS_API_KE
 SMS_USER_ID = os.environ.get('SMS_USER_ID', getattr(mclass_settings, 'SMS_USER_ID', None) if mclass_settings else None)
 SMS_SENDER_NUMBER = os.environ.get('SMS_SENDER_NUMBER', getattr(mclass_settings, 'SMS_SENDER_NUMBER', None) if mclass_settings else None)
 
+# Email 설정
+# 개발 환경에서는 console backend 사용 (실제 이메일 발송 안 함)
+# 프로덕션에서는 SMTP 설정 필요
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')  # 예: 'smtp.gmail.com'
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'jjangdm@mclass.co.kr')
+
 

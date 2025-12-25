@@ -2,6 +2,25 @@ from django.utils import timezone
 from django import forms
 from .models import Teacher
 
+
+class TeacherEmailForm(forms.Form):
+    subject = forms.CharField(
+        max_length=200,
+        label='제목',
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': '이메일 제목을 입력하세요'
+        })
+    )
+    message = forms.CharField(
+        label='내용',
+        widget=forms.Textarea(attrs={
+            'class': 'form-input',
+            'rows': 10,
+            'placeholder': '이메일 내용을 입력하세요'
+        })
+    )
+
 class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
