@@ -544,11 +544,13 @@ def book_sale_settle(request, pk):
             return redirect('students:student_detail', pk=sale.student.pk)
 
         try:
+            from datetime import datetime
+
             with transaction.atomic():
                 # 1. 판매 기록 업데이트 (결제 완료)
                 sale.is_paid = True
-                # 날짜 형식이 맞는지 확인 (YYYY-MM-DD)
-                sale.payment_date = payment_date
+                # 날짜 문자열을 date 객체로 변환 (YYYY-MM-DD)
+                sale.payment_date = datetime.strptime(payment_date, '%Y-%m-%d').date()
                 sale.save()
                 print("[디버깅] 판매 기록 업데이트 완료 (결제 상태 변경).")
 
