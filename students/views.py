@@ -509,10 +509,18 @@ def grade_promotion_confirm(request):
         current_grade = stat['grade']
         count = stat['count']
         new_grade = grade_mapping.get(current_grade, current_grade)
+
+        # 해당 학년의 학생 이름 목록 조회
+        students = Student.objects.filter(
+            is_active=True,
+            grade=current_grade
+        ).order_by('name')
+
         changes.append({
             'current': current_grade,
             'new': new_grade,
-            'count': count
+            'count': count,
+            'students': students
         })
 
     context = {

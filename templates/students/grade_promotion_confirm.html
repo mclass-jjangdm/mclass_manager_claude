@@ -45,8 +45,8 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         변경 후 학년
                     </th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        학생 수
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        대상 학생
                     </th>
                 </tr>
             </thead>
@@ -68,8 +68,17 @@
                         </span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                        {{ change.count }}명
+                    <td class="px-6 py-4 text-sm text-gray-700">
+                        <div class="mb-2 text-xs font-medium text-gray-600">
+                            {{ change.count }}명
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            {% for student in change.students %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-800 text-xs">
+                                {{ student.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
