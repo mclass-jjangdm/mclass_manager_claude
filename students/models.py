@@ -43,6 +43,7 @@ class Student(models.Model):
     extra4 = models.CharField(max_length=100, null=True, blank=True, verbose_name='예비4')
     extra5 = models.CharField(max_length=100, null=True, blank=True, verbose_name='예비5')
     is_active = models.BooleanField(default=True, verbose_name='활동 여부')
+    unpaid_amount = models.IntegerField(default=0, verbose_name='미납 수업료')
 
     def generate_student_id(self):
         import random
