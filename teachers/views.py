@@ -69,6 +69,72 @@ class TeacherDetailView(LoginRequiredMixin, DetailView):
     model = Teacher
     template_name = 'teachers/teacher_detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        teacher = self.object
+
+        # 현재 년월 또는 쿼리 파라미터로 전달된 년월
+        year = int(self.request.GET.get('year', timezone.now().year))
+        month = int(self.request.GET.get('month', timezone.now().month))
+
+        # 해당 월의 시작일과 종료일
+        month_start = timezone.datetime(year, month, 1).date()
+        if month == 12:
+            month_end = timezone.datetime(year + 1, 1, 1).date() - timedelta(days=1)
+        else:
+            month_end = timezone.datetime(year, month + 1, 1).date() - timedelta(days=1)
+
+        # 근무 기록 조회
+        attendance_records = Attendance.objects.filter(
+            teacher=teacher,
+            date__range=[month_start, month_end]
+        ).order_by('date')
+
+        # 총 근무 시간 계산 및 각 레코드에 근무 시간 추가
+        total_hours = 0
+        total_minutes = 0
+        for record in attendance_records:
+            if record.start_time and record.end_time and record.is_present:
+                start = timezone.datetime.combine(record.date, record.start_time)
+                end = timezone.datetime.combine(record.date, record.end_time)
+                duration = end - start
+                hours = duration.total_seconds() / 3600
+                h = int(hours)
+                m = int((hours - h) * 60)
+                record.work_hours = f"{h}시간 {m}분"
+                total_hours += h
+                total_minutes += m
+            else:
+                record.work_hours = "-"
+
+        # 분을 시간으로 변환
+        total_hours += total_minutes // 60
+        total_minutes = total_minutes % 60
+
+        context['attendance_records'] = attendance_records
+        context['current_year'] = year
+        context['current_month'] = month
+        context['total_hours'] = total_hours
+        context['total_minutes'] = total_minutes
+        context['total_work_hours'] = f"{total_hours}시간 {total_minutes}분"
+
+        # 이전/다음 달 계산
+        if month == 1:
+            context['prev_year'] = year - 1
+            context['prev_month'] = 12
+        else:
+            context['prev_year'] = year
+            context['prev_month'] = month - 1
+
+        if month == 12:
+            context['next_year'] = year + 1
+            context['next_month'] = 1
+        else:
+            context['next_year'] = year
+            context['next_month'] = month + 1
+
+        return context
+
 
 class TeacherCreateView(LoginRequiredMixin, CreateView):
     model = Teacher
