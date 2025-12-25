@@ -48,11 +48,25 @@
                 </div>
                 <div class="flex">
                     <span class="w-40 text-gray-600 font-medium">학생 전화번호</span>
-                    <span>{{ student.phone_number|default:"-" }}</span>
+                    {% if student.phone_number %}
+                    <a href="{% url 'students:student_send_sms' student.id %}"
+                       class="text-green-600 hover:text-green-800 hover:underline">
+                        {{ student.get_formatted_phone_number }}
+                    </a>
+                    {% else %}
+                    <span>-</span>
+                    {% endif %}
                 </div>
                 <div class="flex">
                     <span class="w-40 text-gray-600 font-medium">이메일</span>
-                    <span>{{ student.email|default:"-" }}</span>
+                    {% if student.email %}
+                    <a href="{% url 'students:student_send_email' student.id %}"
+                       class="text-indigo-600 hover:text-indigo-800 hover:underline">
+                        {{ student.email }}
+                    </a>
+                    {% else %}
+                    <span>-</span>
+                    {% endif %}
                 </div>
                 <div class="flex">
                     <span class="w-40 text-gray-600 font-medium">부모님 전화번호</span>

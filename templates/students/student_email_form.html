@@ -1,0 +1,81 @@
+{% extends 'students/base_students.html' %}
+
+{% block title %}{{ student.name }} 학생에게 이메일 보내기{% endblock %}
+
+{% block student_content %}
+<!-- 헤더 -->
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold text-gray-800">이메일 보내기</h2>
+</div>
+
+<!-- 수신자 정보 -->
+<div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+    <div class="flex items-center gap-2">
+        <span class="text-indigo-700 font-medium">수신자:</span>
+        <span class="text-indigo-900 font-semibold">{{ student.name }}</span>
+        <span class="text-indigo-600">&lt;{{ student.email }}&gt;</span>
+    </div>
+</div>
+
+<!-- 이메일 폼 -->
+<div class="bg-white rounded-lg shadow p-6">
+    {% if form.errors %}
+    <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-6">
+        <strong>⚠️ 입력 오류가 있습니다:</strong>
+        <ul class="list-disc ml-5 mt-2">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- 제목 -->
+        <div>
+            <label for="id_subject" class="block text-sm font-medium text-gray-700 mb-2">
+                제목 <span class="text-red-600">*</span>
+            </label>
+            {{ form.subject }}
+        </div>
+
+        <!-- 내용 -->
+        <div>
+            <label for="id_message" class="block text-sm font-medium text-gray-700 mb-2">
+                내용 <span class="text-red-600">*</span>
+            </label>
+            {{ form.message }}
+        </div>
+
+        <!-- 첨부파일 -->
+        <div>
+            <label for="id_attachments" class="block text-sm font-medium text-gray-700 mb-2">
+                첨부파일
+            </label>
+            {{ form.attachments }}
+            {% if form.attachments.help_text %}
+            <p class="mt-1 text-sm text-gray-500">{{ form.attachments.help_text }}</p>
+            {% endif %}
+        </div>
+
+        <!-- 버튼 -->
+        <div class="flex gap-3 justify-center pt-4 border-t border-gray-200">
+            <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                이메일 발송
+            </button>
+            <a href="{% url 'students:student_detail' student.pk %}"
+               class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                취소
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

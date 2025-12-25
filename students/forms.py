@@ -3,6 +3,62 @@ from django import forms
 from .models import Student, School
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+
+class StudentEmailForm(forms.Form):
+    subject = forms.CharField(
+        max_length=200,
+        label='제목',
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': '이메일 제목을 입력하세요'
+        })
+    )
+    message = forms.CharField(
+        label='내용',
+        widget=forms.Textarea(attrs={
+            'class': 'form-input',
+            'rows': 10,
+            'placeholder': '이메일 내용을 입력하세요'
+        })
+    )
+    attachments = MultipleFileField(
+        label='첨부파일',
+        required=False,
+        help_text='여러 파일을 선택할 수 있습니다.'
+    )
+
+
+class StudentSMSForm(forms.Form):
+    message = forms.CharField(
+        label='문자 내용',
+        max_length=2000,
+        widget=forms.Textarea(attrs={
+            'class': 'form-input',
+            'rows': 6,
+            'placeholder': '문자 내용을 입력하세요 (최대 2000자)',
+            'maxlength': '2000'
+        }),
+        help_text='SMS: 90바이트(한글 45자) / LMS: 2000바이트(한글 1000자)'
+    )
+
+
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Student

@@ -303,3 +303,125 @@ def bulk_sms_send(request):
         'form': form,
         'students': students,
     })
+
+
+@login_required
+def student_send_email(request, pk):
+    """학생에게 이메일 발송"""
+    from django.core.mail import EmailMessage
+    from django.conf import settings
+    from .forms import StudentEmailForm
+
+    student = get_object_or_404(Student, pk=pk)
+
+    if not student.email:
+        messages.error(request, '해당 학생의 이메일 주소가 등록되어 있지 않습니다.')
+        return redirect('students:student_detail', pk=pk)
+
+    if request.method == 'POST':
+        form = StudentEmailForm(request.POST, request.FILES)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+
+            # 발신자 이메일 설정
+            from_email = settings.DEFAULT_FROM_EMAIL if request.user.username == 'admin' else settings.EMAIL_HOST_USER
+
+            try:
+                # EmailMessage 객체 생성
+                email = EmailMessage(
+                    subject=subject,
+                    body=message,
+                    from_email=from_email,
+                    to=[student.email],
+                )
+
+                # 첨부파일 처리
+                files = request.FILES.getlist('attachments')
+                for file in files:
+                    email.attach(file.name, file.read(), file.content_type)
+
+                # 이메일 전송
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f'Sending email to {student.email} from {from_email}')
+
+                result = email.send(fail_silently=False)
+
+                logger.info(f'Email send result: {result}')
+
+                messages.success(request, f'{student.name} 학생에게 이메일을 성공적으로 발송했습니다.')
+                return redirect('students:student_detail', pk=pk)
+            except Exception as e:
+                import logging
+                import traceback
+                logger = logging.getLogger(__name__)
+                logger.error(f'Email sending failed: {str(e)}')
+                logger.error(traceback.format_exc())
+                messages.error(request, f'이메일 발송 중 오류가 발생했습니다: {str(e)}')
+    else:
+        form = StudentEmailForm()
+
+    context = {
+        'form': form,
+        'student': student,
+    }
+    return render(request, 'students/student_email_form.html', context)
+
+
+@login_required
+def student_send_sms(request, pk):
+    """학생에게 문자 발송"""
+    from .forms import StudentSMSForm
+    import requests
+
+    student = get_object_or_404(Student, pk=pk)
+
+    if not student.phone_number:
+        messages.error(request, '해당 학생의 전화번호가 등록되어 있지 않습니다.')
+        return redirect('students:student_detail', pk=pk)
+
+    if request.method == 'POST':
+        form = StudentSMSForm(request.POST)
+        if form.is_valid():
+            message = form.cleaned_data['message']
+
+            try:
+                # Aligo SMS API 설정
+                from django.conf import settings
+
+                sms_url = 'https://apis.aligo.in/send/'
+                sms_data = {
+                    'key': settings.SMS_API_KEY,
+                    'user_id': settings.SMS_USER_ID,
+                    'sender': settings.SMS_SENDER_NUMBER,
+                    'receiver': student.phone_number,
+                    'msg': message,
+                    'msg_type': 'LMS' if len(message.encode('euc-kr')) > 90 else 'SMS',
+                    'title': '엠클래스' if len(message.encode('euc-kr')) > 90 else '',
+                }
+
+                response = requests.post(sms_url, data=sms_data)
+                result = response.json()
+
+                if result.get('result_code') == '1':
+                    messages.success(request, f'{student.name} 학생에게 문자를 성공적으로 발송했습니다.')
+                else:
+                    messages.error(request, f'문자 발송 실패: {result.get("message", "알 수 없는 오류")}')
+
+                return redirect('students:student_detail', pk=pk)
+            except Exception as e:
+                import logging
+                import traceback
+                logger = logging.getLogger(__name__)
+                logger.error(f'SMS sending failed: {str(e)}')
+                logger.error(traceback.format_exc())
+                messages.error(request, f'문자 발송 중 오류가 발생했습니다: {str(e)}')
+    else:
+        form = StudentSMSForm()
+
+    context = {
+        'form': form,
+        'student': student,
+    }
+    return render(request, 'students/student_sms_form.html', context)
