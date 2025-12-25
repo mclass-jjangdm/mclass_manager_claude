@@ -22,10 +22,14 @@ class IndexView(TemplateView):
                 is_active=True
             ).values('grade').annotate(
                 count=Count('id')
-            ).order_by('grade')
+            )
 
             # 학년별 딕셔너리로 변환
-            grade_stats = {item['grade']: item['count'] for item in grade_counts if item['grade']}
+            grade_dict = {item['grade']: item['count'] for item in grade_counts if item['grade']}
+
+            # K5~K12 순서대로 정렬된 리스트 생성
+            grade_order = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12']
+            grade_stats = [(grade, grade_dict.get(grade, 0)) for grade in grade_order if grade in grade_dict]
 
             # 총 학생 수
             total_students = Student.objects.filter(is_active=True).count()

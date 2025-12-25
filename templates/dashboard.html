@@ -17,11 +17,11 @@
 
                         <!-- 학년별 통계 -->
                         {% if grade_stats %}
-                        <div class="mt-3 space-y-1">
-                            {% for grade, count in grade_stats.items %}
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">{{ grade }}:</span>
-                                <span class="font-medium text-gray-900">{{ count }}명</span>
+                        <div class="mt-3 grid grid-cols-4 gap-2">
+                            {% for grade, count in grade_stats %}
+                            <div class="text-center">
+                                <div class="text-xs text-gray-500">{{ grade }}</div>
+                                <div class="text-lg font-bold text-indigo-600">{{ count }}</div>
                             </div>
                             {% endfor %}
                         </div>
