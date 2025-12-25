@@ -425,3 +425,62 @@ def student_send_sms(request, pk):
         'student': student,
     }
     return render(request, 'students/student_sms_form.html', context)
+
+
+@login_required
+def student_send_sms_parent(request, pk):
+    """부모님에게 문자 발송"""
+    from .forms import StudentSMSForm
+    import requests
+
+    student = get_object_or_404(Student, pk=pk)
+
+    if not student.parent_phone:
+        messages.error(request, '해당 학생의 부모님 전화번호가 등록되어 있지 않습니다.')
+        return redirect('students:student_detail', pk=pk)
+
+    if request.method == 'POST':
+        form = StudentSMSForm(request.POST)
+        if form.is_valid():
+            message = form.cleaned_data['message']
+
+            try:
+                # Aligo SMS API 설정
+                from django.conf import settings
+
+                sms_url = 'https://apis.aligo.in/send/'
+                sms_data = {
+                    'key': settings.SMS_API_KEY,
+                    'user_id': settings.SMS_USER_ID,
+                    'sender': settings.SMS_SENDER_NUMBER,
+                    'receiver': student.parent_phone,
+                    'msg': message,
+                    'msg_type': 'LMS' if len(message.encode('euc-kr')) > 90 else 'SMS',
+                    'title': '엠클래스' if len(message.encode('euc-kr')) > 90 else '',
+                }
+
+                response = requests.post(sms_url, data=sms_data)
+                result = response.json()
+
+                if result.get('result_code') == '1':
+                    messages.success(request, f'{student.name} 학생 부모님에게 문자를 성공적으로 발송했습니다.')
+                else:
+                    messages.error(request, f'문자 발송 실패: {result.get("message", "알 수 없는 오류")}')
+
+                return redirect('students:student_detail', pk=pk)
+            except Exception as e:
+                import logging
+                import traceback
+                logger = logging.getLogger(__name__)
+                logger.error(f'SMS sending failed: {str(e)}')
+                logger.error(traceback.format_exc())
+                messages.error(request, f'문자 발송 중 오류가 발생했습니다: {str(e)}')
+    else:
+        form = StudentSMSForm()
+
+    context = {
+        'form': form,
+        'student': student,
+        'is_parent': True,  # 부모님에게 보내는 것임을 표시
+    }
+    return render(request, 'students/student_sms_form.html', context)

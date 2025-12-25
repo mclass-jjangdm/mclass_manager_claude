@@ -70,7 +70,14 @@
                 </div>
                 <div class="flex">
                     <span class="w-40 text-gray-600 font-medium">부모님 전화번호</span>
-                    <span>{{ student.parent_phone|default:"-" }}</span>
+                    {% if student.parent_phone %}
+                    <a href="{% url 'students:student_send_sms_parent' student.id %}"
+                       class="text-green-600 hover:text-green-800 hover:underline">
+                        {{ student.get_formatted_parent_phone }}
+                    </a>
+                    {% else %}
+                    <span>-</span>
+                    {% endif %}
                 </div>
                 <div class="flex">
                     <span class="w-40 text-gray-600 font-medium">현금영수증용 번호</span>

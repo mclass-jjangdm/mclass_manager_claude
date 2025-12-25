@@ -58,7 +58,43 @@ class Student(models.Model):
         student_folder = os.path.join(base_path, self.folder_name)
         if not os.path.exists(student_folder):
             os.makedirs(student_folder)
-        return student_folder    
+        return student_folder
+
+    def get_formatted_phone_number(self):
+        """전화번호를 000-0000-0000 형식으로 반환"""
+        if not self.phone_number:
+            return None
+        # 이미 하이픈이 있으면 그대로 반환
+        if '-' in self.phone_number:
+            return self.phone_number
+        # 숫자만 있는 경우 포맷팅
+        phone = self.phone_number.replace('-', '').replace(' ', '')
+        if len(phone) == 11:  # 010-0000-0000
+            return f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
+        elif len(phone) == 10:  # 02-0000-0000 or 031-000-0000
+            if phone.startswith('02'):
+                return f"{phone[:2]}-{phone[2:6]}-{phone[6:]}"
+            else:
+                return f"{phone[:3]}-{phone[3:6]}-{phone[6:]}"
+        return self.phone_number
+
+    def get_formatted_parent_phone(self):
+        """부모님 전화번호를 000-0000-0000 형식으로 반환"""
+        if not self.parent_phone:
+            return None
+        # 이미 하이픈이 있으면 그대로 반환
+        if '-' in self.parent_phone:
+            return self.parent_phone
+        # 숫자만 있는 경우 포맷팅
+        phone = self.parent_phone.replace('-', '').replace(' ', '')
+        if len(phone) == 11:  # 010-0000-0000
+            return f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
+        elif len(phone) == 10:  # 02-0000-0000 or 031-000-0000
+            if phone.startswith('02'):
+                return f"{phone[:2]}-{phone[2:6]}-{phone[6:]}"
+            else:
+                return f"{phone[:3]}-{phone[3:6]}-{phone[6:]}"
+        return self.parent_phone    
     
     def save(self, *args, **kwargs):
         if not self.pk and not self.student_id:

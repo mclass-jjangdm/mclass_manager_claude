@@ -14,5 +14,6 @@ urlpatterns = [
     path('<int:pk>/files/', views.student_files, name='student_files'),
     path('<int:pk>/send-email/', views.student_send_email, name='student_send_email'),
     path('<int:pk>/send-sms/', views.student_send_sms, name='student_send_sms'),
+    path('<int:pk>/send-sms-parent/', views.student_send_sms_parent, name='student_send_sms_parent'),
     path('file/<int:file_id>/delete/', views.delete_student_file, name='delete_student_file'),
 ]
