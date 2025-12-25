@@ -484,3 +484,79 @@ def student_send_sms_parent(request, pk):
         'is_parent': True,  # 부모님에게 보내는 것임을 표시
     }
     return render(request, 'students/student_sms_form.html', context)
+
+
+@login_required
+def grade_promotion_confirm(request):
+    """학년 일괄 증가 확인 페이지"""
+    # 현재 학년별 학생 수 집계
+    from django.db.models import Count
+
+    grade_stats = Student.objects.filter(
+        is_active=True
+    ).values('grade').annotate(
+        count=Count('id')
+    ).order_by('grade')
+
+    # 학년 증가 후 예상 결과 계산
+    grade_mapping = {
+        'K5': 'K6', 'K6': 'K7', 'K7': 'K8', 'K8': 'K9',
+        'K9': 'K10', 'K10': 'K11', 'K11': 'K12', 'K12': '졸업'
+    }
+
+    changes = []
+    for stat in grade_stats:
+        current_grade = stat['grade']
+        count = stat['count']
+        new_grade = grade_mapping.get(current_grade, current_grade)
+        changes.append({
+            'current': current_grade,
+            'new': new_grade,
+            'count': count
+        })
+
+    context = {
+        'changes': changes,
+        'total_students': sum(stat['count'] for stat in grade_stats),
+    }
+    return render(request, 'students/grade_promotion_confirm.html', context)
+
+
+@login_required
+def grade_promotion_execute(request):
+    """학년 일괄 증가 실행"""
+    if request.method != 'POST':
+        messages.error(request, '잘못된 접근입니다.')
+        return redirect('students:student_list')
+
+    # 학년 매핑
+    grade_mapping = {
+        'K5': 'K6', 'K6': 'K7', 'K7': 'K8', 'K8': 'K9',
+        'K9': 'K10', 'K10': 'K11', 'K11': 'K12', 'K12': '졸업'
+    }
+
+    # 활성 학생들만 대상
+    active_students = Student.objects.filter(is_active=True)
+
+    updated_count = 0
+    graduated_count = 0
+
+    for student in active_students:
+        if student.grade in grade_mapping:
+            new_grade = grade_mapping[student.grade]
+            if new_grade == '졸업':
+                # K12 학생은 졸업 처리
+                student.grade = '졸업'
+                student.is_active = False
+                student.quit_date = datetime.date.today()
+                graduated_count += 1
+            else:
+                student.grade = new_grade
+                updated_count += 1
+            student.save()
+
+    messages.success(
+        request,
+        f'학년 증가가 완료되었습니다. (진급: {updated_count}명, 졸업: {graduated_count}명)'
+    )
+    return redirect('students:student_list')

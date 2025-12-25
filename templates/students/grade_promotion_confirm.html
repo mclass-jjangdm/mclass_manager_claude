@@ -1,0 +1,129 @@
+{% extends 'students/base_students.html' %}
+
+{% block title %}학년 일괄 증가 확인{% endblock %}
+
+{% block student_content %}
+<!-- 헤더 -->
+<div class="mb-6">
+    <h2 class="text-3xl font-bold text-gray-800">학년 일괄 증가 확인</h2>
+    <p class="mt-2 text-sm text-gray-600">모든 재학 중인 학생의 학년을 1씩 증가시킵니다. (K12는 졸업 처리)</p>
+</div>
+
+<!-- 경고 메시지 -->
+<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-yellow-700">
+                <strong>주의:</strong> 이 작업은 되돌릴 수 없습니다. 진행하기 전에 반드시 데이터를 백업하세요.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- 변경 내역 테이블 -->
+<div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">학년 변경 미리보기</h3>
+        <p class="mt-1 text-sm text-gray-600">총 {{ total_students }}명의 학생이 영향을 받습니다.</p>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        현재 학년
+                    </th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        →
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        변경 후 학년
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        학생 수
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for change in changes %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ change.current }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                        →
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium
+                        {% if change.new == '졸업' %}text-red-600{% else %}text-green-600{% endif %}">
+                        {{ change.new }}
+                        {% if change.new == '졸업' %}
+                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                            퇴원 처리됨
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                        {{ change.count }}명
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                        학년 증가 대상 학생이 없습니다.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 확인 및 실행 -->
+{% if changes %}
+<div class="bg-white rounded-lg shadow p-6">
+    <form method="POST" action="{% url 'students:grade_promotion_execute' %}" onsubmit="return confirmPromotion()">
+        {% csrf_token %}
+
+        <div class="mb-6">
+            <label class="inline-flex items-center">
+                <input type="checkbox" id="confirm-checkbox" class="form-checkbox h-5 w-5 text-indigo-600" required>
+                <span class="ml-2 text-sm text-gray-700">
+                    위 내용을 확인했으며, 데이터를 백업했습니다. 학년 일괄 증가를 진행하겠습니다.
+                </span>
+            </label>
+        </div>
+
+        <div class="flex gap-3 justify-center">
+            <button type="submit"
+                    class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                학년 일괄 증가 실행
+            </button>
+            <a href="{% url 'students:student_list' %}"
+               class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                취소
+            </a>
+        </div>
+    </form>
+</div>
+{% else %}
+<div class="text-center py-8">
+    <a href="{% url 'students:student_list' %}"
+       class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+        학생 목록으로 돌아가기
+    </a>
+</div>
+{% endif %}
+
+<script>
+function confirmPromotion() {
+    return confirm('정말로 학년 일괄 증가를 실행하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.');
+}
+</script>
+
+{% endblock %}
