@@ -487,7 +487,7 @@ def book_sale_create(request, student_pk):
             # 1. 재고 재확인
             if book.stock < sale.quantity:
                 messages.error(request, f"재고가 부족합니다. (현재 재고: {book.stock}권)")
-                return redirect('student_detail', pk=student.pk)
+                return redirect('students:student_detail', pk=student.pk)
 
             try:
                 with transaction.atomic():
@@ -515,7 +515,7 @@ def book_sale_create(request, student_pk):
             except Exception as e:
                 messages.error(request, f"처리 중 오류 발생: {e}")
 
-            return redirect('student_detail', pk=student.pk)
+            return redirect('students:student_detail', pk=student.pk)
     else:
         # 초기값에 오늘 날짜(한국 시간) 넣어주기
         form = BookSaleForm(initial={
@@ -541,7 +541,7 @@ def book_sale_settle(request, pk):
         if not payment_date:
             print("[디버깅] 납부일이 누락되었습니다.")
             messages.error(request, "납부일이 입력되지 않았습니다.")
-            return redirect('student_detail', pk=sale.student.pk)
+            return redirect('students:student_detail', pk=sale.student.pk)
 
         try:
             with transaction.atomic():
@@ -569,5 +569,5 @@ def book_sale_settle(request, pk):
     else:
         print("[디버깅] POST 요청이 아닙니다.")
 
-    return redirect('student_detail', pk=sale.student.pk)
+    return redirect('students:student_detail', pk=sale.student.pk)
 
