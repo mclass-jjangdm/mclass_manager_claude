@@ -1,157 +1,100 @@
-{% extends "base.html" %}
+{% extends "base_bookstore.html" %}
 {% load humanize %}
 
-{% block content %}
-<div style="max-width: 700px; margin: 0 auto;">
-    <h2 style="border-bottom: 2px solid #673ab7; padding-bottom: 10px; margin-bottom: 20px; color: #4527a0;">
-        📦 교재 추가 입고
+{% block bookstore_content %}
+<div class="max-w-3xl mx-auto">
+    <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-3 mb-6">
+        교재 추가 입고
     </h2>
 
-    <div style="margin-bottom: 20px; padding: 15px; background-color: #f3e5f5; border-radius: 8px; border: 1px solid #e1bee7;">
-        <h3 style="margin: 0 0 10px 0; font-size: 1.2rem; color: #333;">
+    <!-- 교재 정보 -->
+    <div class="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">
             {{ book.title }}
         </h3>
-        <div style="color: #666; font-size: 0.95rem;">
-            <span>현재 재고: <strong style="color: #d32f2f;">{{ book.stock }}권</strong></span>
-            <span style="margin: 0 10px;">|</span>
+        <div class="text-sm text-gray-600 space-x-4">
+            <span>현재 재고: <strong class="text-red-600">{{ book.stock }}권</strong></span>
+            <span>|</span>
             <span>저자: {{ book.author }}</span>
-            <span style="margin: 0 10px;">|</span>
+            <span>|</span>
             <span>출판사: {{ book.publisher }}</span>
         </div>
     </div>
 
-    <div class="info-card" style="padding: 30px; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-        <form method="POST">
+    <!-- 입고 폼 -->
+    <div class="content-card">
+        <form method="POST" class="space-y-6">
             {% csrf_token %}
 
-            <div style="margin-bottom: 20px; background-color: #e8eaf6; padding: 15px; border-radius: 8px;">
-                <div style="margin-bottom: 15px;">
-                    <label for="id_created_at" style="font-weight: bold; color: #1a237e; display: block; margin-bottom: 5px;">
-                        📅 입고 날짜
+            <!-- 날짜 및 구매처 섹션 -->
+            <div class="bg-indigo-50 p-4 rounded-lg space-y-4">
+                <div>
+                    <label for="id_created_at" class="form-label text-indigo-900">
+                        입고 날짜
                     </label>
                     {{ form.created_at }}
                 </div>
 
-                <label for="id_supplier" style="font-weight: bold; color: #1a237e; display: block; margin-bottom: 8px;">
-                    🏢 구매처 (공급사) 선택
-                </label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <div style="flex-grow: 1;">
-                        {{ form.supplier }}
+                <div>
+                    <label for="id_supplier" class="form-label text-indigo-900">
+                        구매처 (공급사) 선택
+                    </label>
+                    <div class="flex gap-3 items-center">
+                        <div class="flex-1">
+                            {{ form.supplier }}
+                        </div>
+                        <a href="{% url 'bookstore:supplier_create' %}?next={{ request.get_full_path|urlencode }}"
+                           class="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap">
+                            + 새 구매처 등록
+                        </a>
                     </div>
-                    <a href="{% url 'bookstore:supplier_create' %}?next={{ request.get_full_path|urlencode }}"
-                       class="btn"
-                       style="font-size: 0.8rem; padding: 8px 12px; background-color: #3949ab; color: white; text-decoration: none; white-space: nowrap;">
-                        + 새 구매처 등록
-                    </a>
+                    <p class="text-xs text-gray-600 mt-1">
+                        * 목록에 없는 경우 우측 버튼을 눌러 등록하세요.
+                    </p>
                 </div>
-                <small style="color: #666; margin-top: 5px; display: block;">
-                    * 목록에 없는 경우 우측 버튼을 눌러 등록하세요.
-                </small>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <!-- 수량 및 단가 -->
+            <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label for="id_quantity" style="font-weight: bold; display: block; margin-bottom: 5px;">입고 수량</label>
+                    <label for="id_quantity" class="form-label">입고 수량</label>
                     {{ form.quantity }}
                 </div>
                 <div>
-                    <label for="id_cost_price" style="font-weight: bold; display: block; margin-bottom: 5px;">입고 단가 (원가)</label>
+                    <label for="id_cost_price" class="form-label">입고 단가 (원가)</label>
                     {{ form.cost_price }}
                 </div>
             </div>
 
-            <div style="margin-bottom: 20px;">
-                <label for="id_memo" style="font-weight: bold; display: block; margin-bottom: 5px;">비고</label>
+            <!-- 비고 -->
+            <div>
+                <label for="id_memo" class="form-label">비고</label>
                 {{ form.memo }}
             </div>
 
-            <div style="text-align: center; margin-top: 30px;">
-                <button type="submit" class="btn" style="background-color: #2e7d32; color: white; padding: 12px 40px; font-size: 1.1rem; border: none; border-radius: 5px; cursor: pointer;">
+            <!-- 버튼 -->
+            <div class="flex gap-3 justify-center pt-4">
+                <button type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
                     + 입고 처리
                 </button>
-                <a href="{% url 'bookstore:book_list' %}" class="btn" style="background-color: #757575; color: white; margin-left: 10px; padding: 12px 30px; text-decoration: none; border-radius: 5px;">
+                <a href="{% url 'bookstore:book_list' %}"
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
                     취소
                 </a>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 모든 입력 필드에 form-input 클래스 적용
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('form-checkbox') && !el.classList.contains('form-radio')) {
+                el.classList.add('form-input');
+            }
+        });
+    });
+</script>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-{#{% extends "base.html" %}#}
-{#{% load humanize %}#}
-{##}
-{#{% block content %}#}
-{#<div style="max-width: 700px; margin: 0 auto;">#}
-{#    <div style="border-bottom: 2px solid #673ab7; margin-bottom: 20px; padding-bottom: 10px;">#}
-{#        <h2>📦 교재 추가 입고</h2>#}
-{#        <p style="color: #666; margin: 0;">#}
-{#            <strong>{{ book.title }}</strong> (현재 재고: <span style="color: #e65100; font-weight: bold;">{{ book.stock }}</span>권)#}
-{#        </p>#}
-{#    </div>#}
-{##}
-{#    <div class="info-card" style="padding: 30px;">#}
-{#        <form method="POST">#}
-{#            {% csrf_token %}#}
-{##}
-{#            <div style="margin-bottom: 20px; background-color: #e8eaf6; padding: 15px; border-radius: 8px;">#}
-{#                <div style="margin-bottom: 15px;">#}
-{#                    <label for="id_created_at" style="font-weight: bold; color: #1a237e; display: block; margin-bottom: 5px;">#}
-{#                        📅 입고 날짜#}
-{#                    </label>#}
-{#                    {{ form.created_at }}#}
-{#                </div>#}
-{##}
-{#                <label for="id_supplier" style="font-weight: bold; color: #1a237e; display: block; margin-bottom: 8px;">#}
-{#                    🏢 구매처 (공급사) 선택#}
-{#                </label>#}
-{#                <div style="display: flex; gap: 10px; align-items: center;">#}
-{#                    <div style="flex-grow: 1;">#}
-{#                        {{ form.supplier }}#}
-{#                    </div>#}
-{#                    <a href="{% url 'supplier_create' %}?next={{ request.get_full_path|urlencode }}" target="_blank" class="btn"#}
-{#                       style="font-size: 0.8rem; padding: 8px 12px; background-color: #3949ab; color: white; text-decoration: none; white-space: nowrap;">#}
-{#                        + 새 구매처 등록#}
-{#                    </a>#}
-{#                </div>#}
-{#                <small style="color: #666; margin-top: 5px; display: block;">#}
-{#                    * 목록에 없는 경우 우측 버튼을 눌러 등록하세요. (새로고침 필요)#}
-{#                </small>#}
-{#            </div>#}
-{##}
-{#            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">#}
-{#                <div>#}
-{#                    <label for="id_quantity"><strong>입고 수량</strong></label>#}
-{#                    {{ form.quantity }}#}
-{#                </div>#}
-{#                <div>#}
-{#                    <label for="id_cost_price">입고 단가 (원가)</label>#}
-{#                    {{ form.cost_price }}#}
-{#                </div>#}
-{#            </div>#}
-{##}
-{#            <div style="margin-bottom: 20px;">#}
-{#                <label for="id_memo">비고</label>#}
-{#                {{ form.memo }}#}
-{#            </div>#}
-{##}
-{#            <div style="text-align: center; margin-top: 30px;">#}
-{#                <button type="submit" class="btn" style="background-color: #2e7d32; padding: 10px 40px; font-size: 1.1rem;">#}
-{#                    + 입고 처리#}
-{#                </button>#}
-{#                <a href="{% url 'book_list' %}" class="btn" style="background-color: #757575; margin-left: 10px;">취소</a>#}
-{#            </div>#}
-{#        </form>#}
-{#    </div>#}
-{#</div>#}
-{#{% endblock %}#}

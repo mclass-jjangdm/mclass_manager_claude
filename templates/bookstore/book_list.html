@@ -1,93 +1,152 @@
-{% extends "base.html" %}
+{% extends "base_bookstore.html" %}
 {% load humanize %}
 
 {% block container_class %}wide-screen{% endblock %}
 
-{% block content %}
-<div style="width: 100%;">
-    <div style="margin-bottom: 20px; text-align: center;">
-        <form method="GET" action="{% url 'bookstore:book_list' %}" style="display: flex; gap: 10px; justify-content: center;">
-            <input type="text" name="q" value="{{ query }}"
+{% block bookstore_content %}
+<div class="space-y-6">
+    <!-- 검색 폼 -->
+    <div class="flex justify-center">
+        <form method="GET" action="{% url 'bookstore:book_list' %}" class="flex gap-3 w-full max-w-2xl">
+            <input type="text"
+                   name="q"
+                   value="{{ query }}"
                    id="search_query"
                    placeholder="도서명, 저자 또는 바코드(ISBN)"
-                   style="padding: 10px; width: 50%; min-width: 300px; font-size: 1.1rem; border: 2px solid #673ab7; border-radius: 5px;">
-            <button type="submit" class="btn" style="background-color: #673ab7; padding: 10px 20px; font-size: 1.1rem;">검색</button>
+                   class="form-input flex-1 min-w-0 text-lg">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium text-lg transition-colors">
+                검색
+            </button>
         </form>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h2 style="color: #4527a0; margin: 0;"> 교재 목록</h2>
+    <!-- 헤더 영역 -->
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800">교재 목록</h2>
 
-        <div style="display: flex; gap: 10px;">
-            <a href="{% url 'bookstore:book_upload' %}" class="btn" style="background-color: #2e7d32;">
+        <div class="flex gap-3">
+            <a href="{% url 'bookstore:book_upload' %}"
+               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 교재 일괄 등록
             </a>
-            <a href="{% url 'bookstore:book_create' %}" class="btn" style="background-color: #ff9800;">
+            <a href="{% url 'bookstore:book_create' %}"
+               class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 신규 교재 입고
             </a>
         </div>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; background-color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <thead style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-            <tr>
-                <th style="padding: 12px; white-space: nowrap;">ISBN</th>
-                <th style="padding: 12px;">교재명</th>
-                <th style="padding: 12px;">출판사</th>
-                <th style="padding: 12px; text-align: right; white-space: nowrap;">재고</th>
-                <th style="padding: 12px; text-align: right; white-space: nowrap;">판매가</th>
-                <th style="padding: 12px; text-align: center; width: 150px;">관리</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for book in page_obj %}
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 12px; color: #666; font-size: 0.9rem;">{{ book.isbn }}</td>
-                <td style="padding: 12px; font-weight: bold;">
-                    <a href="{% url 'bookstore:book_update' book.pk %}" style="text-decoration: none; color: #333;">
-                        {{ book.title }}
-                    </a>
-                </td>
-                <td style="padding: 12px;">{{ book.publisher }}</td>
-                <td style="padding: 12px; text-align: right;">
-                    {% if book.stock <= 5 %}
-                        <span style="color: #d32f2f; font-weight: bold;">{{ book.stock }}권</span>
-                    {% else %}
-                        <span style="color: #2e7d32; font-weight: bold;">{{ book.stock }}권</span>
-                    {% endif %}
-                </td>
-                <td style="padding: 12px; text-align: right;">{{ book.price|intcomma }}원</td>
-                <td style="padding: 12px; text-align: center;">
-                    <div style="display: flex; gap: 5px; justify-content: center;">
-                        <a href="{% url 'bookstore:book_restock' book.pk %}" class="btn" style="background-color: #2196f3; padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;">추가입고</a>
-                        <a href="{% url 'bookstore:book_return' book.pk %}" class="btn" style="background-color: #e53935; padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;">반품</a>
-                    </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
-                    {% if query %}
-                        <p style="font-size: 1.1rem; color: #d32f2f; font-weight: bold;"> '{{ query }}' 검색 결과가 없습니다.</p>
-                        <p>잠시 후 신규 등록 페이지로 이동합니다...</p>
-                    {% else %}
-                        <p>등록된 교재가 없습니다.</p>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- 교재 목록 테이블 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                            ISBN
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            교재명
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            출판사
+                        </th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                            재고
+                        </th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                            판매가
+                        </th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
+                            관리
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for book in page_obj %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3 text-sm text-gray-600">
+                            {{ book.isbn }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <a href="{% url 'bookstore:book_update' book.pk %}"
+                               class="text-gray-900 font-medium hover:text-indigo-600 transition-colors">
+                                {{ book.title }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-700">
+                            {{ book.publisher }}
+                        </td>
+                        <td class="px-4 py-3 text-right text-sm font-semibold">
+                            {% if book.stock <= 5 %}
+                                <span class="text-red-600">{{ book.stock }}권</span>
+                            {% else %}
+                                <span class="text-green-600">{{ book.stock }}권</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-right text-sm text-gray-900">
+                            {{ book.price|intcomma }}원
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="flex gap-2 justify-center">
+                                <a href="{% url 'bookstore:book_restock' book.pk %}"
+                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap">
+                                    추가입고
+                                </a>
+                                <a href="{% url 'bookstore:book_return' book.pk %}"
+                                   class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap">
+                                    반품
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-12 text-center">
+                            {% if query %}
+                                <p class="text-lg text-red-600 font-bold mb-2">
+                                    '{{ query }}' 검색 결과가 없습니다.
+                                </p>
+                                <p class="text-gray-600">
+                                    잠시 후 신규 등록 페이지로 이동합니다...
+                                </p>
+                            {% else %}
+                                <p class="text-gray-500">등록된 교재가 없습니다.</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    <div style="margin-top: 20px; text-align: center;">
+    <!-- 페이지네이션 -->
+    <div class="flex justify-center gap-2">
         {% if page_obj.has_previous %}
-            <a href="?page=1&q={{ query }}" class="btn" style="background: #eee; color: #333;">처음</a>
-            <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}" class="btn" style="background: #eee; color: #333;">이전</a>
+            <a href="?page=1&q={{ query }}"
+               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
+                처음
+            </a>
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}"
+               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
+                이전
+            </a>
         {% endif %}
-        <span style="margin: 0 10px;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        <span class="px-4 py-2 text-gray-700">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&q={{ query }}" class="btn" style="background: #eee; color: #333;">다음</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}" class="btn" style="background: #eee; color: #333;">마지막</a>
+            <a href="?page={{ page_obj.next_page_number }}&q={{ query }}"
+               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
+                다음
+            </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}"
+               class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
+                마지막
+            </a>
         {% endif %}
     </div>
 </div>
