@@ -41,7 +41,10 @@
                         {% for teacher in active_teachers %}
                         <tr>
                             <td>
-                                {{ teacher.name }}
+                                <a href="{% url 'teachers:teacher_detail' teacher.pk %}"
+                                   class="text-indigo-600 hover:text-indigo-800 hover:underline font-medium">
+                                    {{ teacher.name }}
+                                </a>
                             </td>
                             <td>{{ teacher.get_formatted_phone_number|default:"-" }}</td>
                             <td>{{ teacher.email|default:"-" }}</td>
@@ -73,7 +76,10 @@
                         {% for teacher in inactive_teachers %}
                         <tr>
                             <td>
-                                {{ teacher.name }}
+                                <a href="{% url 'teachers:teacher_detail' teacher.pk %}"
+                                   class="text-indigo-600 hover:text-indigo-800 hover:underline font-medium">
+                                    {{ teacher.name }}
+                                </a>
                             </td>
                             <td>{{ teacher.get_formatted_phone_number|default:"-" }}</td>
                             <td>{{ teacher.email|default:"-" }}</td>
