@@ -62,6 +62,7 @@ class StudentCreateView(LoginRequiredMixin, CreateView):
 
 def student_detail(request, pk):
     from bookstore.models import BookSale
+    from django.utils import timezone
 
     student = get_object_or_404(Student, pk=pk)
 
@@ -78,6 +79,7 @@ def student_detail(request, pk):
         'paid_sales': paid_sales,
         'total_unpaid': student.unpaid_amount,
         'total_paid': total_paid,
+        'today': timezone.now().date(),
     }
     return render(request, 'students/student_detail.html', context)
 

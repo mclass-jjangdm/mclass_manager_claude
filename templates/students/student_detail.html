@@ -116,10 +116,14 @@
                         <td class="px-4 py-3 text-sm text-right text-gray-700">{{ sale.price|intcomma }}원</td>
                         <td class="px-4 py-3 text-sm text-right font-semibold text-red-600">{{ sale.get_total_price|intcomma }}원</td>
                         <td class="px-4 py-3 text-center">
-                            <a href="{% url 'bookstore:book_sale_settle' sale.pk %}"
-                               class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-xs transition-colors">
-                                납부
-                            </a>
+                            <form method="POST" action="{% url 'bookstore:book_sale_settle' sale.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="payment_date" value="{{ today }}">
+                                <button type="submit"
+                                        class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-xs transition-colors">
+                                    납부
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
