@@ -242,6 +242,153 @@
     {% endif %}
 </div>
 
+<!-- 성적 관리 섹션 -->
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-800">성적 관리</h3>
+        <div class="flex gap-2">
+            <a href="{% url 'grades:internal_grade_create' student.pk %}"
+               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                내신 성적 입력
+            </a>
+            <a href="{% url 'grades:internal_grade_bulk_create' student.pk %}"
+               class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                한 학기 일괄 입력
+            </a>
+            <a href="{% url 'grades:mock_grade_create' student.pk %}"
+               class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                모의고사 성적 입력
+            </a>
+        </div>
+    </div>
+
+    <!-- 탭 메뉴 -->
+    <div class="border-b border-gray-200 mb-4">
+        <nav class="-mb-px flex space-x-4">
+            <button onclick="showGradeTab('internal')" id="tab-internal"
+                    class="grade-tab border-b-2 border-blue-500 text-blue-600 py-2 px-4 text-sm font-medium">
+                내신 성적
+            </button>
+            <button onclick="showGradeTab('mock')" id="tab-mock"
+                    class="grade-tab border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-4 text-sm font-medium">
+                모의고사 성적
+            </button>
+        </nav>
+    </div>
+
+    <!-- 내신 성적 테이블 -->
+    <div id="grade-content-internal" class="grade-content">
+        {% if internal_grades %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">학년/학기</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">교과</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">과목</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">단위</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">원점수</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">평균</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">표준편차</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">등급</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">진로선택</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">관리</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for grade in internal_grades %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm">{{ grade.year }}학년 {{ grade.semester }}학기</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.curriculum }}</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.subject.name }}</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.credits }}</td>
+                        <td class="px-4 py-3 text-sm font-medium">{{ grade.score }}</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.subject_average }}</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.subject_stddev }}</td>
+                        <td class="px-4 py-3 text-sm"><span class="px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-semibold">{{ grade.grade_rank }}등급</span></td>
+                        <td class="px-4 py-3 text-sm">{% if grade.is_elective %}✓{% else %}-{% endif %}</td>
+                        <td class="px-4 py-3 text-center text-sm">
+                            <a href="{% url 'grades:grade_update' grade.pk %}" class="text-indigo-600 hover:text-indigo-900 mr-2">수정</a>
+                            <a href="{% url 'grades:grade_delete' grade.pk %}" class="text-red-600 hover:text-red-900">삭제</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-8">등록된 내신 성적이 없습니다.</p>
+        {% endif %}
+    </div>
+
+    <!-- 모의고사 성적 테이블 -->
+    <div id="grade-content-mock" class="grade-content hidden">
+        {% if mock_grades %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">학년</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">시험일</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">시험명</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">과목</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">원점수</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">평균</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">표준편차</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">백분위</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">등급</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">관리</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for grade in mock_grades %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm">{{ grade.year }}학년</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.exam_year }}년 {{ grade.exam_month }}월</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.exam_name }}</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.subject.name }}</td>
+                        <td class="px-4 py-3 text-sm font-medium">{{ grade.score }}</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.subject_average }}</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.subject_stddev }}</td>
+                        <td class="px-4 py-3 text-sm">{{ grade.percentile }}</td>
+                        <td class="px-4 py-3 text-sm"><span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">{{ grade.grade_rank }}등급</span></td>
+                        <td class="px-4 py-3 text-center text-sm">
+                            <a href="{% url 'grades:grade_update' grade.pk %}" class="text-indigo-600 hover:text-indigo-900 mr-2">수정</a>
+                            <a href="{% url 'grades:grade_delete' grade.pk %}" class="text-red-600 hover:text-red-900">삭제</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-8">등록된 모의고사 성적이 없습니다.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function showGradeTab(type) {
+    // 모든 탭 버튼 비활성화
+    document.querySelectorAll('.grade-tab').forEach(tab => {
+        tab.classList.remove('border-blue-500', 'text-blue-600');
+        tab.classList.add('border-transparent', 'text-gray-500');
+    });
+
+    // 모든 컨텐츠 숨김
+    document.querySelectorAll('.grade-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+
+    // 선택된 탭 활성화
+    document.getElementById('tab-' + type).classList.remove('border-transparent', 'text-gray-500');
+    document.getElementById('tab-' + type).classList.add('border-blue-500', 'text-blue-600');
+
+    // 선택된 컨텐츠 표시
+    document.getElementById('grade-content-' + type).classList.remove('hidden');
+}
+</script>
+
 <!-- 하단 버튼 -->
 <div class="mt-8 flex justify-center">
     <a href="{% url 'students:student_list' %}"

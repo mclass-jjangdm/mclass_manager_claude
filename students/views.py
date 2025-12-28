@@ -97,6 +97,7 @@ class StudentCreateView(LoginRequiredMixin, CreateView):
 
 def student_detail(request, pk):
     from bookstore.models import BookSale
+    from grades.models import Grade
     from django.utils import timezone
 
     student = get_object_or_404(Student, pk=pk)
@@ -108,12 +109,25 @@ def student_detail(request, pk):
     # 총 납부 금액 계산
     total_paid = sum(sale.get_total_price() for sale in paid_sales)
 
+    # 성적 데이터 조회
+    internal_grades = Grade.objects.filter(
+        student=student,
+        grade_type='internal'
+    ).select_related('subject').order_by('-year', '-semester', 'subject__subject_code')
+
+    mock_grades = Grade.objects.filter(
+        student=student,
+        grade_type='mock'
+    ).select_related('subject').order_by('-exam_year', '-exam_month', 'subject__subject_code')
+
     context = {
         'student': student,
         'unpaid_sales': unpaid_sales,
         'paid_sales': paid_sales,
         'total_unpaid': student.unpaid_amount,
         'total_paid': total_paid,
+        'internal_grades': internal_grades,
+        'mock_grades': mock_grades,
         'today': timezone.now().date(),
     }
     return render(request, 'students/student_detail.html', context)

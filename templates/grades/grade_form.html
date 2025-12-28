@@ -1,0 +1,234 @@
+{% extends 'students/base_students.html' %}
+
+{% block student_content %}
+
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">
+                {% if is_update %}
+                    {% if grade_type == 'internal' %}내신{% else %}모의고사{% endif %} 성적 수정
+                {% else %}
+                    {% if grade_type == 'internal' %}내신{% else %}모의고사{% endif %} 성적 입력
+                {% endif %}
+            </h1>
+            <p class="text-gray-600 mt-2">학생: <span class="font-semibold">{{ student.name }}</span></p>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 공통 필드 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 학년 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">학년 *</label>
+                    {{ form.year }}
+                    {% if form.year.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.year.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 교과 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">교과</label>
+                    {{ form.category }}
+                </div>
+
+                <!-- 과목 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">과목 *</label>
+                    {{ form.subject }}
+                    {% if form.subject.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 내신 전용 필드 -->
+            {% if grade_type == 'internal' %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 학기 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">학기 *</label>
+                    {{ form.semester }}
+                    {% if form.semester.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.semester.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 단위 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">단위 *</label>
+                    {{ form.credits }}
+                    {% if form.credits.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.credits.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 모의고사 전용 필드 -->
+            {% if grade_type == 'mock' %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 시험 연도 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">시험 연도 *</label>
+                    {{ form.exam_year }}
+                    {% if form.exam_year.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.exam_year.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 시험 월 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">시험 월 *</label>
+                    {{ form.exam_month }}
+                    {% if form.exam_month.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.exam_month.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 모의고사 이름 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">모의고사 이름 *</label>
+                    {{ form.exam_name }}
+                    {% if form.exam_name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.exam_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 성적 정보 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 원점수 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">원점수 *</label>
+                    {{ form.score }}
+                    {% if form.score.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.score.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 과목 평균 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">과목 평균 *</label>
+                    {{ form.subject_average }}
+                    {% if form.subject_average.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.subject_average.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 과목 표준편차 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">과목 표준편차 *</label>
+                    {{ form.subject_stddev }}
+                    {% if form.subject_stddev.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.subject_stddev.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 등급 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">등급 *</label>
+                    {{ form.grade_rank }}
+                    {% if form.grade_rank.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.grade_rank.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 모의고사: 백분위 -->
+                {% if grade_type == 'mock' %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">백분위 *</label>
+                    {{ form.percentile }}
+                    {% if form.percentile.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.percentile.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 내신: 진로선택 과목 -->
+            {% if grade_type == 'internal' %}
+            <div>
+                <label class="inline-flex items-center">
+                    {{ form.is_elective }}
+                    <span class="ml-2 text-sm font-medium text-gray-700">진로선택 과목</span>
+                </label>
+                {% if form.is_elective.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.is_elective.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- 버튼 -->
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <a href="{% url 'students:student_detail' student.pk %}"
+                   class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    취소
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md text-sm font-medium">
+                    {% if is_update %}수정{% else %}등록{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    input[type="text"], input[type="number"], select, textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+    }
+
+    input[type="checkbox"], input[type="radio"] {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.querySelector('.category-select');
+    const subjectSelect = document.querySelector('select[name="subject"]');
+
+    if (categorySelect && subjectSelect) {
+        categorySelect.addEventListener('change', function() {
+            const category = this.value;
+
+            // AJAX로 해당 교과의 과목 목록 가져오기
+            fetch(`{% url 'grades:get_subjects_by_category' %}?category=${encodeURIComponent(category)}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 기존 옵션 제거
+                    subjectSelect.innerHTML = '<option value="">---------</option>';
+
+                    // 새 옵션 추가
+                    data.subjects.forEach(function(subject) {
+                        const option = document.createElement('option');
+                        option.value = subject.id;
+                        option.textContent = subject.name;
+                        subjectSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching subjects:', error);
+                });
+        });
+    }
+});
+</script>
+
+{% endblock %}

@@ -40,6 +40,7 @@ urlpatterns = [
     path('teachers/', include('teachers.urls')),
     path('students/', include('students.urls')),
     path('subjects/', include('subjects.urls')),
+    path('grades/', include('grades.urls')),
     path('maintenance/', include('maintenance.urls')),
     path('payment/', include('payment.urls')),
     path('bookstore/', include('bookstore.urls')),
