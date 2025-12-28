@@ -4,6 +4,13 @@ from django.db import models
 class Subject(models.Model):
     """교과 과목 모델"""
 
+    category_code = models.CharField(
+        max_length=2,
+        blank=True,
+        null=True,
+        verbose_name='교과코드',
+        help_text='교과 분류 코드 (예: 10, 20, 91, 92, 93)'
+    )
     subject_code = models.CharField(
         max_length=10,
         unique=True,
@@ -58,14 +65,14 @@ class Subject(models.Model):
 
     @property
     def category(self):
-        """과목 카테고리 반환 (코드 앞 두 자리 기준)"""
-        if not self.subject_code or len(self.subject_code) < 2:
+        """과목 카테고리 반환 (교과코드 기준)"""
+        # category_code가 있으면 그것 사용, 없으면 과목코드 앞 두 자리 사용
+        code = self.category_code if self.category_code else (self.subject_code[:2] if self.subject_code and len(self.subject_code) >= 2 else None)
+
+        if not code:
             return '기타'
 
-        # 과목 코드의 앞 두 자리 추출
-        code_prefix = self.subject_code[:2]
-
-        # 두 자리 코드 매핑
+        # 교과코드 매핑
         categories = {
             '10': '국어',
             '20': '수학',
@@ -80,4 +87,4 @@ class Subject(models.Model):
             '92': '음악/미술',
             '93': '교양',
         }
-        return categories.get(code_prefix, '기타')
+        return categories.get(code, '기타')

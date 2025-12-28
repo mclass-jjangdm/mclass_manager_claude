@@ -21,6 +21,10 @@
                    class="nav-link {% if request.resolver_match.url_name == 'subject_create' %}active{% endif %}">
                     과목 등록
                 </a>
+                <a href="{% url 'subjects:bulk_import' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'bulk_import' %}active{% endif %}">
+                    일괄 가져오기
+                </a>
             </nav>
         </div>
     </div>

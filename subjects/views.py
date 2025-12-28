@@ -76,3 +76,40 @@ class SubjectDeleteView(LoginRequiredMixin, DeleteView):
         subject = self.get_object()
         messages.success(request, f'{subject.name} 과목이 삭제되었습니다.')
         return super().delete(request, *args, **kwargs)
+
+
+from django.core.management import call_command
+from io import StringIO
+
+
+@login_required
+def bulk_import_subjects(request):
+    """CSV 파일에서 과목 일괄 가져오기"""
+    if request.method == 'POST':
+        confirm = request.POST.get('confirm')
+
+        if confirm == 'yes':
+            # import_subjects 명령 실행
+            try:
+                out = StringIO()
+                call_command('import_subjects', stdout=out, stdin=StringIO('yes\n'))
+                output = out.getvalue()
+
+                # 성공 메시지 추출
+                if '성공적으로 가져와졌습니다' in output:
+                    messages.success(request, 'CSV 파일에서 과목을 성공적으로 가져왔습니다.')
+                else:
+                    messages.info(request, output)
+
+            except Exception as e:
+                messages.error(request, f'과목 가져오기 중 오류가 발생했습니다: {str(e)}')
+
+            return redirect('subjects:subject_list')
+        else:
+            return redirect('subjects:subject_list')
+
+    # GET 요청: 확인 페이지 표시
+    subject_count = Subject.objects.count()
+    return render(request, 'subjects/bulk_import_confirm.html', {
+        'subject_count': subject_count
+    })

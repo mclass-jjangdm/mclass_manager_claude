@@ -35,6 +35,7 @@ class Command(BaseCommand):
         with open(csv_file, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
+                category_code = row['교과코드'].strip() if '교과코드' in row and row['교과코드'].strip() else None
                 subject_code = row['과목코드'].strip()
                 name = row['과목명'].strip()
                 special_code = row['특수코드'].strip() if row['특수코드'].strip() else None
@@ -49,6 +50,7 @@ class Command(BaseCommand):
                 Subject.objects.update_or_create(
                     subject_code=subject_code,
                     defaults={
+                        'category_code': category_code,
                         'name': name,
                         'special_code': special_code,
                         'memo': memo,
