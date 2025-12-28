@@ -39,6 +39,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     path('teachers/', include('teachers.urls')),
     path('students/', include('students.urls')),
+    path('subjects/', include('subjects.urls')),
     path('maintenance/', include('maintenance.urls')),
     path('payment/', include('payment.urls')),
     path('bookstore/', include('bookstore.urls')),

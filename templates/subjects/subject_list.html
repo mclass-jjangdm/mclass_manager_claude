@@ -1,0 +1,96 @@
+{% extends 'subjects/base_subjects.html' %}
+
+{% block subject_content %}
+
+<div class="mb-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">과목 목록</h1>
+
+        <div class="flex items-center space-x-4">
+            <!-- 검색 폼 -->
+            <form method="get" class="flex items-center">
+                {% if show_inactive %}
+                <input type="hidden" name="show_inactive" value="on" />
+                {% endif %}
+                <input
+                    type="search"
+                    name="search"
+                    value="{{ search_query }}"
+                    placeholder="과목명 검색..."
+                    class="form-input rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                />
+                <button
+                    type="submit"
+                    class="ml-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md text-sm"
+                >
+                    검색
+                </button>
+            </form>
+
+            <!-- 비활성 과목 포함 체크박스 -->
+            <form method="get" class="flex items-center">
+                {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}" />
+                {% endif %}
+                <label class="inline-flex items-center">
+                    <input
+                        type="checkbox"
+                        name="show_inactive"
+                        {% if show_inactive %}checked{% endif %}
+                        class="form-checkbox h-4 w-4 text-indigo-600"
+                        onchange="this.form.submit()"
+                    />
+                    <span class="ml-2 text-sm text-gray-600">비활성 과목 포함</span>
+                </label>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 카테고리별 과목 카드 -->
+{% if grouped_subjects %}
+    {% for category, subjects in grouped_subjects.items %}
+    <div class="mb-8">
+        <div class="flex items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-700">{{ category }}</h2>
+            <span class="ml-3 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
+                {{ subjects|length }}개
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {% for subject in subjects %}
+            <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4 border-l-4 {% if subject.is_active %}border-indigo-500{% else %}border-gray-400 opacity-60{% endif %}">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1">
+                        <div class="text-xs text-gray-500 font-medium mb-1">{{ subject.subject_code }}</div>
+                        <h3 class="text-base font-semibold text-gray-900">{{ subject.name }}</h3>
+                    </div>
+                    {% if not subject.is_active %}
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                        비활성
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-100">
+                    <a href="{% url 'subjects:subject_update' subject.pk %}"
+                       class="text-xs text-indigo-600 hover:text-indigo-900 font-medium">
+                        수정
+                    </a>
+                    <a href="{% url 'subjects:subject_delete' subject.pk %}"
+                       class="text-xs text-red-600 hover:text-red-900 font-medium">
+                        삭제
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="bg-white rounded-lg shadow p-8 text-center">
+        <p class="text-gray-500">등록된 과목이 없습니다.</p>
+    </div>
+{% endif %}
+
+{% endblock %}
