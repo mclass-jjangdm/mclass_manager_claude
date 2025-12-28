@@ -58,17 +58,26 @@ class Subject(models.Model):
 
     @property
     def category(self):
-        """과목 카테고리 반환 (코드 첫 자리 기준)"""
-        code_prefix = self.subject_code[0] if self.subject_code else ''
+        """과목 카테고리 반환 (코드 앞 두 자리 기준)"""
+        if not self.subject_code or len(self.subject_code) < 2:
+            return '기타'
+
+        # 과목 코드의 앞 두 자리 추출
+        code_prefix = self.subject_code[:2]
+
+        # 두 자리 코드 매핑
         categories = {
-            '1': '국어',
-            '2': '수학',
-            '3': '영어',
-            '4': '사회',
-            '5': '과학',
-            '6': '한국사',
-            '7': '기술/가정/정보',
-            '8': '제2외국어',
-            '9': '한문',
+            '10': '국어',
+            '20': '수학',
+            '30': '영어',
+            '40': '사회',
+            '50': '과학',
+            '60': '한국사',
+            '70': '기술/가정',
+            '80': '제2외국어',
+            '90': '한문',
+            '91': '체육',
+            '92': '음악/미술',
+            '93': '교양',
         }
         return categories.get(code_prefix, '기타')

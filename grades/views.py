@@ -19,12 +19,17 @@ def internal_grade_create(request, student_pk):
         if form.is_valid():
             grade = form.save(commit=False)
             grade.student = student
+            grade.grade_type = 'internal'
             grade.full_clean()  # 모델 유효성 검사
             grade.save()
             messages.success(request, '내신 성적이 등록되었습니다.')
             return redirect('students:student_detail', pk=student_pk)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
-        form = InternalGradeForm(initial={'student': student})
+        form = InternalGradeForm()
 
     context = {
         'form': form,
@@ -44,12 +49,17 @@ def mock_grade_create(request, student_pk):
         if form.is_valid():
             grade = form.save(commit=False)
             grade.student = student
+            grade.grade_type = 'mock'
             grade.full_clean()  # 모델 유효성 검사
             grade.save()
             messages.success(request, '모의고사 성적이 등록되었습니다.')
             return redirect('students:student_detail', pk=student_pk)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
-        form = MockExamGradeForm(initial={'student': student})
+        form = MockExamGradeForm()
 
     context = {
         'form': form,
@@ -76,11 +86,19 @@ def grade_update(request, pk):
     if request.method == 'POST':
         form = FormClass(request.POST, instance=grade)
         if form.is_valid():
-            updated_grade = form.save(commit=False)
-            updated_grade.full_clean()
-            updated_grade.save()
-            messages.success(request, f'{grade_type_label} 성적이 수정되었습니다.')
-            return redirect('students:student_detail', pk=student.pk)
+            try:
+                updated_grade = form.save(commit=False)
+                updated_grade.full_clean()
+                updated_grade.save()
+                messages.success(request, f'{grade_type_label} 성적이 수정되었습니다.')
+                return redirect('students:student_detail', pk=student.pk)
+            except Exception as e:
+                messages.error(request, f'성적 수정 중 오류가 발생했습니다: {str(e)}')
+        else:
+            # 폼 에러 출력
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = FormClass(instance=grade)
 
@@ -119,24 +137,52 @@ def internal_grade_bulk_create(request, student_pk):
     student = get_object_or_404(Student, pk=student_pk)
 
     if request.method == 'POST':
-        formset = InternalGradeBulkFormSet(request.POST, queryset=Grade.objects.none())
-        if formset.is_valid():
-            instances = formset.save(commit=False)
+        try:
+            year = request.POST.get('year')
+            semester = request.POST.get('semester')
+            grade_count = int(request.POST.get('grade_count', 0))
+
+            if not year or not semester:
+                messages.error(request, '학년과 학기를 선택해주세요.')
+                return redirect('grades:internal_grade_bulk_create', student_pk=student_pk)
+
             created_count = 0
-            for instance in instances:
-                if instance.subject:  # 과목이 선택된 경우만 저장
-                    instance.student = student
-                    instance.grade_type = 'internal'
-                    instance.full_clean()
-                    instance.save()
+            for i in range(grade_count):
+                subject_id = request.POST.get(f'grades[{i}][subject]')
+                credits = request.POST.get(f'grades[{i}][credits]')
+                score = request.POST.get(f'grades[{i}][score]')
+                subject_average = request.POST.get(f'grades[{i}][subject_average]')
+                subject_stddev = request.POST.get(f'grades[{i}][subject_stddev]')
+                grade_rank = request.POST.get(f'grades[{i}][grade_rank]')
+                is_elective = request.POST.get(f'grades[{i}][is_elective]') == '1'
+
+                if subject_id:
+                    subject = Subject.objects.get(pk=subject_id)
+                    grade = Grade(
+                        student=student,
+                        grade_type='internal',
+                        subject=subject,
+                        year=year,
+                        semester=semester,
+                        credits=credits,
+                        score=score,
+                        subject_average=subject_average,
+                        subject_stddev=subject_stddev,
+                        grade_rank=grade_rank,
+                        is_elective=is_elective
+                    )
+                    grade.full_clean()
+                    grade.save()
                     created_count += 1
+
             messages.success(request, f'{created_count}개의 내신 성적이 등록되었습니다.')
             return redirect('students:student_detail', pk=student_pk)
-    else:
-        formset = InternalGradeBulkFormSet(queryset=Grade.objects.none())
+
+        except Exception as e:
+            messages.error(request, f'성적 저장 중 오류가 발생했습니다: {str(e)}')
+            return redirect('grades:internal_grade_bulk_create', student_pk=student_pk)
 
     context = {
-        'formset': formset,
         'student': student,
     }
     return render(request, 'grades/grade_bulk_form.html', context)

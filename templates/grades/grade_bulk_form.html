@@ -10,57 +10,149 @@
             <p class="text-sm text-gray-500 mt-1">한 학기의 여러 과목 성적을 한 번에 입력할 수 있습니다.</p>
         </div>
 
-        <form method="post" id="bulk-grade-form" class="space-y-4">
+        <form method="post" id="bulk-grade-form" class="space-y-6">
             {% csrf_token %}
-            {{ formset.management_form }}
 
+            <!-- 학년/학기 선택 (공통) -->
+            <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-indigo-900 mb-2">학년 *</label>
+                        <select id="common-year" name="common_year" required
+                                class="w-full px-3 py-2 border border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">---------</option>
+                            <option value="1">1학년</option>
+                            <option value="2">2학년</option>
+                            <option value="3">3학년</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-indigo-900 mb-2">학기 *</label>
+                        <div class="flex space-x-4 pt-2">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="common_semester" value="1" required
+                                       class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2 text-sm font-medium text-indigo-900">1학기</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="common_semester" value="2" required
+                                       class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2 text-sm font-medium text-indigo-900">2학기</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 과목별 성적 입력 테이블 -->
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 border">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">학년</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">학기</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">교과</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">과목</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">단위</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">원점수</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">평균</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">표준편차</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">등급</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">진로선택</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">삭제</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-32">교과</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-48">과목 *</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-20">단위 *</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-24">원점수 *</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-24">평균 *</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-24">표준편차 *</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-20">등급 *</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-24">진로선택</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-20">삭제</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for form in formset %}
-                        <tr class="formset-row">
+                    <tbody id="grades-tbody" class="bg-white divide-y divide-gray-200">
+                        <!-- 초기 행 1개 -->
+                        <tr class="grade-row">
                             <td class="px-3 py-2">
-                                {{ form.student }}
-                                {{ form.year }}
+                                <select class="category-select w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">--- 선택 ---</option>
+                                    <option value="국어">국어</option>
+                                    <option value="수학">수학</option>
+                                    <option value="영어">영어</option>
+                                    <option value="사회">사회</option>
+                                    <option value="과학">과학</option>
+                                    <option value="한국사">한국사</option>
+                                    <option value="체육">체육</option>
+                                    <option value="음악/미술">음악/미술</option>
+                                    <option value="교양">교양</option>
+                                    <option value="기술/가정">기술/가정</option>
+                                    <option value="제2외국어">제2외국어</option>
+                                    <option value="한문">한문</option>
+                                    <option value="기타">기타</option>
+                                </select>
                             </td>
-                            <td class="px-3 py-2">{{ form.semester }}</td>
-                            <td class="px-3 py-2">{{ form.category }}</td>
-                            <td class="px-3 py-2">{{ form.subject }}</td>
-                            <td class="px-3 py-2">{{ form.credits }}</td>
-                            <td class="px-3 py-2">{{ form.score }}</td>
-                            <td class="px-3 py-2">{{ form.subject_average }}</td>
-                            <td class="px-3 py-2">{{ form.subject_stddev }}</td>
-                            <td class="px-3 py-2">{{ form.grade_rank }}</td>
-                            <td class="px-3 py-2 text-center">{{ form.is_elective }}</td>
-                            <td class="px-3 py-2 text-center">{{ form.DELETE }}</td>
+                            <td class="px-3 py-2">
+                                <select name="subject" required
+                                        class="subject-select w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">---------</option>
+                                </select>
+                            </td>
+                            <td class="px-3 py-2">
+                                <input type="number" name="credits" min="1" step="1" required
+                                       class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       placeholder="3">
+                            </td>
+                            <td class="px-3 py-2">
+                                <input type="number" name="score" min="0" step="0.01" required
+                                       class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       placeholder="95.5">
+                            </td>
+                            <td class="px-3 py-2">
+                                <input type="number" name="subject_average" min="0" step="0.01" required
+                                       class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       placeholder="85.0">
+                            </td>
+                            <td class="px-3 py-2">
+                                <input type="number" name="subject_stddev" min="0" step="0.01" required
+                                       class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       placeholder="12.5">
+                            </td>
+                            <td class="px-3 py-2">
+                                <select name="grade_rank" required
+                                        class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">-</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                </select>
+                            </td>
+                            <td class="px-3 py-2 text-center">
+                                <input type="checkbox" name="is_elective"
+                                       class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            </td>
+                            <td class="px-3 py-2 text-center">
+                                <button type="button" onclick="removeRow(this)"
+                                        class="text-red-600 hover:text-red-800 font-medium text-sm">
+                                    삭제
+                                </button>
+                            </td>
                         </tr>
-                        {% endfor %}
                     </tbody>
                 </table>
             </div>
 
+            <!-- 과목 추가 버튼 -->
+            <div class="flex justify-start">
+                <button type="button" onclick="addRow()"
+                        class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm font-medium transition-colors">
+                    + 과목 추가
+                </button>
+            </div>
+
+            <!-- 제출 버튼 -->
             <div class="flex justify-end space-x-3 pt-4 border-t">
                 <a href="{% url 'students:student_detail' student.pk %}"
-                   class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                   class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                     취소
                 </a>
                 <button type="submit"
-                        class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md text-sm font-medium">
+                        class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md text-sm font-medium transition-colors">
                     일괄 등록
                 </button>
             </div>
@@ -68,69 +160,191 @@
     </div>
 </div>
 
-<style>
-    input[type="text"], input[type="number"], select {
-        width: 100%;
-        padding: 0.375rem 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-    }
-
-    input[type="checkbox"], input[type="radio"] {
-        width: 1rem;
-        height: 1rem;
-    }
-
-    input:focus, select:focus {
-        outline: none;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-    }
-
-    td {
-        min-width: 100px;
-    }
-
-    td:first-child {
-        min-width: 80px;
-    }
-</style>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 모든 교과 선택 드롭다운에 이벤트 리스너 추가
-    const categorySelects = document.querySelectorAll('.category-select');
+// 전역 과목 목록 캐시
+let allSubjectsCache = null;
 
-    categorySelects.forEach(function(categorySelect) {
+// 페이지 로드 시 모든 과목 가져오기
+document.addEventListener('DOMContentLoaded', function() {
+    loadAllSubjects();
+    attachCategoryChangeListeners();
+});
+
+// 모든 과목 목록 가져오기
+function loadAllSubjects() {
+    fetch('{% url "grades:get_subjects_by_category" %}')
+        .then(response => response.json())
+        .then(data => {
+            allSubjectsCache = data.subjects;
+            // 첫 번째 행의 과목 드롭다운 초기화
+            const firstSubjectSelect = document.querySelector('.subject-select');
+            if (firstSubjectSelect) {
+                populateSubjectSelect(firstSubjectSelect, allSubjectsCache);
+            }
+        })
+        .catch(error => console.error('Error loading subjects:', error));
+}
+
+// 과목 드롭다운 채우기
+function populateSubjectSelect(selectElement, subjects) {
+    selectElement.innerHTML = '<option value="">---------</option>';
+    subjects.forEach(function(subject) {
+        const option = document.createElement('option');
+        option.value = subject.id;
+        option.textContent = subject.name;
+        selectElement.appendChild(option);
+    });
+}
+
+// 교과 선택 이벤트 리스너 연결
+function attachCategoryChangeListeners() {
+    document.querySelectorAll('.category-select').forEach(function(categorySelect) {
         categorySelect.addEventListener('change', function() {
             const row = this.closest('tr');
-            const subjectSelect = row.querySelector('select[name$="-subject"]');
+            const subjectSelect = row.querySelector('.subject-select');
             const category = this.value;
 
-            if (!subjectSelect) return;
+            if (!category) {
+                // 교과 선택 안 한 경우 전체 과목 표시
+                populateSubjectSelect(subjectSelect, allSubjectsCache || []);
+                return;
+            }
 
-            // AJAX로 해당 교과의 과목 목록 가져오기
-            fetch(`{% url 'grades:get_subjects_by_category' %}?category=${encodeURIComponent(category)}`)
+            // 선택한 교과의 과목만 필터링
+            fetch(`{% url "grades:get_subjects_by_category" %}?category=${encodeURIComponent(category)}`)
                 .then(response => response.json())
                 .then(data => {
-                    // 기존 옵션 제거
-                    subjectSelect.innerHTML = '<option value="">---------</option>';
-
-                    // 새 옵션 추가
-                    data.subjects.forEach(function(subject) {
-                        const option = document.createElement('option');
-                        option.value = subject.id;
-                        option.textContent = subject.name;
-                        subjectSelect.appendChild(option);
-                    });
+                    populateSubjectSelect(subjectSelect, data.subjects);
                 })
-                .catch(error => {
-                    console.error('Error fetching subjects:', error);
-                });
+                .catch(error => console.error('Error fetching subjects:', error));
         });
+    });
+}
+
+// 과목 행 추가
+function addRow() {
+    const tbody = document.getElementById('grades-tbody');
+    const newRow = tbody.querySelector('.grade-row').cloneNode(true);
+
+    // 입력 필드 초기화
+    newRow.querySelectorAll('input').forEach(input => {
+        if (input.type === 'checkbox') {
+            input.checked = false;
+        } else {
+            input.value = '';
+        }
+    });
+    newRow.querySelectorAll('select').forEach(select => {
+        select.selectedIndex = 0;
+    });
+
+    // 과목 드롭다운 초기화
+    const subjectSelect = newRow.querySelector('.subject-select');
+    if (allSubjectsCache) {
+        populateSubjectSelect(subjectSelect, allSubjectsCache);
+    }
+
+    tbody.appendChild(newRow);
+
+    // 새 행의 교과 선택 이벤트 리스너 연결
+    attachCategoryChangeListeners();
+}
+
+// 과목 행 삭제
+function removeRow(button) {
+    const tbody = document.getElementById('grades-tbody');
+    const rows = tbody.querySelectorAll('.grade-row');
+
+    // 최소 1개 행은 유지
+    if (rows.length <= 1) {
+        alert('최소 1개의 과목은 입력해야 합니다.');
+        return;
+    }
+
+    button.closest('tr').remove();
+}
+
+// 폼 제출 시 검증 및 데이터 처리
+document.getElementById('bulk-grade-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const commonYear = document.getElementById('common-year').value;
+    const commonSemester = document.querySelector('input[name="common_semester"]:checked');
+
+    if (!commonYear || !commonSemester) {
+        alert('학년과 학기를 선택해주세요.');
+        return;
+    }
+
+    const rows = document.querySelectorAll('.grade-row');
+    const formData = new FormData();
+
+    formData.append('year', commonYear);
+    formData.append('semester', commonSemester.value);
+
+    let validRowCount = 0;
+    rows.forEach((row, index) => {
+        const subject = row.querySelector('select[name="subject"]').value;
+        if (!subject) return; // 과목 미선택 시 스킵
+
+        const credits = row.querySelector('input[name="credits"]').value;
+        const score = row.querySelector('input[name="score"]').value;
+        const subjectAverage = row.querySelector('input[name="subject_average"]').value;
+        const subjectStddev = row.querySelector('input[name="subject_stddev"]').value;
+        const gradeRank = row.querySelector('select[name="grade_rank"]').value;
+        const isElective = row.querySelector('input[name="is_elective"]').checked;
+
+        if (!credits || !score || !subjectAverage || !subjectStddev || !gradeRank) {
+            alert(`${index + 1}번째 행의 필수 항목을 모두 입력해주세요.`);
+            return;
+        }
+
+        formData.append(`grades[${validRowCount}][subject]`, subject);
+        formData.append(`grades[${validRowCount}][credits]`, credits);
+        formData.append(`grades[${validRowCount}][score]`, score);
+        formData.append(`grades[${validRowCount}][subject_average]`, subjectAverage);
+        formData.append(`grades[${validRowCount}][subject_stddev]`, subjectStddev);
+        formData.append(`grades[${validRowCount}][grade_rank]`, gradeRank);
+        formData.append(`grades[${validRowCount}][is_elective]`, isElective ? '1' : '0');
+
+        validRowCount++;
+    });
+
+    if (validRowCount === 0) {
+        alert('최소 1개 이상의 과목 성적을 입력해주세요.');
+        return;
+    }
+
+    formData.append('grade_count', validRowCount);
+
+    // 폼 제출
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = '{% url "students:student_detail" student.pk %}';
+        } else {
+            return response.text().then(text => {
+                alert('저장 중 오류가 발생했습니다: ' + text);
+            });
+        }
+    })
+    .catch(error => {
+        alert('저장 중 오류가 발생했습니다: ' + error);
     });
 });
 </script>
+
+<style>
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        opacity: 1;
+    }
+</style>
 
 {% endblock %}
