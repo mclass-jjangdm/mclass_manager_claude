@@ -246,11 +246,14 @@
 <div class="bg-white rounded-lg shadow p-6 mb-8">
     <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-bold text-gray-800">성적 관리</h3>
-        <div class="flex gap-2">
-            <a href="{% url 'grades:internal_grade_create' student.pk %}"
-               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                내신 성적 입력
-            </a>
+        <div class="flex gap-2 flex-wrap">
+            <button onclick="confirmDeleteAllGrades()"
+               class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                전체 성적 삭제
+            </button>
             <a href="{% url 'grades:internal_grade_bulk_create' student.pk %}"
                class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 한 학기 일괄 입력
@@ -259,8 +262,89 @@
                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 모의고사 성적 입력
             </a>
+            <a href="{% url 'grades:grade_import' student.pk %}"
+               class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                파일로 일괄 업로드
+            </a>
         </div>
     </div>
+
+    <!-- 성적 통계 요약 -->
+    {% if semester_averages %}
+    <div class="mb-6 space-y-4">
+        <!-- 학기별 평균 내신 등급 -->
+        <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">학기별 평균 내신 등급 (진로선택 과목 제외)</h4>
+            <div class="flex flex-wrap gap-3">
+                {% for avg in semester_averages %}
+                <div class="bg-white rounded-lg shadow-sm px-4 py-3 border border-gray-200">
+                    <div class="text-xs text-gray-500 mb-1">{{ avg.year }}학년 {{ avg.semester }}학기</div>
+                    <div class="text-2xl font-bold text-indigo-600">{{ avg.average }}</div>
+                    <div class="text-xs text-gray-400">{{ avg.total_credits }}단위</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 전체 평균 및 가중치 적용 등급 -->
+        <div class="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">전체 평균 내신 등급</h4>
+            <div class="flex flex-wrap gap-4">
+                <!-- 동일 가중치 전체 평균 -->
+                {% if overall_average %}
+                <div class="bg-white rounded-lg shadow-sm px-5 py-4 border-2 border-green-300">
+                    <div class="text-xs text-gray-500 mb-1">전체 (동일 가중치)</div>
+                    <div class="text-3xl font-bold text-green-600">{{ overall_average }}</div>
+                </div>
+                {% endif %}
+
+                <!-- 학년별 가중치 적용 -->
+                {% for weighted in weighted_averages %}
+                <div class="bg-white rounded-lg shadow-sm px-4 py-3 border border-gray-200">
+                    <div class="text-xs text-gray-500 mb-1">{{ weighted.name }}</div>
+                    <div class="text-2xl font-bold text-teal-600">{{ weighted.average }}</div>
+                    <div class="text-xs text-gray-400">1:2:3학년</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 교과 조합별 평균 등급 -->
+        {% if combination_averages %}
+        <div class="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">교과 조합별 평균 등급</h4>
+            <div class="flex flex-wrap gap-4">
+                {% for combo in combination_averages %}
+                <div class="bg-white rounded-lg shadow-sm px-4 py-3 border border-gray-200">
+                    <div class="text-xs text-gray-500 mb-1">{{ combo.name }}</div>
+                    <div class="text-2xl font-bold text-amber-600">{{ combo.average }}</div>
+                    <div class="text-xs text-gray-400">{{ combo.total_credits }}단위</div>
+                    {% if combo.missing %}
+                    <div class="text-xs text-red-400 mt-1">미등록: {{ combo.missing|join:", " }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 학기별 교과별 성적 차트 -->
+        <div class="p-4 bg-white rounded-lg border border-gray-200">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">학기별 교과별 성적 차트</h4>
+            <div class="mb-3">
+                <select id="semester-select" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">학기 선택</option>
+                </select>
+            </div>
+            <div id="grade-chart-container" class="h-80">
+                <canvas id="gradeChart"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- 탭 메뉴 -->
     <div class="border-b border-gray-200 mb-4">
@@ -367,6 +451,9 @@
     </div>
 </div>
 
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 function showGradeTab(type) {
     // 모든 탭 버튼 비활성화
@@ -387,7 +474,151 @@ function showGradeTab(type) {
     // 선택된 컨텐츠 표시
     document.getElementById('grade-content-' + type).classList.remove('hidden');
 }
+
+function confirmDeleteAllGrades() {
+    if (confirm('정말로 이 학생의 모든 성적을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) {
+        document.getElementById('delete-all-grades-form').submit();
+    }
+}
+
+// 차트 관련 코드
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {{ chart_data|safe }};
+    const semesterSelect = document.getElementById('semester-select');
+    const chartCanvas = document.getElementById('gradeChart');
+    let gradeChart = null;
+
+    if (!chartData || chartData.length === 0) return;
+
+    // 교과별 색상 정의
+    const categoryColors = {
+        '국어': { bg: 'rgba(239, 68, 68, 0.7)', border: 'rgb(239, 68, 68)' },
+        '수학': { bg: 'rgba(59, 130, 246, 0.7)', border: 'rgb(59, 130, 246)' },
+        '영어': { bg: 'rgba(34, 197, 94, 0.7)', border: 'rgb(34, 197, 94)' },
+        '사회': { bg: 'rgba(249, 115, 22, 0.7)', border: 'rgb(249, 115, 22)' },
+        '과학': { bg: 'rgba(168, 85, 247, 0.7)', border: 'rgb(168, 85, 247)' },
+        '한국사': { bg: 'rgba(236, 72, 153, 0.7)', border: 'rgb(236, 72, 153)' },
+        '제2외국어': { bg: 'rgba(20, 184, 166, 0.7)', border: 'rgb(20, 184, 166)' },
+        '기술가정': { bg: 'rgba(245, 158, 11, 0.7)', border: 'rgb(245, 158, 11)' },
+        '체육': { bg: 'rgba(99, 102, 241, 0.7)', border: 'rgb(99, 102, 241)' },
+        '예술': { bg: 'rgba(244, 63, 94, 0.7)', border: 'rgb(244, 63, 94)' },
+        '기타': { bg: 'rgba(107, 114, 128, 0.7)', border: 'rgb(107, 114, 128)' }
+    };
+
+    // 학기 선택 옵션 추가
+    chartData.forEach((semester, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = semester.label;
+        semesterSelect.appendChild(option);
+    });
+
+    // 첫 번째 학기 선택
+    if (chartData.length > 0) {
+        semesterSelect.value = 0;
+        updateChart(0);
+    }
+
+    // 학기 선택 변경 시 차트 업데이트
+    semesterSelect.addEventListener('change', function() {
+        if (this.value !== '') {
+            updateChart(parseInt(this.value));
+        }
+    });
+
+    function updateChart(semesterIndex) {
+        const semester = chartData[semesterIndex];
+        const categories = semester.categories;
+
+        // 교과별 데이터 수집 (진로선택 제외됨)
+        const labels = [];
+        const data = [];
+        const backgroundColors = [];
+        const borderColors = [];
+
+        Object.keys(categories).sort().forEach(category => {
+            const categoryData = categories[category];
+            labels.push(category);
+            data.push(categoryData.average);
+
+            const colors = categoryColors[category] || categoryColors['기타'];
+            backgroundColors.push(colors.bg);
+            borderColors.push(colors.border);
+        });
+
+        // 기존 차트 삭제
+        if (gradeChart) {
+            gradeChart.destroy();
+        }
+
+        // 새 차트 생성
+        gradeChart = new Chart(chartCanvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '평균 등급',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        reverse: true,
+                        min: 0,
+                        max: 10,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                return value + '등급';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '등급 (낮을수록 좋음)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: semester.label + ' 교과별 평균 등급',
+                        font: {
+                            size: 16
+                        }
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '평균 ' + context.parsed.y.toFixed(2) + '등급';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
 </script>
+
+<!-- 전체 성적 삭제 폼 (숨김) -->
+<form id="delete-all-grades-form" method="post" action="{% url 'grades:delete_all_grades' student.pk %}" style="display: none;">
+    {% csrf_token %}
+</form>
 
 <!-- 하단 버튼 -->
 <div class="mt-8 flex justify-center">
