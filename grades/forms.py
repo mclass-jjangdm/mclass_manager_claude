@@ -26,13 +26,17 @@ class InternalGradeForm(forms.ModelForm):
         fields = [
             'subject', 'year', 'semester', 'credits',
             'score', 'subject_average', 'subject_stddev', 'grade_rank',
-            'is_elective'
+            'is_elective', 'achievement_level', 'distribution_a', 'distribution_b', 'distribution_c'
         ]
         widgets = {
             'year': forms.Select(choices=[(i, f'{i}학년') for i in range(1, 4)]),
             'semester': forms.RadioSelect(),
             'grade_rank': forms.Select(),
-            'is_elective': forms.CheckboxInput(),
+            'is_elective': forms.CheckboxInput(attrs={'class': 'elective-checkbox'}),
+            'achievement_level': forms.Select(attrs={'class': 'elective-field'}),
+            'distribution_a': forms.NumberInput(attrs={'class': 'elective-field', 'step': '0.01', 'placeholder': 'A 비율'}),
+            'distribution_b': forms.NumberInput(attrs={'class': 'elective-field', 'step': '0.01', 'placeholder': 'B 비율'}),
+            'distribution_c': forms.NumberInput(attrs={'class': 'elective-field', 'step': '0.01', 'placeholder': 'C 비율'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -43,12 +47,47 @@ class InternalGradeForm(forms.ModelForm):
         # 활성화된 과목만 선택 가능
         self.fields['subject'].queryset = Subject.objects.filter(is_active=True).order_by('subject_code')
 
+        # 진로선택 과목 필드는 선택적으로 표시
+        self.fields['subject_stddev'].required = False
+        self.fields['grade_rank'].required = False
+        self.fields['achievement_level'].required = False
+        self.fields['distribution_a'].required = False
+        self.fields['distribution_b'].required = False
+        self.fields['distribution_c'].required = False
+
         # 수정 시 현재 과목의 카테고리를 초기값으로 설정
         if self.instance.pk and self.instance.subject:
             self.fields['category'].initial = self.instance.subject.category
 
     def clean(self):
         cleaned_data = super().clean()
+        is_elective = cleaned_data.get('is_elective', False)
+
+        if is_elective:
+            # 진로선택 과목: 성취도, 분포비율 필수
+            if not cleaned_data.get('achievement_level'):
+                self.add_error('achievement_level', '진로선택 과목은 성취도가 필수입니다.')
+            if cleaned_data.get('distribution_a') is None:
+                self.add_error('distribution_a', '진로선택 과목은 성취도 A 비율이 필수입니다.')
+            if cleaned_data.get('distribution_b') is None:
+                self.add_error('distribution_b', '진로선택 과목은 성취도 B 비율이 필수입니다.')
+            if cleaned_data.get('distribution_c') is None:
+                self.add_error('distribution_c', '진로선택 과목은 성취도 C 비율이 필수입니다.')
+            # 진로선택일 경우 등급/표준편차 초기화
+            cleaned_data['grade_rank'] = None
+            cleaned_data['subject_stddev'] = None
+        else:
+            # 일반 과목: 등급, 표준편차 필수
+            if cleaned_data.get('grade_rank') is None:
+                self.add_error('grade_rank', '일반 과목은 등급이 필수입니다.')
+            if cleaned_data.get('subject_stddev') is None:
+                self.add_error('subject_stddev', '일반 과목은 표준편차가 필수입니다.')
+            # 일반 과목일 경우 진로선택 필드 초기화
+            cleaned_data['achievement_level'] = None
+            cleaned_data['distribution_a'] = None
+            cleaned_data['distribution_b'] = None
+            cleaned_data['distribution_c'] = None
+
         # category 필드는 모델에 저장되지 않으므로 제거
         cleaned_data.pop('category', None)
         return cleaned_data

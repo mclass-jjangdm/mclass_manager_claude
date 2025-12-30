@@ -434,6 +434,10 @@ def create_grade_from_row(row, student, grade_type, row_num):
     # 공통 필드 파싱 (다양한 헤더명 지원)
     year = parse_int(get_value(row, '학년', 'year', 'grade'), '학년')
 
+    # 진로선택 여부 먼저 확인
+    is_elective_raw = get_value(row, '진로선택', '진로_선택', '선택과목', 'elective')
+    is_elective = str(is_elective_raw).strip().lower() in ['1', 'true', 'yes', 'y', 'o', '예', '진로선택', '○', 'v', '선택']
+
     # 중복 체크 (grade_type에 따라 다른 조건)
     if grade_type == 'internal':
         semester = parse_int(get_value(row, '학기', 'semester'), '학기')
@@ -461,13 +465,19 @@ def create_grade_from_row(row, student, grade_type, row_num):
         ).exists()
         if existing:
             raise ValueError(f"이미 등록된 성적입니다: {exam_year_val}년 {exam_month_val}월 {exam_name_val} {subject.name}")
+
     score = parse_decimal(get_value(row, '원점수', '점수', 'score'), '원점수')
     subject_average = parse_decimal(get_value(row, '과목평균', '평균', '과목_평균', 'average', 'avg'), '과목평균')
-    subject_stddev = parse_decimal(get_value(row, '표준편차', '표준_편차', 'stddev', 'std'), '표준편차')
-    grade_rank = parse_int(get_value(row, '등급', 'rank', 'grade_rank'), '등급')
 
-    if not (1 <= grade_rank <= 9):
-        raise ValueError(f"등급은 1~9 사이여야 합니다: {grade_rank}")
+    # 진로선택 과목일 경우 등급/표준편차 대신 성취도/분포비율
+    if is_elective and grade_type == 'internal':
+        subject_stddev = None
+        grade_rank = None
+    else:
+        subject_stddev = parse_decimal(get_value(row, '표준편차', '표준_편차', 'stddev', 'std'), '표준편차')
+        grade_rank = parse_int(get_value(row, '등급', 'rank', 'grade_rank'), '등급')
+        if not (1 <= grade_rank <= 9):
+            raise ValueError(f"등급은 1~9 사이여야 합니다: {grade_rank}")
 
     # Grade 객체 생성
     grade_obj = Grade(
@@ -485,8 +495,6 @@ def create_grade_from_row(row, student, grade_type, row_num):
         # 내신 전용 필드
         semester = parse_int(get_value(row, '학기', 'semester'), '학기')
         credits = parse_int(get_value(row, '단위', '이수단위', 'credits', 'unit'), '단위')
-        is_elective_raw = get_value(row, '진로선택', '진로_선택', '선택과목', 'elective')
-        is_elective = str(is_elective_raw).strip().lower() in ['1', 'true', 'yes', 'y', 'o', '예', '진로선택', '○', 'v', '선택']
 
         if semester not in [1, 2]:
             raise ValueError(f"학기는 1 또는 2여야 합니다: {semester}")
@@ -494,6 +502,28 @@ def create_grade_from_row(row, student, grade_type, row_num):
         grade_obj.semester = semester
         grade_obj.credits = credits
         grade_obj.is_elective = is_elective
+
+        # 진로선택 과목일 경우 성취도와 분포비율 파싱
+        if is_elective:
+            achievement_level = str(get_value(row, '성취도', 'achievement', 'achievement_level') or '').strip().upper()
+            if achievement_level not in ['A', 'B', 'C']:
+                raise ValueError(f"성취도는 A, B, C 중 하나여야 합니다: {achievement_level}")
+
+            distribution_a = parse_decimal_optional(get_value(row, '분포비율A', 'A비율', '성취도A비율', 'distribution_a'))
+            distribution_b = parse_decimal_optional(get_value(row, '분포비율B', 'B비율', '성취도B비율', 'distribution_b'))
+            distribution_c = parse_decimal_optional(get_value(row, '분포비율C', 'C비율', '성취도C비율', 'distribution_c'))
+
+            if distribution_a is None:
+                raise ValueError("진로선택 과목은 분포비율A가 필수입니다")
+            if distribution_b is None:
+                raise ValueError("진로선택 과목은 분포비율B가 필수입니다")
+            if distribution_c is None:
+                raise ValueError("진로선택 과목은 분포비율C가 필수입니다")
+
+            grade_obj.achievement_level = achievement_level
+            grade_obj.distribution_a = distribution_a
+            grade_obj.distribution_b = distribution_b
+            grade_obj.distribution_c = distribution_c
 
     else:  # mock
         # 모의고사 전용 필드
@@ -537,6 +567,16 @@ def parse_decimal(value, field_name):
         raise ValueError(f"{field_name} 값이 올바르지 않습니다: {value}")
 
 
+def parse_decimal_optional(value):
+    """선택적 소수 파싱 헬퍼"""
+    if value is None or str(value).strip() == '':
+        return None
+    try:
+        return Decimal(str(value).strip())
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+
+
 @login_required
 def delete_all_grades(request, student_pk):
     """학생의 모든 성적 삭제"""
@@ -557,12 +597,13 @@ def download_grade_template(request, template_type):
     if template_type == 'internal':
         # 내신 성적 템플릿
         filename = 'internal_grade_template.csv'
-        headers = ['학년', '학기', '과목코드', '과목명', '단위', '원점수', '과목평균', '표준편차', '등급', '진로선택']
+        headers = ['학년', '학기', '과목코드', '과목명', '단위', '원점수', '과목평균', '표준편차', '등급', '진로선택', '성취도', '분포비율A', '분포비율B', '분포비율C']
         sample_data = [
-            ['1', '1', '1001', '국어', '3', '85', '70.5', '12.3', '2', ''],
-            ['1', '1', '2001', '수학Ⅰ', '4', '92', '68.2', '15.1', '1', ''],
-            ['1', '1', '3001', '영어', '3', '88', '72.1', '11.5', '2', ''],
-            ['1', '2', '1002', '화법과 작문', '3', '78', '65.3', '13.2', '3', '진로선택'],
+            ['1', '1', '1001', '국어', '3', '85', '70.5', '12.3', '2', '', '', '', '', ''],
+            ['1', '1', '2001', '수학Ⅰ', '4', '92', '68.2', '15.1', '1', '', '', '', '', ''],
+            ['1', '1', '3001', '영어', '3', '88', '72.1', '11.5', '2', '', '', '', '', ''],
+            ['2', '1', '5001', '물리학Ⅱ', '3', '85', '72.3', '', '', '진로선택', 'A', '25.5', '45.2', '29.3'],
+            ['2', '1', '5002', '화학Ⅱ', '3', '78', '68.5', '', '', '진로선택', 'B', '20.1', '50.3', '29.6'],
         ]
     else:  # mock
         # 모의고사 성적 템플릿

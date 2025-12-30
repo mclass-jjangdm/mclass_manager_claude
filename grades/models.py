@@ -64,11 +64,15 @@ class Grade(models.Model):
     subject_stddev = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(0)],
         verbose_name='과목 표준편차'
     )
     grade_rank = models.IntegerField(
         choices=GRADE_RANK_CHOICES,
+        null=True,
+        blank=True,
         verbose_name='등급'
     )
 
@@ -88,6 +92,41 @@ class Grade(models.Model):
     is_elective = models.BooleanField(
         default=False,
         verbose_name='진로선택 과목 여부'
+    )
+
+    # 진로선택 과목 전용 필드
+    ACHIEVEMENT_CHOICES = [
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+    ]
+    achievement_level = models.CharField(
+        max_length=1,
+        choices=ACHIEVEMENT_CHOICES,
+        null=True,
+        blank=True,
+        verbose_name='성취도'
+    )
+    distribution_a = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='성취도 A 비율'
+    )
+    distribution_b = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='성취도 B 비율'
+    )
+    distribution_c = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='성취도 C 비율'
     )
 
     # 모의고사 전용 필드
@@ -156,6 +195,25 @@ class Grade(models.Model):
                 raise ValidationError({'semester': '내신 성적은 학기가 필수입니다.'})
             if not self.credits:
                 raise ValidationError({'credits': '내신 성적은 단위가 필수입니다.'})
+
+            # 진로선택 과목 여부에 따른 필수 필드 검사
+            if self.is_elective:
+                # 진로선택 과목: 성취도, 분포비율 필수
+                if not self.achievement_level:
+                    raise ValidationError({'achievement_level': '진로선택 과목은 성취도가 필수입니다.'})
+                if self.distribution_a is None:
+                    raise ValidationError({'distribution_a': '진로선택 과목은 성취도 A 비율이 필수입니다.'})
+                if self.distribution_b is None:
+                    raise ValidationError({'distribution_b': '진로선택 과목은 성취도 B 비율이 필수입니다.'})
+                if self.distribution_c is None:
+                    raise ValidationError({'distribution_c': '진로선택 과목은 성취도 C 비율이 필수입니다.'})
+            else:
+                # 일반 과목: 등급, 표준편차 필수
+                if self.grade_rank is None:
+                    raise ValidationError({'grade_rank': '일반 과목은 등급이 필수입니다.'})
+                if self.subject_stddev is None:
+                    raise ValidationError({'subject_stddev': '일반 과목은 표준편차가 필수입니다.'})
+
         elif self.grade_type == 'mock':
             # 모의고사 성적은 시험 연도, 월, 이름, 백분위 필수
             if not self.exam_year:
@@ -166,3 +224,5 @@ class Grade(models.Model):
                 raise ValidationError({'exam_name': '모의고사 성적은 시험 이름이 필수입니다.'})
             if self.percentile is None:
                 raise ValidationError({'percentile': '모의고사 성적은 백분위가 필수입니다.'})
+            if self.grade_rank is None:
+                raise ValidationError({'grade_rank': '모의고사 성적은 등급이 필수입니다.'})
