@@ -249,13 +249,18 @@ def student_detail(request, pk):
                 'missing': missing_categories,
             })
 
+    # 일반 내신 성적과 진로선택 성적 분리
+    regular_internal_grades = [g for g in internal_grades if not g.is_elective]
+    elective_grades = [g for g in internal_grades if g.is_elective]
+
     context = {
         'student': student,
         'unpaid_sales': unpaid_sales,
         'paid_sales': paid_sales,
         'total_unpaid': student.unpaid_amount,
         'total_paid': total_paid,
-        'internal_grades': internal_grades,
+        'internal_grades': regular_internal_grades,
+        'elective_grades': elective_grades,
         'mock_grades': mock_grades,
         'semester_averages': semester_averages,
         'overall_average': overall_average,
