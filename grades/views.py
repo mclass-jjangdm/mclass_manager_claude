@@ -10,7 +10,9 @@ from .models import Grade
 from .forms import InternalGradeForm, MockExamGradeForm, InternalGradeBulkFormSet, GradeImportForm
 import csv
 import io
+import json
 from decimal import Decimal, InvalidOperation
+from collections import defaultdict
 
 
 @login_required
@@ -588,6 +590,165 @@ def delete_all_grades(request, student_pk):
         messages.success(request, f'{deleted_count}개의 성적이 삭제되었습니다.')
 
     return redirect('students:student_detail', pk=student_pk)
+
+
+@login_required
+def student_grades(request, student_pk):
+    """학생 성적 전용 페이지"""
+    student = get_object_or_404(Student, pk=student_pk)
+
+    # 성적 데이터 조회
+    internal_grades = Grade.objects.filter(
+        student=student,
+        grade_type='internal'
+    ).select_related('subject').order_by('-year', '-semester', 'subject__subject_code')
+
+    mock_grades = Grade.objects.filter(
+        student=student,
+        grade_type='mock'
+    ).select_related('subject').order_by('-exam_year', '-exam_month', 'subject__subject_code')
+
+    # 학기별 평균 내신 등급 계산 (진로선택 과목 제외)
+    semester_stats = defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
+    year_stats = defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
+
+    # 학기별/교과별 성적 데이터 (차트용) - 진로선택 제외, 교과별 집계
+    semester_category_grades = defaultdict(lambda: defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0}))
+
+    # 교과별 전체 통계 (교과 조합 분석용)
+    category_stats = defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
+
+    for grade in internal_grades:
+        # 차트용 데이터 수집 (진로선택 과목 제외)
+        if not grade.is_elective:
+            key = f"{grade.year}-{grade.semester}"
+            category = grade.curriculum or '기타'
+            semester_category_grades[key][category]['total_weighted'] += grade.grade_rank * grade.credits
+            semester_category_grades[key][category]['total_credits'] += grade.credits
+
+            # 교과별 전체 통계
+            category_stats[category]['total_weighted'] += grade.grade_rank * grade.credits
+            category_stats[category]['total_credits'] += grade.credits
+
+        if grade.is_elective:  # 진로선택 과목은 평균 계산에서 제외
+            continue
+
+        semester_key = (grade.year, grade.semester)
+        semester_stats[semester_key]['total_weighted'] += grade.grade_rank * grade.credits
+        semester_stats[semester_key]['total_credits'] += grade.credits
+
+        # 학년별 통계
+        year_stats[grade.year]['total_weighted'] += grade.grade_rank * grade.credits
+        year_stats[grade.year]['total_credits'] += grade.credits
+
+    # 학기별 평균 계산 및 정렬
+    semester_averages = []
+    for (year, semester), stats in sorted(semester_stats.items()):
+        if stats['total_credits'] > 0:
+            avg = Decimal(stats['total_weighted']) / Decimal(stats['total_credits'])
+            semester_averages.append({
+                'year': year,
+                'semester': semester,
+                'average': round(avg, 2),
+                'total_credits': stats['total_credits'],
+            })
+
+    # 전체 평균 등급 계산 (동일 가중치)
+    total_weighted_sum = sum(s['total_weighted'] for s in semester_stats.values())
+    total_credits_sum = sum(s['total_credits'] for s in semester_stats.values())
+    overall_average = None
+    if total_credits_sum > 0:
+        overall_average = round(Decimal(total_weighted_sum) / Decimal(total_credits_sum), 2)
+
+    # 학년별 가중치 적용 전체 등급 계산
+    weighted_averages = []
+    weight_configs = [
+        {'name': '30:30:40', 'weights': {1: 30, 2: 30, 3: 40}},
+        {'name': '20:40:40', 'weights': {1: 20, 2: 40, 3: 40}},
+        {'name': '20:30:50', 'weights': {1: 20, 2: 30, 3: 50}},
+    ]
+
+    for config in weight_configs:
+        weights = config['weights']
+        weighted_sum = Decimal(0)
+        weight_sum = Decimal(0)
+
+        for year in [1, 2, 3]:
+            if year in year_stats and year_stats[year]['total_credits'] > 0:
+                year_avg = Decimal(year_stats[year]['total_weighted']) / Decimal(year_stats[year]['total_credits'])
+                weighted_sum += year_avg * Decimal(weights[year])
+                weight_sum += Decimal(weights[year])
+
+        if weight_sum > 0:
+            weighted_avg = round(weighted_sum / weight_sum, 2)
+            weighted_averages.append({
+                'name': config['name'],
+                'average': weighted_avg,
+            })
+
+    # 차트용 데이터 준비 (교과별 평균 등급)
+    chart_data = []
+    for semester_key in sorted(semester_category_grades.keys()):
+        year, sem = semester_key.split('-')
+        semester_data = {
+            'label': f"{year}학년 {sem}학기",
+            'categories': {}
+        }
+        for category, stats in semester_category_grades[semester_key].items():
+            if stats['total_credits'] > 0:
+                avg_grade = round(float(stats['total_weighted']) / float(stats['total_credits']), 2)
+                semester_data['categories'][category] = {
+                    'average': avg_grade,
+                    'total_credits': stats['total_credits'],
+                }
+        chart_data.append(semester_data)
+
+    # 교과 조합별 평균 분석
+    category_combinations = [
+        {'name': '국수영과', 'categories': ['국어', '수학', '영어', '과학']},
+        {'name': '국수영사', 'categories': ['국어', '수학', '영어', '사회']},
+        {'name': '국수영사과', 'categories': ['국어', '수학', '영어', '사회', '과학']},
+    ]
+
+    combination_averages = []
+    for combo in category_combinations:
+        total_weighted = 0
+        total_credits = 0
+        missing_categories = []
+
+        for cat in combo['categories']:
+            if cat in category_stats and category_stats[cat]['total_credits'] > 0:
+                total_weighted += category_stats[cat]['total_weighted']
+                total_credits += category_stats[cat]['total_credits']
+            else:
+                missing_categories.append(cat)
+
+        if total_credits > 0:
+            avg = round(Decimal(total_weighted) / Decimal(total_credits), 2)
+            combination_averages.append({
+                'name': combo['name'],
+                'categories': combo['categories'],
+                'average': avg,
+                'total_credits': total_credits,
+                'missing': missing_categories,
+            })
+
+    # 일반 내신 성적과 진로선택 성적 분리
+    regular_internal_grades = [g for g in internal_grades if not g.is_elective]
+    elective_grades = [g for g in internal_grades if g.is_elective]
+
+    context = {
+        'student': student,
+        'internal_grades': regular_internal_grades,
+        'elective_grades': elective_grades,
+        'mock_grades': mock_grades,
+        'semester_averages': semester_averages,
+        'overall_average': overall_average,
+        'weighted_averages': weighted_averages,
+        'combination_averages': combination_averages,
+        'chart_data': json.dumps(chart_data, ensure_ascii=False),
+    }
+    return render(request, 'grades/student_grades.html', context)
 
 
 @login_required
