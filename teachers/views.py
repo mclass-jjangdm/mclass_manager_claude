@@ -442,7 +442,13 @@ class SalaryTableView(LoginRequiredMixin, View):
         # 모든 선생님 (활성 상태 및 퇴직)
         teachers = Teacher.objects.all()
         months = range(1, 13)
-        
+
+        # 해당 연도의 모든 급여 데이터를 미리 조회 (성능 최적화)
+        saved_salaries = {}
+        for salary in Salary.objects.filter(year=year).select_related('teacher'):
+            key = (salary.teacher_id, salary.month)
+            saved_salaries[key] = salary.total_amount  # 기본급 + 추가급여 포함된 총액
+
         salary_table = []
         grand_total = 0
 
@@ -450,25 +456,32 @@ class SalaryTableView(LoginRequiredMixin, View):
         for teacher in teachers.filter(is_active=True):
             teacher_data = {'teacher': teacher}
             total = 0
-            
+
             for month in months:
-                start_date = datetime(year, month, 1)
-                if month == 12:
-                    end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
+                # 저장된 급여 데이터가 있으면 사용 (추가급여 포함)
+                key = (teacher.id, month)
+                if key in saved_salaries:
+                    salary = saved_salaries[key]
                 else:
-                    end_date = datetime(year, month + 1, 1) - timedelta(days=1)
+                    # 저장된 데이터가 없으면 근무시간으로 기본급만 계산
+                    start_date = datetime(year, month, 1)
+                    if month == 12:
+                        end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
+                    else:
+                        end_date = datetime(year, month + 1, 1) - timedelta(days=1)
 
-                attendances = Attendance.objects.filter(
-                    teacher=teacher,
-                    date__range=[start_date, end_date]
-                )
+                    attendances = Attendance.objects.filter(
+                        teacher=teacher,
+                        date__range=[start_date, end_date]
+                    )
 
-                work_hours = sum(
-                    (a.end_time.hour * 60 + a.end_time.minute) - (a.start_time.hour * 60 + a.start_time.minute)
-                    for a in attendances if a.start_time and a.end_time
-                ) / 60
+                    work_hours = sum(
+                        (a.end_time.hour * 60 + a.end_time.minute) - (a.start_time.hour * 60 + a.start_time.minute)
+                        for a in attendances if a.start_time and a.end_time
+                    ) / 60
 
-                salary = int(work_hours * (teacher.base_salary or 15000))
+                    salary = int(work_hours * (teacher.base_salary or 15000))
+
                 teacher_data[month] = salary
                 total += salary
 
@@ -480,22 +493,28 @@ class SalaryTableView(LoginRequiredMixin, View):
         for teacher in teachers.filter(is_active=False):
             teacher_data = {'teacher': teacher}
             total = 0
-            
+
             for month in months:
-                start_date = datetime(year, month, 1)
-                if month == 12:
-                    end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
+                # 저장된 급여 데이터가 있으면 사용 (추가급여 포함)
+                key = (teacher.id, month)
+                if key in saved_salaries:
+                    salary = saved_salaries[key]
                 else:
-                    end_date = datetime(year, month + 1, 1) - timedelta(days=1)
+                    # 저장된 데이터가 없으면 근무시간으로 기본급만 계산
+                    start_date = datetime(year, month, 1)
+                    if month == 12:
+                        end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
+                    else:
+                        end_date = datetime(year, month + 1, 1) - timedelta(days=1)
 
-                attendances = Attendance.objects.filter(teacher=teacher, date__range=[start_date, end_date])
-                # 계산식 수정
-                work_hours = sum(
-                    (a.end_time.hour * 60 + a.end_time.minute) - (a.start_time.hour * 60 + a.start_time.minute)
-                    for a in attendances if a.start_time and a.end_time
-                ) / 60
+                    attendances = Attendance.objects.filter(teacher=teacher, date__range=[start_date, end_date])
+                    work_hours = sum(
+                        (a.end_time.hour * 60 + a.end_time.minute) - (a.start_time.hour * 60 + a.start_time.minute)
+                        for a in attendances if a.start_time and a.end_time
+                    ) / 60
 
-                salary = int(work_hours * (teacher.base_salary or 15000))
+                    salary = int(work_hours * (teacher.base_salary or 15000))
+
                 teacher_data[month] = salary
                 total += salary
 
