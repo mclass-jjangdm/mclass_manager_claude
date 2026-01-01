@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 서브 네비게이션 -->
+    <div class="bg-white shadow-sm">
+        <div class="container">
+            <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Maintenance">
+                <a href="{% url 'maintenance:create' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'create' %}active{% endif %}">
+                    관리비 입력
+                </a>
+                <a href="{% url 'maintenance:monthly_report' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'monthly_report' %}active{% endif %}">
+                    월별 내역
+                </a>
+                <a href="{% url 'maintenance:yearly_report' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'yearly_report' %}active{% endif %}">
+                    연도별 내역
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="container">
+        {% block maintenance_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

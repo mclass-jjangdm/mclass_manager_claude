@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="M'Class 수학과학전문학원 관리 시스템">
+    <meta name="keywords" content="M'Class, 학원관리, 수학, 과학, 학원, 관리시스템">
+    <title>{% block title %}M'Class Manager{% endblock %}</title>
+
+    {% load static %}
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400&display=swap" rel="stylesheet">
+    
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans KR', 'nanum-gothic';
+        }
+        .font-ubuntu {
+            font-family: 'Ubuntu', sans-serif;
+        }
+    </style>
+    
+    {% block extra_css %}
+    {% endblock %}
+
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+    {% if user.is_authenticated %}
+    <nav class="bg-gray-800 text-white">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                
+                <div class="flex items-center">
+                    <a href="{% url 'index' %}" class="font-medium text-xl font-ubuntu">
+                        M'Class Manager
+                    </a>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="{% url 'students:student_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">학생 관리</a>
+                            <a href="{% url 'teachers:teacher_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">선생님 관리</a>
+                            <a href="{% url 'subjects:subject_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">과목 관리</a>
+                            <a href="{% url 'bookstore:book_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">교재 관리</a>
+                            <a href="{% url 'maintenance:create' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">관리비</a>
+                            <a href="{% url 'payment:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">납부 현황</a>
+                            </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center"> {% if user.is_superuser %}
+                        <a href="{% url 'db_backup' %}" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium mr-2 hidden md:inline-block">
+                            💾 DB 백업
+                        </a>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="text-gray-300 hover:text-white text-sm font-medium font-ubuntu">
+                            로그아웃
+                        </button>
+                    </form>
+                </div>
+
+                <div class="-mr-2 flex md:hidden ml-4">
+                    <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-900">
+                <a href="{% url 'students:student_list' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">학생 관리</a>
+                <a href="{% url 'teachers:teacher_list' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">선생님 관리</a>
+                <a href="{% url 'subjects:subject_list' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">과목 관리</a>
+                <a href="{% url 'bookstore:book_list' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">교재 관리</a>
+                <a href="{% url 'maintenance:create' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">관리비</a>
+                <a href="{% url 'payment:dashboard' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">납부 현황</a>
+
+                {% if user.is_superuser %}
+                    <a href="{% url 'db_backup' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu border-t border-gray-700 mt-2 pt-2">
+                        💾 DB 백업
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="flex-grow py-6">
+        <div class="container mx-auto px-4">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} mb-4 p-4 rounded-md bg-blue-50 text-blue-700">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

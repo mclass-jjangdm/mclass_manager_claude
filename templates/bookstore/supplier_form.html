@@ -1,0 +1,81 @@
+{% extends "bookstore/base_bookstore.html" %}
+
+{% block bookstore_content %}
+<div class="max-w-2xl mx-auto">
+    <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-3 mb-6">
+        {{ title }}
+    </h2>
+
+    <div class="content-card">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 상호명 -->
+            <div>
+                <label for="id_name" class="form-label">상호명 (필수)</label>
+                {{ form.name }}
+            </div>
+
+            <!-- 사업자 번호 및 전화번호 -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="id_registration_number" class="form-label">사업자 번호</label>
+                    {{ form.registration_number }}
+                </div>
+                <div>
+                    <label for="id_phone" class="form-label">전화번호</label>
+                    {{ form.phone }}
+                </div>
+            </div>
+
+            <!-- 주소 -->
+            <div>
+                <label for="id_address" class="form-label">주소</label>
+                {{ form.address }}
+            </div>
+
+            <!-- 계좌 정보 섹션 -->
+            <div class="pt-4">
+                <p class="text-lg font-semibold text-indigo-700 mb-4">계좌 정보</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label for="id_bank_name" class="form-label">은행명</label>
+                        {{ form.bank_name }}
+                    </div>
+                    <div>
+                        <label for="id_account_number" class="form-label">계좌번호</label>
+                        {{ form.account_number }}
+                    </div>
+                    <div>
+                        <label for="id_account_owner" class="form-label">예금주</label>
+                        {{ form.account_owner }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex gap-3 justify-center pt-4">
+                <button type="submit"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                    저장하기
+                </button>
+                <a href="{% url 'bookstore:supplier_list' %}"
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 모든 입력 필드에 form-input 클래스 적용
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('form-checkbox') && !el.classList.contains('form-radio')) {
+                el.classList.add('form-input');
+            }
+        });
+    });
+</script>
+{% endblock %}

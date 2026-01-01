@@ -1,0 +1,100 @@
+{% extends "bookstore/base_bookstore.html" %}
+{% load humanize %}
+
+{% block bookstore_content %}
+<div class="max-w-3xl mx-auto">
+    <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-3 mb-6">
+        교재 추가 입고
+    </h2>
+
+    <!-- 교재 정보 -->
+    <div class="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">
+            {{ book.title }}
+        </h3>
+        <div class="text-sm text-gray-600 space-x-4">
+            <span>현재 재고: <strong class="text-red-600">{{ book.stock }}권</strong></span>
+            <span>|</span>
+            <span>저자: {{ book.author }}</span>
+            <span>|</span>
+            <span>출판사: {{ book.publisher }}</span>
+        </div>
+    </div>
+
+    <!-- 입고 폼 -->
+    <div class="content-card">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 날짜 및 구매처 섹션 -->
+            <div class="bg-indigo-50 p-4 rounded-lg space-y-4">
+                <div>
+                    <label for="id_created_at" class="form-label text-indigo-900">
+                        입고 날짜
+                    </label>
+                    {{ form.created_at }}
+                </div>
+
+                <div>
+                    <label for="id_supplier" class="form-label text-indigo-900">
+                        구매처 (공급사) 선택
+                    </label>
+                    <div class="flex gap-3 items-center">
+                        <div class="flex-1">
+                            {{ form.supplier }}
+                        </div>
+                        <a href="{% url 'bookstore:supplier_create' %}?next={{ request.get_full_path|urlencode }}"
+                           class="bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap">
+                            + 새 구매처 등록
+                        </a>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">
+                        * 목록에 없는 경우 우측 버튼을 눌러 등록하세요.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 수량 및 단가 -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="id_quantity" class="form-label">입고 수량</label>
+                    {{ form.quantity }}
+                </div>
+                <div>
+                    <label for="id_cost_price" class="form-label">입고 단가 (원가)</label>
+                    {{ form.cost_price }}
+                </div>
+            </div>
+
+            <!-- 비고 -->
+            <div>
+                <label for="id_memo" class="form-label">비고</label>
+                {{ form.memo }}
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex gap-3 justify-center pt-4">
+                <button type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                    + 입고 처리
+                </button>
+                <a href="{% url 'bookstore:book_list' %}"
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 모든 입력 필드에 form-input 클래스 적용
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('form-checkbox') && !el.classList.contains('form-radio')) {
+                el.classList.add('form-input');
+            }
+        });
+    });
+</script>
+{% endblock %}

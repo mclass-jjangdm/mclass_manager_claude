@@ -1,0 +1,6757 @@
+[
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$bg1ooW4srWhP5EivNv8yWo$fOHHDeeTlO9Zz8EEOfz0J0WPaNaDFQujsQU7w36LAaM=",
+    "last_login": "2024-12-06T05:22:54.074",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "jjangdm@mclass.co.kr",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2024-10-13T00:29:21.374",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "common.bank",
+  "pk": 1,
+  "fields": {
+    "name": "신한은행"
+  }
+},
+{
+  "model": "common.bank",
+  "pk": 2,
+  "fields": {
+    "name": "농협은행"
+  }
+},
+{
+  "model": "common.bank",
+  "pk": 3,
+  "fields": {
+    "name": "하나은행"
+  }
+},
+{
+  "model": "common.bank",
+  "pk": 4,
+  "fields": {
+    "name": "카카오뱅크"
+  }
+},
+{
+  "model": "common.bank",
+  "pk": 5,
+  "fields": {
+    "name": "케이뱅크"
+  }
+},
+{
+  "model": "common.bank",
+  "pk": 6,
+  "fields": {
+    "name": "국민은행"
+  }
+},
+{
+  "model": "common.bank",
+  "pk": 7,
+  "fields": {
+    "name": "우리은행"
+  }
+},
+{
+  "model": "common.bank",
+  "pk": 8,
+  "fields": {
+    "name": "토스"
+  }
+},
+{
+  "model": "common.publisher",
+  "pk": 6,
+  "fields": {
+    "name": "이투스북"
+  }
+},
+{
+  "model": "common.publisher",
+  "pk": 7,
+  "fields": {
+    "name": "비상"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 6,
+  "fields": {
+    "name": "중2수학"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 7,
+  "fields": {
+    "name": "중3수학"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 8,
+  "fields": {
+    "name": "중1수학"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 9,
+  "fields": {
+    "name": "고등수학(상)"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 10,
+  "fields": {
+    "name": "고등수학(하)"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 11,
+  "fields": {
+    "name": "수학1"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 12,
+  "fields": {
+    "name": "수학2"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 13,
+  "fields": {
+    "name": "기하"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 14,
+  "fields": {
+    "name": "미적분"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 15,
+  "fields": {
+    "name": "확률과 통계"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 16,
+  "fields": {
+    "name": "공통수학1"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 17,
+  "fields": {
+    "name": "공통수학2"
+  }
+},
+{
+  "model": "common.subject",
+  "pk": 18,
+  "fields": {
+    "name": "중1과학"
+  }
+},
+{
+  "model": "common.purchaselocation",
+  "pk": 4,
+  "fields": {
+    "name": "(주)미래미디어",
+    "phone1": "031-416-1355",
+    "phone2": "010-5167-0070",
+    "email": null,
+    "business_number": null
+  }
+},
+{
+  "model": "common.school",
+  "pk": 4,
+  "fields": {
+    "name": "양지중학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 5,
+  "fields": {
+    "name": "해양중학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 6,
+  "fields": {
+    "name": "해솔중학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 7,
+  "fields": {
+    "name": "초지중학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 8,
+  "fields": {
+    "name": "송호중학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 9,
+  "fields": {
+    "name": "별망중학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 10,
+  "fields": {
+    "name": "본오중학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 11,
+  "fields": {
+    "name": "시곡중학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 12,
+  "fields": {
+    "name": "고잔고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 13,
+  "fields": {
+    "name": "양지고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 14,
+  "fields": {
+    "name": "송호고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 15,
+  "fields": {
+    "name": "초지고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 16,
+  "fields": {
+    "name": "부곡고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 17,
+  "fields": {
+    "name": "동산고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 18,
+  "fields": {
+    "name": "광덕고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 19,
+  "fields": {
+    "name": "원곡고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 20,
+  "fields": {
+    "name": "성포고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 21,
+  "fields": {
+    "name": "신길고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 22,
+  "fields": {
+    "name": "선부고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 23,
+  "fields": {
+    "name": "초지초등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 24,
+  "fields": {
+    "name": "디지털미디어고등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 25,
+  "fields": {
+    "name": "슬기초등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 27,
+  "fields": {
+    "name": "송호초등학교",
+    "phone": null,
+    "address": ""
+  }
+},
+{
+  "model": "common.school",
+  "pk": 28,
+  "fields": {
+    "name": "안산고등학교",
+    "phone": null,
+    "address": null
+  }
+},
+{
+  "model": "common.school",
+  "pk": 29,
+  "fields": {
+    "name": "경안고등학교",
+    "phone": null,
+    "address": null
+  }
+},
+{
+  "model": "common.school",
+  "pk": 30,
+  "fields": {
+    "name": "성안고등학교",
+    "phone": null,
+    "address": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 10,
+  "fields": {
+    "name": "신유민",
+    "phone_number": "01067639333",
+    "email": "cookietiger97@naver.com",
+    "gender": "F",
+    "hire_date": "2024-09-02",
+    "resignation_date": null,
+    "bank": 1,
+    "account_number": "110456508475",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 11,
+  "fields": {
+    "name": "이지민",
+    "phone_number": null,
+    "email": "gigkgigks7@gmail.com",
+    "gender": "M",
+    "hire_date": "2024-09-02",
+    "resignation_date": "2024-11-04",
+    "bank": 2,
+    "account_number": "3522016367113",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": false,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 12,
+  "fields": {
+    "name": "이동준",
+    "phone_number": "01034438894",
+    "email": null,
+    "gender": "M",
+    "hire_date": "2024-08-19",
+    "resignation_date": null,
+    "bank": 2,
+    "account_number": "3561068468713",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 13,
+  "fields": {
+    "name": "정영훈",
+    "phone_number": "01023165898",
+    "email": null,
+    "gender": "M",
+    "hire_date": "2024-01-01",
+    "resignation_date": "2024-11-30",
+    "bank": 2,
+    "account_number": "3521648635793",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": false,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 14,
+  "fields": {
+    "name": "정진형",
+    "phone_number": "01097329927",
+    "email": "isaacjjh@naver.com",
+    "gender": "M",
+    "hire_date": "2024-09-02",
+    "resignation_date": null,
+    "bank": 2,
+    "account_number": "3021416132351",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 15,
+  "fields": {
+    "name": "권승현",
+    "phone_number": "01058544038",
+    "email": "seank117@naver.com",
+    "gender": "M",
+    "hire_date": "2024-09-02",
+    "resignation_date": null,
+    "bank": 3,
+    "account_number": "42691053588207",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 16,
+  "fields": {
+    "name": "김지원",
+    "phone_number": "01048014509",
+    "email": null,
+    "gender": "F",
+    "hire_date": "2024-01-01",
+    "resignation_date": "2024-10-31",
+    "bank": null,
+    "account_number": null,
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": false,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 17,
+  "fields": {
+    "name": "김민종",
+    "phone_number": "01055720325",
+    "email": null,
+    "gender": "M",
+    "hire_date": "2024-03-04",
+    "resignation_date": "2024-10-31",
+    "bank": null,
+    "account_number": null,
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": false,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 22,
+  "fields": {
+    "name": "이재훈",
+    "phone_number": "01077497011",
+    "email": null,
+    "gender": "M",
+    "hire_date": "2024-10-21",
+    "resignation_date": null,
+    "bank": 2,
+    "account_number": "3521937541243",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 25,
+  "fields": {
+    "name": "박주아",
+    "phone_number": "01033881742",
+    "email": "prejua06@gmail.com",
+    "gender": "F",
+    "hire_date": "2024-11-22",
+    "resignation_date": null,
+    "bank": 6,
+    "account_number": "11130101106062",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 26,
+  "fields": {
+    "name": "최예원",
+    "phone_number": "01028499369",
+    "email": "tina_1228@naver.com",
+    "gender": "F",
+    "hire_date": "2024-11-27",
+    "resignation_date": null,
+    "bank": 2,
+    "account_number": "3521725635833",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": "",
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 27,
+  "fields": {
+    "name": "이시민",
+    "phone_number": "01041216228",
+    "email": "leesimin20060120@gmail.com",
+    "gender": "F",
+    "hire_date": "2024-12-02",
+    "resignation_date": null,
+    "bank": 8,
+    "account_number": "100093704516",
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": null,
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.teacher",
+  "pk": 28,
+  "fields": {
+    "name": "손정연",
+    "phone_number": "01073057566",
+    "email": null,
+    "gender": "M",
+    "hire_date": "2024-12-06",
+    "resignation_date": null,
+    "bank": null,
+    "account_number": null,
+    "base_salary": 15000,
+    "additional_salary": 0,
+    "other_info": null,
+    "is_active": true,
+    "extra_field1": null,
+    "extra_field2": null,
+    "extra_field3": null,
+    "extra_field4": null
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 43,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 44,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 45,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 46,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 47,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 48,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 49,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 50,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 51,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 52,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 53,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 54,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-07",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 55,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-07",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 56,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-07",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 57,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-07",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 58,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-07",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 59,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-07",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 60,
+  "fields": {
+    "teacher": 16,
+    "date": "2024-10-07",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 61,
+  "fields": {
+    "teacher": 17,
+    "date": "2024-10-07",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 62,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 63,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 64,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 65,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 66,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 67,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 68,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 69,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 70,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 71,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 72,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 73,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 74,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-14",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 75,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-14",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 76,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-14",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 77,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-14",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 78,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-14",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 79,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-14",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 80,
+  "fields": {
+    "teacher": 16,
+    "date": "2024-10-14",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 81,
+  "fields": {
+    "teacher": 17,
+    "date": "2024-10-14",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 82,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 83,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 84,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 85,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 86,
+  "fields": {
+    "teacher": 17,
+    "date": "2024-09-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 87,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 88,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 89,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 90,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 91,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 92,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 93,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 94,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 95,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 96,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 97,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 98,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 99,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 100,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 101,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 102,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 103,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 104,
+  "fields": {
+    "teacher": 16,
+    "date": "2024-09-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 105,
+  "fields": {
+    "teacher": 17,
+    "date": "2024-09-09",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 106,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 107,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 108,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 109,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 110,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 111,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 112,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 113,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 114,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 115,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 116,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 117,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 118,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 119,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 120,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 121,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 122,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 123,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 124,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 125,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 126,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 127,
+  "fields": {
+    "teacher": 16,
+    "date": "2024-09-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 128,
+  "fields": {
+    "teacher": 17,
+    "date": "2024-09-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 129,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 130,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 131,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 132,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 133,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 134,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 135,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-27",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 136,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-27",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 137,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-27",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 138,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-27",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 139,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-27",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 140,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-27",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 141,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-09-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 142,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-09-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 143,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-09-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 144,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-09-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 145,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-09-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 146,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-09-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 147,
+  "fields": {
+    "teacher": 16,
+    "date": "2024-09-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 148,
+  "fields": {
+    "teacher": 17,
+    "date": "2024-09-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 149,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-16",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 150,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-16",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 151,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-16",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 152,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-16",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 153,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-16",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 154,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-16",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 155,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 156,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 157,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 158,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 159,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 160,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-21",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 161,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-21",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 162,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-21",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 163,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-21",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 164,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-21",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 165,
+  "fields": {
+    "teacher": 17,
+    "date": "2024-10-21",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 167,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-10-21",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 168,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 169,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 170,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 171,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 172,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 173,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 174,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-10-23",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 175,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 176,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 177,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 178,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 179,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 180,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 181,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 182,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 183,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 184,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 185,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 186,
+  "fields": {
+    "teacher": 16,
+    "date": "2024-10-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 187,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-10-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 188,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-10-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 189,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-10-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 190,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-10-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 191,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-10-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 192,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-10-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 193,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-10-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 194,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-10-30",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 195,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-01",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 196,
+  "fields": {
+    "teacher": 11,
+    "date": "2024-11-01",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 197,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-01",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 198,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-01",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 199,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-01",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 200,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-01",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 201,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-01",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 202,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 203,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 204,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 205,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 206,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 207,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 208,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 209,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 210,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 211,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 212,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 213,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 214,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-08",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 215,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-08",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 216,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-08",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 217,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-08",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 218,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-08",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 219,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 220,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 221,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 222,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 223,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 224,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-11",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 225,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 226,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 227,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 228,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 229,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 230,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-13",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 231,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-15",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 232,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-15",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 233,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-15",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 234,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-15",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 235,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-15",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 236,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-15",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 237,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 238,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 239,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 240,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 241,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 242,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-18",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 243,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 244,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 245,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 246,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 247,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 248,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-20",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 249,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-22",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 250,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-22",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 251,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-22",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 252,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-22",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 253,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-22",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 254,
+  "fields": {
+    "teacher": 25,
+    "date": "2024-11-22",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 255,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 256,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 257,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 258,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 259,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 260,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-25",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 261,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 262,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 263,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 264,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 265,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 266,
+  "fields": {
+    "teacher": 26,
+    "date": "2024-11-28",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 267,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-11-29",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 268,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-11-29",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 269,
+  "fields": {
+    "teacher": 13,
+    "date": "2024-11-29",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 270,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-11-29",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 271,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-11-29",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 272,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-11-29",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 273,
+  "fields": {
+    "teacher": 26,
+    "date": "2024-11-29",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 274,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-12-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 275,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-12-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 276,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-12-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 277,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-12-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 278,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-12-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 279,
+  "fields": {
+    "teacher": 25,
+    "date": "2024-12-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 280,
+  "fields": {
+    "teacher": 26,
+    "date": "2024-12-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 281,
+  "fields": {
+    "teacher": 27,
+    "date": "2024-12-02",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 282,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-12-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 283,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-12-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 284,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-12-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 285,
+  "fields": {
+    "teacher": 22,
+    "date": "2024-12-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 286,
+  "fields": {
+    "teacher": 25,
+    "date": "2024-12-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 287,
+  "fields": {
+    "teacher": 26,
+    "date": "2024-12-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 288,
+  "fields": {
+    "teacher": 27,
+    "date": "2024-12-04",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 289,
+  "fields": {
+    "teacher": 10,
+    "date": "2024-12-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 290,
+  "fields": {
+    "teacher": 12,
+    "date": "2024-12-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 291,
+  "fields": {
+    "teacher": 14,
+    "date": "2024-12-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 292,
+  "fields": {
+    "teacher": 15,
+    "date": "2024-12-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 293,
+  "fields": {
+    "teacher": 25,
+    "date": "2024-12-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 294,
+  "fields": {
+    "teacher": 26,
+    "date": "2024-12-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 295,
+  "fields": {
+    "teacher": 27,
+    "date": "2024-12-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.attendance",
+  "pk": 296,
+  "fields": {
+    "teacher": 28,
+    "date": "2024-12-06",
+    "is_present": true,
+    "start_time": "18:00:00",
+    "end_time": "20:00:00"
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 23,
+  "fields": {
+    "teacher": 10,
+    "year": 2024,
+    "month": 10,
+    "work_days": 13,
+    "base_amount": 390000,
+    "additional_amount": 0,
+    "total_amount": 390000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 24,
+  "fields": {
+    "teacher": 11,
+    "year": 2024,
+    "month": 10,
+    "work_days": 13,
+    "base_amount": 390000,
+    "additional_amount": 0,
+    "total_amount": 390000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 25,
+  "fields": {
+    "teacher": 12,
+    "year": 2024,
+    "month": 10,
+    "work_days": 13,
+    "base_amount": 390000,
+    "additional_amount": 0,
+    "total_amount": 390000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 26,
+  "fields": {
+    "teacher": 13,
+    "year": 2024,
+    "month": 10,
+    "work_days": 11,
+    "base_amount": 330000,
+    "additional_amount": 0,
+    "total_amount": 330000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 27,
+  "fields": {
+    "teacher": 14,
+    "year": 2024,
+    "month": 10,
+    "work_days": 12,
+    "base_amount": 360000,
+    "additional_amount": 0,
+    "total_amount": 360000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 28,
+  "fields": {
+    "teacher": 15,
+    "year": 2024,
+    "month": 10,
+    "work_days": 12,
+    "base_amount": 360000,
+    "additional_amount": 0,
+    "total_amount": 360000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 29,
+  "fields": {
+    "teacher": 16,
+    "year": 2024,
+    "month": 10,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 30,
+  "fields": {
+    "teacher": 17,
+    "year": 2024,
+    "month": 10,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 32,
+  "fields": {
+    "teacher": 10,
+    "year": 2024,
+    "month": 9,
+    "work_days": 10,
+    "base_amount": 300000,
+    "additional_amount": 0,
+    "total_amount": 300000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 33,
+  "fields": {
+    "teacher": 11,
+    "year": 2024,
+    "month": 9,
+    "work_days": 11,
+    "base_amount": 330000,
+    "additional_amount": 0,
+    "total_amount": 330000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 34,
+  "fields": {
+    "teacher": 12,
+    "year": 2024,
+    "month": 9,
+    "work_days": 10,
+    "base_amount": 300000,
+    "additional_amount": 0,
+    "total_amount": 300000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 35,
+  "fields": {
+    "teacher": 13,
+    "year": 2024,
+    "month": 9,
+    "work_days": 11,
+    "base_amount": 330000,
+    "additional_amount": 0,
+    "total_amount": 330000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 36,
+  "fields": {
+    "teacher": 14,
+    "year": 2024,
+    "month": 9,
+    "work_days": 9,
+    "base_amount": 270000,
+    "additional_amount": 0,
+    "total_amount": 270000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 37,
+  "fields": {
+    "teacher": 15,
+    "year": 2024,
+    "month": 9,
+    "work_days": 9,
+    "base_amount": 270000,
+    "additional_amount": 0,
+    "total_amount": 270000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 38,
+  "fields": {
+    "teacher": 16,
+    "year": 2024,
+    "month": 9,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 39,
+  "fields": {
+    "teacher": 17,
+    "year": 2024,
+    "month": 9,
+    "work_days": 4,
+    "base_amount": 120000,
+    "additional_amount": 0,
+    "total_amount": 120000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 40,
+  "fields": {
+    "teacher": 10,
+    "year": 2024,
+    "month": 12,
+    "work_days": 2,
+    "base_amount": 60000,
+    "additional_amount": 0,
+    "total_amount": 60000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 41,
+  "fields": {
+    "teacher": 11,
+    "year": 2024,
+    "month": 12,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 42,
+  "fields": {
+    "teacher": 12,
+    "year": 2024,
+    "month": 12,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 43,
+  "fields": {
+    "teacher": 13,
+    "year": 2024,
+    "month": 12,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 44,
+  "fields": {
+    "teacher": 14,
+    "year": 2024,
+    "month": 12,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 45,
+  "fields": {
+    "teacher": 15,
+    "year": 2024,
+    "month": 12,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 46,
+  "fields": {
+    "teacher": 16,
+    "year": 2024,
+    "month": 12,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 47,
+  "fields": {
+    "teacher": 17,
+    "year": 2024,
+    "month": 12,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 48,
+  "fields": {
+    "teacher": 22,
+    "year": 2024,
+    "month": 12,
+    "work_days": 2,
+    "base_amount": 60000,
+    "additional_amount": 0,
+    "total_amount": 60000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 49,
+  "fields": {
+    "teacher": 25,
+    "year": 2024,
+    "month": 12,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 50,
+  "fields": {
+    "teacher": 26,
+    "year": 2024,
+    "month": 12,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 51,
+  "fields": {
+    "teacher": 10,
+    "year": 2024,
+    "month": 11,
+    "work_days": 12,
+    "base_amount": 360000,
+    "additional_amount": 0,
+    "total_amount": 360000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 52,
+  "fields": {
+    "teacher": 11,
+    "year": 2024,
+    "month": 11,
+    "work_days": 1,
+    "base_amount": 30000,
+    "additional_amount": 0,
+    "total_amount": 30000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 53,
+  "fields": {
+    "teacher": 12,
+    "year": 2024,
+    "month": 11,
+    "work_days": 13,
+    "base_amount": 390000,
+    "additional_amount": 0,
+    "total_amount": 390000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 54,
+  "fields": {
+    "teacher": 13,
+    "year": 2024,
+    "month": 11,
+    "work_days": 13,
+    "base_amount": 390000,
+    "additional_amount": 0,
+    "total_amount": 390000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 55,
+  "fields": {
+    "teacher": 14,
+    "year": 2024,
+    "month": 11,
+    "work_days": 13,
+    "base_amount": 390000,
+    "additional_amount": 0,
+    "total_amount": 390000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 56,
+  "fields": {
+    "teacher": 15,
+    "year": 2024,
+    "month": 11,
+    "work_days": 11,
+    "base_amount": 330000,
+    "additional_amount": 0,
+    "total_amount": 330000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 57,
+  "fields": {
+    "teacher": 16,
+    "year": 2024,
+    "month": 11,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 58,
+  "fields": {
+    "teacher": 17,
+    "year": 2024,
+    "month": 11,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 59,
+  "fields": {
+    "teacher": 22,
+    "year": 2024,
+    "month": 11,
+    "work_days": 13,
+    "base_amount": 390000,
+    "additional_amount": 0,
+    "total_amount": 390000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 60,
+  "fields": {
+    "teacher": 25,
+    "year": 2024,
+    "month": 11,
+    "work_days": 1,
+    "base_amount": 30000,
+    "additional_amount": 0,
+    "total_amount": 30000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 61,
+  "fields": {
+    "teacher": 26,
+    "year": 2024,
+    "month": 11,
+    "work_days": 2,
+    "base_amount": 60000,
+    "additional_amount": 0,
+    "total_amount": 60000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 62,
+  "fields": {
+    "teacher": 22,
+    "year": 2024,
+    "month": 10,
+    "work_days": 4,
+    "base_amount": 120000,
+    "additional_amount": 0,
+    "total_amount": 120000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 63,
+  "fields": {
+    "teacher": 25,
+    "year": 2024,
+    "month": 10,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 64,
+  "fields": {
+    "teacher": 26,
+    "year": 2024,
+    "month": 10,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 65,
+  "fields": {
+    "teacher": 22,
+    "year": 2024,
+    "month": 9,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 66,
+  "fields": {
+    "teacher": 25,
+    "year": 2024,
+    "month": 9,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 67,
+  "fields": {
+    "teacher": 26,
+    "year": 2024,
+    "month": 9,
+    "work_days": 0,
+    "base_amount": 0,
+    "additional_amount": 0,
+    "total_amount": 0
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 68,
+  "fields": {
+    "teacher": 27,
+    "year": 2024,
+    "month": 12,
+    "work_days": 3,
+    "base_amount": 90000,
+    "additional_amount": 0,
+    "total_amount": 90000
+  }
+},
+{
+  "model": "teachers.salary",
+  "pk": 69,
+  "fields": {
+    "teacher": 28,
+    "year": 2024,
+    "month": 12,
+    "work_days": 1,
+    "base_amount": 30000,
+    "additional_amount": 0,
+    "total_amount": 30000
+  }
+},
+{
+  "model": "maintenance.room",
+  "pk": 1,
+  "fields": {
+    "number": 512,
+    "contract_start_date": "2023-03-01",
+    "contract_end_date": null,
+    "is_active": true,
+    "created_at": "2024-10-24T02:50:35.934",
+    "updated_at": "2024-10-24T02:50:35.934"
+  }
+},
+{
+  "model": "maintenance.room",
+  "pk": 2,
+  "fields": {
+    "number": 515,
+    "contract_start_date": "2023-08-01",
+    "contract_end_date": null,
+    "is_active": true,
+    "created_at": "2024-10-24T02:50:58.338",
+    "updated_at": "2024-10-24T02:50:58.338"
+  }
+},
+{
+  "model": "maintenance.room",
+  "pk": 3,
+  "fields": {
+    "number": 516,
+    "contract_start_date": "2023-04-25",
+    "contract_end_date": null,
+    "is_active": true,
+    "created_at": "2024-10-24T02:51:25.413",
+    "updated_at": "2024-10-24T02:51:25.413"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 1,
+  "fields": {
+    "room": 1,
+    "date": "2024-10-01",
+    "charge": 285940,
+    "date_paid": "2024-10-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:04:05.478",
+    "updated_at": "2024-10-30T23:46:48.099"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 2,
+  "fields": {
+    "room": 2,
+    "date": "2024-10-01",
+    "charge": 232210,
+    "date_paid": "2024-10-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:05:11.201",
+    "updated_at": "2024-10-30T23:47:05.500"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 3,
+  "fields": {
+    "room": 3,
+    "date": "2024-10-01",
+    "charge": 482970,
+    "date_paid": "2024-10-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:05:56.502",
+    "updated_at": "2024-10-30T23:47:14.615"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 4,
+  "fields": {
+    "room": 2,
+    "date": "2024-09-01",
+    "charge": 256490,
+    "date_paid": "2024-09-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:10:47.132",
+    "updated_at": "2024-10-24T03:38:13.991"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 5,
+  "fields": {
+    "room": 1,
+    "date": "2024-09-01",
+    "charge": 349220,
+    "date_paid": "2024-09-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:23:23.041",
+    "updated_at": "2024-10-24T03:23:23.041"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 10,
+  "fields": {
+    "room": 3,
+    "date": "2024-09-01",
+    "charge": 635990,
+    "date_paid": "2024-09-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:36:29.064",
+    "updated_at": "2024-10-24T03:38:50.429"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 14,
+  "fields": {
+    "room": 1,
+    "date": "2024-08-01",
+    "charge": 350810,
+    "date_paid": "2024-08-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:48:51.435",
+    "updated_at": "2024-10-24T03:48:51.435"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 15,
+  "fields": {
+    "room": 2,
+    "date": "2024-08-01",
+    "charge": 232600,
+    "date_paid": "2024-08-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:49:32.755",
+    "updated_at": "2024-10-24T03:49:32.755"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 16,
+  "fields": {
+    "room": 3,
+    "date": "2024-08-01",
+    "charge": 688700,
+    "date_paid": "2024-08-30",
+    "memo": "",
+    "created_at": "2024-10-24T03:50:02.804",
+    "updated_at": "2024-10-24T03:50:02.804"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 17,
+  "fields": {
+    "room": 1,
+    "date": "2024-07-01",
+    "charge": 342600,
+    "date_paid": "2024-07-31",
+    "memo": "",
+    "created_at": "2024-10-24T03:52:39.379",
+    "updated_at": "2024-10-24T03:52:39.392"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 19,
+  "fields": {
+    "room": 2,
+    "date": "2024-07-01",
+    "charge": 242230,
+    "date_paid": "2024-07-31",
+    "memo": "",
+    "created_at": "2024-10-24T03:55:31.344",
+    "updated_at": "2024-10-24T03:55:31.372"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 20,
+  "fields": {
+    "room": 3,
+    "date": "2024-07-01",
+    "charge": 550550,
+    "date_paid": "2024-07-31",
+    "memo": "",
+    "created_at": "2024-10-24T03:58:44.711",
+    "updated_at": "2024-10-24T03:58:44.739"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 21,
+  "fields": {
+    "room": 1,
+    "date": "2024-06-01",
+    "charge": 287900,
+    "date_paid": "2024-06-30",
+    "memo": "",
+    "created_at": "2024-10-24T04:00:35.922",
+    "updated_at": "2024-10-24T04:00:35.937"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 22,
+  "fields": {
+    "room": 2,
+    "date": "2024-06-01",
+    "charge": 232720,
+    "date_paid": "2024-06-30",
+    "memo": "",
+    "created_at": "2024-10-24T04:04:36.898",
+    "updated_at": "2024-10-24T04:04:36.913"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 23,
+  "fields": {
+    "room": 3,
+    "date": "2024-06-01",
+    "charge": 449430,
+    "date_paid": "2024-06-30",
+    "memo": "",
+    "created_at": "2024-10-24T04:05:02.329",
+    "updated_at": "2024-10-24T04:05:02.341"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 24,
+  "fields": {
+    "room": 1,
+    "date": "2024-05-01",
+    "charge": 272890,
+    "date_paid": "2024-05-31",
+    "memo": "",
+    "created_at": "2024-10-24T04:16:51.398",
+    "updated_at": "2024-10-24T04:16:51.425"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 25,
+  "fields": {
+    "room": 2,
+    "date": "2024-05-01",
+    "charge": 231210,
+    "date_paid": "2024-05-31",
+    "memo": "",
+    "created_at": "2024-10-24T04:17:25.781",
+    "updated_at": "2024-10-24T04:17:25.810"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 26,
+  "fields": {
+    "room": 3,
+    "date": "2024-05-01",
+    "charge": 408430,
+    "date_paid": "2024-05-31",
+    "memo": "",
+    "created_at": "2024-10-24T04:17:55.531",
+    "updated_at": "2024-10-24T04:17:55.544"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 27,
+  "fields": {
+    "room": 1,
+    "date": "2024-04-01",
+    "charge": 287750,
+    "date_paid": "2024-04-30",
+    "memo": "",
+    "created_at": "2024-10-24T06:35:35.528",
+    "updated_at": "2024-10-24T06:35:35.557"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 28,
+  "fields": {
+    "room": 2,
+    "date": "2024-04-01",
+    "charge": 231260,
+    "date_paid": "2024-04-30",
+    "memo": "",
+    "created_at": "2024-10-24T06:35:59.839",
+    "updated_at": "2024-10-24T06:35:59.868"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 29,
+  "fields": {
+    "room": 3,
+    "date": "2024-04-01",
+    "charge": 456000,
+    "date_paid": "2024-04-30",
+    "memo": "",
+    "created_at": "2024-10-24T06:36:23.782",
+    "updated_at": "2024-10-24T06:36:23.812"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 30,
+  "fields": {
+    "room": 1,
+    "date": "2024-03-01",
+    "charge": 362300,
+    "date_paid": "2024-03-26",
+    "memo": "",
+    "created_at": "2024-10-24T06:37:21.872",
+    "updated_at": "2024-10-24T06:37:21.895"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 31,
+  "fields": {
+    "room": 2,
+    "date": "2024-03-01",
+    "charge": 230550,
+    "date_paid": "2024-03-26",
+    "memo": "",
+    "created_at": "2024-10-24T06:37:46.398",
+    "updated_at": "2024-10-24T06:37:46.410"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 32,
+  "fields": {
+    "room": 3,
+    "date": "2024-03-01",
+    "charge": 556770,
+    "date_paid": "2024-03-26",
+    "memo": "",
+    "created_at": "2024-10-24T06:38:15.339",
+    "updated_at": "2024-10-24T06:38:15.354"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 33,
+  "fields": {
+    "room": 1,
+    "date": "2024-02-01",
+    "charge": 485760,
+    "date_paid": "2024-02-29",
+    "memo": "",
+    "created_at": "2024-10-24T06:39:01.805",
+    "updated_at": "2024-10-24T06:39:01.820"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 34,
+  "fields": {
+    "room": 2,
+    "date": "2024-02-01",
+    "charge": 242380,
+    "date_paid": "2024-02-29",
+    "memo": "",
+    "created_at": "2024-10-24T06:39:24.316",
+    "updated_at": "2024-10-24T06:39:24.344"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 35,
+  "fields": {
+    "room": 3,
+    "date": "2024-02-01",
+    "charge": 692410,
+    "date_paid": "2024-02-29",
+    "memo": "",
+    "created_at": "2024-10-24T06:39:49.474",
+    "updated_at": "2024-10-24T06:39:49.488"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 36,
+  "fields": {
+    "room": 1,
+    "date": "2024-01-01",
+    "charge": 383240,
+    "date_paid": "2024-01-28",
+    "memo": "",
+    "created_at": "2024-10-24T06:40:43.070",
+    "updated_at": "2024-10-24T06:40:43.098"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 37,
+  "fields": {
+    "room": 2,
+    "date": "2024-01-01",
+    "charge": 225620,
+    "date_paid": "2024-12-08",
+    "memo": "",
+    "created_at": "2024-10-24T06:41:08.343",
+    "updated_at": "2024-10-24T06:41:08.357"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 38,
+  "fields": {
+    "room": 3,
+    "date": "2024-01-01",
+    "charge": 590520,
+    "date_paid": "2024-01-28",
+    "memo": "",
+    "created_at": "2024-10-24T06:41:37.791",
+    "updated_at": "2024-10-24T06:41:37.822"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 39,
+  "fields": {
+    "room": 1,
+    "date": "2022-12-01",
+    "charge": 319140,
+    "date_paid": "2022-12-27",
+    "memo": "",
+    "created_at": "2024-10-24T17:06:34.186",
+    "updated_at": "2024-10-24T17:06:34.199"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 40,
+  "fields": {
+    "room": 2,
+    "date": "2022-12-01",
+    "charge": 217640,
+    "date_paid": "2022-12-27",
+    "memo": "",
+    "created_at": "2024-10-24T17:07:01.115",
+    "updated_at": "2024-10-24T17:07:01.128"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 41,
+  "fields": {
+    "room": 1,
+    "date": "2023-01-01",
+    "charge": 428290,
+    "date_paid": "2023-01-27",
+    "memo": "",
+    "created_at": "2024-10-24T17:10:07.149",
+    "updated_at": "2024-10-24T17:10:07.175"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 42,
+  "fields": {
+    "room": 2,
+    "date": "2023-01-01",
+    "charge": 221120,
+    "date_paid": "2023-01-27",
+    "memo": "",
+    "created_at": "2024-10-24T17:11:40.822",
+    "updated_at": "2024-10-24T17:11:40.849"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 43,
+  "fields": {
+    "room": 3,
+    "date": "2023-01-01",
+    "charge": 511620,
+    "date_paid": "2023-01-27",
+    "memo": "",
+    "created_at": "2024-10-24T17:12:09.833",
+    "updated_at": "2024-10-24T17:12:09.859"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 44,
+  "fields": {
+    "room": 1,
+    "date": "2023-02-01",
+    "charge": 472350,
+    "date_paid": "2023-02-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:13:03.712",
+    "updated_at": "2024-10-24T17:13:03.725"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 45,
+  "fields": {
+    "room": 3,
+    "date": "2023-02-01",
+    "charge": 553930,
+    "date_paid": "2023-02-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:14:00.891",
+    "updated_at": "2024-10-24T17:14:00.903"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 46,
+  "fields": {
+    "room": 2,
+    "date": "2023-02-01",
+    "charge": 234860,
+    "date_paid": "2023-02-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:19:27.703",
+    "updated_at": "2024-10-24T17:19:27.732"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 47,
+  "fields": {
+    "room": 1,
+    "date": "2023-03-01",
+    "charge": 347950,
+    "date_paid": "2023-03-29",
+    "memo": "",
+    "created_at": "2024-10-24T17:20:31.681",
+    "updated_at": "2024-10-24T17:20:31.710"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 48,
+  "fields": {
+    "room": 2,
+    "date": "2023-03-01",
+    "charge": 222260,
+    "date_paid": "2023-03-29",
+    "memo": "",
+    "created_at": "2024-10-24T17:21:01.283",
+    "updated_at": "2024-10-24T17:21:01.295"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 49,
+  "fields": {
+    "room": 3,
+    "date": "2023-03-01",
+    "charge": 470100,
+    "date_paid": "2023-03-29",
+    "memo": "",
+    "created_at": "2024-10-24T17:21:29.305",
+    "updated_at": "2024-10-24T17:21:29.318"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 50,
+  "fields": {
+    "room": 1,
+    "date": "2023-04-01",
+    "charge": 275680,
+    "date_paid": "2023-04-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:22:06.751",
+    "updated_at": "2024-10-24T17:22:06.764"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 51,
+  "fields": {
+    "room": 2,
+    "date": "2023-04-01",
+    "charge": 217500,
+    "date_paid": "2023-04-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:22:27.616",
+    "updated_at": "2024-10-24T17:22:27.643"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 52,
+  "fields": {
+    "room": 3,
+    "date": "2023-04-01",
+    "charge": 411240,
+    "date_paid": "2023-04-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:23:03.145",
+    "updated_at": "2024-10-24T17:23:03.173"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 53,
+  "fields": {
+    "room": 1,
+    "date": "2023-05-01",
+    "charge": 266340,
+    "date_paid": "2023-05-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:23:44.560",
+    "updated_at": "2024-10-24T17:23:44.582"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 54,
+  "fields": {
+    "room": 2,
+    "date": "2023-05-01",
+    "charge": 219340,
+    "date_paid": "2023-05-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:24:08.496",
+    "updated_at": "2024-10-24T17:24:08.524"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 55,
+  "fields": {
+    "room": 3,
+    "date": "2023-05-01",
+    "charge": 399390,
+    "date_paid": "2023-05-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:24:38.636",
+    "updated_at": "2024-10-24T17:24:38.650"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 56,
+  "fields": {
+    "room": 1,
+    "date": "2023-06-01",
+    "charge": 282390,
+    "date_paid": "2023-06-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:25:14.690",
+    "updated_at": "2024-10-24T17:25:14.703"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 57,
+  "fields": {
+    "room": 2,
+    "date": "2023-06-01",
+    "charge": 232160,
+    "date_paid": "2023-06-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:25:49.866",
+    "updated_at": "2024-10-24T17:25:49.895"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 58,
+  "fields": {
+    "room": 3,
+    "date": "2023-06-01",
+    "charge": 460890,
+    "date_paid": "2023-06-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:28:27.625",
+    "updated_at": "2024-10-24T17:28:27.639"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 59,
+  "fields": {
+    "room": 1,
+    "date": "2023-07-01",
+    "charge": 327600,
+    "date_paid": "2023-07-26",
+    "memo": "",
+    "created_at": "2024-10-24T17:29:14.852",
+    "updated_at": "2024-10-24T17:29:14.878"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 60,
+  "fields": {
+    "room": 2,
+    "date": "2023-07-01",
+    "charge": 231180,
+    "date_paid": "2023-07-26",
+    "memo": "",
+    "created_at": "2024-10-24T17:29:34.730",
+    "updated_at": "2024-10-24T17:29:34.747"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 61,
+  "fields": {
+    "room": 3,
+    "date": "2023-07-01",
+    "charge": 554230,
+    "date_paid": "2023-07-26",
+    "memo": "",
+    "created_at": "2024-10-24T17:29:59.253",
+    "updated_at": "2024-10-24T17:29:59.280"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 62,
+  "fields": {
+    "room": 1,
+    "date": "2023-08-01",
+    "charge": 377180,
+    "date_paid": "2023-08-31",
+    "memo": "",
+    "created_at": "2024-10-24T17:30:38.087",
+    "updated_at": "2024-10-24T17:30:38.114"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 63,
+  "fields": {
+    "room": 2,
+    "date": "2023-08-01",
+    "charge": 245210,
+    "date_paid": "2023-08-31",
+    "memo": "",
+    "created_at": "2024-10-24T17:31:03.727",
+    "updated_at": "2024-10-24T17:31:03.739"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 64,
+  "fields": {
+    "room": 3,
+    "date": "2023-08-01",
+    "charge": 698020,
+    "date_paid": "2023-08-31",
+    "memo": "",
+    "created_at": "2024-10-24T17:31:28.511",
+    "updated_at": "2024-10-24T17:31:28.536"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 65,
+  "fields": {
+    "room": 1,
+    "date": "2023-09-01",
+    "charge": 316530,
+    "date_paid": "2023-09-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:32:05.650",
+    "updated_at": "2024-10-24T17:32:05.677"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 66,
+  "fields": {
+    "room": 2,
+    "date": "2023-09-01",
+    "charge": 230860,
+    "date_paid": "2023-09-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:32:37.838",
+    "updated_at": "2024-10-24T17:32:37.865"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 67,
+  "fields": {
+    "room": 3,
+    "date": "2023-09-01",
+    "charge": 605950,
+    "date_paid": "2023-09-28",
+    "memo": "",
+    "created_at": "2024-10-24T17:33:02.159",
+    "updated_at": "2024-10-24T17:33:02.187"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 68,
+  "fields": {
+    "room": 1,
+    "date": "2023-10-01",
+    "charge": 284520,
+    "date_paid": "2023-10-31",
+    "memo": "",
+    "created_at": "2024-10-24T17:33:57.074",
+    "updated_at": "2024-10-24T17:33:57.085"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 69,
+  "fields": {
+    "room": 2,
+    "date": "2023-10-01",
+    "charge": 231680,
+    "date_paid": "2023-10-31",
+    "memo": "",
+    "created_at": "2024-10-24T17:34:19.515",
+    "updated_at": "2024-10-24T17:34:19.542"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 70,
+  "fields": {
+    "room": 3,
+    "date": "2023-10-01",
+    "charge": 453580,
+    "date_paid": "2023-10-31",
+    "memo": "",
+    "created_at": "2024-10-24T17:34:42.596",
+    "updated_at": "2024-10-24T17:34:42.608"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 71,
+  "fields": {
+    "room": 1,
+    "date": "2023-11-01",
+    "charge": 261480,
+    "date_paid": "2023-11-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:35:20.975",
+    "updated_at": "2024-10-24T17:35:21.002"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 72,
+  "fields": {
+    "room": 2,
+    "date": "2023-11-01",
+    "charge": 226020,
+    "date_paid": "2023-11-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:35:47.708",
+    "updated_at": "2024-10-24T17:35:47.722"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 73,
+  "fields": {
+    "room": 3,
+    "date": "2023-11-01",
+    "charge": 406610,
+    "date_paid": "2023-11-30",
+    "memo": "",
+    "created_at": "2024-10-24T17:36:09.977",
+    "updated_at": "2024-10-24T17:36:10.003"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 74,
+  "fields": {
+    "room": 1,
+    "date": "2023-12-01",
+    "charge": 383700,
+    "date_paid": "2023-12-29",
+    "memo": "",
+    "created_at": "2024-10-24T17:36:43.378",
+    "updated_at": "2024-10-24T17:38:50.137"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 75,
+  "fields": {
+    "room": 2,
+    "date": "2023-12-01",
+    "charge": 234310,
+    "date_paid": "2023-12-29",
+    "memo": "",
+    "created_at": "2024-10-24T17:37:03.167",
+    "updated_at": "2024-10-24T17:39:44.703"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 76,
+  "fields": {
+    "room": 3,
+    "date": "2023-12-01",
+    "charge": 514350,
+    "date_paid": "2023-12-29",
+    "memo": "",
+    "created_at": "2024-10-24T17:38:00.620",
+    "updated_at": "2024-10-24T17:38:00.649"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 77,
+  "fields": {
+    "room": 3,
+    "date": "2022-12-01",
+    "charge": 438760,
+    "date_paid": "2022-12-27",
+    "memo": "",
+    "created_at": "2024-10-24T17:41:46.216",
+    "updated_at": "2024-10-24T17:41:46.243"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 84,
+  "fields": {
+    "room": 1,
+    "date": "2024-11-01",
+    "charge": 284190,
+    "date_paid": "2024-11-29",
+    "memo": "",
+    "created_at": "2024-11-22T16:27:00.051",
+    "updated_at": "2024-11-29T17:13:40.775"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 85,
+  "fields": {
+    "room": 2,
+    "date": "2024-11-01",
+    "charge": 232880,
+    "date_paid": "2024-11-29",
+    "memo": "",
+    "created_at": "2024-11-22T16:27:00.067",
+    "updated_at": "2024-11-29T17:13:46.157"
+  }
+},
+{
+  "model": "maintenance.maintenance",
+  "pk": 86,
+  "fields": {
+    "room": 3,
+    "date": "2024-11-01",
+    "charge": 426270,
+    "date_paid": "2024-11-29",
+    "memo": "",
+    "created_at": "2024-11-22T16:27:00.082",
+    "updated_at": "2024-11-29T17:13:53.237"
+  }
+},
+{
+  "model": "books.book",
+  "pk": 14,
+  "fields": {
+    "name": "15개정 최고득점수학 3-1",
+    "subject": 7,
+    "isbn": "9791162279915",
+    "publisher": 7,
+    "difficulty_level": 8,
+    "memo": null,
+    "barcode": "books/barcodes/barcode_9791162279915.png",
+    "qr_code": "books/qrcodes/qr_1b02aa96-f16f-4749-957e-f451883d31c1.png",
+    "unique_code": "1b02aa96-f16f-4749-957e-f451883d31c1",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 15,
+  "fields": {
+    "name": "이투스 신 수학의 바이블 중등 유형 2-2",
+    "subject": 6,
+    "isbn": "9791164424535",
+    "publisher": 6,
+    "difficulty_level": 6,
+    "memo": null,
+    "barcode": "books/barcodes/barcode_9791164424535.png",
+    "qr_code": "books/qrcodes/qr_bbf844c9-4826-49bb-8c04-947de3b1db0b.png",
+    "unique_code": "bbf844c9-4826-49bb-8c04-947de3b1db0b",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 16,
+  "fields": {
+    "name": "이투스 고쟁이 유형심화 중등 2-2 수학",
+    "subject": 6,
+    "isbn": "9791165987718",
+    "publisher": 6,
+    "difficulty_level": 8,
+    "memo": null,
+    "barcode": "books/barcodes/barcode_9791165987718.png",
+    "qr_code": "books/qrcodes/qr_3c9abd92-9930-435b-a548-bfbbea81407f.png",
+    "unique_code": "3c9abd92-9930-435b-a548-bfbbea81407f",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 17,
+  "fields": {
+    "name": "22개정 개념+유형 공통수학1",
+    "subject": 16,
+    "isbn": "9791169404419",
+    "publisher": 7,
+    "difficulty_level": 5,
+    "memo": "",
+    "barcode": "books/barcodes/barcode_9791169404419.png",
+    "qr_code": "books/qrcodes/qr_3c90d12d-8bab-4453-8a37-48aa671dc4a1.png",
+    "unique_code": "3c90d12d-8bab-4453-8a37-48aa671dc4a1",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 18,
+  "fields": {
+    "name": "25 오투 중등과학 1-1",
+    "subject": 18,
+    "isbn": "9791169409308",
+    "publisher": 7,
+    "difficulty_level": 6,
+    "memo": "",
+    "barcode": "books/barcodes/barcode_9791169409308.png",
+    "qr_code": "books/qrcodes/qr_009f0769-5d8a-44cf-8498-547a696cd251.png",
+    "unique_code": "009f0769-5d8a-44cf-8498-547a696cd251",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 19,
+  "fields": {
+    "name": "15개정 최고득점수학 2-2",
+    "subject": 6,
+    "isbn": "9791162278215",
+    "publisher": 7,
+    "difficulty_level": 8,
+    "memo": "",
+    "barcode": "books/barcodes/barcode_9791162278215.png",
+    "qr_code": "books/qrcodes/qr_dc650733-5448-4006-abc2-db02fab78770.png",
+    "unique_code": "dc650733-5448-4006-abc2-db02fab78770",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 20,
+  "fields": {
+    "name": "15개정 최고득점수학 2-1",
+    "subject": 6,
+    "isbn": "9791162276686",
+    "publisher": 7,
+    "difficulty_level": 8,
+    "memo": "",
+    "barcode": "books/barcodes/barcode_9791162276686.png",
+    "qr_code": "books/qrcodes/qr_32c9d3f1-d986-47e9-8fa9-d4703e05460a.png",
+    "unique_code": "32c9d3f1-d986-47e9-8fa9-d4703e05460a",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 21,
+  "fields": {
+    "name": "이투스 신 수학의 바이블 중등 개념 2-1",
+    "subject": 6,
+    "isbn": "9791164429806",
+    "publisher": 6,
+    "difficulty_level": 5,
+    "memo": "",
+    "barcode": "books/barcodes/barcode_9791164429806.png",
+    "qr_code": "books/qrcodes/qr_50070524-5d78-4ddd-a46a-0ee8ee65e281.png",
+    "unique_code": "50070524-5d78-4ddd-a46a-0ee8ee65e281",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 22,
+  "fields": {
+    "name": "이투스 신 수학의 바이블 중등 유형 2-1",
+    "subject": 6,
+    "isbn": "9791164429820",
+    "publisher": 6,
+    "difficulty_level": 6,
+    "memo": "",
+    "barcode": "books/barcodes/barcode_9791164429820.png",
+    "qr_code": "books/qrcodes/qr_b35275eb-712d-4c10-bb4f-0da0f6530c47.png",
+    "unique_code": "b35275eb-712d-4c10-bb4f-0da0f6530c47",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "books.book",
+  "pk": 23,
+  "fields": {
+    "name": "이투스 신 수학의 바이블 중등 개념 3-1",
+    "subject": 7,
+    "isbn": "9791164422777",
+    "publisher": 6,
+    "difficulty_level": 5,
+    "memo": "",
+    "barcode": "books/barcodes/barcode_9791164422777.png",
+    "qr_code": "books/qrcodes/qr_df84977d-ff80-4214-bbf8-d6a96fb6df73.png",
+    "unique_code": "df84977d-ff80-4214-bbf8-d6a96fb6df73",
+    "spare1": null,
+    "spare2": null,
+    "spare3": null
+  }
+},
+{
+  "model": "students.student",
+  "pk": 13,
+  "fields": {
+    "name": "김채은",
+    "school": 28,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-6204-7096",
+    "receipt_number": "010-6204-7096",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "20811590",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 14,
+  "fields": {
+    "name": "고건용",
+    "school": 18,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-9041-5669",
+    "receipt_number": "010-9041-5669",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "10767362",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 15,
+  "fields": {
+    "name": "김태준",
+    "school": 12,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-4908-9067",
+    "receipt_number": "010-4908-9067",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "73836618",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 16,
+  "fields": {
+    "name": "권유나",
+    "school": 29,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-2975-8095",
+    "receipt_number": "010-2975-8095",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "34340849",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 17,
+  "fields": {
+    "name": "배서은",
+    "school": 13,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-7126-4243",
+    "receipt_number": "010-7126-4243",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "10854789",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 18,
+  "fields": {
+    "name": "고율",
+    "school": 18,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-6436-8634",
+    "receipt_number": "010-6436-8634",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "14354985",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 19,
+  "fields": {
+    "name": "김재엽",
+    "school": 14,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-2459-9109",
+    "receipt_number": "010-2459-9109",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "30285665",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 20,
+  "fields": {
+    "name": "강현준",
+    "school": 12,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-3396-2314",
+    "receipt_number": "010-3396-2314",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "89388574",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 21,
+  "fields": {
+    "name": "이유빈",
+    "school": 13,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-9122-4754",
+    "receipt_number": "010-9122-4754",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "15566372",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 22,
+  "fields": {
+    "name": "곽준성",
+    "school": 18,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-2035-5529",
+    "receipt_number": "010-2035-5529",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "44228325",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 23,
+  "fields": {
+    "name": "박준혁",
+    "school": 18,
+    "grade": "K10",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-5714-6977",
+    "receipt_number": "010-5714-6977",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "52323610",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 24,
+  "fields": {
+    "name": "이태연",
+    "school": 18,
+    "grade": "K11",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-6322-9397",
+    "receipt_number": "010-6322-9397",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "68338750",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 25,
+  "fields": {
+    "name": "장예은",
+    "school": 18,
+    "grade": "K11",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-2878-5838",
+    "receipt_number": "010-2878-5838",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "61116134",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 26,
+  "fields": {
+    "name": "김민솔",
+    "school": 17,
+    "grade": "K11",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-4256-6271",
+    "receipt_number": "010-4256-6271",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "31765913",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 27,
+  "fields": {
+    "name": "허지성",
+    "school": 13,
+    "grade": "K11",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-3348-2966",
+    "receipt_number": "010-3348-2966",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "42505232",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 28,
+  "fields": {
+    "name": "한찬희",
+    "school": 13,
+    "grade": "K11",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-3303-8719",
+    "receipt_number": "010-3303-8719",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "77986400",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 29,
+  "fields": {
+    "name": "이시민",
+    "school": 22,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-5201-6228",
+    "receipt_number": "010-5201-6228",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "39581097",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 30,
+  "fields": {
+    "name": "권형준",
+    "school": 24,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-2975-8095",
+    "receipt_number": "010-2975-8095",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "87055289",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 31,
+  "fields": {
+    "name": "황은총",
+    "school": 13,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-4125-7172",
+    "receipt_number": "010-4125-7172",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "55826616",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 32,
+  "fields": {
+    "name": "유민준",
+    "school": 13,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-4350-2253",
+    "receipt_number": "010-4350-2253",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "45811017",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 33,
+  "fields": {
+    "name": "김동근",
+    "school": 30,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-2949-3537",
+    "receipt_number": "010-2949-3537",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "94959641",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 34,
+  "fields": {
+    "name": "이정수",
+    "school": 12,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-3077-4723",
+    "receipt_number": "010-3077-4723",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "16065451",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 35,
+  "fields": {
+    "name": "정현서",
+    "school": 22,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-7622-1731",
+    "receipt_number": "010-7622-1731",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "29652656",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 36,
+  "fields": {
+    "name": "이채현",
+    "school": 12,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-8863-3545",
+    "receipt_number": "010-8863-3545",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "61529200",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 37,
+  "fields": {
+    "name": "최황록",
+    "school": 13,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-7434-5658",
+    "receipt_number": "010-7434-5658",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "93497959",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 38,
+  "fields": {
+    "name": "박주아",
+    "school": 12,
+    "grade": "K12",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-2726-1742",
+    "receipt_number": "010-2726-1742",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "07912129",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 39,
+  "fields": {
+    "name": "이은성",
+    "school": 23,
+    "grade": "K5",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-8654-3516",
+    "receipt_number": "010-8654-3516",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "24695874",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 40,
+  "fields": {
+    "name": "유지원",
+    "school": 27,
+    "grade": "K6",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-6582-7805",
+    "receipt_number": "010-6582-7805",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "70552636",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 41,
+  "fields": {
+    "name": "이은서",
+    "school": 25,
+    "grade": "K6",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-3531-7017",
+    "receipt_number": "010-3531-7017",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "69697237",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 42,
+  "fields": {
+    "name": "이찬",
+    "school": 8,
+    "grade": "K7",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-6329-3507",
+    "receipt_number": "010-6239-3507",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "81454975",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 43,
+  "fields": {
+    "name": "김용민",
+    "school": 8,
+    "grade": "K7",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-8969-2722",
+    "receipt_number": "010-8969-2722",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "53747218",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 44,
+  "fields": {
+    "name": "황수아",
+    "school": 7,
+    "grade": "K7",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-4125-7172",
+    "receipt_number": "010-4125-7172",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "32655314",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 45,
+  "fields": {
+    "name": "선시우",
+    "school": 8,
+    "grade": "K7",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-2781-0082",
+    "receipt_number": "010-2781-0082",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "02055622",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 46,
+  "fields": {
+    "name": "김한서2",
+    "school": 4,
+    "grade": "K7",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-4424-0096",
+    "receipt_number": "010-4424-0096",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "00703777",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 47,
+  "fields": {
+    "name": "백승윤",
+    "school": 8,
+    "grade": "K7",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-2475-2800",
+    "receipt_number": "010-2475-2800",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "53591338",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 48,
+  "fields": {
+    "name": "구도현",
+    "school": 8,
+    "grade": "K7",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-8974-3153",
+    "receipt_number": "010-8974-3153",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "29953734",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 49,
+  "fields": {
+    "name": "김민관",
+    "school": 4,
+    "grade": "K8",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-7160-0622",
+    "receipt_number": "010-7160-0622",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "20838798",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 50,
+  "fields": {
+    "name": "송은채",
+    "school": 5,
+    "grade": "K8",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-2883-3487",
+    "receipt_number": "010-2883-3487",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "15420106",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 51,
+  "fields": {
+    "name": "김수근",
+    "school": 4,
+    "grade": "K8",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-2949-3537",
+    "receipt_number": "010-2949-3537",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "10185481",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 52,
+  "fields": {
+    "name": "장현정",
+    "school": 7,
+    "grade": "K8",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-3209-7705",
+    "receipt_number": "010-3209-7705",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "35281465",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 53,
+  "fields": {
+    "name": "임호경",
+    "school": 5,
+    "grade": "K8",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-9910-7830",
+    "receipt_number": "010-9910-7830",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "97836324",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 54,
+  "fields": {
+    "name": "최시영",
+    "school": 8,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-2425-8962",
+    "receipt_number": "010-2425-8962",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "01681925",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 55,
+  "fields": {
+    "name": "김미정",
+    "school": 6,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-6204-7096",
+    "receipt_number": "010-6204-7096",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "91349037",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 56,
+  "fields": {
+    "name": "이다희",
+    "school": 7,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-9315-0205",
+    "receipt_number": "010-9315-0205",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "36071023",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 57,
+  "fields": {
+    "name": "지현우",
+    "school": 7,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-9560-0528",
+    "receipt_number": "010-6248-3738",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": "2024-11-29",
+    "student_id": "30151128",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 58,
+  "fields": {
+    "name": "김건영",
+    "school": 7,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-5426-7737",
+    "receipt_number": "010-5426-7737",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "68546003",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 59,
+  "fields": {
+    "name": "강혜인",
+    "school": 7,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-6223-0937",
+    "receipt_number": "010-6223-0937",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "24005017",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 60,
+  "fields": {
+    "name": "김초현",
+    "school": 6,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-6425-0366",
+    "receipt_number": "010-6425-0366",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "33843777",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 61,
+  "fields": {
+    "name": "유하준",
+    "school": 7,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-4478-1099",
+    "receipt_number": "010-4478-1099",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "84619263",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 62,
+  "fields": {
+    "name": "소지영",
+    "school": 7,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-5013-8411",
+    "receipt_number": "010-5013-8411",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "42711133",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 63,
+  "fields": {
+    "name": "김은지",
+    "school": 4,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-3257-7719",
+    "receipt_number": "010-3257-7719",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "75160870",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 64,
+  "fields": {
+    "name": "강지원",
+    "school": 4,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-7118-3347",
+    "receipt_number": "010-7118-3347",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "16693616",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 65,
+  "fields": {
+    "name": "김승근",
+    "school": 4,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "M",
+    "parent_phone": "010-2949-3537",
+    "receipt_number": "010-2949-3537",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "37439479",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+},
+{
+  "model": "students.student",
+  "pk": 66,
+  "fields": {
+    "name": "장혜정",
+    "school": 4,
+    "grade": "K9",
+    "phone_number": null,
+    "email": null,
+    "gender": "F",
+    "parent_phone": "010-4875-3914",
+    "receipt_number": "010-4875-3914",
+    "interview_date": null,
+    "interview_score": null,
+    "interview_info": "",
+    "first_class_date": null,
+    "quit_date": null,
+    "student_id": "96968654",
+    "personal_file": "",
+    "etc": "",
+    "extra1": null,
+    "extra2": null,
+    "extra3": null,
+    "extra4": null,
+    "extra5": null,
+    "is_active": true
+  }
+}
+]

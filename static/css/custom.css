@@ -1,0 +1,267 @@
+/* custom.css */
+
+/* Base Styles */
+body {
+  font-family: 'Ubuntu', sans-serif; /* Default to Ubuntu for English */
+  line-height: 1.6; /* Improve readability */
+  color: #333; /* Dark gray for better contrast */
+  background-color: #f9fafb; /* Light background */
+  padding: 0; /* Remove default padding */
+  margin: 0; /* Remove default margin */
+}
+
+/* Navigation */
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  color: #4b5563;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  text-decoration: none; /* Remove default link underline */
+}
+
+.nav-link:hover {
+  color: #1f2937;
+  background-color: #f3f4f6;
+}
+
+.nav-link.active {
+  color: #4f46e5;
+  background-color: #eff6ff;
+}
+
+/* Tables */
+.content-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.375rem; /* Add rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  overflow: hidden; /* Hide scrollbar */
+}
+
+.content-table thead th {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #6b7280;
+  letter-spacing: 0.05em;
+  text-align: left; /* Left align header */
+  background-color: #f9fafb;
+}
+
+.content-table tbody tr {
+  background-color: white;
+}
+
+.content-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+/* 퇴원자(비활성 학생) 스타일 */
+tr.inactive-student {
+  background-color: #f9fafb !important;  /* 살짝 어두운 배경 */
+}
+
+tr.inactive-student td {
+  color: #9ca3af !important;  /* 회색 텍스트 */
+}
+
+tr.inactive-student:hover {
+  background-color: #f3f4f6 !important;  /* 호버 시 배경색 */
+}
+
+/* 테이블 관련 스타일 덮어쓰기 */
+.min-w-full tbody tr {
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* 높은 우선순위를 위한 구체적인 선택자 */
+.bg-white.shadow .min-w-full tbody tr.inactive-student td {
+  color: #9ca3af !important;
+}
+
+/* Forms */
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.form-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  color: white;
+  background-color: #6366f1;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.form-button:hover {
+  background-color: #4f46e5;
+}
+
+/* Cards */
+.content-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem; /* Add some space between cards */
+}
+
+.card-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb; /* Slightly lighter header */
+  font-weight: 600; /* Bold header */
+  color: #374151; /* Darker gray for header */
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Alerts */
+.alert {
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.alert-success {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.alert-error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.alert-info {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* Responsive Container */
+.container {
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* Utility Classes */
+.text-center {
+  text-align: center;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Improve scrolling on mobile */
+  scrollbar-width: none; /* Firefox */
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-flex;
+}
+
+.status-badge-success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Links */
+.link-primary {
+  color: #6366f1;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.link-primary:hover {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+/* Korean Font */
+@font-face {
+  font-family: 'Nanum Gothic';
+  src: url('https://hangeul.pstatic.net/hangeul_static/css/nanum-gothic.css');
+}
+
+body.korean {
+  font-family: 'Nanum Gothic', sans-serif; /* Switch to Nanum Gothic for Korean */
+}
+
+/* Responsiveness */
+@media (max-width: 640px) {
+  .nav-link {
+    padding: 0.5rem 1rem; /* Reduce padding for smaller screens */
+  }
+
+  .content-table th,
+  .content-table td {
+    font-size: 0.75rem; /* Reduce font size for tables */
+  }
+}

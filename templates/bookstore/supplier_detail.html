@@ -1,0 +1,236 @@
+{% extends "bookstore/base_bookstore.html" %}
+{% load humanize %}
+
+{% block container_class %}wide-screen{% endblock %}
+
+{% block bookstore_content %}
+<!-- 헤더 -->
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold text-indigo-700">{{ supplier.name }} 상세 정보</h2>
+    <a href="{% url 'bookstore:supplier_list' %}"
+       class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+        ← 목록으로
+    </a>
+</div>
+
+<!-- 공급처 기본 정보 -->
+<div class="content-card mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-2">
+            <p><strong class="text-gray-700">사업자 번호:</strong> <span class="text-gray-900">{{ supplier.registration_number|default:"-" }}</span></p>
+            <p><strong class="text-gray-700">전화번호:</strong> <span class="text-gray-900">{{ supplier.phone|default:"-" }}</span></p>
+            <p><strong class="text-gray-700">주소:</strong> <span class="text-gray-900">{{ supplier.address|default:"-" }}</span></p>
+        </div>
+        <div class="bg-indigo-50 p-5 rounded-lg border border-indigo-100">
+            <h4 class="text-lg font-semibold text-indigo-800 mb-3">계좌 정보</h4>
+            <p class="font-semibold text-gray-900 mb-1">{{ supplier.bank_name }} {{ supplier.account_number }}</p>
+            <p class="text-gray-700">예금주: {{ supplier.account_owner }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- 지급/환불 예정 목록 -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+    <!-- 지급(입금) 예정 -->
+    <div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-orange-600">지급(입금) 예정 목록</h3>
+            <span class="text-sm text-gray-600">총액: <strong class="text-lg">{{ total_to_pay|intcomma }}원</strong></span>
+        </div>
+
+        <form method="POST" action="{% url 'bookstore:supplier_settle' supplier.pk %}" class="space-y-3">
+            {% csrf_token %}
+
+            <div class="bg-orange-50 p-3 rounded-lg border border-orange-200 flex justify-end items-center gap-3">
+                <label class="flex items-center gap-2 font-medium text-sm text-gray-700 whitespace-nowrap">
+                    지급일:
+                    <input type="date" name="payment_date" value="{{ today }}" required
+                           class="form-input py-1 px-2 text-sm">
+                </label>
+                <button type="submit"
+                        onclick="return confirm('선택한 입고 건을 지급 완료 처리하시겠습니까?');"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded font-medium text-sm transition-colors">
+                    지급 처리
+                </button>
+            </div>
+
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-center w-10">
+                                <input type="checkbox" onclick="toggleAll(this)" class="form-checkbox h-4 w-4" aria-label="모두 선택">
+                            </th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">입고일</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">도서명</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">수량</th>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">금액</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for log in unpaid_restocks %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-2 text-center">
+                                <input type="checkbox" name="log_ids" value="{{ log.pk }}" class="form-checkbox h-4 w-4" aria-label="선택">
+                            </td>
+                            <td class="px-3 py-2 text-gray-700">{{ log.created_at|date:"Y-m-d" }}</td>
+                            <td class="px-3 py-2 font-semibold text-gray-900">{{ log.book.title }}</td>
+                            <td class="px-3 py-2 text-center text-green-600">+{{ log.quantity }}</td>
+                            <td class="px-3 py-2 text-right text-gray-900">{{ log.total_payment|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-3 py-8 text-center text-gray-500">지급 대기 중인 건이 없습니다.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+
+    <!-- 환불(차감) 예정 -->
+    <div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-blue-600">환불(차감) 예정 목록</h3>
+            <span class="text-sm text-gray-600">총액: <strong class="text-lg">{{ total_to_refund|intcomma }}원</strong></span>
+        </div>
+
+        <form method="POST" action="{% url 'bookstore:supplier_settle' supplier.pk %}" class="space-y-3">
+            {% csrf_token %}
+
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex justify-end items-center gap-3">
+                <label class="flex items-center gap-2 font-medium text-sm text-gray-700 whitespace-nowrap">
+                    환불일:
+                    <input type="date" name="payment_date" value="{{ today }}" required
+                           class="form-input py-1 px-2 text-sm">
+                </label>
+                <button type="submit"
+                        onclick="return confirm('선택한 반품 건을 정산(차감) 완료 처리하시겠습니까?');"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded font-medium text-sm transition-colors">
+                    환불 확인
+                </button>
+            </div>
+
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-center w-10">
+                                <input type="checkbox" onclick="toggleAll(this)" class="form-checkbox h-4 w-4" aria-label="모두 선택">
+                            </th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">반품일</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">도서명</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">수량</th>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">금액</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for log in unpaid_returns %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-2 text-center">
+                                <input type="checkbox" name="log_ids" value="{{ log.pk }}" class="form-checkbox h-4 w-4" aria-label="선택">
+                            </td>
+                            <td class="px-3 py-2 text-gray-700">{{ log.created_at|date:"Y-m-d" }}</td>
+                            <td class="px-3 py-2 font-semibold text-gray-900">{{ log.book.title }}</td>
+                            <td class="px-3 py-2 text-center text-red-600">{{ log.quantity }}</td>
+                            <td class="px-3 py-2 text-right text-gray-900">{{ log.total_payment|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-3 py-8 text-center text-gray-500">환불 대기 중인 건이 없습니다.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 구분선 -->
+<hr class="my-10 border-t-2 border-dashed border-gray-300">
+
+<!-- 정산 완료 기록 -->
+<div class="flex justify-between items-center mb-4">
+    <h3 class="text-xl font-bold text-green-600">정산(입금/환불) 완료 기록</h3>
+</div>
+
+<form method="POST" action="{% url 'bookstore:supplier_payment_cancel' supplier.pk %}" class="space-y-3">
+    {% csrf_token %}
+
+    <div class="flex justify-end">
+        <button type="submit"
+                onclick="return confirm('선택한 항목의 정산 처리를 취소하시겠습니까?\n취소된 항목은 다시 \'미정산 목록\'으로 이동합니다.');"
+                class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors">
+            ↺ 선택 항목 정산 취소 (수정)
+        </button>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead class="bg-green-50">
+                <tr>
+                    <th class="px-3 py-2 text-center w-10">
+                        <input type="checkbox" onclick="toggleAll(this)" class="form-checkbox h-4 w-4" aria-label="모두 선택">
+                    </th>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">정산(지급)일</th>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">입고/반품일</th>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">도서명</th>
+                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">수량</th>
+                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">단가</th>
+                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">합계</th>
+                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">비고</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for log in paid_logs %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-center">
+                        <input type="checkbox" name="log_ids" value="{{ log.pk }}" class="form-checkbox h-4 w-4" aria-label="선택">
+                    </td>
+                    <td class="px-3 py-2 font-semibold text-green-600">{{ log.payment_date|date:"Y-m-d" }}</td>
+                    <td class="px-3 py-2 text-gray-500">{{ log.created_at|date:"Y-m-d" }}</td>
+                    <td class="px-3 py-2 text-gray-900">{{ log.book.title }}</td>
+                    <td class="px-3 py-2 text-center">
+                        {% if log.quantity > 0 %}
+                            <span class="text-gray-700">+{{ log.quantity }}</span>
+                        {% else %}
+                            <span class="text-red-600">{{ log.quantity }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-right text-gray-600">{{ log.cost_price|intcomma }}</td>
+                    <td class="px-3 py-2 text-right font-semibold">
+                        {% if log.quantity > 0 %}
+                            {{ log.total_payment|intcomma }}원
+                        {% else %}
+                            <span class="text-red-600">-{{ log.total_payment|intcomma }}원</span> (반품)
+                        {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-gray-600 text-xs">{{ log.memo|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-3 py-12 text-center text-gray-500">
+                        정산 완료된 내역이 없습니다.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</form>
+
+<script>
+    /**
+     * 전체 선택/해제 스크립트
+     * [핵심] 클릭된 체크박스(source)가 속한 form 내부의 체크박스들만 제어합니다.
+     * 이를 통해 3개의 폼(지급, 환불, 완료)의 체크박스가 서로 간섭하지 않습니다.
+     */
+    function toggleAll(source) {
+        const form = source.closest('form');
+        const checkboxes = form.querySelectorAll('input[name="log_ids"]');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+    }
+</script>
+{% endblock %}

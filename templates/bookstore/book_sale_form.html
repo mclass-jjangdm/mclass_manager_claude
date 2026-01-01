@@ -1,0 +1,124 @@
+{% extends "bookstore/base_bookstore.html" %}
+{% load humanize %}
+
+{% block bookstore_content %}
+<div class="max-w-2xl mx-auto">
+    <div class="border-b-2 border-orange-500 pb-3 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">교재 판매 (지급)</h2>
+        <p class="text-lg mt-1">
+            대상 학생: <strong class="text-indigo-700">{{ student.name }}</strong>
+        </p>
+    </div>
+
+    <div class="content-card">
+        {% if form.errors %}
+        <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-6">
+            <strong>⚠️ 입력 오류가 있습니다:</strong>
+            <ul class="list-disc ml-5 mt-2">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 판매일 -->
+            <div>
+                <label for="id_sale_date" class="form-label">판매일 (지급일)</label>
+                {{ form.sale_date }}
+            </div>
+
+            <!-- 교재 선택 -->
+            <div>
+                <label for="id_book" class="form-label">판매할 교재</label>
+                {{ form.book }}
+                <p class="text-sm text-gray-500 mt-1">* 재고가 있는 교재만 표시됩니다.</p>
+            </div>
+
+            <!-- 수량 및 가격 -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="id_quantity" class="form-label">수량</label>
+                    {{ form.quantity }}
+                </div>
+                <div>
+                    <label for="id_price" class="form-label">판매 가격 (단가)</label>
+                    {{ form.price }}
+                    <p class="text-xs text-gray-500 mt-1">* 교재 등록 시 설정한 판매가가 자동 입력됩니다.</p>
+                </div>
+            </div>
+
+            <!-- 결제 완료 처리 -->
+            <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <label class="flex items-center gap-3 cursor-pointer text-orange-800 font-semibold">
+                    {{ form.is_paid }}
+                    <span>즉시 결제 완료 처리하기</span>
+                </label>
+                <div class="text-sm text-orange-700 mt-2 space-y-1">
+                    <p>* 체크 해제 시: 학생의 <strong>[미납 수업료]</strong>에 자동 합산됩니다. (후불 청구)</p>
+                    <p>* 체크 시: 미납금에 합산되지 않고 판매 기록만 남습니다. (현장 결제)</p>
+                </div>
+            </div>
+
+            <!-- 비고 -->
+            <div>
+                <label for="id_memo" class="form-label">비고</label>
+                {{ form.memo }}
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex gap-3 justify-center pt-4">
+                <button type="submit"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                    판매 확정
+                </button>
+                <a href="{% url 'students:student_detail' student.pk %}"
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 모든 입력 필드에 form-input 클래스 적용
+        document.querySelectorAll('input:not([type="checkbox"]), select, textarea').forEach(el => {
+            el.classList.add('form-input');
+        });
+
+        // 체크박스에는 form-checkbox 클래스 적용
+        document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+            el.classList.add('form-checkbox', 'h-4', 'w-4', 'text-orange-600');
+        });
+
+        const bookSelect = document.getElementById('id_book');
+        const priceInput = document.getElementById('id_price');
+
+        // 교재별 가격 정보를 자바스크립트 객체로 저장
+        const bookPrices = {
+            {% for book in form.fields.book.queryset %}{{ book.pk }}: {{ book.price|default:0 }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        };
+
+        // 교재를 선택하면 해당 가격을 가격 필드에 입력
+        if (bookSelect && priceInput) {
+            bookSelect.addEventListener('change', function() {
+                const selectedBookId = this.value;
+                if (selectedBookId && bookPrices[selectedBookId] !== undefined) {
+                    priceInput.value = bookPrices[selectedBookId];
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

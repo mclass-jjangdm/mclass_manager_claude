@@ -1,0 +1,35 @@
+# Django and extensions
+Django==5.2.4
+django-crispy-forms==2.4
+crispy-bootstrap4==2025.6
+django-import-export==4.3.9
+djangorestframework==3.16.0
+
+# Database
+mysqlclient==2.2.7
+PyMySQL==1.1.1
+psycopg2-binary==2.9.10
+
+# PDF and reporting
+reportlab==4.4.3
+pillow==11.3.0
+
+# Data processing
+pandas==2.3.1
+numpy==2.3.1
+python-dateutil==2.9.0.post0
+xlsxwriter==3.2.0
+openpyxl==3.1.5
+
+# Utilities
+python-barcode==0.15.1
+qrcode==8.2
+pytz==2025.2
+tablib==3.8.0
+
+# API Client
+requests==2.31.0
+
+# Server
+gunicorn==23.0.0
+whitenoise==6.8.2

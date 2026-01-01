@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+<!-- Custom CSS -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 서브 네비게이션 -->
+    <div class="bg-white shadow-sm">
+        <div class="container">
+            <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Subjects">
+                <a href="{% url 'subjects:subject_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'subject_list' %}active{% endif %}">
+                    과목 목록
+                </a>
+                <a href="{% url 'subjects:subject_create' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'subject_create' %}active{% endif %}">
+                    과목 등록
+                </a>
+                <a href="{% url 'subjects:bulk_import' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'bulk_import' %}active{% endif %}">
+                    일괄 가져오기
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="container">
+        {% block subject_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

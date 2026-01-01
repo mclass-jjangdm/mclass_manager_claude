@@ -1,0 +1,137 @@
+{% extends "bookstore/base_bookstore.html" %}
+{% load humanize %}
+
+{% block bookstore_content %}
+<div class="max-w-3xl mx-auto">
+    <div class="border-b-2 border-red-600 pb-3 mb-6">
+        <h2 class="text-2xl font-bold text-red-600">교재 반품 처리</h2>
+        <p class="text-gray-600 mt-1">
+            <strong>{{ book.title }}</strong> (현재 재고: <span class="text-orange-600 font-bold">{{ book.stock }}</span>권)
+        </p>
+    </div>
+
+    <div class="content-card border-t-4 border-red-600">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 경고 메시지 -->
+            <div class="bg-red-50 p-4 rounded-lg border border-red-200 text-red-800">
+                <strong>주의:</strong> 반품 처리 시 재고가 즉시 감소합니다.
+            </div>
+
+            <!-- 반품처 선택 -->
+            <div>
+                <label for="id_supplier" class="form-label">반품처 (구매처)</label>
+                {{ form.supplier }}
+            </div>
+
+            <!-- 반품 수량 및 단가 -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="id_quantity" class="form-label">반품 수량</label>
+                    {{ form.quantity }}
+                </div>
+                <div>
+                    <label for="id_cost_price" class="form-label">반품 단가 (환불액)</label>
+                    {{ form.cost_price }}
+                </div>
+            </div>
+
+            <!-- 환불(정산) 정보 -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="font-semibold text-gray-700 mb-3">환불(정산) 정보</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="id_total_payment" class="form-label">총 환불액 (자동계산)</label>
+                        {{ form.total_payment }}
+                    </div>
+                    <div>
+                        <label for="id_payment_date" class="form-label">반품 날짜</label>
+                        {{ form.payment_date }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 비고 -->
+            <div>
+                <label for="id_memo" class="form-label">비고 (사유)</label>
+                {{ form.memo }}
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex gap-3 justify-center pt-4">
+                <button type="submit"
+                        class="bg-red-600 hover:bg-red-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                    반품 확정
+                </button>
+                <a href="{% url 'bookstore:book_list' %}"
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 최근 재고 변동 이력 -->
+    <h4 class="text-lg font-semibold text-gray-700 mt-10 mb-4">최근 재고 변동 이력</h4>
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">날짜</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">구분</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">수량</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">비고</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for log in recent_logs %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-gray-700">{{ log.created_at|date:"Y-m-d H:i" }}</td>
+                    <td class="px-4 py-3">
+                        {% if log.quantity > 0 %}
+                            <span class="text-green-600 font-semibold">입고</span>
+                        {% else %}
+                            <span class="text-red-600 font-semibold">반품</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">{{ log.quantity }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ log.memo|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-4 py-6 text-center text-gray-500">이력이 없습니다.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 모든 입력 필드에 form-input 클래스 적용
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('form-checkbox') && !el.classList.contains('form-radio')) {
+                el.classList.add('form-input');
+            }
+        });
+
+        // 총 환불액 자동 계산
+        const quantityInput = document.getElementById('id_quantity');
+        const priceInput = document.getElementById('id_cost_price');
+        const totalInput = document.getElementById('id_total_payment');
+
+        function calculateRefund() {
+            const qty = parseInt(quantityInput.value) || 0;
+            const price = parseInt(priceInput.value) || 0;
+            totalInput.value = qty * price;
+        }
+
+        if (quantityInput && priceInput && totalInput) {
+            quantityInput.addEventListener('input', calculateRefund);
+            priceInput.addEventListener('input', calculateRefund);
+        }
+    });
+</script>
+{% endblock %}

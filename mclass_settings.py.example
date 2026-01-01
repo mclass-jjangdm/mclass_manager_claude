@@ -1,0 +1,24 @@
+# mclass_settings.py.example
+# 이 파일을 mclass_settings.py로 복사하고 실제 값으로 채워주세요
+
+SECRET_KEY = 'your-secret-key-here'
+
+db_password = 'your-database-password-here'
+
+# SMTP 서버 정보
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # 사용하는 이메일 서비스에 맞게 변경
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# 이메일 계정 정보
+EMAIL_HOST_USER = 'your-email@example.com'
+EMAIL_HOST_PASSWORD = 'your-email-password-or-app-password'
+
+# 기본 발신자
+DEFAULT_FROM_EMAIL = 'your-email@example.com'
+
+# SMS API 설정 (선택사항)
+# SMS_API_KEY = 'your-sms-api-key'
+# SMS_USER_ID = 'your-sms-user-id'
+# SMS_SENDER_NUMBER = 'your-sender-number'

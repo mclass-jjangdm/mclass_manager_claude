@@ -1,0 +1,48 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+.DS_Store
+.env
+.venv
+env/
+venv/
+db.sqlite3
+media/
+staticfiles/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Debug logs
+debug.log
+
+# Claude Code
+.claude/
+
+# Python cache
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# OS
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Security - Never commit sensitive credentials
+mclass_settings.py
+.env.local
+
+db_backup/

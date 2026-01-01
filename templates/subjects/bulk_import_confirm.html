@@ -1,0 +1,62 @@
+{% extends 'subjects/base_subjects.html' %}
+
+{% block subject_content %}
+
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white shadow-md rounded-lg p-8">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">과목 일괄 가져오기</h1>
+            <p class="text-gray-600">CSV 파일(subject_list.csv)에서 과목 데이터를 가져옵니다.</p>
+        </div>
+
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-yellow-700">
+                        <strong>주의:</strong> 현재 {{ subject_count }}개의 과목이 등록되어 있습니다.<br>
+                        기존 데이터가 CSV 파일의 데이터로 업데이트됩니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6 bg-gray-50 p-4 rounded-md">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">작업 내용:</h3>
+            <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                <li>CSV 파일에서 과목 데이터를 읽어옵니다</li>
+                <li>과목 코드가 일치하는 경우 정보를 업데이트합니다</li>
+                <li>새로운 과목은 추가됩니다</li>
+                <li>CSV에 없는 기존 과목은 유지됩니다</li>
+            </ul>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            <div class="flex space-x-3">
+                <button 
+                    type="submit" 
+                    name="confirm" 
+                    value="yes"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition duration-150 ease-in-out"
+                >
+                    확인 - CSV 데이터 가져오기
+                </button>
+                
+                <a 
+                    href="{% url 'subjects:subject_list' %}"
+                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-4 rounded-md text-center transition duration-150 ease-in-out"
+                >
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

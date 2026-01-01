@@ -1,0 +1,287 @@
+{% extends 'teachers/base_teachers.html' %}
+{% load humanize %}
+
+{% block title %}{{ teacher.name }} 상세 정보{% endblock %}
+
+{% block teacher_content %}
+<!-- 헤더 -->
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold text-gray-800">교사 상세 정보</h2>
+    <div class="flex gap-2">
+        <a href="{% url 'teachers:teacher_pdf_report' teacher.id %}"
+           class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+           target="_blank">
+            보고서 보기
+        </a>
+        <a href="{% url 'teachers:teacher_update' teacher.id %}"
+           class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            정보 수정
+        </a>
+        {% if teacher.is_active %}
+        <a href="{% url 'teachers:teacher_resign' teacher.id %}"
+           class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            퇴사 처리
+        </a>
+        {% else %}
+        <a href="{% url 'teachers:teacher_rehire' teacher.id %}"
+           class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            재입사 처리
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 교사 정보 카드 -->
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 기본 정보 -->
+        <div class="lg:col-span-2">
+            <h3 class="text-2xl font-bold text-indigo-700 border-b-2 border-indigo-600 pb-3 mb-4">
+                {{ teacher.name }}
+            </h3>
+            <div class="space-y-3">
+                <div class="flex">
+                    <span class="w-40 text-gray-600 font-medium">성별</span>
+                    <span>{{ teacher.get_gender_display|default:"-" }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-40 text-gray-600 font-medium">전화번호</span>
+                    <span>{{ teacher.get_formatted_phone_number|default:"-" }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-40 text-gray-600 font-medium">이메일</span>
+                    {% if teacher.email %}
+                    <a href="{% url 'teachers:teacher_send_email' teacher.id %}"
+                       class="text-indigo-600 hover:text-indigo-800 hover:underline">
+                        {{ teacher.email }}
+                    </a>
+                    {% else %}
+                    <span>-</span>
+                    {% endif %}
+                </div>
+                <div class="flex">
+                    <span class="w-40 text-gray-600 font-medium">입사일</span>
+                    <span>{{ teacher.hire_date|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-40 text-gray-600 font-medium">퇴사일</span>
+                    <span>{{ teacher.resignation_date|date:"Y-m-d"|default:"-" }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-40 text-gray-600 font-medium">거래은행</span>
+                    <span>{{ teacher.bank.name|default:"-" }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-40 text-gray-600 font-medium">급여계좌</span>
+                    <span>{{ teacher.account_number|default:"-" }}</span>
+                </div>
+                {% if teacher.other_info %}
+                <div class="flex">
+                    <span class="w-40 text-gray-600 font-medium">기타</span>
+                    <span class="text-gray-700">{{ teacher.other_info|linebreaks }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 급여 정보 -->
+        <div class="bg-gray-50 p-6 rounded-lg">
+            <h4 class="text-lg font-semibold text-gray-700 mb-4">급여 정보</h4>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">급여 기준:</span>
+                    <span class="text-gray-900 font-semibold">{{ teacher.base_salary|default:0|intcomma }}원</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">추가 급여:</span>
+                    <span class="text-gray-900 font-semibold">{{ teacher.additional_salary|default:0|intcomma }}원</span>
+                </div>
+                <div class="border-t border-gray-200 pt-3 mt-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-700 font-bold">총 급여:</span>
+                        <span class="text-xl font-bold text-indigo-600">
+                            {% widthratio teacher.base_salary|default:0 1 1 as base %}
+                            {% widthratio teacher.additional_salary|default:0 1 1 as additional %}
+                            {{ base|add:additional|intcomma }}원
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 근무 기록 섹션 -->
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-900">근무 기록</h3>
+
+        <!-- 월 선택 네비게이션 -->
+        <div class="flex items-center gap-4">
+            <a href="?year={{ prev_year }}&month={{ prev_month }}"
+               class="text-indigo-600 hover:text-indigo-800 font-medium">
+                ← 이전 달
+            </a>
+            <span class="text-lg font-semibold text-gray-900">
+                {{ current_year }}년 {{ current_month }}월
+            </span>
+            <a href="?year={{ next_year }}&month={{ next_month }}"
+               class="text-indigo-600 hover:text-indigo-800 font-medium">
+                다음 달 →
+            </a>
+        </div>
+    </div>
+
+    <!-- 총 근무 시간 및 급여 정보 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4">
+            <div class="text-sm font-medium text-indigo-900 mb-1">총 근무 시간</div>
+            <div class="text-2xl font-bold text-indigo-700">{{ total_work_hours }}</div>
+        </div>
+        <div class="bg-green-50 border-l-4 border-green-500 p-4">
+            <div class="text-sm font-medium text-green-900 mb-1">근무 일수</div>
+            <div class="text-2xl font-bold text-green-700">{{ work_days }}일</div>
+        </div>
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+            <div class="text-sm font-medium text-blue-900 mb-1">예상 급여</div>
+            <div class="text-2xl font-bold text-blue-700">{{ estimated_salary|default:"0"|intcomma }}원</div>
+        </div>
+    </div>
+
+    <!-- 근무 기록 테이블 -->
+    {% if attendance_records %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        날짜
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        요일
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        시작 시간
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        종료 시간
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        근무 시간
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for record in attendance_records %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ record.date|date:"Y-m-d" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {{ record.date|date:"D" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ record.start_time|default:"-" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ record.end_time|default:"-" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                        {% if record.start_time and record.end_time and record.is_present %}
+                            {{ record.work_hours }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="mt-4 text-sm text-gray-500">해당 월의 근무 기록이 없습니다.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 월별 급여 내역 섹션 -->
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h3 class="text-xl font-bold text-gray-900 mb-6">월별 급여 내역</h3>
+
+    {% if monthly_salaries %}
+    <div class="overflow-x-auto mb-6">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        년월
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        근무 일수
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        근무 시간
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        급여
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for salary in monthly_salaries %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ salary.year }}년 {{ salary.month }}월
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                        {{ salary.work_days }}일
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                        {{ salary.work_hours }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                        {{ salary.total_amount|intcomma }}원
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="bg-gray-50">
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                        총 합계
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
+                        {{ total_salary_days }}일
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
+                        {{ total_salary_hours }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-indigo-700">
+                        {{ total_salary_amount|intcomma }}원
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="mt-4 text-sm text-gray-500">급여 내역이 없습니다.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 하단 버튼 -->
+<div class="mt-8 flex justify-center">
+    <a href="{% url 'teachers:teacher_list' %}"
+       class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+        ← 목록으로 돌아가기
+    </a>
+</div>
+{% endblock %}

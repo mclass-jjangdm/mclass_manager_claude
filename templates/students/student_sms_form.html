@@ -1,0 +1,100 @@
+{% extends 'students/base_students.html' %}
+
+{% block title %}{{ student.name }} 학생에게 문자 보내기{% endblock %}
+
+{% block student_content %}
+<!-- 헤더 -->
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold text-gray-800">문자 보내기</h2>
+</div>
+
+<!-- 수신자 정보 -->
+<div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+    <div class="flex items-center gap-2">
+        <span class="text-green-700 font-medium">수신자:</span>
+        {% if is_parent %}
+        <span class="text-green-900 font-semibold">{{ student.name }} 학생 부모님</span>
+        <span class="text-green-600">{{ student.get_formatted_parent_phone }}</span>
+        {% else %}
+        <span class="text-green-900 font-semibold">{{ student.name }}</span>
+        <span class="text-green-600">{{ student.get_formatted_phone_number }}</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 문자 폼 -->
+<div class="bg-white rounded-lg shadow p-6">
+    {% if form.errors %}
+    <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-6">
+        <strong>⚠️ 입력 오류가 있습니다:</strong>
+        <ul class="list-disc ml-5 mt-2">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- 문자 내용 -->
+        <div>
+            <label for="id_message" class="block text-sm font-medium text-gray-700 mb-2">
+                문자 내용 <span class="text-red-600">*</span>
+            </label>
+            {{ form.message }}
+            {% if form.message.help_text %}
+            <p class="mt-1 text-sm text-gray-500">{{ form.message.help_text }}</p>
+            {% endif %}
+            <div class="mt-2 text-sm text-gray-600">
+                <span id="charCount">0</span> / 2000자
+                <span id="msgType" class="ml-2 font-semibold text-indigo-600">SMS</span>
+            </div>
+        </div>
+
+        <!-- 버튼 -->
+        <div class="flex gap-3 justify-center pt-4 border-t border-gray-200">
+            <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                문자 발송
+            </button>
+            <a href="{% url 'students:student_detail' student.pk %}"
+               class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                취소
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageField = document.getElementById('id_message');
+    const charCount = document.getElementById('charCount');
+    const msgType = document.getElementById('msgType');
+
+    function updateCharCount() {
+        const text = messageField.value;
+        const byteLength = new Blob([text]).size;
+        charCount.textContent = text.length;
+
+        // SMS(90바이트) vs LMS(2000바이트) 판단
+        if (byteLength > 90) {
+            msgType.textContent = 'LMS';
+            msgType.className = 'ml-2 font-semibold text-orange-600';
+        } else {
+            msgType.textContent = 'SMS';
+            msgType.className = 'ml-2 font-semibold text-indigo-600';
+        }
+    }
+
+    messageField.addEventListener('input', updateCharCount);
+    updateCharCount();
+});
+</script>
+{% endblock %}

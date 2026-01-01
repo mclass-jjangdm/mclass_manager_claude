@@ -1,0 +1,210 @@
+{% extends "bookstore/base_bookstore.html" %}
+{% load humanize %}
+
+{% block bookstore_content %}
+<!-- 헤더 -->
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold text-gray-800">도서 상세 정보</h2>
+    <div class="flex gap-2">
+        <a href="{% url 'bookstore:book_restock' book.pk %}"
+           class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            + 재고 입고
+        </a>
+        <a href="{% url 'bookstore:book_update' book.pk %}"
+           class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            정보 수정
+        </a>
+    </div>
+</div>
+
+<!-- 도서 정보 카드 -->
+<div class="content-card mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 기본 정보 -->
+        <div class="lg:col-span-2">
+            <h3 class="text-2xl font-bold text-indigo-700 border-b-2 border-indigo-600 pb-3 mb-4">
+                {{ book.title }}
+            </h3>
+            <div class="space-y-3">
+                <div class="flex">
+                    <span class="w-32 text-gray-600 font-medium">바코드(ISBN)</span>
+                    <span class="font-mono text-lg">{{ book.isbn }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-32 text-gray-600 font-medium">저자</span>
+                    <span>{{ book.author|default:"-" }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-32 text-gray-600 font-medium">출판사</span>
+                    <span>{{ book.publisher|default:"-" }}</span>
+                </div>
+                <div class="flex">
+                    <span class="w-32 text-gray-600 font-medium">등록일</span>
+                    <span>{{ book.created_at|date:"Y-m-d" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 가격 및 재고 정보 -->
+        <div class="bg-gray-50 p-6 rounded-lg">
+            <h4 class="text-lg font-semibold text-gray-700 mb-4">가격 및 재고</h4>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">정상 가격:</span>
+                    <span class="line-through text-gray-500">{{ book.original_price|intcomma }}원</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-700">입고 단가:</span>
+                    <span>{{ book.cost_price|intcomma }}원</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 mt-2">
+                    <span class="text-orange-600 font-bold">판매 가격:</span>
+                    <span class="text-xl font-bold text-orange-600">{{ book.price|intcomma }}원</span>
+                </div>
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-700">현재 재고:</span>
+                        <span class="text-3xl font-bold text-green-600">{{ book.stock|intcomma }}</span>
+                        <span class="text-gray-600">권</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 학생 지급 이력 -->
+<h3 class="text-xl font-bold text-orange-700 mb-4">학생 지급 이력</h3>
+<div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-orange-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    판매일
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    학생명
+                </th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    수량
+                </th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    판매가
+                </th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    금액
+                </th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    납부상태
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    납부일
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for sale in sales %}
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 text-sm text-gray-700">
+                    {{ sale.sale_date|date:"Y-m-d" }}
+                </td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                    <a href="{% url 'students:student_detail' sale.student.pk %}"
+                       class="text-indigo-600 hover:text-indigo-800 hover:underline">
+                        {{ sale.student.name }}
+                    </a>
+                </td>
+                <td class="px-4 py-3 text-sm text-center text-gray-700">
+                    {{ sale.quantity }}권
+                </td>
+                <td class="px-4 py-3 text-sm text-right text-gray-700">
+                    {{ sale.price|intcomma }}원
+                </td>
+                <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
+                    {{ sale.get_total_price|intcomma }}원
+                </td>
+                <td class="px-4 py-3 text-center">
+                    {% if sale.is_paid %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            납부완료
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            미납
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700">
+                    {{ sale.payment_date|date:"Y-m-d"|default:"-" }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+                    학생 지급 이력이 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 입고 이력 -->
+<h3 class="text-xl font-bold text-indigo-700 mb-4">입고 이력 (Stock Logs)</h3>
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-indigo-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-1/5">
+                    입고 날짜
+                </th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-1/6">
+                    입고 수량
+                </th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider w-1/5">
+                    당시 입고 단가
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                    비고
+                </th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for log in stock_logs %}
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 text-sm text-gray-700">
+                    {{ log.created_at|date:"Y-m-d H:i" }}
+                </td>
+                <td class="px-4 py-3 text-sm text-center font-semibold">
+                    {% if log.quantity > 0 %}
+                        <span class="text-green-600">+{{ log.quantity }}</span>
+                    {% else %}
+                        <span class="text-red-600">{{ log.quantity }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-sm text-right text-gray-700">
+                    {{ log.cost_price|intcomma }}원
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-600">
+                    {{ log.memo|default:"-" }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="px-4 py-12 text-center text-gray-500">
+                    입고 기록이 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 하단 버튼 -->
+<div class="mt-8 flex justify-center">
+    <a href="{% url 'bookstore:book_list' %}"
+       class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+        ← 목록으로 돌아가기
+    </a>
+</div>
+{% endblock %}
