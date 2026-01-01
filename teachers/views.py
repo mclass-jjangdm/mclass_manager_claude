@@ -522,15 +522,102 @@ class SalaryTableView(LoginRequiredMixin, View):
             grand_total += total
             salary_table.append(teacher_data)
 
+        # 통계 데이터 계산
+        statistics = self.calculate_statistics(salary_table, months, year)
+
         context = {
             'year': year,
             'year_range': sorted(list(year_range), reverse=True),
             'months': months,
             'salary_table': salary_table,
             'grand_total': grand_total,
+            'statistics': statistics,
         }
 
         return render(request, 'teachers/salary_table.html', context)
+
+    def calculate_statistics(self, salary_table, months, year):
+        """급여 통계 데이터 계산"""
+        import statistics as stats
+
+        # 월별 총액 계산
+        monthly_totals = []
+        for month in months:
+            month_total = sum(row.get(month, 0) for row in salary_table)
+            monthly_totals.append(month_total)
+
+        # 교사별 연간 총액
+        teacher_totals = [row['total'] for row in salary_table if row['total'] > 0]
+
+        # 0이 아닌 월별 급여만 추출 (개인별)
+        all_nonzero_salaries = []
+        for row in salary_table:
+            for month in months:
+                salary = row.get(month, 0)
+                if salary > 0:
+                    all_nonzero_salaries.append(salary)
+
+        # 기본 통계
+        statistics = {
+            'monthly_totals': monthly_totals,
+            'monthly_labels': [f'{m}월' for m in months],
+        }
+
+        # 연간 총 급여
+        statistics['total_yearly'] = sum(monthly_totals)
+
+        # 월 평균 급여 지출 (급여가 지급된 월 기준)
+        nonzero_months = [t for t in monthly_totals if t > 0]
+        statistics['avg_monthly_expense'] = int(sum(nonzero_months) / len(nonzero_months)) if nonzero_months else 0
+
+        # 최고/최저 월 급여 지출
+        if nonzero_months:
+            statistics['max_monthly_expense'] = max(nonzero_months)
+            statistics['min_monthly_expense'] = min(nonzero_months)
+            statistics['max_month'] = monthly_totals.index(max(monthly_totals)) + 1
+            statistics['min_month'] = monthly_totals.index(min([t for t in monthly_totals if t > 0] or [0])) + 1
+        else:
+            statistics['max_monthly_expense'] = 0
+            statistics['min_monthly_expense'] = 0
+            statistics['max_month'] = 0
+            statistics['min_month'] = 0
+
+        # 교사 수
+        statistics['teacher_count'] = len([t for t in teacher_totals if t > 0])
+
+        # 교사 평균 연봉
+        statistics['avg_teacher_yearly'] = int(sum(teacher_totals) / len(teacher_totals)) if teacher_totals else 0
+
+        # 개인별 월 평균 급여
+        statistics['avg_individual_monthly'] = int(sum(all_nonzero_salaries) / len(all_nonzero_salaries)) if all_nonzero_salaries else 0
+
+        # 개인별 월 급여 최고/최저
+        if all_nonzero_salaries:
+            statistics['max_individual_monthly'] = max(all_nonzero_salaries)
+            statistics['min_individual_monthly'] = min(all_nonzero_salaries)
+        else:
+            statistics['max_individual_monthly'] = 0
+            statistics['min_individual_monthly'] = 0
+
+        # 표준편차 (교사별 연간)
+        if len(teacher_totals) > 1:
+            statistics['std_teacher_yearly'] = int(stats.stdev(teacher_totals))
+        else:
+            statistics['std_teacher_yearly'] = 0
+
+        # 중앙값 (교사별 연간)
+        if teacher_totals:
+            statistics['median_teacher_yearly'] = int(stats.median(teacher_totals))
+        else:
+            statistics['median_teacher_yearly'] = 0
+
+        # 교사별 급여 데이터 (차트용)
+        teacher_names = [row['teacher'].name for row in salary_table if row['total'] > 0]
+        teacher_salary_totals = [row['total'] for row in salary_table if row['total'] > 0]
+        statistics['teacher_names'] = teacher_names
+        statistics['teacher_salary_totals'] = teacher_salary_totals
+
+        return statistics
 
 
 class TeacherPDFReportView(LoginRequiredMixin, View):
