@@ -1,0 +1,227 @@
+{% extends "progress/base_progress.html" %}
+
+{% block progress_content %}
+<div class="max-w-4xl mx-auto">
+    <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-3 mb-6">
+        {{ title }}
+    </h2>
+
+    <!-- 코드 구조 설명 -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h4 class="font-semibold text-blue-800 mb-3">코드 번호 구조 (19자리)</h4>
+        <div class="overflow-x-auto">
+            <table class="text-sm text-blue-700 w-full">
+                <thead>
+                    <tr class="border-b border-blue-300 bg-blue-100">
+                        <th class="py-2 px-3 text-left">위치</th>
+                        <th class="py-2 px-3 text-left">자릿수</th>
+                        <th class="py-2 px-3 text-left">설명</th>
+                        <th class="py-2 px-3 text-left">범위</th>
+                        <th class="py-2 px-3 text-left">예시</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-blue-200">
+                        <td class="py-2 px-3">1~4</td>
+                        <td class="py-2 px-3">4자리</td>
+                        <td class="py-2 px-3 font-medium">과목 코드</td>
+                        <td class="py-2 px-3">과목 관리에 등록된 코드</td>
+                        <td class="py-2 px-3 font-mono">5001</td>
+                    </tr>
+                    <tr class="border-b border-blue-200">
+                        <td class="py-2 px-3">5~6</td>
+                        <td class="py-2 px-3">2자리</td>
+                        <td class="py-2 px-3 font-medium">대단원</td>
+                        <td class="py-2 px-3">01 ~ 99</td>
+                        <td class="py-2 px-3 font-mono">02</td>
+                    </tr>
+                    <tr class="border-b border-blue-200">
+                        <td class="py-2 px-3">7~8</td>
+                        <td class="py-2 px-3">2자리</td>
+                        <td class="py-2 px-3 font-medium">중단원</td>
+                        <td class="py-2 px-3">01 ~ 99</td>
+                        <td class="py-2 px-3 font-mono">03</td>
+                    </tr>
+                    <tr class="border-b border-blue-200">
+                        <td class="py-2 px-3">9~10</td>
+                        <td class="py-2 px-3">2자리</td>
+                        <td class="py-2 px-3 font-medium">소단원</td>
+                        <td class="py-2 px-3">01 ~ 99</td>
+                        <td class="py-2 px-3 font-mono">10</td>
+                    </tr>
+                    <tr class="border-b border-blue-200">
+                        <td class="py-2 px-3">11~13</td>
+                        <td class="py-2 px-3">3자리</td>
+                        <td class="py-2 px-3 font-medium">유형</td>
+                        <td class="py-2 px-3">001 ~ 999</td>
+                        <td class="py-2 px-3 font-mono">035</td>
+                    </tr>
+                    <tr class="border-b border-blue-200">
+                        <td class="py-2 px-3">14~17</td>
+                        <td class="py-2 px-3">4자리</td>
+                        <td class="py-2 px-3 font-medium">문제 번호</td>
+                        <td class="py-2 px-3">0001 ~ 9999</td>
+                        <td class="py-2 px-3 font-mono">1392</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3">18~19</td>
+                        <td class="py-2 px-3">2자리</td>
+                        <td class="py-2 px-3 font-medium">난도</td>
+                        <td class="py-2 px-3">01 ~ 10</td>
+                        <td class="py-2 px-3 font-mono">03</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-sm text-blue-600 mt-3">
+            <strong>예시:</strong> <span class="font-mono bg-blue-100 px-2 py-1 rounded">5001020310035139203</span>
+            = 과목(5001) + 대단원(02) + 중단원(03) + 소단원(10) + 유형(035) + 문제(1392) + 난도(03)
+        </p>
+    </div>
+
+    <div class="content-card">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 과목 코드 참조 -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <h5 class="font-medium text-gray-700 mb-2">등록된 과목 코드 참조</h5>
+                <div class="flex flex-wrap gap-2">
+                    {% for subject in subjects %}
+                    <span class="inline-block bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded cursor-pointer hover:bg-indigo-100"
+                          onclick="document.getElementById('id_subject_code').value='{{ subject.subject_code }}'">
+                        {{ subject.subject_code }} - {{ subject.name }}
+                    </span>
+                    {% empty %}
+                    <span class="text-gray-500 text-sm">등록된 과목이 없습니다.</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 코드 입력 필드들 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label for="id_subject_code" class="form-label">과목 코드 (4자리)</label>
+                    {{ form.subject_code }}
+                    {% if form.subject_code.errors %}
+                        <p class="text-red-600 text-xs mt-1">{{ form.subject_code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_major_unit" class="form-label">대단원 (2자리)</label>
+                    {{ form.major_unit }}
+                    {% if form.major_unit.errors %}
+                        <p class="text-red-600 text-xs mt-1">{{ form.major_unit.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_medium_unit" class="form-label">중단원 (2자리)</label>
+                    {{ form.medium_unit }}
+                    {% if form.medium_unit.errors %}
+                        <p class="text-red-600 text-xs mt-1">{{ form.medium_unit.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_minor_unit" class="form-label">소단원 (2자리)</label>
+                    {{ form.minor_unit }}
+                    {% if form.minor_unit.errors %}
+                        <p class="text-red-600 text-xs mt-1">{{ form.minor_unit.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label for="id_problem_type_code" class="form-label">유형 (3자리)</label>
+                    {{ form.problem_type_code }}
+                    {% if form.problem_type_code.errors %}
+                        <p class="text-red-600 text-xs mt-1">{{ form.problem_type_code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_problem_number" class="form-label">문제 번호 (4자리)</label>
+                    {{ form.problem_number }}
+                    {% if form.problem_number.errors %}
+                        <p class="text-red-600 text-xs mt-1">{{ form.problem_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_difficulty" class="form-label">난도 (2자리)</label>
+                    {{ form.difficulty }}
+                    {% if form.difficulty.errors %}
+                        <p class="text-red-600 text-xs mt-1">{{ form.difficulty.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 조합된 코드 미리보기 -->
+            <div class="bg-gray-100 rounded-lg p-4">
+                <label class="form-label">조합된 코드 번호 미리보기</label>
+                <div id="code-preview" class="text-2xl font-mono text-indigo-600 tracking-wider">
+                    ____-__-__-__-___-____-__
+                </div>
+            </div>
+
+            <hr class="my-6">
+
+            <!-- 제목과 메모 -->
+            <div>
+                <label for="id_title" class="form-label">제목 (필수)</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <p class="text-red-600 text-xs mt-1">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_memo" class="form-label">메모</label>
+                {{ form.memo }}
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex gap-3 justify-center pt-4">
+                <button type="submit"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                    저장하기
+                </button>
+                <a href="{% url 'progress:problem_type_list' %}"
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 폼 인풋 스타일 적용
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if (!el.classList.contains('form-checkbox') && !el.classList.contains('form-radio')) {
+            el.classList.add('form-input');
+        }
+    });
+
+    // 코드 미리보기 업데이트
+    const fields = ['subject_code', 'major_unit', 'medium_unit', 'minor_unit', 'problem_type_code', 'problem_number', 'difficulty'];
+    const preview = document.getElementById('code-preview');
+
+    function updatePreview() {
+        const values = fields.map(field => {
+            const input = document.getElementById('id_' + field);
+            return input ? input.value.padStart(field === 'subject_code' ? 4 : field === 'problem_type_code' ? 3 : field === 'problem_number' ? 4 : 2, '_') : '';
+        });
+        preview.textContent = values[0] + '-' + values[1] + '-' + values[2] + '-' + values[3] + '-' + values[4] + '-' + values[5] + '-' + values[6];
+    }
+
+    fields.forEach(field => {
+        const input = document.getElementById('id_' + field);
+        if (input) {
+            input.addEventListener('input', updatePreview);
+        }
+    });
+
+    updatePreview();
+});
+</script>
+{% endblock %}

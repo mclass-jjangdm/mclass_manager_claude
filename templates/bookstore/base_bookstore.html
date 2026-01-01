@@ -12,12 +12,8 @@
         <div class="container">
             <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Bookstore">
                 <a href="{% url 'bookstore:book_list' %}"
-                   class="nav-link {% if request.resolver_match.url_name == 'book_list' or request.resolver_match.url_name == 'book_create' or request.resolver_match.url_name == 'book_update' or request.resolver_match.url_name == 'book_detail' or request.resolver_match.url_name == 'book_restock' or request.resolver_match.url_name == 'book_return' %}active{% endif %}">
+                   class="nav-link {% if request.resolver_match.url_name == 'book_list' or request.resolver_match.url_name == 'book_create' or request.resolver_match.url_name == 'book_update' or request.resolver_match.url_name == 'book_detail' or request.resolver_match.url_name == 'book_restock' or request.resolver_match.url_name == 'book_return' or request.resolver_match.url_name == 'book_upload' %}active{% endif %}">
                     교재 목록
-                </a>
-                <a href="{% url 'bookstore:book_upload' %}"
-                   class="nav-link {% if request.resolver_match.url_name == 'book_upload' %}active{% endif %}">
-                    교재 등록
                 </a>
                 <a href="{% url 'bookstore:supplier_list' %}"
                    class="nav-link {% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_update' or request.resolver_match.url_name == 'supplier_detail' %}active{% endif %}">

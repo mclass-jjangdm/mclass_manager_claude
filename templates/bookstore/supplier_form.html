@@ -16,16 +16,28 @@
                 {{ form.name }}
             </div>
 
-            <!-- 사업자 번호 및 전화번호 -->
+            <!-- 사업자 번호 -->
+            <div>
+                <label for="id_registration_number" class="form-label">사업자 번호</label>
+                {{ form.registration_number }}
+            </div>
+
+            <!-- 전화번호 -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label for="id_registration_number" class="form-label">사업자 번호</label>
-                    {{ form.registration_number }}
-                </div>
-                <div>
-                    <label for="id_phone" class="form-label">전화번호</label>
+                    <label for="id_phone" class="form-label">전화번호1</label>
                     {{ form.phone }}
                 </div>
+                <div>
+                    <label for="id_phone2" class="form-label">전화번호2</label>
+                    {{ form.phone2 }}
+                </div>
+            </div>
+
+            <!-- 이메일 -->
+            <div>
+                <label for="id_email" class="form-label">이메일</label>
+                {{ form.email }}
             </div>
 
             <!-- 주소 -->

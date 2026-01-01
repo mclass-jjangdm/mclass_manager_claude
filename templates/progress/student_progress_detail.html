@@ -1,0 +1,228 @@
+{% extends "progress/base_progress.html" %}
+{% load humanize %}
+
+{% block container_class %}wide-screen{% endblock %}
+
+{% block progress_content %}
+<div class="space-y-6">
+    <!-- 헤더 영역 -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">{{ progress.student.name }} - {{ progress.book.title }}</h2>
+            <p class="text-gray-600 mt-1">
+                지급일: {{ progress.book_sale.sale_date|date:"Y-m-d" }} |
+                진도율: <span id="completion-rate" class="font-semibold">{{ progress.get_completion_rate }}%</span>
+            </p>
+        </div>
+        <a href="{% url 'progress:student_progress_list' %}"
+           class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            ← 목록으로
+        </a>
+    </div>
+
+    <!-- 진도율 바 -->
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="flex items-center gap-4">
+            <span class="text-sm font-medium text-gray-700 w-16">진도율</span>
+            <div class="flex-1 bg-gray-200 rounded-full h-4">
+                <div id="progress-bar" class="h-4 rounded-full bg-indigo-600 transition-all duration-300"
+                     style="width: {{ progress.get_completion_rate }}%"></div>
+            </div>
+            <span id="completion-rate-text" class="text-sm font-medium text-gray-700 w-16 text-right">
+                {{ progress.get_completion_rate }}%
+            </span>
+        </div>
+    </div>
+
+    <!-- 진도표 테이블 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                            문제 번호
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            유형
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            단원
+                        </th>
+                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                            과제 체크
+                        </th>
+                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            학습 날짜
+                        </th>
+                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            담당 선생님
+                        </th>
+                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                            이해 정도
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            과제
+                        </th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            비고
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for entry in entries %}
+                    <tr class="hover:bg-gray-50 transition-colors" data-entry-id="{{ entry.pk }}">
+                        <td class="px-3 py-2 text-sm font-medium text-gray-900">
+                            {{ entry.book_problem.problem_number }}
+                        </td>
+                        <td class="px-3 py-2 text-sm">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium
+                                {% if entry.book_problem.problem_type == 'concept' %}bg-blue-100 text-blue-800
+                                {% elif entry.book_problem.problem_type == 'basic' %}bg-green-100 text-green-800
+                                {% elif entry.book_problem.problem_type == 'practice' %}bg-yellow-100 text-yellow-800
+                                {% elif entry.book_problem.problem_type == 'advanced' %}bg-red-100 text-red-800
+                                {% elif entry.book_problem.problem_type == 'review' %}bg-purple-100 text-purple-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ entry.book_problem.get_problem_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-3 py-2 text-sm text-gray-700">
+                            {{ entry.book_problem.chapter|default:"-" }}
+                        </td>
+                        <td class="px-3 py-2 text-center">
+                            <input type="checkbox"
+                                   class="form-checkbox h-5 w-5 text-indigo-600 entry-checkbox"
+                                   data-field="is_assigned"
+                                   {% if entry.is_assigned %}checked{% endif %}>
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="date"
+                                   class="form-input text-sm py-1 px-2 w-full entry-input"
+                                   data-field="study_date"
+                                   value="{{ entry.study_date|date:'Y-m-d'|default:'' }}">
+                        </td>
+                        <td class="px-3 py-2">
+                            <select class="form-input text-sm py-1 px-2 w-full entry-select" data-field="teacher">
+                                <option value="">--</option>
+                                {% for teacher in teachers %}
+                                    <option value="{{ teacher.pk }}" {% if entry.teacher_id == teacher.pk %}selected{% endif %}>
+                                        {{ teacher.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-3 py-2">
+                            <select class="form-input text-sm py-1 px-2 w-full entry-select" data-field="understanding">
+                                <option value="">--</option>
+                                {% for value, label in understanding_choices %}
+                                    <option value="{{ value }}" {% if entry.understanding == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="text"
+                                   class="form-input text-sm py-1 px-2 w-full entry-input"
+                                   data-field="homework"
+                                   value="{{ entry.homework }}"
+                                   placeholder="과제">
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="text"
+                                   class="form-input text-sm py-1 px-2 w-full entry-input"
+                                   data-field="memo"
+                                   value="{{ entry.memo }}"
+                                   placeholder="비고">
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="px-4 py-12 text-center text-gray-500">
+                            진도 항목이 없습니다.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = '{{ csrf_token }}';
+
+    // 디바운스 함수
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // 진도 항목 업데이트 함수
+    function updateEntry(entryId, field, value) {
+        const formData = new FormData();
+        formData.append(field, value);
+
+        fetch(`/progress/entry/${entryId}/update/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 진도율 업데이트
+                document.getElementById('completion-rate').textContent = data.completion_rate + '%';
+                document.getElementById('completion-rate-text').textContent = data.completion_rate + '%';
+                document.getElementById('progress-bar').style.width = data.completion_rate + '%';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // 체크박스 이벤트
+    document.querySelectorAll('.entry-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const row = this.closest('tr');
+            const entryId = row.dataset.entryId;
+            const field = this.dataset.field;
+            updateEntry(entryId, field, this.checked);
+        });
+    });
+
+    // 입력 필드 이벤트 (디바운스 적용)
+    const debouncedUpdate = debounce((entryId, field, value) => {
+        updateEntry(entryId, field, value);
+    }, 500);
+
+    document.querySelectorAll('.entry-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const row = this.closest('tr');
+            const entryId = row.dataset.entryId;
+            const field = this.dataset.field;
+            debouncedUpdate(entryId, field, this.value);
+        });
+    });
+
+    // 셀렉트박스 이벤트
+    document.querySelectorAll('.entry-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const row = this.closest('tr');
+            const entryId = row.dataset.entryId;
+            const field = this.dataset.field;
+            updateEntry(entryId, field, this.value);
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "progress/base_progress.html" %}
+
+{% block progress_content %}
+<div class="max-w-2xl mx-auto">
+    <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-3 mb-6">
+        문제 유형 일괄 업로드
+    </h2>
+
+    <div class="content-card">
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 파일 업로드 -->
+            <div>
+                <label for="id_file" class="form-label">파일 업로드 (CSV 또는 Excel)</label>
+                {{ form.file }}
+                <p class="text-sm text-gray-500 mt-2">{{ form.file.help_text }}</p>
+            </div>
+
+            <!-- 파일 형식 안내 -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 class="font-semibold text-blue-800 mb-2">파일 형식 안내</h4>
+                <p class="text-sm text-blue-700 mb-3">
+                    CSV 또는 Excel 파일의 첫 번째 행은 헤더여야 합니다.
+                </p>
+                <table class="text-sm text-blue-700 w-full">
+                    <thead>
+                        <tr class="border-b border-blue-200">
+                            <th class="text-left py-1">컬럼명</th>
+                            <th class="text-left py-1">설명</th>
+                            <th class="text-left py-1">필수</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-blue-100">
+                            <td class="py-1 font-mono">code_number</td>
+                            <td class="py-1">19자리 코드 번호</td>
+                            <td class="py-1">필수</td>
+                        </tr>
+                        <tr class="border-b border-blue-100">
+                            <td class="py-1 font-mono">title</td>
+                            <td class="py-1">문제 유형 제목</td>
+                            <td class="py-1">필수</td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 font-mono">memo</td>
+                            <td class="py-1">메모</td>
+                            <td class="py-1">선택</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 코드 번호 구조 안내 -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h4 class="font-semibold text-gray-800 mb-2">code_number 구조 (19자리)</h4>
+                <p class="text-sm text-gray-600 font-mono">
+                    [과목코드4자리][대단원2자리][중단원2자리][소단원2자리][유형3자리][문제번호4자리][난도2자리]
+                </p>
+                <p class="text-sm text-gray-600 mt-2">
+                    예: <span class="font-mono bg-gray-200 px-1">5001020310035139203</span>
+                </p>
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex gap-3 justify-center pt-4">
+                <button type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                    업로드
+                </button>
+                <a href="{% url 'progress:problem_type_list' %}"
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('form-checkbox') && !el.classList.contains('form-radio')) {
+                el.classList.add('form-input');
+            }
+        });
+    });
+</script>
+{% endblock %}

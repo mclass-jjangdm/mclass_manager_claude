@@ -44,6 +44,7 @@ urlpatterns = [
     path('maintenance/', include('maintenance.urls')),
     path('payment/', include('payment.urls')),
     path('bookstore/', include('bookstore.urls')),
+    path('progress/', include('progress.urls')),
     path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico', permanent=True)),
 ]
 

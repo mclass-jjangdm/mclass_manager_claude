@@ -1,0 +1,54 @@
+{% extends "progress/base_progress.html" %}
+
+{% block progress_content %}
+<div class="max-w-2xl mx-auto">
+    <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-600 pb-3 mb-6">
+        진도표 생성
+    </h2>
+
+    <div class="content-card">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- 안내 문구 -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p class="text-sm text-blue-700">
+                    학생에게 교재가 지급된 내역(BookSale) 중 아직 진도표가 생성되지 않은 항목만 표시됩니다.
+                    <br>해당 교재에 문제가 등록되어 있어야 진도표를 생성할 수 있습니다.
+                </p>
+            </div>
+
+            <!-- 교재 판매 내역 선택 -->
+            <div>
+                <label for="id_book_sale" class="form-label">교재 판매 내역 선택</label>
+                {{ form.book_sale }}
+                {% if form.book_sale.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ form.book_sale.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex gap-3 justify-center pt-4">
+                <button type="submit"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors">
+                    진도표 생성
+                </button>
+                <a href="{% url 'progress:student_progress_list' %}"
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors">
+                    취소
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('form-checkbox') && !el.classList.contains('form-radio')) {
+                el.classList.add('form-input');
+            }
+        });
+    });
+</script>
+{% endblock %}

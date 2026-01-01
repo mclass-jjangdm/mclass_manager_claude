@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Sub Navigation -->
+    <div class="bg-white shadow-sm">
+        <div class="container">
+            <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Progress">
+                <a href="{% url 'progress:student_progress_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'student_progress_list' or request.resolver_match.url_name == 'student_progress_detail' or request.resolver_match.url_name == 'student_progress_create' %}active{% endif %}">
+                    진도표 목록
+                </a>
+                <a href="{% url 'progress:problem_type_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'problem_type_list' or request.resolver_match.url_name == 'problem_type_create' or request.resolver_match.url_name == 'problem_type_upload' %}active{% endif %}">
+                    문제 유형 관리
+                </a>
+                <a href="{% url 'progress:book_problem_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'book_problem_list' or request.resolver_match.url_name == 'book_problem_create' %}active{% endif %}">
+                    교재-문제 연결
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        {% block progress_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

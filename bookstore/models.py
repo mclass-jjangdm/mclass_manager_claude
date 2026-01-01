@@ -9,7 +9,9 @@ class BookSupplier(models.Model):
     """도서 구매처(출판사/서점) 정보"""
     name = models.CharField(max_length=100, verbose_name="상호명(법인명)")
     registration_number = models.CharField(max_length=50, blank=True, null=True, verbose_name="사업자 등록번호")
-    phone = models.CharField(max_length=50, blank=True, null=True, verbose_name="전화번호")
+    phone = models.CharField(max_length=50, blank=True, null=True, verbose_name="전화번호1")
+    phone2 = models.CharField(max_length=50, blank=True, null=True, verbose_name="전화번호2")
+    email = models.EmailField(blank=True, null=True, verbose_name="이메일")
     address = models.CharField(max_length=255, blank=True, null=True, verbose_name="주소")
 
     # 계좌 정보

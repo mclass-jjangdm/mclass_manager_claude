@@ -50,9 +50,10 @@ class BookForm(forms.ModelForm):
 class BookSupplierForm(forms.ModelForm):
     class Meta:
         model = BookSupplier
-        fields = ['name', 'registration_number', 'phone', 'address', 'bank_name', 'account_number', 'account_owner']
+        fields = ['name', 'registration_number', 'phone', 'phone2', 'email', 'address', 'bank_name', 'account_number', 'account_owner']
         widgets = {
             'address': forms.TextInput(attrs={'placeholder': '주소 입력'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'example@email.com'}),
         }
 
 

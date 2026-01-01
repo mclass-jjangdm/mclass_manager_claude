@@ -18,7 +18,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-2">
             <p><strong class="text-gray-700">사업자 번호:</strong> <span class="text-gray-900">{{ supplier.registration_number|default:"-" }}</span></p>
-            <p><strong class="text-gray-700">전화번호:</strong> <span class="text-gray-900">{{ supplier.phone|default:"-" }}</span></p>
+            <p><strong class="text-gray-700">전화번호1:</strong> <span class="text-gray-900">{{ supplier.phone|default:"-" }}</span></p>
+            <p><strong class="text-gray-700">전화번호2:</strong> <span class="text-gray-900">{{ supplier.phone2|default:"-" }}</span></p>
+            <p><strong class="text-gray-700">이메일:</strong> <span class="text-gray-900">{{ supplier.email|default:"-" }}</span></p>
             <p><strong class="text-gray-700">주소:</strong> <span class="text-gray-900">{{ supplier.address|default:"-" }}</span></p>
         </div>
         <div class="bg-indigo-50 p-5 rounded-lg border border-indigo-100">

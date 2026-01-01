@@ -1,0 +1,94 @@
+{% extends "progress/base_progress.html" %}
+{% load humanize %}
+
+{% block container_class %}wide-screen{% endblock %}
+
+{% block progress_content %}
+<div class="space-y-6">
+    <!-- 헤더 영역 -->
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800">학생 진도표 목록</h2>
+        <a href="{% url 'progress:student_progress_create' %}"
+           class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            + 진도표 생성
+        </a>
+    </div>
+
+    <!-- 진도표 목록 테이블 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            학생
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            교재
+                        </th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            진도율
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            지급일
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            생성일
+                        </th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            관리
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for progress in progress_list %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3">
+                            <a href="{% url 'progress:student_progress_detail' progress.pk %}"
+                               class="text-gray-900 font-medium hover:text-indigo-600 transition-colors">
+                                {{ progress.student.name }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-700">
+                            {{ progress.book.title }}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            {% with rate=progress.get_completion_rate %}
+                            <div class="flex items-center justify-center gap-2">
+                                <div class="w-24 bg-gray-200 rounded-full h-2.5">
+                                    <div class="h-2.5 rounded-full
+                                        {% if rate >= 80 %}bg-green-600
+                                        {% elif rate >= 50 %}bg-yellow-500
+                                        {% else %}bg-red-500{% endif %}"
+                                         style="width: {{ rate }}%"></div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">{{ rate }}%</span>
+                            </div>
+                            {% endwith %}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-700">
+                            {{ progress.book_sale.sale_date|date:"Y-m-d" }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-700">
+                            {{ progress.created_at|date:"Y-m-d" }}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="{% url 'progress:student_progress_detail' progress.pk %}"
+                               class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors">
+                                상세보기
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-12 text-center text-gray-500">
+                            생성된 진도표가 없습니다. 학생에게 교재를 지급한 후 진도표를 생성해주세요.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'grades',
     'maintenance',
     'payment',
+    'progress',
 ]
 
 
