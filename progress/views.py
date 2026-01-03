@@ -7,7 +7,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib import messages
 from django.urls import reverse_lazy, reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import transaction
 
 from .models import ProblemType, BookProblem, StudentProgress, ProgressEntry
@@ -99,10 +99,12 @@ class ProblemTypeUploadView(View):
 
                 with transaction.atomic():
                     for pt_data in problem_types:
-                        code_number = pt_data.get('code_number', '').strip()
-                        if not code_number or len(code_number) != 19:
+                        code_number = str(pt_data.get('code_number', '')).strip()
+
+                        # 17자리 코드 번호 검증
+                        if not code_number or len(code_number) != 17 or not code_number.isdigit():
                             error_count += 1
-                            errors.append(f"잘못된 코드 번호: {code_number}")
+                            errors.append(f"잘못된 코드 번호: {code_number} (17자리 숫자여야 합니다)")
                             continue
 
                         # 과목 코드 확인
@@ -112,11 +114,21 @@ class ProblemTypeUploadView(View):
                             errors.append(f"존재하지 않는 과목 코드: {subject_code} (코드: {code_number})")
                             continue
 
+                        # 난도 처리 (기본값: 5)
+                        difficulty_raw = pt_data.get('difficulty', '5')
+                        try:
+                            difficulty = int(difficulty_raw) if difficulty_raw else 5
+                            if not (1 <= difficulty <= 10):
+                                difficulty = 5
+                        except (ValueError, TypeError):
+                            difficulty = 5
+
                         obj, created = ProblemType.objects.update_or_create(
                             code_number=code_number,
                             defaults={
                                 'title': pt_data.get('title', ''),
                                 'memo': pt_data.get('memo', ''),
+                                'difficulty': difficulty,
                             }
                         )
                         if created:
@@ -332,3 +344,23 @@ class ProgressEntryUpdateView(View):
             'entry_id': entry.pk,
             'completion_rate': entry.progress.get_completion_rate()
         })
+
+
+def download_problem_type_template(request):
+    """문제 유형 일괄 업로드용 샘플 템플릿 다운로드"""
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="problem_type_template.csv"'
+
+    # UTF-8 BOM 추가 (Excel에서 한글 깨짐 방지)
+    response.write('\ufeff')
+
+    writer = csv.writer(response)
+    # 헤더 작성
+    writer.writerow(['code_number', 'difficulty', 'title', 'memo'])
+
+    # 샘플 데이터 작성
+    writer.writerow(['50010101001001', '5', '1단원 유형1 문제1', '샘플 메모'])
+    writer.writerow(['50010101001002', '3', '1단원 유형1 문제2', ''])
+    writer.writerow(['50010102001001', '7', '1단원 유형2 문제1', '난이도 높음'])
+
+    return response

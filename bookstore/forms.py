@@ -8,9 +8,10 @@ import re
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['created_at', 'title', 'isbn', 'author', 'publisher', 'supplier', 'original_price',
+        fields = ['subject', 'created_at', 'title', 'isbn', 'author', 'publisher', 'supplier', 'original_price',
                   'cost_price', 'price', 'stock', 'memo']
         widgets = {
+            'subject': forms.Select(attrs={'class': 'form-control'}),
             'created_at': forms.DateInput(attrs={'type': 'date'}),
             'isbn': forms.TextInput(attrs={
                 'placeholder': '바코드를 스캔하세요',
@@ -50,10 +51,9 @@ class BookForm(forms.ModelForm):
 class BookSupplierForm(forms.ModelForm):
     class Meta:
         model = BookSupplier
-        fields = ['name', 'registration_number', 'phone', 'phone2', 'email', 'address', 'bank_name', 'account_number', 'account_owner']
+        fields = ['name', 'registration_number', 'phone', 'address', 'bank_name', 'account_number', 'account_owner']
         widgets = {
             'address': forms.TextInput(attrs={'placeholder': '주소 입력'}),
-            'email': forms.EmailInput(attrs={'placeholder': 'example@email.com'}),
         }
 
 

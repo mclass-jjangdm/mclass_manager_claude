@@ -13,27 +13,36 @@ from subjects.models import Subject
 class ProblemType(models.Model):
     """
     문제 유형표
-    code_number 구조 (19자리):
-    - 4자리: 과목 코드 (Subject.subject_code와 일치)
+    code_number 구조 (20자리):
+    - 7자리: 교재코드 (Book.book_code)
     - 2자리: 대단원 (01-99)
     - 2자리: 중단원 (01-99)
     - 2자리: 소단원 (01-99)
     - 3자리: 유형 (001-999)
     - 4자리: 문제 번호 (0001-9999)
-    - 2자리: 난도 (01-10)
-    예: 5001020310035139203
+    예: 12345670102030010001
+    난도는 별도 필드로 관리
     """
     code_number = models.CharField(
-        max_length=19,
+        max_length=20,
         unique=True,
         verbose_name="코드 번호",
         validators=[
             RegexValidator(
-                regex=r'^\d{19}$',
-                message="코드 번호는 정확히 19자리 숫자여야 합니다."
+                regex=r'^\d{20}$',
+                message="코드 번호는 정확히 20자리 숫자여야 합니다."
             )
         ],
-        help_text="형식: [과목코드4자리][대단원2자리][중단원2자리][소단원2자리][유형3자리][문제번호4자리][난도2자리]"
+        help_text="형식: [교재코드7자리][대단원2자리][중단원2자리][소단원2자리][유형3자리][문제번호4자리]"
+    )
+    difficulty = models.PositiveIntegerField(
+        verbose_name="난도",
+        validators=[
+            MinValueValidator(1, message="난도는 1 이상이어야 합니다."),
+            MaxValueValidator(10, message="난도는 10 이하여야 합니다.")
+        ],
+        default=5,
+        help_text="1(쉬움) ~ 10(어려움)"
     )
     title = models.CharField(max_length=200, verbose_name="제목")
     memo = models.TextField(blank=True, verbose_name="메모")
@@ -51,63 +60,59 @@ class ProblemType(models.Model):
     def clean(self):
         """코드 번호 유효성 검사"""
         super().clean()
-        if self.code_number and len(self.code_number) == 19:
-            subject_code = self.code_number[:4]
-            difficulty = int(self.code_number[17:19])
+        if self.code_number and len(self.code_number) == 20:
+            book_code = self.code_number[:7]
 
-            # 과목 코드 존재 확인
-            if not Subject.objects.filter(subject_code=subject_code).exists():
+            # 교재 코드 존재 확인
+            if not Book.objects.filter(book_code=book_code).exists():
                 raise ValidationError({
-                    'code_number': f"과목 코드 '{subject_code}'가 존재하지 않습니다."
+                    'code_number': f"교재 코드 '{book_code}'가 존재하지 않습니다."
                 })
 
-            # 난도 범위 확인
-            if difficulty < 1 or difficulty > 10:
-                raise ValidationError({
-                    'code_number': f"난도는 01~10 사이여야 합니다. (현재: {difficulty:02d})"
-                })
+    def get_book_code(self):
+        """교재 코드 (7자리)"""
+        return self.code_number[:7] if self.code_number else None
 
     @property
-    def subject_code(self):
-        """과목 코드 (4자리)"""
-        return self.code_number[:4] if self.code_number else None
+    def book(self):
+        """연결된 교재 객체"""
+        book_code = self.get_book_code()
+        if book_code:
+            return Book.objects.filter(book_code=book_code).first()
+        return None
+
+    @property
+    def subject(self):
+        """연결된 과목 객체 (교재를 통해)"""
+        book = self.book
+        if book:
+            return book.subject
+        return None
 
     @property
     def major_unit(self):
         """대단원 (2자리)"""
-        return self.code_number[4:6] if self.code_number else None
+        return self.code_number[7:9] if self.code_number else None
 
     @property
     def medium_unit(self):
         """중단원 (2자리)"""
-        return self.code_number[6:8] if self.code_number else None
+        return self.code_number[9:11] if self.code_number else None
 
     @property
     def minor_unit(self):
         """소단원 (2자리)"""
-        return self.code_number[8:10] if self.code_number else None
+        return self.code_number[11:13] if self.code_number else None
 
     @property
     def problem_type_code(self):
         """유형 (3자리)"""
-        return self.code_number[10:13] if self.code_number else None
+        return self.code_number[13:16] if self.code_number else None
 
     @property
     def problem_number(self):
         """문제 번호 (4자리)"""
-        return self.code_number[13:17] if self.code_number else None
-
-    @property
-    def difficulty(self):
-        """난도 (2자리, 01-10)"""
-        return self.code_number[17:19] if self.code_number else None
-
-    @property
-    def subject(self):
-        """연결된 과목 객체"""
-        if self.subject_code:
-            return Subject.objects.filter(subject_code=self.subject_code).first()
-        return None
+        return self.code_number[16:20] if self.code_number else None
 
 
 class BookProblem(models.Model):

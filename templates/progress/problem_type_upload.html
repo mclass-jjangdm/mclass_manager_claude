@@ -17,6 +17,22 @@
                 <p class="text-sm text-gray-500 mt-2">{{ form.file.help_text }}</p>
             </div>
 
+            <!-- 샘플 템플릿 다운로드 -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-semibold text-green-800 mb-1">샘플 템플릿 다운로드</h4>
+                        <p class="text-sm text-green-700">
+                            파일 형식이 잘 모르시겠다면 샘플 템플릿을 다운로드하여 참고하세요.
+                        </p>
+                    </div>
+                    <a href="{% url 'progress:problem_type_template' %}"
+                       class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap">
+                        샘플 CSV 다운로드
+                    </a>
+                </div>
+            </div>
+
             <!-- 파일 형식 안내 -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 class="font-semibold text-blue-800 mb-2">파일 형식 안내</h4>
@@ -34,8 +50,13 @@
                     <tbody>
                         <tr class="border-b border-blue-100">
                             <td class="py-1 font-mono">code_number</td>
-                            <td class="py-1">19자리 코드 번호</td>
+                            <td class="py-1">17자리 코드 번호</td>
                             <td class="py-1">필수</td>
+                        </tr>
+                        <tr class="border-b border-blue-100">
+                            <td class="py-1 font-mono">difficulty</td>
+                            <td class="py-1">난도 (1~10, 기본값: 5)</td>
+                            <td class="py-1">선택</td>
                         </tr>
                         <tr class="border-b border-blue-100">
                             <td class="py-1 font-mono">title</td>
@@ -53,12 +74,16 @@
 
             <!-- 코드 번호 구조 안내 -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h4 class="font-semibold text-gray-800 mb-2">code_number 구조 (19자리)</h4>
+                <h4 class="font-semibold text-gray-800 mb-2">code_number 구조 (17자리)</h4>
                 <p class="text-sm text-gray-600 font-mono">
-                    [과목코드4자리][대단원2자리][중단원2자리][소단원2자리][유형3자리][문제번호4자리][난도2자리]
+                    [과목코드4자리][대단원2자리][중단원2자리][소단원2자리][유형3자리][문제번호4자리]
                 </p>
                 <p class="text-sm text-gray-600 mt-2">
-                    예: <span class="font-mono bg-gray-200 px-1">5001020310035139203</span>
+                    예: <span class="font-mono bg-gray-200 px-1">50010203100351392</span>
+                    = 과목(5001) + 대단원(02) + 중단원(03) + 소단원(10) + 유형(035) + 문제번호(1392)
+                </p>
+                <p class="text-sm text-amber-600 mt-2">
+                    <strong>난도</strong>는 별도 컬럼(<span class="font-mono">difficulty</span>)으로 입력합니다. (1~10)
                 </p>
             </div>
 

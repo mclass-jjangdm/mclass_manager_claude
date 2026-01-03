@@ -6,91 +6,107 @@
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-gray-800">과목 목록</h1>
 
-        <div class="flex items-center space-x-4">
-            <!-- 검색 폼 -->
-            <form method="get" class="flex items-center">
-                {% if show_inactive %}
-                <input type="hidden" name="show_inactive" value="on" />
-                {% endif %}
-                <input
-                    type="search"
-                    name="search"
-                    value="{{ search_query }}"
-                    placeholder="과목명 검색..."
-                    class="form-input rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-                <button
-                    type="submit"
-                    class="ml-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md text-sm"
-                >
-                    검색
-                </button>
-            </form>
-
+        <div class="flex items-center space-x-3">
             <!-- 비활성 과목 포함 체크박스 -->
-            <form method="get" class="flex items-center">
-                {% if search_query %}
-                <input type="hidden" name="search" value="{{ search_query }}" />
-                {% endif %}
-                <label class="inline-flex items-center">
-                    <input
-                        type="checkbox"
-                        name="show_inactive"
-                        {% if show_inactive %}checked{% endif %}
-                        class="form-checkbox h-4 w-4 text-indigo-600"
-                        onchange="this.form.submit()"
-                    />
-                    <span class="ml-2 text-sm text-gray-600">비활성 과목 포함</span>
-                </label>
-            </form>
+            <label class="inline-flex items-center">
+                <input
+                    type="checkbox"
+                    id="show-inactive-checkbox"
+                    {% if show_inactive %}checked{% endif %}
+                    class="form-checkbox h-4 w-4 text-indigo-600"
+                    onchange="updateFilter()"
+                />
+                <span class="ml-2 text-sm text-gray-600">비활성 과목 포함</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- 교과 선택 드롭다운 -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="flex items-center gap-4">
+            <label class="font-medium text-gray-700 whitespace-nowrap">교과 선택:</label>
+            <select id="category-select" onchange="filterByCategory()" class="form-input flex-1 max-w-md">
+                <option value="">-- 교과를 선택하세요 --</option>
+                {% for category, subjects in grouped_subjects.items %}
+                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>
+                    {{ category }} ({{ subjects|length }}개)
+                </option>
+                {% endfor %}
+            </select>
+            <span id="subject-count" class="text-sm text-gray-500"></span>
         </div>
     </div>
 </div>
 
-<!-- 카테고리별 과목 카드 -->
-{% if grouped_subjects %}
-    {% for category, subjects in grouped_subjects.items %}
-    <div class="mb-8">
+<!-- 선택된 교과의 과목 카드 -->
+<div id="subject-cards-container">
+    {% if selected_category and selected_subjects %}
+    <div class="mb-4">
         <div class="flex items-center mb-4">
-            <h2 class="text-xl font-semibold text-gray-700">{{ category }}</h2>
-            <span class="ml-3 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
-                {{ subjects|length }}개
+            <h2 class="text-xl font-semibold text-gray-700">{{ selected_category }}</h2>
+            <span class="ml-3 px-3 py-1 bg-indigo-100 text-indigo-700 text-sm font-medium rounded-full">
+                {{ selected_subjects|length }}개
             </span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {% for subject in subjects %}
-            <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4 border-l-4 {% if subject.is_active %}border-indigo-500{% else %}border-gray-400 opacity-60{% endif %}">
-                <div class="flex justify-between items-start mb-2">
-                    <div class="flex-1">
-                        <div class="text-xs text-gray-500 font-medium mb-1">{{ subject.subject_code }}</div>
-                        <h3 class="text-base font-semibold text-gray-900">{{ subject.name }}</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {% for subject in selected_subjects %}
+            <a href="{% url 'subjects:subject_update' subject.pk %}"
+               class="block bg-white rounded-lg shadow hover:shadow-lg hover:scale-105 transition-all duration-200 p-3 border-l-4 cursor-pointer {% if subject.is_active %}border-indigo-500 hover:border-indigo-600{% else %}border-gray-400 opacity-60 hover:opacity-80{% endif %}">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-gray-500 font-mono mb-1">{{ subject.subject_code }}</div>
+                        <h3 class="text-sm font-semibold text-gray-900 truncate" title="{{ subject.name }}">{{ subject.name }}</h3>
                     </div>
                     {% if not subject.is_active %}
-                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                    <span class="ml-1 px-1.5 py-0.5 text-xs font-semibold rounded bg-red-100 text-red-800 flex-shrink-0">
                         비활성
                     </span>
                     {% endif %}
                 </div>
-                <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-100">
-                    <a href="{% url 'subjects:subject_update' subject.pk %}"
-                       class="text-xs text-indigo-600 hover:text-indigo-900 font-medium">
-                        수정
-                    </a>
-                    <a href="{% url 'subjects:subject_delete' subject.pk %}"
-                       class="text-xs text-red-600 hover:text-red-900 font-medium">
-                        삭제
-                    </a>
-                </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
     </div>
-    {% endfor %}
-{% else %}
-    <div class="bg-white rounded-lg shadow p-8 text-center">
-        <p class="text-gray-500">등록된 과목이 없습니다.</p>
+    {% elif not selected_category %}
+    <div class="bg-gray-50 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
+        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <p class="text-gray-500 text-lg">위에서 교과를 선택하면 해당 과목들이 표시됩니다.</p>
     </div>
-{% endif %}
+    {% else %}
+    <div class="bg-white rounded-lg shadow p-8 text-center">
+        <p class="text-gray-500">선택한 교과에 등록된 과목이 없습니다.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function filterByCategory() {
+    const category = document.getElementById('category-select').value;
+    const showInactive = document.getElementById('show-inactive-checkbox').checked;
+
+    let url = '{% url "subjects:subject_list" %}';
+    const params = new URLSearchParams();
+
+    if (category) {
+        params.set('category', category);
+    }
+    if (showInactive) {
+        params.set('show_inactive', 'on');
+    }
+
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+
+    window.location.href = url;
+}
+
+function updateFilter() {
+    filterByCategory();
+}
+</script>
 
 {% endblock %}

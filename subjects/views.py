@@ -39,6 +39,16 @@ class SubjectListView(LoginRequiredMixin, ListView):
             grouped[subject.category].append(subject)
 
         context['grouped_subjects'] = dict(sorted(grouped.items()))
+
+        # 선택된 카테고리 처리
+        selected_category = self.request.GET.get('category', '')
+        context['selected_category'] = selected_category
+
+        if selected_category and selected_category in context['grouped_subjects']:
+            context['selected_subjects'] = context['grouped_subjects'][selected_category]
+        else:
+            context['selected_subjects'] = []
+
         return context
 
 

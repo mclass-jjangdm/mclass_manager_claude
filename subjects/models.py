@@ -66,25 +66,48 @@ class Subject(models.Model):
     @property
     def category(self):
         """과목 카테고리 반환 (교과코드 기준)"""
-        # category_code가 있으면 그것 사용, 없으면 과목코드 앞 두 자리 사용
-        code = self.category_code if self.category_code else (self.subject_code[:2] if self.subject_code and len(self.subject_code) >= 2 else None)
+        # category_code가 있으면 그것 사용
+        if self.category_code:
+            # 2자리 교과코드 매핑 (91, 92, 93 등 특수 코드용)
+            categories_2digit = {
+                '91': '체육',
+                '92': '음악/미술',
+                '93': '교양',
+            }
+            if self.category_code in categories_2digit:
+                return categories_2digit[self.category_code]
 
-        if not code:
+        # 과목코드 앞 1자리로 교과 구분
+        if not self.subject_code:
             return '기타'
 
-        # 교과코드 매핑
+        first_digit = self.subject_code[0] if len(self.subject_code) >= 1 else None
+
+        if not first_digit:
+            return '기타'
+
+        # 앞 1자리 교과코드 매핑
         categories = {
-            '10': '국어',
-            '20': '수학',
-            '30': '영어',
-            '40': '사회',
-            '50': '과학',
-            '60': '한국사',
-            '70': '기술/가정',
-            '80': '제2외국어',
-            '90': '한문',
-            '91': '체육',
-            '92': '음악/미술',
-            '93': '교양',
+            '1': '국어',
+            '2': '수학',
+            '3': '영어',
+            '4': '사회',
+            '5': '과학',
+            '6': '한국사',
+            '7': '기술/가정',
+            '8': '제2외국어',
+            '9': '기타(9xxx)',  # 9로 시작하는 건 별도 처리 필요
         }
-        return categories.get(code, '기타')
+
+        # 9로 시작하는 경우 앞 2자리로 세분화
+        if first_digit == '9' and len(self.subject_code) >= 2:
+            two_digits = self.subject_code[:2]
+            categories_9xxx = {
+                '90': '한문',
+                '91': '체육',
+                '92': '음악/미술',
+                '93': '교양',
+            }
+            return categories_9xxx.get(two_digits, '기타(9xxx)')
+
+        return categories.get(first_digit, '기타')

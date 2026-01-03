@@ -9,11 +9,14 @@
 
     <!-- 엑셀 파일 작성 규칙 안내 -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-        <h4 class="text-lg font-semibold text-blue-800 mb-4">⚠️ 엑셀 파일 작성 규칙</h4>
+        <h4 class="text-lg font-semibold text-blue-800 mb-4">엑셀 파일 작성 규칙</h4>
         <ul class="space-y-3 text-gray-700">
             <li>첫 번째 줄(헤더)에 다음 컬럼명이 <strong>정확히</strong> 포함되어야 합니다:</li>
             <li class="bg-white p-4 rounded border border-blue-100 font-mono text-red-600 font-semibold">
-                ISBN, 교재명, 저자, 출판사, 정상가격, 입고가격, 판매가격, 재고
+                ISBN, 교재명, 저자, 출판사, 정상가격, 입고가격, 판매가격, 재고, <span class="text-indigo-600">과목코드(선택)</span>
+            </li>
+            <li class="text-sm text-blue-700">
+                <strong>과목코드</strong> 컬럼이 있으면 해당 과목으로 등록됩니다. 없으면 아래에서 선택한 과목이 적용됩니다.
             </li>
             <li>이미 등록된 <strong>ISBN(바코드)</strong>이 있는 경우, 해당 도서는 <strong>자동으로 건너뜁니다(Skip)</strong>.</li>
             <li>가격 및 재고 칸에 숫자가 아닌 문자가 있으면 0으로 처리됩니다.</li>
@@ -24,6 +27,33 @@
     <div class="content-card">
         <form method="POST" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
+
+            <!-- 교과 선택 (체크박스) -->
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <label class="form-label mb-3 block">교과 선택 (기본 과목 지정용)</label>
+                <div class="flex flex-wrap gap-3" id="category-checkboxes">
+                    {% for category in categories %}
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox"
+                               name="category_filter"
+                               value="{{ category }}"
+                               class="form-checkbox h-4 w-4 text-indigo-600 category-checkbox"
+                               {% if category == '수학' %}checked{% endif %}
+                               onchange="filterSubjects()">
+                        <span class="ml-2 text-sm text-gray-700">{{ category }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 과목 선택 (필터링된 드롭다운) -->
+            <div>
+                <label for="id_subject" class="form-label">기본 과목 (파일에 과목코드가 없을 때 적용)</label>
+                <select name="subject" id="id_subject" class="form-input">
+                    <option value="">-- 과목 선택 안함 --</option>
+                </select>
+                <p class="text-sm text-gray-500 mt-1">* 파일에 과목코드 컬럼이 있으면 그 값이 우선 적용됩니다.</p>
+            </div>
 
             <div>
                 <label for="file_input" class="form-label">파일 선택:</label>
@@ -50,12 +80,48 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 파일 입력 필드 스타일 조정
-        const fileInput = document.getElementById('file_input');
-        if (fileInput) {
-            fileInput.classList.add('form-input');
+    // 과목 데이터 (서버에서 전달)
+    const groupedSubjects = {{ grouped_subjects_json|safe }};
+
+    function filterSubjects() {
+        const subjectSelect = document.getElementById('id_subject');
+        const checkboxes = document.querySelectorAll('.category-checkbox:checked');
+        const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
+
+        // 현재 선택된 값 저장
+        const currentValue = subjectSelect.value;
+
+        // 드롭다운 초기화
+        subjectSelect.innerHTML = '<option value="">-- 과목 선택 안함 --</option>';
+
+        // 선택된 카테고리의 과목들 추가
+        selectedCategories.forEach(category => {
+            if (groupedSubjects[category]) {
+                groupedSubjects[category].forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject.id;
+                    option.textContent = `[${subject.code}] ${subject.name}`;
+                    subjectSelect.appendChild(option);
+                });
+            }
+        });
+
+        // 이전에 선택된 값이 있으면 복원
+        if (currentValue) {
+            subjectSelect.value = currentValue;
         }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // 페이지 로드 시 과목 필터링 실행
+        filterSubjects();
+
+        // 모든 입력 필드에 form-input 클래스 적용
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('form-checkbox') && !el.classList.contains('form-radio')) {
+                el.classList.add('form-input');
+            }
+        });
     });
 </script>
 {% endblock %}

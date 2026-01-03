@@ -2,16 +2,16 @@
 
 from django.db import models
 from django.utils import timezone
+from django.core.validators import RegexValidator
 from students.models import Student
+from subjects.models import Subject
 
 
 class BookSupplier(models.Model):
     """도서 구매처(출판사/서점) 정보"""
     name = models.CharField(max_length=100, verbose_name="상호명(법인명)")
     registration_number = models.CharField(max_length=50, blank=True, null=True, verbose_name="사업자 등록번호")
-    phone = models.CharField(max_length=50, blank=True, null=True, verbose_name="전화번호1")
-    phone2 = models.CharField(max_length=50, blank=True, null=True, verbose_name="전화번호2")
-    email = models.EmailField(blank=True, null=True, verbose_name="이메일")
+    phone = models.CharField(max_length=50, blank=True, null=True, verbose_name="전화번호")
     address = models.CharField(max_length=255, blank=True, null=True, verbose_name="주소")
 
     # 계좌 정보
@@ -31,6 +31,29 @@ class BookSupplier(models.Model):
 
 class Book(models.Model):
     """교재(상품) 기본 정보 모델"""
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.PROTECT,
+        related_name='books',
+        null=True,
+        blank=True,
+        verbose_name="과목",
+        help_text="이 교재가 속한 과목"
+    )
+    book_code = models.CharField(
+        max_length=7,
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="교재코드",
+        validators=[
+            RegexValidator(
+                regex=r'^\d{7}$',
+                message="교재코드는 정확히 7자리 숫자여야 합니다."
+            )
+        ],
+        help_text="ISBN 뒤 7자리 또는 자동생성 코드 (진도표 코드에 사용)"
+    )
     title = models.CharField(max_length=200, verbose_name="교재명")
     isbn = models.CharField(max_length=50, unique=True, verbose_name="바코드(ISBN)")
     author = models.CharField(max_length=100, blank=True, null=True, verbose_name="저자")
@@ -44,6 +67,44 @@ class Book(models.Model):
     memo = models.TextField(blank=True, null=True, verbose_name="비고")
 
     created_at = models.DateTimeField(default=timezone.now, verbose_name="등록일(입고일)")
+
+    def save(self, *args, **kwargs):
+        if not self.book_code:
+            self.book_code = self._generate_book_code()
+        super().save(*args, **kwargs)
+
+    def _generate_book_code(self):
+        """ISBN 뒤 7자리 또는 순차 코드 생성"""
+        # ISBN이 있고 7자리 이상인 경우 뒤 7자리 사용
+        if self.isbn:
+            # ISBN에서 숫자만 추출
+            isbn_digits = ''.join(c for c in self.isbn if c.isdigit())
+            if len(isbn_digits) >= 7:
+                candidate = isbn_digits[-7:]
+                # 중복 체크
+                if not Book.objects.filter(book_code=candidate).exists():
+                    return candidate
+
+        # ISBN이 없거나 중복인 경우 순차 코드 생성
+        return self._generate_sequence_code()
+
+    def _generate_sequence_code(self):
+        """순차 교재코드 생성 (0000001부터 시작)"""
+        # 가장 큰 순차 코드 찾기
+        last_book = Book.objects.filter(
+            book_code__regex=r'^[0-9]{7}$'
+        ).order_by('-book_code').first()
+
+        if last_book:
+            try:
+                last_num = int(last_book.book_code)
+                new_num = last_num + 1
+            except ValueError:
+                new_num = 1
+        else:
+            new_num = 1
+
+        return str(new_num).zfill(7)
 
     def __str__(self):
         return self.title

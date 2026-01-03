@@ -11,16 +11,16 @@ from subjects.models import Subject
 class ProblemTypeForm(forms.ModelForm):
     """문제 유형 등록 폼"""
     # 개별 필드로 분리하여 입력
-    subject_code = forms.CharField(
-        max_length=4,
-        label="과목 코드",
+    book_code = forms.CharField(
+        max_length=7,
+        label="교재 코드",
         widget=forms.TextInput(attrs={
-            'placeholder': '예: 5001',
+            'placeholder': '예: 1234567',
             'class': 'form-control',
-            'maxlength': '4',
-            'pattern': r'\d{4}'
+            'maxlength': '7',
+            'pattern': r'\d{7}'
         }),
-        help_text="4자리 숫자 (과목 관리에 등록된 코드)"
+        help_text="7자리 숫자 (교재 관리에서 확인 가능)"
     )
     major_unit = forms.CharField(
         max_length=2,
@@ -77,21 +77,23 @@ class ProblemTypeForm(forms.ModelForm):
         }),
         help_text="0001~9999"
     )
-    difficulty = forms.CharField(
-        max_length=2,
+    difficulty = forms.IntegerField(
         label="난도",
-        widget=forms.TextInput(attrs={
-            'placeholder': '05',
+        min_value=1,
+        max_value=10,
+        initial=5,
+        widget=forms.NumberInput(attrs={
+            'placeholder': '5',
             'class': 'form-control',
-            'maxlength': '2',
-            'pattern': r'(0[1-9]|10)'
+            'min': '1',
+            'max': '10'
         }),
-        help_text="01~10"
+        help_text="1(쉬움) ~ 10(어려움)"
     )
 
     class Meta:
         model = ProblemType
-        fields = ['title', 'memo']
+        fields = ['title', 'memo', 'difficulty']
         widgets = {
             'title': forms.TextInput(attrs={
                 'placeholder': '문제 유형 제목',
@@ -108,20 +110,20 @@ class ProblemTypeForm(forms.ModelForm):
         cleaned_data = super().clean()
 
         # 개별 필드에서 code_number 조합
-        subject_code = cleaned_data.get('subject_code', '').zfill(4)
+        book_code = cleaned_data.get('book_code', '').zfill(7)
         major_unit = cleaned_data.get('major_unit', '').zfill(2)
         medium_unit = cleaned_data.get('medium_unit', '').zfill(2)
         minor_unit = cleaned_data.get('minor_unit', '').zfill(2)
         problem_type_code = cleaned_data.get('problem_type_code', '').zfill(3)
         problem_number = cleaned_data.get('problem_number', '').zfill(4)
-        difficulty = cleaned_data.get('difficulty', '').zfill(2)
+        difficulty = cleaned_data.get('difficulty')
 
         # 각 필드 유효성 검사
-        if not subject_code.isdigit() or len(subject_code) != 4:
-            raise ValidationError({'subject_code': '과목 코드는 4자리 숫자여야 합니다.'})
+        if not book_code.isdigit() or len(book_code) != 7:
+            raise ValidationError({'book_code': '교재 코드는 7자리 숫자여야 합니다.'})
 
-        if not Subject.objects.filter(subject_code=subject_code).exists():
-            raise ValidationError({'subject_code': f"과목 코드 '{subject_code}'가 존재하지 않습니다."})
+        if not Book.objects.filter(book_code=book_code).exists():
+            raise ValidationError({'book_code': f"교재 코드 '{book_code}'가 존재하지 않습니다."})
 
         if not major_unit.isdigit() or not (1 <= int(major_unit) <= 99):
             raise ValidationError({'major_unit': '대단원은 01~99 사이여야 합니다.'})
@@ -138,11 +140,11 @@ class ProblemTypeForm(forms.ModelForm):
         if not problem_number.isdigit() or not (1 <= int(problem_number) <= 9999):
             raise ValidationError({'problem_number': '문제 번호는 0001~9999 사이여야 합니다.'})
 
-        if not difficulty.isdigit() or not (1 <= int(difficulty) <= 10):
-            raise ValidationError({'difficulty': '난도는 01~10 사이여야 합니다.'})
+        if difficulty is None or not (1 <= difficulty <= 10):
+            raise ValidationError({'difficulty': '난도는 1~10 사이여야 합니다.'})
 
-        # code_number 조합
-        code_number = f"{subject_code}{major_unit}{medium_unit}{minor_unit}{problem_type_code}{problem_number}{difficulty}"
+        # code_number 조합 (난도 제외, 20자리)
+        code_number = f"{book_code}{major_unit}{medium_unit}{minor_unit}{problem_type_code}{problem_number}"
         cleaned_data['code_number'] = code_number
 
         return cleaned_data
@@ -150,6 +152,7 @@ class ProblemTypeForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.code_number = self.cleaned_data['code_number']
+        instance.difficulty = self.cleaned_data['difficulty']
         if commit:
             instance.save()
         return instance

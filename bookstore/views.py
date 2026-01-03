@@ -14,6 +14,9 @@ import urllib3 # SSL 경고 숨기기용
 from django.db import transaction # 트랜잭션 필수
 from students.models import Student # 학생 모델 참조 필요
 from django.core.paginator import Paginator
+from subjects.models import Subject
+from collections import defaultdict
+import json
 
 
 # SSL 인증서 경고 무시 설정 (터미널이 지저분해지는 것 방지)
@@ -96,7 +99,25 @@ def book_create(request):
 
         form = BookForm(initial=initial_data)
 
-    return render(request, 'bookstore/book_form.html', {'form': form, 'title': '📚 신규 교재 등록'})
+    # 과목을 카테고리별로 그룹화
+    subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
+    grouped_subjects = defaultdict(list)
+    for subject in subjects:
+        grouped_subjects[subject.category].append({
+            'id': subject.id,
+            'name': subject.name,
+            'code': subject.subject_code
+        })
+
+    # 카테고리 목록 (정렬)
+    categories = sorted(grouped_subjects.keys())
+
+    return render(request, 'bookstore/book_form.html', {
+        'form': form,
+        'title': '📚 신규 교재 등록',
+        'grouped_subjects_json': json.dumps(dict(grouped_subjects), ensure_ascii=False),
+        'categories': categories,
+    })
 
 
 def book_update(request, pk):
@@ -110,7 +131,31 @@ def book_update(request, pk):
     else:
         form = BookForm(instance=book)
 
-    return render(request, 'bookstore/book_form.html', {'form': form, 'title': f'교재 정보 수정: {book.title}'})
+    # 과목을 카테고리별로 그룹화
+    subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
+    grouped_subjects = defaultdict(list)
+    for subject in subjects:
+        grouped_subjects[subject.category].append({
+            'id': subject.id,
+            'name': subject.name,
+            'code': subject.subject_code
+        })
+
+    # 카테고리 목록 (정렬)
+    categories = sorted(grouped_subjects.keys())
+
+    # 현재 선택된 과목의 카테고리 찾기
+    selected_category = None
+    if book.subject:
+        selected_category = book.subject.category
+
+    return render(request, 'bookstore/book_form.html', {
+        'form': form,
+        'title': f'교재 정보 수정: {book.title}',
+        'grouped_subjects_json': json.dumps(dict(grouped_subjects), ensure_ascii=False),
+        'categories': categories,
+        'selected_category': selected_category,
+    })
 
 
 def book_delete(request, pk):
@@ -212,6 +257,15 @@ def book_upload(request):
     """엑셀/CSV 파일로 도서 일괄 등록"""
     if request.method == 'POST' and request.FILES.get('upload_file'):
         upload_file = request.FILES['upload_file']
+        selected_subject_id = request.POST.get('subject')
+
+        # 선택된 과목 가져오기
+        selected_subject = None
+        if selected_subject_id:
+            try:
+                selected_subject = Subject.objects.get(pk=selected_subject_id)
+            except Subject.DoesNotExist:
+                pass
 
         try:
             if upload_file.name.endswith('.csv'):
@@ -231,7 +285,6 @@ def book_upload(request):
                     continue
 
                 # 2. ISBN 정리 (하이픈 제거 및 13자리 변환 로직 간소화)
-                # (여기서는 간단히 숫자와 X만 남기는 정리만 수행합니다)
                 isbn = re.sub(r'[^0-9X]', '', raw_isbn.upper())
 
                 # 3. 중복 확인 (이미 등록된 ISBN이면 건너뜀)
@@ -239,13 +292,23 @@ def book_upload(request):
                     skip_count += 1
                     continue
 
-                # 4. 데이터 추출 및 저장
+                # 4. 파일에서 과목코드 읽기 (있는 경우)
+                subject = selected_subject  # 기본값: 폼에서 선택한 과목
+                subject_code = row.get('과목코드')
+                if subject_code and not pd.isna(subject_code):
+                    subject_code = str(subject_code).strip()
+                    try:
+                        subject = Subject.objects.get(subject_code=subject_code)
+                    except Subject.DoesNotExist:
+                        pass  # 과목코드가 없으면 폼에서 선택한 과목 사용
+
+                # 5. 데이터 추출 및 저장
                 Book.objects.create(
+                    subject=subject,
                     title=title,
                     isbn=isbn,
                     author=row.get('저자', ''),
                     publisher=row.get('출판사', ''),
-                    # 가격 정보 (값이 없으면 0으로 처리)
                     original_price=pd.to_numeric(row.get('정상가격'), errors='coerce') or 0,
                     cost_price=pd.to_numeric(row.get('입고가격'), errors='coerce') or 0,
                     price=pd.to_numeric(row.get('판매가격'), errors='coerce') or 0,
@@ -254,13 +317,28 @@ def book_upload(request):
                 success_count += 1
 
             messages.success(request, f"{success_count}권의 도서가 등록되었습니다. (중복 제외: {skip_count}권)")
-            return redirect('book_list')
+            return redirect('bookstore:book_list')
 
         except Exception as e:
             messages.error(request, f"파일 업로드 중 오류가 발생했습니다: {e}")
-            return redirect('book_upload')
+            return redirect('bookstore:book_upload')
 
-    return render(request, 'bookstore/book_upload.html')
+    # 과목을 카테고리별로 그룹화
+    subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
+    grouped_subjects = defaultdict(list)
+    for subject in subjects:
+        grouped_subjects[subject.category].append({
+            'id': subject.id,
+            'name': subject.name,
+            'code': subject.subject_code
+        })
+
+    categories = sorted(grouped_subjects.keys())
+
+    return render(request, 'bookstore/book_upload.html', {
+        'grouped_subjects_json': json.dumps(dict(grouped_subjects), ensure_ascii=False),
+        'categories': categories,
+    })
 
 
 def supplier_list(request):

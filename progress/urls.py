@@ -10,6 +10,7 @@ urlpatterns = [
     path('types/', views.ProblemTypeListView.as_view(), name='problem_type_list'),
     path('types/create/', views.ProblemTypeCreateView.as_view(), name='problem_type_create'),
     path('types/upload/', views.ProblemTypeUploadView.as_view(), name='problem_type_upload'),
+    path('types/upload/template/', views.download_problem_type_template, name='problem_type_template'),
     path('types/<int:pk>/delete/', views.ProblemTypeDeleteView.as_view(), name='problem_type_delete'),
 
     # 교재-문제 연결 관리
