@@ -1,0 +1,391 @@
+{% extends 'teachers/base_teachers.html' %}
+
+{% block extra_css %}
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 24px;
+        color: white;
+        margin-bottom: 24px;
+    }
+    .date-picker-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .teacher-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        transition: all 0.2s ease;
+        border: 1px solid #e5e7eb;
+    }
+    .teacher-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    .status-card {
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .status-header {
+        padding: 16px 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .status-header.available {
+        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        color: white;
+    }
+    .status-header.unavailable {
+        background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        color: white;
+    }
+    .status-body {
+        background: white;
+        padding: 16px;
+    }
+    .reason-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .reason-tag.personal { background: #fef3c7; color: #92400e; }
+    .reason-tag.sick { background: #fee2e2; color: #991b1b; }
+    .reason-tag.vacation { background: #dbeafe; color: #1e40af; }
+    .reason-tag.other { background: #e5e7eb; color: #374151; }
+    .btn-action {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .btn-outline {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    .btn-outline:hover {
+        background: #667eea;
+        color: white;
+    }
+    .table-modern {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .table-modern th {
+        background: #f9fafb;
+        padding: 12px 16px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .table-modern td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .table-modern tr:hover td {
+        background: #f9fafb;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: #6b7280;
+    }
+    .empty-state svg {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        color: #d1d5db;
+    }
+    .calendar-inline-container {
+        padding: 16px;
+    }
+    .selected-date-display {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 20px;
+        text-align: center;
+    }
+    .count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 8px;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block teacher_content %}
+<div class="max-w-6xl mx-auto">
+    <!-- 헤더 -->
+    <div class="page-header">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h2 class="text-2xl font-bold">출근 불가 일정 관리</h2>
+                <p class="text-white/80 mt-1">날짜를 선택하여 출근 가능/불가 교사를 확인하세요</p>
+            </div>
+            <a href="{% url 'teachers:unavailability_create' %}" class="btn-action btn-outline mt-4 md:mt-0 bg-white/10 border-white text-white hover:bg-white hover:text-indigo-600">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                일정 등록
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 왼쪽: 달력 -->
+        <div class="lg:col-span-1">
+            <div class="date-picker-card">
+                <div class="selected-date-display">
+                    <div class="text-sm opacity-80">선택된 날짜</div>
+                    <div class="text-xl font-bold" id="selected-date-text">
+                        {% if selected_date %}
+                        {{ selected_date|date:'Y년 n월 j일' }}
+                        {% else %}
+                        날짜를 선택하세요
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="calendar-inline-container">
+                    <div id="date-calendar"></div>
+                </div>
+                {% if selected_date %}
+                <div class="px-4 pb-4">
+                    <a href="{% url 'teachers:unavailability_list' %}" class="btn-action btn-outline w-full justify-center">
+                        전체 목록 보기
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 오른쪽: 결과 -->
+        <div class="lg:col-span-2">
+            {% if selected_date %}
+            <!-- 날짜 선택 시: 출근 가능/불가 교사 분류 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 출근 가능 -->
+                <div class="status-card">
+                    <div class="status-header available">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            출근 가능
+                        </span>
+                        <span class="count-badge bg-white/20">{{ available_count }}명</span>
+                    </div>
+                    <div class="status-body">
+                        {% if available_teachers %}
+                        <div class="space-y-2">
+                            {% for teacher in available_teachers %}
+                            <div class="teacher-card flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                    <span class="text-green-600 font-bold">{{ teacher.name|slice:":1" }}</span>
+                                </div>
+                                <a href="{% url 'teachers:teacher_detail' teacher.pk %}" class="text-gray-800 hover:text-indigo-600 font-medium">
+                                    {{ teacher.name }}
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                            출근 가능한 교사가 없습니다
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 출근 불가 -->
+                <div class="status-card">
+                    <div class="status-header unavailable">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            출근 불가
+                        </span>
+                        <span class="count-badge bg-white/20">{{ unavailable_count }}명</span>
+                    </div>
+                    <div class="status-body">
+                        {% if unavailable_teachers %}
+                        <div class="space-y-3">
+                            {% for record in unavailable_teachers %}
+                            <div class="teacher-card">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-start">
+                                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3 flex-shrink-0">
+                                            <span class="text-red-600 font-bold">{{ record.teacher.name|slice:":1" }}</span>
+                                        </div>
+                                        <div>
+                                            <a href="{% url 'teachers:teacher_detail' record.teacher.pk %}" class="text-gray-800 hover:text-indigo-600 font-medium">
+                                                {{ record.teacher.name }}
+                                            </a>
+                                            <div class="mt-1">
+                                                <span class="reason-tag {{ record.reason }}">
+                                                    {{ record.get_reason_display }}
+                                                </span>
+                                            </div>
+                                            {% if record.memo %}
+                                            <p class="text-sm text-gray-500 mt-1">{{ record.memo }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <form method="post" action="{% url 'teachers:unavailability_delete' record.pk %}"
+                                          onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            출근 불가 일정이 없습니다
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- 날짜 미선택: 예정된 일정 목록 -->
+            <div class="date-picker-card">
+                <div class="px-6 py-4 border-b bg-gray-50">
+                    <h3 class="text-lg font-semibold text-gray-800">예정된 출근 불가 일정</h3>
+                    <p class="text-sm text-gray-500">오늘 이후 등록된 일정을 표시합니다</p>
+                </div>
+
+                {% if upcoming_unavailabilities %}
+                <div class="overflow-x-auto">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>교사</th>
+                                <th>사유</th>
+                                <th>메모</th>
+                                <th class="text-center">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in upcoming_unavailabilities %}
+                            <tr>
+                                <td>
+                                    <a href="?date={{ record.date|date:'Y-m-d' }}" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                                        {{ record.date|date:'Y-m-d' }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{% url 'teachers:teacher_detail' record.teacher.pk %}" class="text-gray-800 hover:text-indigo-600">
+                                        {{ record.teacher.name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="reason-tag {{ record.reason }}">
+                                        {{ record.get_reason_display }}
+                                    </span>
+                                </td>
+                                <td class="text-gray-500 text-sm">
+                                    {{ record.memo|default:"-"|truncatechars:30 }}
+                                </td>
+                                <td class="text-center">
+                                    <form method="post" action="{% url 'teachers:unavailability_delete' record.pk %}"
+                                          onsubmit="return confirm('정말 삭제하시겠습니까?');" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <p class="text-lg font-medium mb-2">예정된 출근 불가 일정이 없습니다</p>
+                    <p class="text-sm mb-4">달력에서 날짜를 선택하거나 새 일정을 등록하세요</p>
+                    <a href="{% url 'teachers:unavailability_create' %}" class="btn-action btn-primary">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        일정 등록하기
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+<script>
+    flatpickr("#date-calendar", {
+        inline: true,
+        locale: "ko",
+        dateFormat: "Y-m-d",
+        defaultDate: "{{ selected_date|date:'Y-m-d'|default:'' }}",
+        onChange: function(selectedDates, dateStr) {
+            if (dateStr) {
+                window.location.href = '?date=' + dateStr;
+            }
+        }
+    });
+</script>
+{% endblock %}

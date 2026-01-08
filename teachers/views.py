@@ -8,8 +8,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .models import Teacher, Attendance, Salary
-from .forms import BulkAttendanceForm, TeacherForm
+from .models import Teacher, Attendance, Salary, TeacherUnavailability
+from .forms import BulkAttendanceForm, TeacherForm, TeacherUnavailabilityForm, BulkUnavailabilityForm
 from django.contrib import messages
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen import canvas
@@ -230,19 +230,39 @@ class TeacherUpdateView(LoginRequiredMixin, UpdateView):
 
 class AttendanceCreateView(LoginRequiredMixin, View):
     def get(self, request):
-        teachers = Teacher.objects.filter(is_active=True)
+        teachers = Teacher.objects.filter(is_active=True).order_by('name')
         form = BulkAttendanceForm(teachers=teachers)
         current_date = timezone.now().date()
         month_start = current_date.replace(day=1)
         month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-        
+
+        # 선택된 날짜 (기본값: 오늘)
+        selected_date = current_date
+
+        # 해당 날짜의 출근 불가 교사 조회
+        unavailable_teacher_ids = set(
+            TeacherUnavailability.objects.filter(
+                date=selected_date,
+                teacher__is_active=True
+            ).values_list('teacher_id', flat=True)
+        )
+
+        # 출근 불가 사유 조회
+        unavailability_reasons = {
+            u.teacher_id: u
+            for u in TeacherUnavailability.objects.filter(
+                date=selected_date,
+                teacher__is_active=True
+            ).select_related('teacher')
+        }
+
         monthly_records = Attendance.objects.filter(date__range=[month_start, month_end]).order_by('teacher', 'date')
-        
+
         teacher_records = {}
         for record in monthly_records:
             if record.teacher not in teacher_records:
                 teacher_records[record.teacher] = {'records': [], 'total_hours': 0}
-            
+
             if record.start_time and record.end_time:
                 start_datetime = timezone.make_aware(timezone.datetime.combine(record.date, record.start_time))
                 end_datetime = timezone.make_aware(timezone.datetime.combine(record.date, record.end_time))
@@ -251,13 +271,17 @@ class AttendanceCreateView(LoginRequiredMixin, View):
                 teacher_records[record.teacher]['total_hours'] += record.work_hours
             else:
                 record.work_hours = None
-            
+
             teacher_records[record.teacher]['records'].append(record)
-        
+
         context = {
             'form': form,
+            'teachers': teachers,
             'teacher_records': teacher_records,
-            'current_month': current_date.strftime('%Y년 %m월')
+            'current_month': current_date.strftime('%Y년 %m월'),
+            'selected_date': selected_date,
+            'unavailable_teacher_ids': unavailable_teacher_ids,
+            'unavailability_reasons': unavailability_reasons,
         }
         return render(request, 'teachers/attendance_form.html', context)
 
@@ -266,11 +290,24 @@ class AttendanceCreateView(LoginRequiredMixin, View):
         form = BulkAttendanceForm(request.POST, teachers=teachers)
         if form.is_valid():
             date = form.cleaned_data['date']
+
+            # 해당 날짜의 출근 불가 교사 조회
+            unavailable_teacher_ids = set(
+                TeacherUnavailability.objects.filter(
+                    date=date,
+                    teacher__is_active=True
+                ).values_list('teacher_id', flat=True)
+            )
+
             for teacher in teachers:
+                # 출근 불가 교사는 건너뜀
+                if teacher.id in unavailable_teacher_ids:
+                    continue
+
                 is_present = form.cleaned_data.get(f'is_present_{teacher.id}', False)
                 start_time = form.cleaned_data.get(f'start_time_{teacher.id}')
                 end_time = form.cleaned_data.get(f'end_time_{teacher.id}')
-                
+
                 if is_present:
                     Attendance.objects.update_or_create(
                         teacher=teacher,
@@ -282,16 +319,20 @@ class AttendanceCreateView(LoginRequiredMixin, View):
                     )
                 else:
                     Attendance.objects.filter(teacher=teacher, date=date).delete()
-            
+
             messages.success(request, '출근 기록이 성공적으로 저장되었습니다.')
             return redirect('teachers:attendance_create')
-        
+
         # 폼이 유효하지 않은 경우, 에러와 함께 폼을 다시 렌더링
         current_date = timezone.now().date()
         context = {
             'form': form,
+            'teachers': teachers,
             'teacher_records': {},
-            'current_month': current_date.strftime('%Y년 %m월')
+            'current_month': current_date.strftime('%Y년 %m월'),
+            'selected_date': current_date,
+            'unavailable_teacher_ids': set(),
+            'unavailability_reasons': {},
         }
         return render(request, 'teachers/attendance_form.html', context)
 
@@ -1073,12 +1114,157 @@ def teacher_resign(request, pk):
 def teacher_rehire(request, pk):
     """교사 재입사 처리"""
     teacher = get_object_or_404(Teacher, pk=pk)
-    
+
     if request.method == 'POST':
         teacher.resignation_date = None
         teacher.is_active = True
         teacher.save()
         messages.success(request, f'{teacher.name} 교사가 재입사 처리되었습니다.')
         return redirect('teachers:teacher_detail', pk=pk)
-    
+
     return render(request, 'teachers/teacher_rehire_confirm.html', {'teacher': teacher})
+
+
+class UnavailabilityListView(LoginRequiredMixin, View):
+    """출근 불가 일정 목록 및 날짜별 조회"""
+
+    def get(self, request):
+        selected_date = request.GET.get('date')
+
+        if selected_date:
+            # 특정 날짜 선택 시 출근 가능/불가 교사 분류
+            try:
+                check_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            except ValueError:
+                check_date = timezone.now().date()
+
+            # 해당 날짜에 출근 불가인 교사들
+            unavailable_records = TeacherUnavailability.objects.filter(
+                date=check_date,
+                teacher__is_active=True
+            ).select_related('teacher')
+
+            unavailable_teacher_ids = unavailable_records.values_list('teacher_id', flat=True)
+
+            # 출근 가능한 교사들
+            available_teachers = Teacher.objects.filter(
+                is_active=True
+            ).exclude(id__in=unavailable_teacher_ids).order_by('name')
+
+            # 출근 불가한 교사들 (사유 포함)
+            unavailable_teachers = unavailable_records.order_by('teacher__name')
+
+            context = {
+                'selected_date': check_date,
+                'available_teachers': available_teachers,
+                'unavailable_teachers': unavailable_teachers,
+                'available_count': available_teachers.count(),
+                'unavailable_count': unavailable_teachers.count(),
+            }
+        else:
+            # 날짜 미선택 시 전체 일정 목록
+            context = {
+                'selected_date': None,
+                'upcoming_unavailabilities': TeacherUnavailability.objects.filter(
+                    date__gte=timezone.now().date(),
+                    teacher__is_active=True
+                ).select_related('teacher').order_by('date', 'teacher__name')[:50],
+            }
+
+        return render(request, 'teachers/unavailability_list.html', context)
+
+
+class UnavailabilityCreateView(LoginRequiredMixin, View):
+    """출근 불가 일정 등록"""
+
+    def get(self, request):
+        form = TeacherUnavailabilityForm()
+        bulk_form = BulkUnavailabilityForm()
+        context = {
+            'form': form,
+            'bulk_form': bulk_form,
+        }
+        return render(request, 'teachers/unavailability_form.html', context)
+
+    def post(self, request):
+        if 'bulk_submit' in request.POST:
+            # 기간 일괄 등록
+            bulk_form = BulkUnavailabilityForm(request.POST)
+            if bulk_form.is_valid():
+                teacher = bulk_form.cleaned_data['teacher']
+                start_date = bulk_form.cleaned_data['start_date']
+                end_date = bulk_form.cleaned_data['end_date']
+                reason = bulk_form.cleaned_data['reason']
+                memo = bulk_form.cleaned_data['memo']
+
+                created_count = 0
+                current_date = start_date
+                while current_date <= end_date:
+                    _, created = TeacherUnavailability.objects.get_or_create(
+                        teacher=teacher,
+                        date=current_date,
+                        defaults={'reason': reason, 'memo': memo}
+                    )
+                    if created:
+                        created_count += 1
+                    current_date += timedelta(days=1)
+
+                messages.success(request, f'{teacher.name} 교사의 출근 불가 일정 {created_count}건이 등록되었습니다.')
+                return redirect('teachers:unavailability_list')
+
+            form = TeacherUnavailabilityForm()
+            context = {'form': form, 'bulk_form': bulk_form}
+            return render(request, 'teachers/unavailability_form.html', context)
+        else:
+            # 단일 날짜 등록
+            form = TeacherUnavailabilityForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, '출근 불가 일정이 등록되었습니다.')
+                return redirect('teachers:unavailability_list')
+
+            bulk_form = BulkUnavailabilityForm()
+            context = {'form': form, 'bulk_form': bulk_form}
+            return render(request, 'teachers/unavailability_form.html', context)
+
+
+@login_required
+def unavailability_delete(request, pk):
+    """출근 불가 일정 삭제"""
+    unavailability = get_object_or_404(TeacherUnavailability, pk=pk)
+
+    if request.method == 'POST':
+        teacher_name = unavailability.teacher.name
+        date_str = unavailability.date.strftime('%Y-%m-%d')
+        unavailability.delete()
+        messages.success(request, f'{teacher_name} 교사의 {date_str} 출근 불가 일정이 삭제되었습니다.')
+        return redirect('teachers:unavailability_list')
+
+    return render(request, 'teachers/unavailability_confirm_delete.html', {'unavailability': unavailability})
+
+
+@login_required
+def unavailability_bulk_delete(request):
+    """출근 불가 일정 일괄 삭제"""
+    if request.method == 'POST':
+        teacher_id = request.POST.get('teacher_id')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+
+        if teacher_id and start_date and end_date:
+            try:
+                start = datetime.strptime(start_date, '%Y-%m-%d').date()
+                end = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+                deleted_count, _ = TeacherUnavailability.objects.filter(
+                    teacher_id=teacher_id,
+                    date__range=[start, end]
+                ).delete()
+
+                messages.success(request, f'{deleted_count}건의 출근 불가 일정이 삭제되었습니다.')
+            except ValueError:
+                messages.error(request, '날짜 형식이 올바르지 않습니다.')
+        else:
+            messages.error(request, '필수 정보가 누락되었습니다.')
+
+    return redirect('teachers:unavailability_list')

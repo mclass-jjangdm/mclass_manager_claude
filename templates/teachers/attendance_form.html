@@ -1,23 +1,83 @@
 {% extends 'teachers/base_teachers.html' %}
+{% load custom_filters %}
 
 {% block title %}근무 기록 - MClass Manager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .unavailable-row {
+        background-color: #fef2f2 !important;
+        opacity: 0.7;
+    }
+    .unavailable-row td {
+        color: #991b1b;
+    }
+    .unavailable-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        margin-left: 8px;
+    }
+    .unavailable-badge.personal { background: #fef3c7; color: #92400e; }
+    .unavailable-badge.sick { background: #fee2e2; color: #991b1b; }
+    .unavailable-badge.vacation { background: #dbeafe; color: #1e40af; }
+    .unavailable-badge.other { background: #e5e7eb; color: #374151; }
+    .unavailable-notice {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border-left: 4px solid #ef4444;
+        border-radius: 0 8px 8px 0;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+    .date-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        display: inline-block;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
 
 {% block teacher_content %}
 <div class="space-y-6">
     <!-- 근무 입력 폼 -->
     <div class="content-card">
         <div class="card-header">
-            <h3 class="text-xl font-semibold text-gray-900">입력</h3>
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-gray-900">입력</h3>
+                <span class="date-info">{{ selected_date|date:"Y년 n월 j일" }}</span>
+            </div>
         </div>
         <div class="card-body">
-            <form method="post" class="space-y-6">
+            {% if unavailable_teacher_ids %}
+            <div class="unavailable-notice">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span class="text-red-800 font-medium">
+                        오늘 출근 불가 교사: {{ unavailable_teacher_ids|length }}명
+                    </span>
+                    <a href="{% url 'teachers:unavailability_list' %}?date={{ selected_date|date:'Y-m-d' }}" class="ml-3 text-red-600 hover:text-red-800 text-sm underline">
+                        상세 보기
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" class="space-y-6" id="attendance-form">
                 {% csrf_token %}
-                
+
                 <!-- 날짜 선택 -->
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="form-label" for="{{ form.date.id_for_label }}">날짜</label>
-                        {{ form.date }}
+                        <label class="form-label" for="id_date">날짜</label>
+                        <input type="date" name="date" id="id_date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control" required>
                     </div>
                 </div>
 
@@ -27,32 +87,63 @@
                         <thead>
                             <tr>
                                 <th>선생님</th>
+                                <th>상태</th>
                                 <th>근무여부</th>
                                 <th>시작</th>
                                 <th>종료</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for field in form %}
-                                {% if field.name != 'date' %}
-                                    {% if 'is_present' in field.name %}
-                                        <tr>
-                                            <td class="font-medium">{{ field.label }}</td>
-                                            <td>
-                                                <div class="flex items-center">
-                                                    {{ field }}
-                                                    <label for="{{ field.id_for_label }}" class="ml-2 text-sm text-gray-600">
-                                                        수업
-                                                    </label>
-                                                </div>
-                                            </td>
-                                    {% elif 'start_time' in field.name %}
-                                            <td>{{ field }}</td>
-                                    {% elif 'end_time' in field.name %}
-                                            <td>{{ field }}</td>
-                                        </tr>
+                            {% for teacher in teachers %}
+                            {% with is_unavailable=teacher.id|stringformat:"i" %}
+                            <tr class="{% if teacher.id in unavailable_teacher_ids %}unavailable-row{% endif %}" data-teacher-id="{{ teacher.id }}">
+                                <td class="font-medium">
+                                    {{ teacher.name }}
+                                    {% if teacher.id in unavailable_teacher_ids %}
+                                    {% with reason=unavailability_reasons|get_item:teacher.id %}
+                                    <span class="unavailable-badge {{ reason.reason }}">
+                                        {{ reason.get_reason_display }}
+                                    </span>
+                                    {% endwith %}
                                     {% endif %}
-                                {% endif %}
+                                </td>
+                                <td>
+                                    {% if teacher.id in unavailable_teacher_ids %}
+                                    <span class="text-red-600 text-sm font-medium">출근 불가</span>
+                                    {% else %}
+                                    <span class="text-green-600 text-sm">출근 가능</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="flex items-center">
+                                        <input type="checkbox"
+                                               name="is_present_{{ teacher.id }}"
+                                               id="is_present_{{ teacher.id }}"
+                                               {% if teacher.id in unavailable_teacher_ids %}disabled{% endif %}
+                                               class="attendance-checkbox">
+                                        <label for="is_present_{{ teacher.id }}" class="ml-2 text-sm text-gray-600">
+                                            수업
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="time"
+                                           name="start_time_{{ teacher.id }}"
+                                           id="start_time_{{ teacher.id }}"
+                                           value="18:00"
+                                           {% if teacher.id in unavailable_teacher_ids %}disabled{% endif %}
+                                           class="time-input">
+                                </td>
+                                <td>
+                                    <input type="time"
+                                           name="end_time_{{ teacher.id }}"
+                                           id="end_time_{{ teacher.id }}"
+                                           value="20:00"
+                                           {% if teacher.id in unavailable_teacher_ids %}disabled{% endif %}
+                                           class="time-input">
+                                </td>
+                            </tr>
+                            {% endwith %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -126,33 +217,54 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 근무여부 체크박스 이벤트 처리
-        const checkboxes = document.querySelectorAll('input[type="checkbox"][name*="is_present"]');
-        checkboxes.forEach(checkbox => {
-            const row = checkbox.closest('tr');
-            const timeInputs = row.querySelectorAll('input[type="time"]');
-            
-            // 초기 상태 설정
-            timeInputs.forEach(input => {
-                input.disabled = !checkbox.checked;
-            });
-            
-            // 체크박스 변경 이벤트
-            checkbox.addEventListener('change', function() {
-                timeInputs.forEach(input => {
-                    input.disabled = !this.checked;
-                    if (!this.checked) {
-                        input.value = '';
-                    }
+        // 날짜 변경 시 출근 불가 정보 업데이트
+        const dateInput = document.getElementById('id_date');
+        const form = document.getElementById('attendance-form');
+
+        dateInput.addEventListener('change', function() {
+            // 날짜 변경 시 서버에서 새로운 출근 불가 정보를 가져오기 위해 페이지 새로고침
+            const newDate = this.value;
+            fetch(`/teachers/attendance/check-unavailability/?date=${newDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateUnavailableTeachers(data.unavailable_teacher_ids, data.unavailability_reasons);
+                })
+                .catch(error => {
+                    console.log('AJAX not available, using form submission');
                 });
+        });
+
+        // 출근 불가 교사의 입력 필드만 비활성화 (시간 입력은 항상 가능)
+        const unavailableRows = document.querySelectorAll('.unavailable-row');
+        unavailableRows.forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.disabled = true;
             });
         });
     });
-</script>
-{% endblock %}
 
+    function updateUnavailableTeachers(unavailableIds, reasons) {
+        const rows = document.querySelectorAll('tbody tr[data-teacher-id]');
+        rows.forEach(row => {
+            const teacherId = parseInt(row.dataset.teacherId);
+            const isUnavailable = unavailableIds.includes(teacherId);
+            const inputs = row.querySelectorAll('input');
+
+            if (isUnavailable) {
+                row.classList.add('unavailable-row');
+                inputs.forEach(input => input.disabled = true);
+            } else {
+                row.classList.remove('unavailable-row');
+                // 출근 가능한 교사는 모든 입력 필드 활성화
+                inputs.forEach(input => input.disabled = false);
+            }
+        });
+    }
+</script>
 {% endblock %}

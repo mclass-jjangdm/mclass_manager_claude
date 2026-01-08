@@ -1,0 +1,439 @@
+{% extends 'teachers/base_teachers.html' %}
+
+{% block extra_css %}
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+<style>
+    .calendar-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 2px;
+    }
+    .calendar-inner {
+        background: white;
+        border-radius: 14px;
+        padding: 24px;
+    }
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+    }
+    .form-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .form-card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 16px 16px 0 0;
+        font-weight: 600;
+    }
+    .form-card-body {
+        padding: 24px;
+    }
+    .custom-select, .custom-input, .custom-textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        background-color: #f9fafb;
+    }
+    .custom-select:focus, .custom-input:focus, .custom-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .custom-label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .custom-label .required {
+        color: #ef4444;
+        margin-left: 2px;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 14px 24px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .btn-primary-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .btn-secondary-gradient {
+        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        color: white;
+    }
+    .btn-secondary-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 211, 153, 0.4);
+    }
+    .reason-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    .reason-badge input {
+        display: none;
+    }
+    .reason-badge.personal { background: #fef3c7; color: #92400e; }
+    .reason-badge.personal.selected { border-color: #f59e0b; background: #fbbf24; color: white; }
+    .reason-badge.sick { background: #fee2e2; color: #991b1b; }
+    .reason-badge.sick.selected { border-color: #ef4444; background: #ef4444; color: white; }
+    .reason-badge.vacation { background: #dbeafe; color: #1e40af; }
+    .reason-badge.vacation.selected { border-color: #3b82f6; background: #3b82f6; color: white; }
+    .reason-badge.other { background: #e5e7eb; color: #374151; }
+    .reason-badge.other.selected { border-color: #6b7280; background: #6b7280; color: white; }
+
+    /* Flatpickr 커스텀 */
+    .flatpickr-calendar {
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        border: none !important;
+    }
+    .flatpickr-day.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-color: #667eea !important;
+    }
+    .flatpickr-day.selected.startRange,
+    .flatpickr-day.selected.endRange {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+    .flatpickr-day.inRange {
+        background: rgba(102, 126, 234, 0.2) !important;
+        border-color: rgba(102, 126, 234, 0.2) !important;
+    }
+    .selected-dates-preview {
+        background: #f3f4f6;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-top: 12px;
+        font-size: 14px;
+    }
+    .tab-btn {
+        padding: 12px 24px;
+        border: none;
+        background: transparent;
+        font-weight: 500;
+        color: #6b7280;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+    .tab-btn:hover:not(.active) {
+        color: #374151;
+        background: #f3f4f6;
+    }
+    .info-box {
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        border-left: 4px solid #667eea;
+        border-radius: 0 10px 10px 0;
+        padding: 16px 20px;
+    }
+</style>
+{% endblock %}
+
+{% block teacher_content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 헤더 -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">출근 불가 일정 등록</h2>
+            <p class="text-gray-500 mt-1">교사의 출근 불가 날짜를 등록하세요</p>
+        </div>
+        <a href="{% url 'teachers:unavailability_list' %}" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            목록으로
+        </a>
+    </div>
+
+    <!-- 탭 네비게이션 -->
+    <div class="bg-white rounded-t-xl border-b">
+        <div class="flex">
+            <button type="button" class="tab-btn active" onclick="switchTab('single')">
+                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                단일 날짜
+            </button>
+            <button type="button" class="tab-btn" onclick="switchTab('range')">
+                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                기간 선택
+            </button>
+        </div>
+    </div>
+
+    <!-- 단일 날짜 등록 폼 -->
+    <div id="single-form" class="form-card rounded-t-none">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-card-body">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 왼쪽: 달력 -->
+                    <div>
+                        <label class="custom-label">날짜 선택 <span class="required">*</span></label>
+                        <div class="calendar-container">
+                            <div class="calendar-inner">
+                                <input type="text" id="single-calendar" name="date" class="hidden" required>
+                                <div id="single-calendar-inline"></div>
+                            </div>
+                        </div>
+                        <div class="selected-dates-preview mt-3" id="single-selected-display">
+                            <span class="text-gray-500">날짜를 선택하세요</span>
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽: 나머지 필드 -->
+                    <div class="space-y-5">
+                        <div>
+                            <label class="custom-label">교사 <span class="required">*</span></label>
+                            <select name="teacher" class="custom-select" required>
+                                <option value="">선택하세요</option>
+                                {% for teacher in form.teacher.field.queryset %}
+                                <option value="{{ teacher.pk }}">{{ teacher.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="custom-label">사유 <span class="required">*</span></label>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <label class="reason-badge personal selected" onclick="selectReason(this, 'single')">
+                                    <input type="radio" name="reason" value="personal" checked>
+                                    개인 사유
+                                </label>
+                                <label class="reason-badge sick" onclick="selectReason(this, 'single')">
+                                    <input type="radio" name="reason" value="sick">
+                                    병가
+                                </label>
+                                <label class="reason-badge vacation" onclick="selectReason(this, 'single')">
+                                    <input type="radio" name="reason" value="vacation">
+                                    휴가
+                                </label>
+                                <label class="reason-badge other" onclick="selectReason(this, 'single')">
+                                    <input type="radio" name="reason" value="other">
+                                    기타
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="custom-label">메모</label>
+                            <textarea name="memo" class="custom-textarea" rows="3" placeholder="상세 사유를 입력하세요 (선택사항)"></textarea>
+                        </div>
+
+                        <button type="submit" name="single_submit" class="btn-submit btn-primary-gradient mt-4">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            등록하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 기간 선택 등록 폼 -->
+    <div id="range-form" class="form-card rounded-t-none hidden">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-card-body">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 왼쪽: 달력 -->
+                    <div>
+                        <label class="custom-label">기간 선택 <span class="required">*</span></label>
+                        <div class="calendar-container">
+                            <div class="calendar-inner">
+                                <input type="hidden" id="range-start" name="start_date">
+                                <input type="hidden" id="range-end" name="end_date">
+                                <div id="range-calendar-inline"></div>
+                            </div>
+                        </div>
+                        <div class="selected-dates-preview mt-3" id="range-selected-display">
+                            <span class="text-gray-500">시작일과 종료일을 선택하세요</span>
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽: 나머지 필드 -->
+                    <div class="space-y-5">
+                        <div>
+                            <label class="custom-label">교사 <span class="required">*</span></label>
+                            <select name="teacher" class="custom-select" required>
+                                <option value="">선택하세요</option>
+                                {% for teacher in bulk_form.teacher.field.queryset %}
+                                <option value="{{ teacher.pk }}">{{ teacher.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="custom-label">사유 <span class="required">*</span></label>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <label class="reason-badge personal selected" onclick="selectReason(this, 'range')">
+                                    <input type="radio" name="reason" value="personal" checked>
+                                    개인 사유
+                                </label>
+                                <label class="reason-badge sick" onclick="selectReason(this, 'range')">
+                                    <input type="radio" name="reason" value="sick">
+                                    병가
+                                </label>
+                                <label class="reason-badge vacation" onclick="selectReason(this, 'range')">
+                                    <input type="radio" name="reason" value="vacation">
+                                    휴가
+                                </label>
+                                <label class="reason-badge other" onclick="selectReason(this, 'range')">
+                                    <input type="radio" name="reason" value="other">
+                                    기타
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="custom-label">메모</label>
+                            <textarea name="memo" class="custom-textarea" rows="3" placeholder="상세 사유를 입력하세요 (선택사항)"></textarea>
+                        </div>
+
+                        <button type="submit" name="bulk_submit" class="btn-submit btn-secondary-gradient mt-4">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            기간 일괄 등록
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 안내 사항 -->
+    <div class="info-box mt-6">
+        <h4 class="font-semibold text-gray-800 mb-2 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            안내 사항
+        </h4>
+        <ul class="text-sm text-gray-600 space-y-1 ml-7">
+            <li>교사가 출근 불가능한 날짜를 미리 등록하세요.</li>
+            <li>기간 선택 시 시작일부터 종료일까지 모든 날짜가 등록됩니다.</li>
+            <li>이미 등록된 날짜는 중복 등록되지 않습니다.</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+<script>
+    // 탭 전환
+    function switchTab(tab) {
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(t => t.classList.remove('active'));
+        event.target.closest('.tab-btn').classList.add('active');
+
+        document.getElementById('single-form').classList.toggle('hidden', tab !== 'single');
+        document.getElementById('range-form').classList.toggle('hidden', tab !== 'range');
+    }
+
+    // 사유 선택
+    function selectReason(element, formType) {
+        const form = document.getElementById(formType + '-form');
+        form.querySelectorAll('.reason-badge').forEach(badge => {
+            badge.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        element.querySelector('input').checked = true;
+    }
+
+    // 단일 날짜 달력
+    const singleCalendar = flatpickr("#single-calendar-inline", {
+        inline: true,
+        locale: "ko",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        onChange: function(selectedDates, dateStr) {
+            document.getElementById('single-calendar').value = dateStr;
+            if (selectedDates.length > 0) {
+                const date = selectedDates[0];
+                const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+                document.getElementById('single-selected-display').innerHTML =
+                    '<span class="font-medium text-indigo-600">' + date.toLocaleDateString('ko-KR', options) + '</span>';
+            }
+        }
+    });
+
+    // 기간 선택 달력
+    const rangeCalendar = flatpickr("#range-calendar-inline", {
+        inline: true,
+        locale: "ko",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        mode: "range",
+        onChange: function(selectedDates, dateStr) {
+            if (selectedDates.length === 2) {
+                document.getElementById('range-start').value = formatDate(selectedDates[0]);
+                document.getElementById('range-end').value = formatDate(selectedDates[1]);
+
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                const start = selectedDates[0].toLocaleDateString('ko-KR', options);
+                const end = selectedDates[1].toLocaleDateString('ko-KR', options);
+                const days = Math.ceil((selectedDates[1] - selectedDates[0]) / (1000 * 60 * 60 * 24)) + 1;
+
+                document.getElementById('range-selected-display').innerHTML =
+                    '<div class="flex items-center justify-between">' +
+                    '<span class="font-medium text-green-600">' + start + ' ~ ' + end + '</span>' +
+                    '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-sm font-medium">' + days + '일</span>' +
+                    '</div>';
+            } else if (selectedDates.length === 1) {
+                document.getElementById('range-start').value = formatDate(selectedDates[0]);
+                document.getElementById('range-end').value = '';
+                document.getElementById('range-selected-display').innerHTML =
+                    '<span class="text-gray-500">종료일을 선택하세요</span>';
+            }
+        }
+    });
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+</script>
+{% endblock %}

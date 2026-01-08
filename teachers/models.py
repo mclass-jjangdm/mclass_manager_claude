@@ -130,3 +130,28 @@ class Salary(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class TeacherUnavailability(models.Model):
+    """교사 출근 불가 날짜 관리"""
+    REASON_CHOICES = [
+        ('personal', '개인 사유'),
+        ('sick', '병가'),
+        ('vacation', '휴가'),
+        ('other', '기타'),
+    ]
+
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, verbose_name='교사')
+    date = models.DateField(verbose_name='날짜')
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES, default='personal', verbose_name='사유')
+    memo = models.TextField(blank=True, null=True, verbose_name='메모')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='등록일시')
+
+    class Meta:
+        unique_together = ['teacher', 'date']
+        verbose_name = '출근 불가 일정'
+        verbose_name_plural = '출근 불가 일정'
+        ordering = ['date', 'teacher__name']
+
+    def __str__(self):
+        return f"{self.teacher.name} - {self.date} ({self.get_reason_display()})"

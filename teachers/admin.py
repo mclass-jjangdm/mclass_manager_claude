@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Teacher, Attendance, Salary
+from .models import Teacher, Attendance, Salary, TeacherUnavailability
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
@@ -31,3 +31,12 @@ class SalaryAdmin(admin.ModelAdmin):
     def formatted_total_amount(self, obj):
         return format_html('{}원', '{:,}'.format(obj.total_amount))
     formatted_total_amount.short_description = '총액'
+
+
+@admin.register(TeacherUnavailability)
+class TeacherUnavailabilityAdmin(admin.ModelAdmin):
+    list_display = ('teacher', 'date', 'reason', 'memo', 'created_at')
+    list_filter = ('reason', 'date', 'teacher')
+    search_fields = ('teacher__name', 'memo')
+    date_hierarchy = 'date'
+    ordering = ['-date', 'teacher__name']

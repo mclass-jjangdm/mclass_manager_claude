@@ -17,4 +17,9 @@ urlpatterns = [
     path('<int:pk>/send-email/', views.teacher_send_email, name='teacher_send_email'),
     path('<int:pk>/resign/', views.teacher_resign, name='teacher_resign'),
     path('<int:pk>/rehire/', views.teacher_rehire, name='teacher_rehire'),
+    # 출근 불가 일정 관리
+    path('unavailability/', views.UnavailabilityListView.as_view(), name='unavailability_list'),
+    path('unavailability/create/', views.UnavailabilityCreateView.as_view(), name='unavailability_create'),
+    path('unavailability/<int:pk>/delete/', views.unavailability_delete, name='unavailability_delete'),
+    path('unavailability/bulk-delete/', views.unavailability_bulk_delete, name='unavailability_bulk_delete'),
 ]

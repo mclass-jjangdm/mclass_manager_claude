@@ -1,6 +1,6 @@
 from django.utils import timezone
 from django import forms
-from .models import Teacher
+from .models import Teacher, TeacherUnavailability
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -158,3 +158,58 @@ class BulkAttendanceForm(forms.Form):
                     required=False,
                     label=f'{teacher.name} 종료 시간'
                 )
+
+
+class TeacherUnavailabilityForm(forms.ModelForm):
+    """출근 불가 일정 등록 폼"""
+    class Meta:
+        model = TeacherUnavailability
+        fields = ['teacher', 'date', 'reason', 'memo']
+        widgets = {
+            'teacher': forms.Select(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'reason': forms.Select(attrs={'class': 'form-control'}),
+            'memo': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '상세 사유 (선택사항)'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # 활성 교사만 표시
+        self.fields['teacher'].queryset = Teacher.objects.filter(is_active=True).order_by('name')
+
+
+class BulkUnavailabilityForm(forms.Form):
+    """여러 날짜 일괄 등록 폼"""
+    teacher = forms.ModelChoiceField(
+        queryset=Teacher.objects.filter(is_active=True).order_by('name'),
+        label='교사',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    start_date = forms.DateField(
+        label='시작일',
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
+    end_date = forms.DateField(
+        label='종료일',
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
+    reason = forms.ChoiceField(
+        choices=TeacherUnavailability.REASON_CHOICES,
+        label='사유',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    memo = forms.CharField(
+        required=False,
+        label='메모',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '상세 사유 (선택사항)'})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError('종료일은 시작일 이후여야 합니다.')
+
+        return cleaned_data
