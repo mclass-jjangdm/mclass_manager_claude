@@ -1475,6 +1475,8 @@ def assignment_bulk_delete(request):
 @login_required
 def assignment_change_teacher(request, pk):
     """배정 교사 변경"""
+    from django.http import JsonResponse
+
     assignment = get_object_or_404(TeacherStudentAssignment, pk=pk)
 
     if request.method == 'POST':
@@ -1484,6 +1486,33 @@ def assignment_change_teacher(request, pk):
             old_teacher_name = assignment.teacher.name
             assignment.teacher = new_teacher
             assignment.save()
+
+            # AJAX 요청인 경우 JSON 응답
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+
             messages.success(request, f'{assignment.student.name} 학생의 담당 교사가 {old_teacher_name}에서 {new_teacher.name}(으)로 변경되었습니다.')
 
     return redirect(f"/teachers/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")
+
+
+@login_required
+def assignment_unassign(request, pk):
+    """배정 해제 (미배정으로 이동)"""
+    from django.http import JsonResponse
+
+    assignment = get_object_or_404(TeacherStudentAssignment, pk=pk)
+
+    if request.method == 'POST':
+        student_name = assignment.student.name
+        date_str = assignment.date.strftime('%Y-%m-%d')
+        assignment.delete()
+
+        # AJAX 요청인 경우 JSON 응답
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+
+        messages.success(request, f'{student_name} 학생의 배정이 해제되었습니다.')
+        return redirect(f"/teachers/assignment/?date={date_str}")
+
+    return redirect('teachers:assignment_list')
