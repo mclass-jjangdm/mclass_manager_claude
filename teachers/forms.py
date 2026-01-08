@@ -1,6 +1,6 @@
 from django.utils import timezone
 from django import forms
-from .models import Teacher, TeacherUnavailability
+from .models import Teacher, TeacherUnavailability, TeacherStudentAssignment
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -213,3 +213,24 @@ class BulkUnavailabilityForm(forms.Form):
             raise forms.ValidationError('종료일은 시작일 이후여야 합니다.')
 
         return cleaned_data
+
+
+class TeacherStudentAssignmentForm(forms.ModelForm):
+    """교사-학생 배정 폼"""
+    class Meta:
+        model = TeacherStudentAssignment
+        fields = ['teacher', 'student', 'date', 'memo']
+        widgets = {
+            'teacher': forms.Select(attrs={'class': 'form-control'}),
+            'student': forms.Select(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'memo': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': '메모 (선택사항)'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from students.models import Student
+        # 활성 교사만 표시
+        self.fields['teacher'].queryset = Teacher.objects.filter(is_active=True).order_by('name')
+        # 활성 학생만 표시
+        self.fields['student'].queryset = Student.objects.filter(is_active=True).order_by('name')

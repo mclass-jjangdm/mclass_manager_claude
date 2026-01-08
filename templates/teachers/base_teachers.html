@@ -39,6 +39,10 @@
                    class="nav-link {% if request.resolver_match.url_name == 'unavailability_list' or request.resolver_match.url_name == 'unavailability_create' %}active{% endif %}">
                     출근 불가 일정
                 </a>
+                <a href="{% url 'teachers:assignment_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'assignment_list' or request.resolver_match.url_name == 'assignment_create' %}active{% endif %}">
+                    학생 배정
+                </a>
             </nav>
         </div>
     </div>

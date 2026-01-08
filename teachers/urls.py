@@ -22,4 +22,10 @@ urlpatterns = [
     path('unavailability/create/', views.UnavailabilityCreateView.as_view(), name='unavailability_create'),
     path('unavailability/<int:pk>/delete/', views.unavailability_delete, name='unavailability_delete'),
     path('unavailability/bulk-delete/', views.unavailability_bulk_delete, name='unavailability_bulk_delete'),
+    # 교사-학생 배정 관리
+    path('assignment/', views.AssignmentListView.as_view(), name='assignment_list'),
+    path('assignment/create/', views.AssignmentCreateView.as_view(), name='assignment_create'),
+    path('assignment/<int:pk>/delete/', views.assignment_delete, name='assignment_delete'),
+    path('assignment/bulk-delete/', views.assignment_bulk_delete, name='assignment_bulk_delete'),
+    path('assignment/<int:pk>/change-teacher/', views.assignment_change_teacher, name='assignment_change_teacher'),
 ]

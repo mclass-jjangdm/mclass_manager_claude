@@ -155,3 +155,21 @@ class TeacherUnavailability(models.Model):
 
     def __str__(self):
         return f"{self.teacher.name} - {self.date} ({self.get_reason_display()})"
+
+
+class TeacherStudentAssignment(models.Model):
+    """날짜별 교사-학생 배정"""
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, verbose_name='교사')
+    student = models.ForeignKey('students.Student', on_delete=models.CASCADE, verbose_name='학생')
+    date = models.DateField(verbose_name='날짜')
+    memo = models.TextField(blank=True, null=True, verbose_name='메모')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='등록일시')
+
+    class Meta:
+        unique_together = ['student', 'date']  # 학생은 하루에 한 교사에게만 배정
+        verbose_name = '교사-학생 배정'
+        verbose_name_plural = '교사-학생 배정'
+        ordering = ['date', 'teacher__name', 'student__name']
+
+    def __str__(self):
+        return f"{self.date} - {self.teacher.name} → {self.student.name}"

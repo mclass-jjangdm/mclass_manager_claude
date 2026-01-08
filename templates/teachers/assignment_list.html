@@ -1,0 +1,579 @@
+{% extends 'teachers/base_teachers.html' %}
+
+{% block title %}학생 배정 - MClass Manager{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .assignment-container {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 24px;
+        min-height: calc(100vh - 250px);
+    }
+
+    /* 미배정 학생 패널 */
+    .unassigned-panel {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh - 250px);
+    }
+    .panel-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 16px 20px;
+        flex-shrink: 0;
+    }
+    .panel-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .panel-header .count {
+        background: rgba(255,255,255,0.2);
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+    .panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+    }
+
+    /* 학년 그룹 */
+    .grade-group {
+        margin-bottom: 16px;
+    }
+    .grade-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .grade-header:hover {
+        background: #e2e8f0;
+    }
+    .grade-label {
+        font-weight: 600;
+        color: #334155;
+    }
+    .grade-count {
+        background: #cbd5e1;
+        color: #475569;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+    }
+    .grade-toggle {
+        margin-left: auto;
+        transition: transform 0.2s;
+    }
+    .grade-header.collapsed .grade-toggle {
+        transform: rotate(-90deg);
+    }
+    .grade-students {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding-left: 8px;
+    }
+    .grade-students.hidden {
+        display: none;
+    }
+
+    /* 학생 아이템 (드래그 가능) */
+    .student-draggable {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: grab;
+        transition: all 0.2s;
+        user-select: none;
+    }
+    .student-draggable:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    }
+    .student-draggable:active {
+        cursor: grabbing;
+    }
+    .student-draggable.dragging {
+        opacity: 0.5;
+        transform: scale(0.95);
+    }
+    .student-details {
+        flex: 1;
+        min-width: 0;
+    }
+    .student-name {
+        font-weight: 500;
+        color: #334155;
+        font-size: 14px;
+    }
+    .student-school {
+        font-size: 12px;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 교사 영역 */
+    .teachers-area {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .teachers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    .teacher-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .teacher-card.drag-over {
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        transform: scale(1.02);
+    }
+    .teacher-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .teacher-header h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .teacher-count {
+        background: rgba(255,255,255,0.2);
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+    .teacher-body {
+        padding: 16px;
+        min-height: 120px;
+    }
+    .teacher-dropzone {
+        min-height: 80px;
+        border: 2px dashed #e2e8f0;
+        border-radius: 12px;
+        padding: 12px;
+        transition: all 0.2s;
+    }
+    .teacher-dropzone.drag-over {
+        border-color: #667eea;
+        background: #f0f4ff;
+    }
+    .teacher-dropzone.empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-size: 14px;
+    }
+
+    /* 배정된 학생 목록 */
+    .assigned-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .assigned-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: #f8fafc;
+        border-radius: 10px;
+        transition: all 0.2s;
+    }
+    .assigned-item:hover {
+        background: #f1f5f9;
+    }
+    .assigned-actions {
+        display: flex;
+        gap: 6px;
+        margin-left: auto;
+    }
+    .action-btn {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+    .action-btn.delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    .action-btn.delete:hover {
+        background: #fecaca;
+    }
+
+    /* 날짜 선택 헤더 */
+    .date-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 16px 24px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin-bottom: 24px;
+    }
+    .date-header h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    .date-controls {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .date-input {
+        padding: 10px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 15px;
+        transition: border-color 0.2s;
+    }
+    .date-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    /* 통계 바 */
+    .stats-bar {
+        display: flex;
+        gap: 16px;
+    }
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+    }
+    .stat-label {
+        font-size: 13px;
+        color: #64748b;
+    }
+    .stat-item.teachers .stat-value { color: #6366f1; }
+    .stat-item.assigned .stat-value { color: #059669; }
+    .stat-item.unassigned .stat-value { color: #d97706; }
+
+    /* 반응형 */
+    @media (max-width: 1024px) {
+        .assignment-container {
+            grid-template-columns: 1fr;
+        }
+        .unassigned-panel {
+            max-height: 400px;
+        }
+    }
+
+    /* 학년 배지 색상 */
+    .grade-badge {
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+    .grade-badge.elementary { background: #dcfce7; color: #166534; }
+    .grade-badge.middle { background: #dbeafe; color: #1e40af; }
+    .grade-badge.high { background: #fce7f3; color: #9d174d; }
+</style>
+{% endblock %}
+
+{% block teacher_content %}
+<!-- 날짜 선택 헤더 -->
+<div class="date-header">
+    <div>
+        <h2>학생 배정</h2>
+        <p class="text-gray-500 text-sm mt-1">{{ selected_date|date:"Y년 n월 j일 (D)" }}</p>
+    </div>
+    <div class="date-controls">
+        <div class="stats-bar">
+            <div class="stat-item teachers">
+                <span class="stat-value">{{ available_teachers|length }}</span>
+                <span class="stat-label">교사</span>
+            </div>
+            <div class="stat-item assigned">
+                <span class="stat-value">{{ total_assigned }}</span>
+                <span class="stat-label">배정</span>
+            </div>
+            <div class="stat-item unassigned">
+                <span class="stat-value">{{ total_unassigned }}</span>
+                <span class="stat-label">미배정</span>
+            </div>
+        </div>
+        <input type="date" id="date-picker" class="date-input" value="{{ selected_date|date:'Y-m-d' }}">
+    </div>
+</div>
+
+<div class="assignment-container">
+    <!-- 미배정 학생 패널 -->
+    <div class="unassigned-panel">
+        <div class="panel-header">
+            <h3>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                미배정 학생
+                <span class="count">{{ total_unassigned }}명</span>
+            </h3>
+        </div>
+        <div class="panel-body" id="unassigned-panel">
+            {% if unassigned_by_grade %}
+                {% for grade_key, grade_data in unassigned_by_grade.items %}
+                <div class="grade-group">
+                    <div class="grade-header" onclick="toggleGrade(this)">
+                        <span class="grade-label">{{ grade_data.label }}</span>
+                        <span class="grade-count">{{ grade_data.students|length }}명</span>
+                        <svg class="w-4 h-4 grade-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                    <div class="grade-students">
+                        {% for student in grade_data.students %}
+                        <div class="student-draggable"
+                             draggable="true"
+                             data-student-id="{{ student.id }}"
+                             data-student-name="{{ student.name }}">
+                            <div class="student-details">
+                                <div class="student-name">{{ student.name }}</div>
+                                {% if student.school %}
+                                <div class="student-school">{{ student.school.name }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-gray-400 py-8">
+                    <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>모든 학생이 배정되었습니다</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 교사 영역 -->
+    <div class="teachers-area">
+        <div class="teachers-grid">
+            {% for teacher, assignments in teacher_assignments.items %}
+            <div class="teacher-card" data-teacher-id="{{ teacher.id }}">
+                <div class="teacher-header">
+                    <h4>{{ teacher.name }}</h4>
+                    <span class="teacher-count">{{ assignments|length }}명</span>
+                </div>
+                <div class="teacher-body">
+                    <div class="teacher-dropzone {% if not assignments %}empty{% endif %}"
+                         data-teacher-id="{{ teacher.id }}">
+                        {% if assignments %}
+                        <div class="assigned-list">
+                            {% for assignment in assignments %}
+                            <div class="assigned-item" data-assignment-id="{{ assignment.id }}">
+                                <div class="student-details">
+                                    <div class="student-name">{{ assignment.student.name }}</div>
+                                    {% if assignment.student.school %}
+                                    <div class="student-school">{{ assignment.student.school.name }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="assigned-actions">
+                                    <form action="{% url 'teachers:assignment_delete' assignment.id %}" method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="action-btn delete" onclick="return confirm('배정을 삭제하시겠습니까?')">
+                                            삭제
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <span>학생을 여기로 드래그하세요</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full">
+                <div class="text-center py-12 bg-white rounded-2xl shadow-sm">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <p class="text-gray-500 text-lg">출근 가능한 교사가 없습니다</p>
+                    <a href="{% url 'teachers:unavailability_list' %}" class="text-indigo-600 hover:text-indigo-800 text-sm mt-2 inline-block">
+                        출근 불가 일정 확인하기
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- 배정 폼 (숨김) -->
+<form id="assignmentForm" method="post" action="{% url 'teachers:assignment_create' %}" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+    <input type="hidden" name="teacher" id="form-teacher">
+    <input type="hidden" name="students" id="form-students">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+<script>
+    // 날짜 선택기
+    flatpickr("#date-picker", {
+        locale: "ko",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates, dateStr) {
+            window.location.href = "?date=" + dateStr;
+        }
+    });
+
+    // 학년 그룹 토글
+    function toggleGrade(header) {
+        header.classList.toggle('collapsed');
+        const students = header.nextElementSibling;
+        students.classList.toggle('hidden');
+    }
+
+    // 드래그 앤 드롭 기능
+    document.addEventListener('DOMContentLoaded', function() {
+        const draggables = document.querySelectorAll('.student-draggable');
+        const dropzones = document.querySelectorAll('.teacher-dropzone');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', handleDragStart);
+            draggable.addEventListener('dragend', handleDragEnd);
+        });
+
+        dropzones.forEach(dropzone => {
+            dropzone.addEventListener('dragover', handleDragOver);
+            dropzone.addEventListener('dragleave', handleDragLeave);
+            dropzone.addEventListener('drop', handleDrop);
+        });
+
+        function handleDragStart(e) {
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                studentId: this.dataset.studentId,
+                studentName: this.dataset.studentName
+            }));
+            e.dataTransfer.effectAllowed = 'move';
+
+            // 모든 드롭존 하이라이트
+            dropzones.forEach(zone => {
+                zone.closest('.teacher-card').style.border = '2px dashed #667eea';
+            });
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            dropzones.forEach(zone => {
+                zone.classList.remove('drag-over');
+                zone.closest('.teacher-card').style.border = 'none';
+                zone.closest('.teacher-card').classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+            this.closest('.teacher-card').classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+            this.closest('.teacher-card').classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            this.closest('.teacher-card').classList.remove('drag-over');
+
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const teacherId = this.dataset.teacherId;
+
+            // 서버로 배정 요청
+            assignStudent(teacherId, data.studentId);
+        }
+    });
+
+    function assignStudent(teacherId, studentId) {
+        const form = document.getElementById('assignmentForm');
+        document.getElementById('form-teacher').value = teacherId;
+        document.getElementById('form-students').value = studentId;
+
+        // 배정 요청
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // 페이지 새로고침
+                window.location.reload();
+            } else {
+                alert('배정 중 오류가 발생했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // 폴백: 폼 직접 제출
+            form.submit();
+        });
+    }
+</script>
+{% endblock %}

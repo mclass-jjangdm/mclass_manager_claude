@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Teacher, Attendance, Salary, TeacherUnavailability
+from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
@@ -40,3 +40,12 @@ class TeacherUnavailabilityAdmin(admin.ModelAdmin):
     search_fields = ('teacher__name', 'memo')
     date_hierarchy = 'date'
     ordering = ['-date', 'teacher__name']
+
+
+@admin.register(TeacherStudentAssignment)
+class TeacherStudentAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('date', 'teacher', 'student', 'memo', 'created_at')
+    list_filter = ('date', 'teacher')
+    search_fields = ('teacher__name', 'student__name', 'memo')
+    date_hierarchy = 'date'
+    ordering = ['-date', 'teacher__name', 'student__name']

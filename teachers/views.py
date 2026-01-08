@@ -8,8 +8,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .models import Teacher, Attendance, Salary, TeacherUnavailability
-from .forms import BulkAttendanceForm, TeacherForm, TeacherUnavailabilityForm, BulkUnavailabilityForm
+from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment
+from .forms import BulkAttendanceForm, TeacherForm, TeacherUnavailabilityForm, BulkUnavailabilityForm, TeacherStudentAssignmentForm
 from django.contrib import messages
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfgen import canvas
@@ -1268,3 +1268,222 @@ def unavailability_bulk_delete(request):
             messages.error(request, '필수 정보가 누락되었습니다.')
 
     return redirect('teachers:unavailability_list')
+
+
+class AssignmentListView(LoginRequiredMixin, View):
+    """날짜별 교사-학생 배정 조회"""
+
+    def get(self, request):
+        from students.models import Student
+
+        selected_date = request.GET.get('date')
+
+        if selected_date:
+            try:
+                check_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            except ValueError:
+                check_date = timezone.now().date()
+        else:
+            check_date = timezone.now().date()
+
+        # 해당 날짜에 출근 불가인 교사 ID
+        unavailable_teacher_ids = set(
+            TeacherUnavailability.objects.filter(
+                date=check_date,
+                teacher__is_active=True
+            ).values_list('teacher_id', flat=True)
+        )
+
+        # 출근 가능한 교사들
+        available_teachers = Teacher.objects.filter(
+            is_active=True
+        ).exclude(id__in=unavailable_teacher_ids).order_by('name')
+
+        # 해당 날짜의 배정 정보
+        assignments = TeacherStudentAssignment.objects.filter(
+            date=check_date
+        ).select_related('teacher', 'student').order_by('teacher__name', 'student__name')
+
+        # 교사별 배정된 학생 그룹화
+        teacher_assignments = {}
+        assigned_student_ids = set()
+        for teacher in available_teachers:
+            teacher_assignments[teacher] = []
+
+        for assignment in assignments:
+            if assignment.teacher in teacher_assignments:
+                teacher_assignments[assignment.teacher].append(assignment)
+                assigned_student_ids.add(assignment.student_id)
+
+        # 배정되지 않은 학생들
+        unassigned_students = Student.objects.filter(
+            is_active=True
+        ).exclude(id__in=assigned_student_ids).order_by('grade', 'name')
+
+        # 학년별 그룹화 (미배정 학생)
+        grade_order = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12']
+        grade_labels = {
+            'K5': '초5', 'K6': '초6', 'K7': '중1', 'K8': '중2',
+            'K9': '중3', 'K10': '고1', 'K11': '고2', 'K12': '고3'
+        }
+        unassigned_by_grade = {}
+        for grade in grade_order:
+            students_in_grade = [s for s in unassigned_students if s.grade == grade]
+            if students_in_grade:
+                unassigned_by_grade[grade] = {
+                    'label': grade_labels.get(grade, grade),
+                    'students': students_in_grade
+                }
+        # 학년 미지정 학생
+        no_grade_students = [s for s in unassigned_students if not s.grade]
+        if no_grade_students:
+            unassigned_by_grade['none'] = {
+                'label': '미지정',
+                'students': no_grade_students
+            }
+
+        # 모든 활성 학생
+        all_students = Student.objects.filter(is_active=True).order_by('grade', 'name')
+
+        context = {
+            'selected_date': check_date,
+            'available_teachers': available_teachers,
+            'teacher_assignments': teacher_assignments,
+            'unassigned_students': unassigned_students,
+            'unassigned_by_grade': unassigned_by_grade,
+            'all_students': all_students,
+            'unavailable_teacher_ids': unavailable_teacher_ids,
+            'total_assigned': assignments.count(),
+            'total_unassigned': unassigned_students.count(),
+            'grade_labels': grade_labels,
+        }
+
+        return render(request, 'teachers/assignment_list.html', context)
+
+
+class AssignmentCreateView(LoginRequiredMixin, View):
+    """교사-학생 배정 등록"""
+
+    def get(self, request):
+        from students.models import Student
+
+        date = request.GET.get('date', timezone.now().date().strftime('%Y-%m-%d'))
+        teacher_id = request.GET.get('teacher')
+
+        # 해당 날짜에 출근 불가인 교사 ID
+        unavailable_teacher_ids = set(
+            TeacherUnavailability.objects.filter(
+                date=date,
+                teacher__is_active=True
+            ).values_list('teacher_id', flat=True)
+        )
+
+        # 출근 가능한 교사들
+        available_teachers = Teacher.objects.filter(
+            is_active=True
+        ).exclude(id__in=unavailable_teacher_ids).order_by('name')
+
+        # 해당 날짜에 이미 배정된 학생 ID
+        assigned_student_ids = set(
+            TeacherStudentAssignment.objects.filter(
+                date=date
+            ).values_list('student_id', flat=True)
+        )
+
+        # 배정 가능한 학생들 (아직 배정되지 않은 학생)
+        available_students = Student.objects.filter(
+            is_active=True
+        ).exclude(id__in=assigned_student_ids).order_by('name')
+
+        context = {
+            'available_teachers': available_teachers,
+            'available_students': available_students,
+            'selected_date': date,
+            'selected_teacher_id': int(teacher_id) if teacher_id else None,
+        }
+
+        return render(request, 'teachers/assignment_form.html', context)
+
+    def post(self, request):
+        date = request.POST.get('date')
+        teacher_id = request.POST.get('teacher')
+        student_ids = request.POST.getlist('students')
+
+        if not date or not teacher_id or not student_ids:
+            messages.error(request, '필수 정보가 누락되었습니다.')
+            return redirect('teachers:assignment_list')
+
+        teacher = get_object_or_404(Teacher, pk=teacher_id)
+        created_count = 0
+
+        for student_id in student_ids:
+            _, created = TeacherStudentAssignment.objects.get_or_create(
+                student_id=student_id,
+                date=date,
+                defaults={'teacher': teacher}
+            )
+            if created:
+                created_count += 1
+
+        if created_count > 0:
+            messages.success(request, f'{teacher.name} 교사에게 {created_count}명의 학생이 배정되었습니다.')
+        else:
+            messages.info(request, '이미 배정된 학생입니다.')
+
+        return redirect(f"/teachers/assignment/?date={date}")
+
+
+@login_required
+def assignment_delete(request, pk):
+    """배정 삭제"""
+    assignment = get_object_or_404(TeacherStudentAssignment, pk=pk)
+    date_str = assignment.date.strftime('%Y-%m-%d')
+
+    if request.method == 'POST':
+        student_name = assignment.student.name
+        teacher_name = assignment.teacher.name
+        assignment.delete()
+        messages.success(request, f'{student_name} 학생의 {teacher_name} 교사 배정이 삭제되었습니다.')
+        return redirect(f"/teachers/assignment/?date={date_str}")
+
+    return render(request, 'teachers/assignment_confirm_delete.html', {
+        'assignment': assignment,
+        'date_str': date_str
+    })
+
+
+@login_required
+def assignment_bulk_delete(request):
+    """날짜별 배정 일괄 삭제"""
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        teacher_id = request.POST.get('teacher_id')
+
+        if date:
+            queryset = TeacherStudentAssignment.objects.filter(date=date)
+            if teacher_id:
+                queryset = queryset.filter(teacher_id=teacher_id)
+
+            deleted_count, _ = queryset.delete()
+            messages.success(request, f'{deleted_count}건의 배정이 삭제되었습니다.')
+        else:
+            messages.error(request, '날짜가 누락되었습니다.')
+
+    return redirect('teachers:assignment_list')
+
+
+@login_required
+def assignment_change_teacher(request, pk):
+    """배정 교사 변경"""
+    assignment = get_object_or_404(TeacherStudentAssignment, pk=pk)
+
+    if request.method == 'POST':
+        new_teacher_id = request.POST.get('new_teacher')
+        if new_teacher_id:
+            new_teacher = get_object_or_404(Teacher, pk=new_teacher_id)
+            old_teacher_name = assignment.teacher.name
+            assignment.teacher = new_teacher
+            assignment.save()
+            messages.success(request, f'{assignment.student.name} 학생의 담당 교사가 {old_teacher_name}에서 {new_teacher.name}(으)로 변경되었습니다.')
+
+    return redirect(f"/teachers/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")

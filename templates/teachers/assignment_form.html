@@ -1,0 +1,350 @@
+{% extends 'teachers/base_teachers.html' %}
+
+{% block title %}학생 배정 등록 - MClass Manager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .form-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 24px;
+    }
+    .form-header h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+    .form-body {
+        padding: 24px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+    .teacher-select-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    .teacher-option {
+        position: relative;
+    }
+    .teacher-option input {
+        position: absolute;
+        opacity: 0;
+    }
+    .teacher-option label {
+        display: block;
+        padding: 16px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .teacher-option input:checked + label {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+    }
+    .teacher-option label:hover {
+        border-color: #667eea;
+    }
+    .teacher-name {
+        font-weight: 600;
+        font-size: 16px;
+    }
+    .student-select-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 4px;
+    }
+    .student-option {
+        position: relative;
+    }
+    .student-option input {
+        position: absolute;
+        opacity: 0;
+    }
+    .student-option label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .student-option input:checked + label {
+        background: #ecfdf5;
+        border-color: #10b981;
+    }
+    .student-option label:hover {
+        border-color: #667eea;
+    }
+    .student-checkbox {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #cbd5e1;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .student-option input:checked + label .student-checkbox {
+        background: #10b981;
+        border-color: #10b981;
+    }
+    .student-option input:checked + label .student-checkbox::after {
+        content: '✓';
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .student-details {
+        flex: 1;
+    }
+    .student-details .name {
+        font-weight: 500;
+        color: #334155;
+    }
+    .student-details .school {
+        font-size: 12px;
+        color: #64748b;
+    }
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid #e2e8f0;
+    }
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+    .btn-cancel:hover {
+        background: #e2e8f0;
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .btn-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .select-all-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    .select-all-btn {
+        padding: 8px 16px;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .select-all-btn:hover {
+        background: #e2e8f0;
+    }
+    .selected-count {
+        font-size: 14px;
+        color: #64748b;
+    }
+    .selected-count span {
+        font-weight: 600;
+        color: #10b981;
+    }
+    .empty-message {
+        text-align: center;
+        padding: 40px;
+        color: #94a3b8;
+    }
+    .search-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-bottom: 16px;
+        transition: border-color 0.2s;
+    }
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block teacher_content %}
+<div class="form-card">
+    <div class="form-header">
+        <h3>학생 배정 등록</h3>
+        <p class="mt-1 text-white/80 text-sm">{{ selected_date }} 날짜에 학생을 배정합니다</p>
+    </div>
+    <div class="form-body">
+        <form method="post" id="assignmentForm">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ selected_date }}">
+
+            <!-- 교사 선택 -->
+            <div class="form-group">
+                <label class="form-label">담당 교사 선택</label>
+                {% if available_teachers %}
+                <div class="teacher-select-grid">
+                    {% for teacher in available_teachers %}
+                    <div class="teacher-option">
+                        <input type="radio" name="teacher" id="teacher_{{ teacher.id }}" value="{{ teacher.id }}"
+                               {% if selected_teacher_id == teacher.id %}checked{% endif %} required>
+                        <label for="teacher_{{ teacher.id }}">
+                            <span class="teacher-name">{{ teacher.name }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-message">
+                    <p>출근 가능한 교사가 없습니다</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 학생 선택 -->
+            <div class="form-group">
+                <label class="form-label">배정할 학생 선택</label>
+                {% if available_students %}
+                <input type="text" class="search-input" id="studentSearch" placeholder="학생 이름 또는 학교 검색...">
+                <div class="select-all-wrapper">
+                    <button type="button" class="select-all-btn" onclick="toggleSelectAll()">전체 선택/해제</button>
+                    <span class="selected-count">선택된 학생: <span id="selectedCount">0</span>명</span>
+                </div>
+                <div class="student-select-grid" id="studentGrid">
+                    {% for student in available_students %}
+                    <div class="student-option" data-name="{{ student.name|lower }}" data-school="{% if student.school %}{{ student.school.name|lower }}{% endif %}">
+                        <input type="checkbox" name="students" id="student_{{ student.id }}" value="{{ student.id }}">
+                        <label for="student_{{ student.id }}">
+                            <span class="student-checkbox"></span>
+                            <div class="student-details">
+                                <div class="name">{{ student.name }}</div>
+                                {% if student.school %}
+                                <div class="school">{{ student.school.name }}</div>
+                                {% endif %}
+                            </div>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-message">
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>모든 학생이 이미 배정되었습니다</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'teachers:assignment_list' %}?date={{ selected_date }}" class="btn btn-cancel">취소</a>
+                <button type="submit" class="btn btn-submit" {% if not available_teachers or not available_students %}disabled{% endif %}>
+                    배정 등록
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 선택된 학생 수 업데이트
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('input[name="students"]:checked').length;
+        document.getElementById('selectedCount').textContent = count;
+    }
+
+    // 전체 선택/해제
+    function toggleSelectAll() {
+        const checkboxes = document.querySelectorAll('input[name="students"]:not([disabled])');
+        const visibleCheckboxes = Array.from(checkboxes).filter(cb => {
+            return cb.closest('.student-option').style.display !== 'none';
+        });
+        const allChecked = visibleCheckboxes.every(cb => cb.checked);
+
+        visibleCheckboxes.forEach(cb => {
+            cb.checked = !allChecked;
+        });
+        updateSelectedCount();
+    }
+
+    // 체크박스 변경 이벤트
+    document.querySelectorAll('input[name="students"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+
+    // 학생 검색
+    document.getElementById('studentSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const studentOptions = document.querySelectorAll('.student-option');
+
+        studentOptions.forEach(option => {
+            const name = option.dataset.name || '';
+            const school = option.dataset.school || '';
+            const matches = name.includes(searchTerm) || school.includes(searchTerm);
+            option.style.display = matches ? '' : 'none';
+        });
+    });
+
+    // 폼 제출 전 검증
+    document.getElementById('assignmentForm').addEventListener('submit', function(e) {
+        const selectedTeacher = document.querySelector('input[name="teacher"]:checked');
+        const selectedStudents = document.querySelectorAll('input[name="students"]:checked');
+
+        if (!selectedTeacher) {
+            e.preventDefault();
+            alert('담당 교사를 선택해주세요.');
+            return;
+        }
+
+        if (selectedStudents.length === 0) {
+            e.preventDefault();
+            alert('배정할 학생을 선택해주세요.');
+            return;
+        }
+    });
+</script>
+{% endblock %}
