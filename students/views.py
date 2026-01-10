@@ -390,6 +390,42 @@ def student_export(request):
 
     return response
 
+
+def student_import_sample(request):
+    """학생 데이터 가져오기용 샘플 파일 다운로드"""
+    file_format = request.GET.get('format', 'xlsx')
+
+    # 샘플 데이터
+    sample_data = {
+        'name': ['홍길동', '김철수'],
+        'school': ['서울중학교', '한국고등학교'],
+        'grade': ['K7', 'K10'],
+        'phone_number': ['010-1234-5678', '010-9876-5432'],
+        'email': ['hong@example.com', 'kim@example.com'],
+        'gender': ['M', 'F'],
+        'parent_phone': ['010-1111-2222', '010-3333-4444'],
+        'receipt_number': ['010-1111-2222', '010-3333-4444'],
+        'interview_date': ['2024-01-15', '2024-02-20'],
+        'interview_score': [8, 7],
+        'interview_info': ['성실한 학생', '수학에 관심이 많음'],
+        'first_class_date': ['2024-02-01', '2024-03-01'],
+        'quit_date': ['', ''],
+        'etc': ['특이사항 없음', '']
+    }
+
+    df = pd.DataFrame(sample_data)
+
+    if file_format == 'csv':
+        response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+        response['Content-Disposition'] = 'attachment; filename="student_import_sample.csv"'
+        df.to_csv(response, index=False, encoding='utf-8-sig')
+    else:
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="student_import_sample.xlsx"'
+        df.to_excel(response, sheet_name='학생 샘플', index=False, engine='xlsxwriter')
+
+    return response
+
 def student_files(request, pk):
     student = get_object_or_404(Student, pk=pk)
     

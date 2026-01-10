@@ -9,10 +9,32 @@
     </div>
     
     <div class="card-body">
+        <!-- 샘플 파일 다운로드 섹션 -->
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 class="text-sm font-semibold text-blue-800 mb-2">샘플 파일 다운로드</h3>
+            <p class="text-sm text-blue-600 mb-3">아래 샘플 파일을 참고하여 데이터를 입력해 주세요.</p>
+            <div class="flex gap-3">
+                <a href="{% url 'students:student_import_sample' %}?format=xlsx"
+                   class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Excel 샘플 (.xlsx)
+                </a>
+                <a href="{% url 'students:student_import_sample' %}?format=csv"
+                   class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    CSV 샘플 (.csv)
+                </a>
+            </div>
+        </div>
+
         <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
-            
-            <div class="form-errors"> 
+
+            <div class="form-errors">
                 {% if form.errors %}
                     <div class="alert alert-danger">
                         <ul>

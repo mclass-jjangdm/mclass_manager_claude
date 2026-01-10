@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.StudentListView.as_view(), name='student_list'),
     path('create/', views.StudentCreateView.as_view(), name='student_create'),
     path('import/', views.student_import, name='student_import'),
+    path('import/sample/', views.student_import_sample, name='student_import_sample'),
     path('export/', views.student_export, name='student_export'),
     path('sms/bulk/', views.bulk_sms_send, name='bulk_sms_send'),
     path('grade-promotion/confirm/', views.grade_promotion_confirm, name='grade_promotion_confirm'),
