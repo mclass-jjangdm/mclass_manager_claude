@@ -21,7 +21,7 @@ class BookForm(forms.ModelForm):
             }),
             'supplier': forms.Select(attrs={'class': 'form-control'}),
             'original_price': forms.NumberInput(attrs={'step': '100'}),
-            'cost_price': forms.NumberInput(attrs={'step': '10'}),
+            'cost_price': forms.NumberInput(attrs={'step': '1'}),
             'price': forms.NumberInput(attrs={'step': '100'}),
             'memo': forms.TextInput(attrs={'placeholder': '비고 (선택 사항)'}),
         }
