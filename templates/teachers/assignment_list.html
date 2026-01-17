@@ -5,53 +5,81 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-    .assignment-container {
-        display: grid;
-        grid-template-columns: 350px 1fr;
-        gap: 24px;
-        min-height: calc(100vh - 250px);
+    /* ========== 공통 스타일 ========== */
+    .view-tabs {
+        display: flex;
+        gap: 8px;
+        margin-right: 16px;
+    }
+    .view-tab {
+        padding: 8px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b;
+        transition: all 0.2s;
+    }
+    .view-tab:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+    .view-tab.active {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
     }
 
-    /* 미배정 학생 패널 */
+    /* ========== 카드 뷰 스타일 ========== */
+    .card-view {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 16px;
+        min-height: calc(100vh - 280px);
+    }
+    .card-view.hidden { display: none; }
+
+    /* 미배정 학생 패널 (카드뷰) */
     .unassigned-panel {
         background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        max-height: calc(100vh - 250px);
-        transition: all 0.3s ease;
+        max-height: calc(100vh - 280px);
+        position: sticky;
+        top: 16px;
     }
     .unassigned-panel.drag-over {
-        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
-        transform: scale(1.01);
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
     }
     .panel-header {
         background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         color: white;
-        padding: 16px 20px;
+        padding: 12px 16px;
         flex-shrink: 0;
     }
     .panel-header h3 {
         margin: 0;
-        font-size: 18px;
+        font-size: 14px;
         font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
     }
     .panel-header .count {
         background: rgba(255,255,255,0.2);
-        padding: 2px 10px;
-        border-radius: 12px;
-        font-size: 14px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
     }
     .panel-body {
         flex: 1;
         overflow-y: auto;
-        padding: 16px;
-        transition: all 0.2s;
+        padding: 12px;
     }
     .panel-body.drag-over {
         background: #fffbeb;
@@ -59,18 +87,18 @@
 
     /* 학년 그룹 */
     .grade-group {
-        margin-bottom: 16px;
+        margin-bottom: 10px;
     }
     .grade-header {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
+        gap: 6px;
+        padding: 6px 10px;
         background: #f1f5f9;
-        border-radius: 8px;
-        margin-bottom: 8px;
+        border-radius: 6px;
+        margin-bottom: 6px;
         cursor: pointer;
-        transition: all 0.2s;
+        font-size: 12px;
     }
     .grade-header:hover {
         background: #e2e8f0;
@@ -82,12 +110,14 @@
     .grade-count {
         background: #cbd5e1;
         color: #475569;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 12px;
+        padding: 1px 6px;
+        border-radius: 8px;
+        font-size: 11px;
     }
     .grade-toggle {
         margin-left: auto;
+        width: 12px;
+        height: 12px;
         transition: transform 0.2s;
     }
     .grade-header.collapsed .grade-toggle {
@@ -96,36 +126,32 @@
     .grade-students {
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        padding-left: 8px;
+        gap: 4px;
+        padding-left: 6px;
     }
     .grade-students.hidden {
         display: none;
     }
 
-    /* 학생 아이템 (드래그 가능) */
+    /* 학생 아이템 (컴팩트) */
     .student-draggable {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
+        gap: 6px;
+        padding: 6px 10px;
         background: white;
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
         cursor: grab;
         transition: all 0.2s;
         user-select: none;
     }
     .student-draggable:hover {
         border-color: #667eea;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-    }
-    .student-draggable:active {
-        cursor: grabbing;
+        box-shadow: 0 1px 4px rgba(102, 126, 234, 0.2);
     }
     .student-draggable.dragging {
         opacity: 0.5;
-        transform: scale(0.95);
     }
     .student-details {
         flex: 1;
@@ -134,66 +160,66 @@
     .student-name {
         font-weight: 500;
         color: #334155;
-        font-size: 14px;
+        font-size: 12px;
     }
     .student-school {
-        font-size: 12px;
+        font-size: 10px;
         color: #64748b;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    /* 교사 영역 */
+    /* 교사 그리드 (컴팩트) */
     .teachers-area {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 12px;
     }
     .teachers-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
     }
     .teacher-card {
         background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         overflow: hidden;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
     .teacher-card.drag-over {
-        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
         transform: scale(1.02);
     }
     .teacher-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 16px 20px;
+        padding: 10px 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     .teacher-header h4 {
         margin: 0;
-        font-size: 18px;
+        font-size: 13px;
         font-weight: 600;
     }
     .teacher-count {
         background: rgba(255,255,255,0.2);
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 14px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
     }
     .teacher-body {
-        padding: 16px;
-        min-height: 120px;
+        padding: 10px;
+        min-height: 60px;
     }
     .teacher-dropzone {
-        min-height: 80px;
-        border: 2px dashed #e2e8f0;
-        border-radius: 12px;
-        padding: 12px;
+        min-height: 40px;
+        border: 1px dashed #e2e8f0;
+        border-radius: 8px;
+        padding: 8px;
         transition: all 0.2s;
     }
     .teacher-dropzone.drag-over {
@@ -205,106 +231,241 @@
         align-items: center;
         justify-content: center;
         color: #94a3b8;
-        font-size: 14px;
+        font-size: 11px;
     }
 
-    /* 배정된 학생 목록 */
+    /* 배정된 학생 목록 (컴팩트) */
     .assigned-list {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 4px;
     }
     .assigned-item {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
+        gap: 6px;
+        padding: 5px 8px;
         background: #f8fafc;
-        border: 2px solid transparent;
-        border-radius: 10px;
+        border: 1px solid transparent;
+        border-radius: 6px;
         transition: all 0.2s;
         cursor: grab;
         user-select: none;
+        font-size: 12px;
     }
     .assigned-item:hover {
         background: #f1f5f9;
         border-color: #667eea;
     }
-    .assigned-item:active {
-        cursor: grabbing;
-    }
     .assigned-item.dragging {
         opacity: 0.5;
-        transform: scale(0.95);
     }
 
-    /* 날짜 선택 헤더 */
+    /* 원장/결석/예외 카드 (컴팩트) */
+    .director-card, .absent-card, .exception-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: all 0.2s ease;
+    }
+    .director-card.drag-over {
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+        transform: scale(1.02);
+    }
+    .director-card .teacher-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .director-card .teacher-dropzone.drag-over {
+        border-color: #10b981;
+        background: #ecfdf5;
+    }
+    .absent-card.drag-over {
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+        transform: scale(1.02);
+    }
+    .absent-card .teacher-header {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    .absent-card .teacher-dropzone.drag-over {
+        border-color: #ef4444;
+        background: #fef2f2;
+    }
+    .exception-card.drag-over {
+        box-shadow: 0 4px 16px rgba(107, 114, 128, 0.3);
+        transform: scale(1.02);
+    }
+    .exception-card .teacher-header {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+    .exception-card .teacher-dropzone.drag-over {
+        border-color: #6b7280;
+        background: #f9fafb;
+    }
+
+    /* ========== 스프레드시트 뷰 스타일 ========== */
+    .spreadsheet-view {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 16px;
+        min-height: calc(100vh - 280px);
+    }
+    .spreadsheet-view.hidden { display: none; }
+
+    /* 스프레드시트 미배정 패널 */
+    .spreadsheet-view .unassigned-panel-ss {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh - 280px);
+        position: sticky;
+        top: 16px;
+    }
+
+    /* 스프레드시트 테이블 */
+    .spreadsheet-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: auto;
+        max-height: calc(100vh - 280px);
+    }
+    .spreadsheet-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 12px;
+    }
+    .spreadsheet-table th {
+        position: sticky;
+        top: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 10px 8px;
+        text-align: center;
+        font-weight: 600;
+        min-width: 100px;
+        z-index: 10;
+    }
+    .spreadsheet-table th.director-col {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .spreadsheet-table th.absent-col {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    .spreadsheet-table th.exception-col {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    }
+    .spreadsheet-table th .teacher-name {
+        display: block;
+        font-size: 13px;
+    }
+    .spreadsheet-table th .student-count {
+        font-size: 11px;
+        opacity: 0.8;
+    }
+    .spreadsheet-table td {
+        border: 1px solid #e2e8f0;
+        padding: 4px;
+        vertical-align: top;
+        min-width: 100px;
+    }
+    .spreadsheet-table td.dropzone {
+        min-height: 100px;
+        transition: background 0.2s;
+    }
+    .spreadsheet-table td.dropzone.drag-over {
+        background: #f0f4ff;
+    }
+    .spreadsheet-table td.director-col.drag-over {
+        background: #ecfdf5;
+    }
+    .spreadsheet-table td.absent-col.drag-over {
+        background: #fef2f2;
+    }
+    .spreadsheet-table td.exception-col.drag-over {
+        background: #f9fafb;
+    }
+
+    /* 스프레드시트 학생 칩 */
+    .student-chip {
+        display: inline-block;
+        padding: 4px 8px;
+        margin: 2px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: grab;
+        transition: all 0.2s;
+        user-select: none;
+    }
+    .student-chip:hover {
+        background: #e0e7ff;
+        border-color: #667eea;
+    }
+    .student-chip.dragging {
+        opacity: 0.5;
+    }
+
+    /* ========== 날짜 선택 헤더 ========== */
     .date-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         background: white;
-        padding: 16px 24px;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        margin-bottom: 24px;
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 16px;
     }
     .date-header h2 {
         margin: 0;
-        font-size: 24px;
+        font-size: 20px;
         font-weight: 700;
         color: #1e293b;
     }
     .date-controls {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
     }
-    .date-input {
-        padding: 10px 16px;
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        font-size: 15px;
-        transition: border-color 0.2s;
-    }
-    .date-input:focus {
-        outline: none;
-        border-color: #667eea;
-    }
-
-    /* 통계 바 */
     .stats-bar {
         display: flex;
-        gap: 16px;
+        gap: 10px;
     }
     .stat-item {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
+        gap: 6px;
+        padding: 6px 12px;
         background: #f1f5f9;
-        border-radius: 10px;
+        border-radius: 8px;
     }
     .stat-value {
-        font-size: 20px;
+        font-size: 16px;
         font-weight: 700;
     }
     .stat-label {
-        font-size: 13px;
+        font-size: 11px;
         color: #64748b;
     }
     .stat-item.teachers .stat-value { color: #6366f1; }
     .stat-item.assigned .stat-value { color: #059669; }
     .stat-item.unassigned .stat-value { color: #d97706; }
 
-    /* 반응형 */
-    @media (max-width: 1024px) {
-        .assignment-container {
-            grid-template-columns: 1fr;
-        }
-        .unassigned-panel {
-            max-height: 400px;
-        }
+    .date-input {
+        padding: 8px 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+    .date-input:focus {
+        outline: none;
+        border-color: #667eea;
     }
 
     /* 드래그 힌트 */
@@ -315,9 +476,9 @@
         transform: translateX(-50%);
         background: rgba(0,0,0,0.8);
         color: white;
-        padding: 12px 24px;
-        border-radius: 30px;
-        font-size: 14px;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 13px;
         z-index: 1000;
         opacity: 0;
         transition: opacity 0.3s;
@@ -325,6 +486,20 @@
     }
     .drag-hint.visible {
         opacity: 1;
+    }
+
+    /* 반응형 */
+    @media (max-width: 1024px) {
+        .card-view {
+            grid-template-columns: 1fr;
+        }
+        .spreadsheet-view {
+            grid-template-columns: 1fr;
+        }
+        .unassigned-panel, .unassigned-panel-ss {
+            max-height: 300px;
+            position: relative;
+        }
     }
 </style>
 {% endblock %}
@@ -337,6 +512,20 @@
         <p class="text-gray-500 text-sm mt-1">{{ selected_date|date:"Y년 n월 j일 (D)" }}</p>
     </div>
     <div class="date-controls">
+        <div class="view-tabs">
+            <button class="view-tab active" data-view="card">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                </svg>
+                카드
+            </button>
+            <button class="view-tab" data-view="spreadsheet">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                표
+            </button>
+        </div>
         <div class="stats-bar">
             <div class="stat-item teachers">
                 <span class="stat-value">{{ available_teachers|length }}</span>
@@ -355,15 +544,16 @@
     </div>
 </div>
 
-<div class="assignment-container">
+<!-- ========== 카드 뷰 ========== -->
+<div class="card-view" id="card-view">
     <!-- 미배정 학생 패널 -->
     <div class="unassigned-panel" id="unassigned-panel">
         <div class="panel-header">
             <h3>
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
-                미배정 학생
+                미배정
                 <span class="count">{{ total_unassigned }}명</span>
             </h3>
         </div>
@@ -374,7 +564,7 @@
                     <div class="grade-header" onclick="toggleGrade(this)">
                         <span class="grade-label">{{ grade_data.label }}</span>
                         <span class="grade-count">{{ grade_data.students|length }}명</span>
-                        <svg class="w-4 h-4 grade-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="grade-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </div>
@@ -397,12 +587,11 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="text-center text-gray-400 py-8" id="all-assigned-message">
-                    <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="text-center text-gray-400 py-6" id="all-assigned-message">
+                    <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p>모든 학생이 배정되었습니다</p>
-                    <p class="text-sm mt-2">배정된 학생을 여기로 드래그하여 배정 해제</p>
+                    <p class="text-sm">모든 학생 배정 완료</p>
                 </div>
             {% endif %}
         </div>
@@ -430,36 +619,252 @@
                                  data-student-id="{{ assignment.student.id }}"
                                  data-student-name="{{ assignment.student.name }}"
                                  data-current-teacher="{{ teacher.id }}"
+                                 data-assignment-type="normal"
                                  data-assigned="true">
                                 <div class="student-details">
                                     <div class="student-name">{{ assignment.student.name }}</div>
-                                    {% if assignment.student.school %}
-                                    <div class="student-school">{{ assignment.student.school.name }}</div>
-                                    {% endif %}
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                         {% else %}
-                        <span>학생을 여기로 드래그하세요</span>
+                        <span>드래그</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
             {% empty %}
             <div class="col-span-full">
-                <div class="text-center py-12 bg-white rounded-2xl shadow-sm">
-                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="text-center py-8 bg-white rounded-xl shadow-sm">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
-                    <p class="text-gray-500 text-lg">출근 가능한 교사가 없습니다</p>
-                    <a href="{% url 'teachers:unavailability_list' %}" class="text-indigo-600 hover:text-indigo-800 text-sm mt-2 inline-block">
-                        출근 불가 일정 확인하기
-                    </a>
+                    <p class="text-gray-500">출근 가능한 교사가 없습니다</p>
                 </div>
             </div>
             {% endfor %}
+
+            <!-- 원장 카드 -->
+            <div class="director-card" data-assignment-type="director">
+                <div class="teacher-header">
+                    <h4>원장</h4>
+                    <span class="teacher-count">{{ director_assignments|length }}명</span>
+                </div>
+                <div class="teacher-body">
+                    <div class="teacher-dropzone {% if not director_assignments %}empty{% endif %}"
+                         data-assignment-type="director"
+                         data-dropzone="special">
+                        {% if director_assignments %}
+                        <div class="assigned-list">
+                            {% for assignment in director_assignments %}
+                            <div class="assigned-item"
+                                 draggable="true"
+                                 data-assignment-id="{{ assignment.id }}"
+                                 data-student-id="{{ assignment.student.id }}"
+                                 data-student-name="{{ assignment.student.name }}"
+                                 data-assignment-type="director"
+                                 data-assigned="true">
+                                <div class="student-details">
+                                    <div class="student-name">{{ assignment.student.name }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <span>원장</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 결석 카드 -->
+            <div class="absent-card" data-assignment-type="absent">
+                <div class="teacher-header">
+                    <h4>결석</h4>
+                    <span class="teacher-count">{{ absent_assignments|length }}명</span>
+                </div>
+                <div class="teacher-body">
+                    <div class="teacher-dropzone {% if not absent_assignments %}empty{% endif %}"
+                         data-assignment-type="absent"
+                         data-dropzone="special">
+                        {% if absent_assignments %}
+                        <div class="assigned-list">
+                            {% for assignment in absent_assignments %}
+                            <div class="assigned-item"
+                                 draggable="true"
+                                 data-assignment-id="{{ assignment.id }}"
+                                 data-student-id="{{ assignment.student.id }}"
+                                 data-student-name="{{ assignment.student.name }}"
+                                 data-assignment-type="absent"
+                                 data-assigned="true">
+                                <div class="student-details">
+                                    <div class="student-name">{{ assignment.student.name }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <span>결석</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 예외 카드 -->
+            <div class="exception-card" data-assignment-type="exception">
+                <div class="teacher-header">
+                    <h4>예외</h4>
+                    <span class="teacher-count">{{ exception_assignments|length }}명</span>
+                </div>
+                <div class="teacher-body">
+                    <div class="teacher-dropzone {% if not exception_assignments %}empty{% endif %}"
+                         data-assignment-type="exception"
+                         data-dropzone="special">
+                        {% if exception_assignments %}
+                        <div class="assigned-list">
+                            {% for assignment in exception_assignments %}
+                            <div class="assigned-item"
+                                 draggable="true"
+                                 data-assignment-id="{{ assignment.id }}"
+                                 data-student-id="{{ assignment.student.id }}"
+                                 data-student-name="{{ assignment.student.name }}"
+                                 data-assignment-type="exception"
+                                 data-assigned="true">
+                                <div class="student-details">
+                                    <div class="student-name">{{ assignment.student.name }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <span>예외</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+</div>
+
+<!-- ========== 스프레드시트 뷰 ========== -->
+<div class="spreadsheet-view hidden" id="spreadsheet-view">
+    <!-- 미배정 학생 패널 -->
+    <div class="unassigned-panel-ss" id="unassigned-panel-ss">
+        <div class="panel-header">
+            <h3>
+                미배정
+                <span class="count">{{ total_unassigned }}명</span>
+            </h3>
+        </div>
+        <div class="panel-body" id="unassigned-dropzone-ss" data-dropzone="unassigned">
+            {% if unassigned_by_grade %}
+                {% for grade_key, grade_data in unassigned_by_grade.items %}
+                <div class="grade-group">
+                    <div class="grade-header" onclick="toggleGrade(this)">
+                        <span class="grade-label">{{ grade_data.label }}</span>
+                        <span class="grade-count">{{ grade_data.students|length }}</span>
+                        <svg class="grade-toggle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                    <div class="grade-students">
+                        {% for student in grade_data.students %}
+                        <div class="student-draggable"
+                             draggable="true"
+                             data-student-id="{{ student.id }}"
+                             data-student-name="{{ student.name }}"
+                             data-assigned="false">
+                            <div class="student-name">{{ student.name }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-gray-400 py-4">
+                    <p class="text-sm">모든 학생 배정 완료</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 스프레드시트 테이블 -->
+    <div class="spreadsheet-container">
+        <table class="spreadsheet-table">
+            <thead>
+                <tr>
+                    {% for teacher, assignments in teacher_assignments.items %}
+                    <th data-teacher-id="{{ teacher.id }}">
+                        <span class="teacher-name">{{ teacher.name }}</span>
+                        <span class="student-count">({{ assignments|length }}명)</span>
+                    </th>
+                    {% endfor %}
+                    <th class="director-col" data-assignment-type="director">
+                        <span class="teacher-name">원장</span>
+                        <span class="student-count">({{ director_assignments|length }}명)</span>
+                    </th>
+                    <th class="absent-col" data-assignment-type="absent">
+                        <span class="teacher-name">결석</span>
+                        <span class="student-count">({{ absent_assignments|length }}명)</span>
+                    </th>
+                    <th class="exception-col" data-assignment-type="exception">
+                        <span class="teacher-name">예외</span>
+                        <span class="student-count">({{ exception_assignments|length }}명)</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for teacher, assignments in teacher_assignments.items %}
+                    <td class="dropzone" data-teacher-id="{{ teacher.id }}" data-dropzone="teacher">
+                        {% for assignment in assignments %}
+                        <span class="student-chip"
+                              draggable="true"
+                              data-assignment-id="{{ assignment.id }}"
+                              data-student-id="{{ assignment.student.id }}"
+                              data-student-name="{{ assignment.student.name }}"
+                              data-current-teacher="{{ teacher.id }}"
+                              data-assignment-type="normal"
+                              data-assigned="true">{{ assignment.student.name }}</span>
+                        {% endfor %}
+                    </td>
+                    {% endfor %}
+                    <td class="dropzone director-col" data-assignment-type="director" data-dropzone="special">
+                        {% for assignment in director_assignments %}
+                        <span class="student-chip"
+                              draggable="true"
+                              data-assignment-id="{{ assignment.id }}"
+                              data-student-id="{{ assignment.student.id }}"
+                              data-student-name="{{ assignment.student.name }}"
+                              data-assignment-type="director"
+                              data-assigned="true">{{ assignment.student.name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td class="dropzone absent-col" data-assignment-type="absent" data-dropzone="special">
+                        {% for assignment in absent_assignments %}
+                        <span class="student-chip"
+                              draggable="true"
+                              data-assignment-id="{{ assignment.id }}"
+                              data-student-id="{{ assignment.student.id }}"
+                              data-student-name="{{ assignment.student.name }}"
+                              data-assignment-type="absent"
+                              data-assigned="true">{{ assignment.student.name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td class="dropzone exception-col" data-assignment-type="exception" data-dropzone="special">
+                        {% for assignment in exception_assignments %}
+                        <span class="student-chip"
+                              draggable="true"
+                              data-assignment-id="{{ assignment.id }}"
+                              data-student-id="{{ assignment.student.id }}"
+                              data-student-name="{{ assignment.student.name }}"
+                              data-assignment-type="exception"
+                              data-assigned="true">{{ assignment.student.name }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -472,6 +877,7 @@
     <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
     <input type="hidden" name="teacher" id="form-teacher">
     <input type="hidden" name="students" id="form-students">
+    <input type="hidden" name="assignment_type" id="form-assignment-type" value="normal">
 </form>
 {% endblock %}
 
@@ -491,6 +897,32 @@
         }
     });
 
+    // 뷰 전환
+    document.querySelectorAll('.view-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const view = this.dataset.view;
+            document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            if (view === 'card') {
+                document.getElementById('card-view').classList.remove('hidden');
+                document.getElementById('spreadsheet-view').classList.add('hidden');
+            } else {
+                document.getElementById('card-view').classList.add('hidden');
+                document.getElementById('spreadsheet-view').classList.remove('hidden');
+            }
+
+            // 로컬 스토리지에 선택 저장
+            localStorage.setItem('assignmentView', view);
+        });
+    });
+
+    // 저장된 뷰 복원
+    const savedView = localStorage.getItem('assignmentView');
+    if (savedView) {
+        document.querySelector(`.view-tab[data-view="${savedView}"]`).click();
+    }
+
     // 학년 그룹 토글
     function toggleGrade(header) {
         header.classList.toggle('collapsed');
@@ -509,180 +941,123 @@
         document.getElementById('drag-hint').classList.remove('visible');
     }
 
-    // 드래그 앤 드롭 기능
-    document.addEventListener('DOMContentLoaded', function() {
-        // 미배정 학생 (unassigned)
-        const unassignedDraggables = document.querySelectorAll('.student-draggable');
-        // 배정된 학생 (assigned)
-        const assignedDraggables = document.querySelectorAll('.assigned-item[draggable="true"]');
-        // 교사 드롭존
-        const teacherDropzones = document.querySelectorAll('.teacher-dropzone');
-        // 미배정 드롭존
-        const unassignedDropzone = document.getElementById('unassigned-dropzone');
-        const unassignedPanel = document.getElementById('unassigned-panel');
+    // ========== 드래그 앤 드롭 기능 ==========
+    function initDragDrop() {
+        // 모든 드래그 가능한 요소
+        const draggables = document.querySelectorAll('[draggable="true"]');
+        // 모든 드롭존
+        const dropzones = document.querySelectorAll('[data-dropzone]');
 
-        // 미배정 학생 드래그 이벤트
-        unassignedDraggables.forEach(draggable => {
-            draggable.addEventListener('dragstart', handleUnassignedDragStart);
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', handleDragStart);
             draggable.addEventListener('dragend', handleDragEnd);
         });
 
-        // 배정된 학생 드래그 이벤트
-        assignedDraggables.forEach(draggable => {
-            draggable.addEventListener('dragstart', handleAssignedDragStart);
-            draggable.addEventListener('dragend', handleDragEnd);
-        });
-
-        // 교사 드롭존 이벤트
-        teacherDropzones.forEach(dropzone => {
+        dropzones.forEach(dropzone => {
             dropzone.addEventListener('dragover', handleDragOver);
             dropzone.addEventListener('dragleave', handleDragLeave);
-            dropzone.addEventListener('drop', handleTeacherDrop);
+            dropzone.addEventListener('drop', handleDrop);
         });
+    }
 
-        // 미배정 드롭존 이벤트
-        unassignedDropzone.addEventListener('dragover', handleDragOver);
-        unassignedDropzone.addEventListener('dragleave', handleDragLeave);
-        unassignedDropzone.addEventListener('drop', handleUnassignedDrop);
+    function handleDragStart(e) {
+        this.classList.add('dragging');
+        const data = {
+            studentId: this.dataset.studentId,
+            studentName: this.dataset.studentName,
+            assignmentId: this.dataset.assignmentId || null,
+            currentTeacherId: this.dataset.currentTeacher || null,
+            assignmentType: this.dataset.assignmentType || 'unassigned',
+            isAssigned: this.dataset.assigned === 'true'
+        };
+        e.dataTransfer.setData('text/plain', JSON.stringify(data));
+        e.dataTransfer.effectAllowed = 'move';
 
-        // 미배정 학생 드래그 시작
-        function handleUnassignedDragStart(e) {
-            this.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', JSON.stringify({
-                type: 'unassigned',
-                studentId: this.dataset.studentId,
-                studentName: this.dataset.studentName
-            }));
-            e.dataTransfer.effectAllowed = 'move';
-
-            showDragHint('교사 카드에 드롭하여 배정');
-
-            // 모든 교사 카드 하이라이트
-            teacherDropzones.forEach(zone => {
-                zone.closest('.teacher-card').style.border = '2px dashed #667eea';
-            });
-        }
-
-        // 배정된 학생 드래그 시작
-        function handleAssignedDragStart(e) {
-            this.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', JSON.stringify({
-                type: 'assigned',
-                assignmentId: this.dataset.assignmentId,
-                studentId: this.dataset.studentId,
-                studentName: this.dataset.studentName,
-                currentTeacherId: this.dataset.currentTeacher
-            }));
-            e.dataTransfer.effectAllowed = 'move';
-
+        if (data.isAssigned) {
             showDragHint('다른 교사에게 이동 또는 미배정으로 드롭');
-
-            // 모든 교사 카드와 미배정 패널 하이라이트
-            teacherDropzones.forEach(zone => {
-                zone.closest('.teacher-card').style.border = '2px dashed #667eea';
-            });
-            unassignedPanel.style.border = '2px dashed #f59e0b';
+        } else {
+            showDragHint('교사 카드 또는 결석/예외에 드롭하여 배정');
         }
 
-        // 드래그 종료
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            hideDragHint();
+        // 드롭존 하이라이트
+        highlightDropzones(true);
+    }
 
-            teacherDropzones.forEach(zone => {
-                zone.classList.remove('drag-over');
-                zone.closest('.teacher-card').style.border = 'none';
-                zone.closest('.teacher-card').classList.remove('drag-over');
-            });
-            unassignedDropzone.classList.remove('drag-over');
-            unassignedPanel.style.border = 'none';
-            unassignedPanel.classList.remove('drag-over');
-        }
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        hideDragHint();
+        highlightDropzones(false);
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    }
 
-        // 드래그 오버
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            this.classList.add('drag-over');
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        this.classList.add('drag-over');
+    }
 
-            if (this.closest('.teacher-card')) {
-                this.closest('.teacher-card').classList.add('drag-over');
-            }
-            if (this.id === 'unassigned-dropzone') {
-                unassignedPanel.classList.add('drag-over');
-            }
-        }
+    function handleDragLeave(e) {
+        this.classList.remove('drag-over');
+    }
 
-        // 드래그 리브
-        function handleDragLeave(e) {
-            this.classList.remove('drag-over');
-            if (this.closest('.teacher-card')) {
-                this.closest('.teacher-card').classList.remove('drag-over');
-            }
-            if (this.id === 'unassigned-dropzone') {
-                unassignedPanel.classList.remove('drag-over');
-            }
-        }
+    function handleDrop(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
 
-        // 교사 드롭존에 드롭
-        function handleTeacherDrop(e) {
-            e.preventDefault();
-            this.classList.remove('drag-over');
-            if (this.closest('.teacher-card')) {
-                this.closest('.teacher-card').classList.remove('drag-over');
-            }
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        const dropzoneType = this.dataset.dropzone;
+        const teacherId = this.dataset.teacherId;
+        const assignmentType = this.dataset.assignmentType;
 
-            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-            const teacherId = this.dataset.teacherId;
-
-            if (data.type === 'unassigned') {
-                // 미배정 → 교사 배정
-                assignStudent(teacherId, data.studentId);
-            } else if (data.type === 'assigned') {
-                // 다른 교사로 이동
-                if (data.currentTeacherId !== teacherId) {
-                    changeTeacher(data.assignmentId, teacherId);
-                }
-            }
-        }
-
-        // 미배정 드롭존에 드롭
-        function handleUnassignedDrop(e) {
-            e.preventDefault();
-            this.classList.remove('drag-over');
-            unassignedPanel.classList.remove('drag-over');
-
-            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-
-            if (data.type === 'assigned') {
-                // 배정 해제
+        if (dropzoneType === 'unassigned') {
+            // 미배정으로 이동
+            if (data.isAssigned && data.assignmentId) {
                 unassignStudent(data.assignmentId);
             }
-            // 미배정 학생을 미배정에 드롭하면 무시
+        } else if (dropzoneType === 'teacher') {
+            // 교사에게 배정
+            if (!data.isAssigned) {
+                assignStudent(teacherId, data.studentId, 'normal');
+            } else if (data.currentTeacherId !== teacherId || data.assignmentType !== 'normal') {
+                changeTeacher(data.assignmentId, teacherId);
+            }
+        } else if (dropzoneType === 'special') {
+            // 결석/예외 배정
+            if (!data.isAssigned) {
+                assignStudent(null, data.studentId, assignmentType);
+            } else if (data.assignmentType !== assignmentType) {
+                changeAssignmentType(data.assignmentId, assignmentType);
+            }
         }
-    });
+    }
 
-    // 학생 배정 (미배정 → 교사)
-    function assignStudent(teacherId, studentId) {
+    function highlightDropzones(highlight) {
+        const color = highlight ? '2px dashed #667eea' : 'none';
+        document.querySelectorAll('.teacher-card, .director-card, .absent-card, .exception-card, .unassigned-panel, .unassigned-panel-ss').forEach(el => {
+            el.style.border = color;
+        });
+        document.querySelectorAll('.spreadsheet-table td.dropzone').forEach(el => {
+            el.style.background = highlight ? '#f8fafc' : '';
+        });
+    }
+
+    // API 함수들
+    function assignStudent(teacherId, studentId, assignmentType) {
         const form = document.getElementById('assignmentForm');
-        document.getElementById('form-teacher').value = teacherId;
+        document.getElementById('form-teacher').value = teacherId || '';
         document.getElementById('form-students').value = studentId;
+        document.getElementById('form-assignment-type').value = assignmentType || 'normal';
 
         const formData = new FormData(form);
 
         fetch(form.action, {
             method: 'POST',
             body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
-            if (response.ok) {
-                window.location.reload();
-            } else {
-                alert('배정 중 오류가 발생했습니다.');
-            }
+            if (response.ok) window.location.reload();
+            else alert('배정 중 오류가 발생했습니다.');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -690,7 +1065,6 @@
         });
     }
 
-    // 교사 변경 (교사A → 교사B)
     function changeTeacher(assignmentId, newTeacherId) {
         const formData = new FormData();
         formData.append('new_teacher', newTeacherId);
@@ -699,16 +1073,11 @@
         fetch(`/teachers/assignment/${assignmentId}/change-teacher/`, {
             method: 'POST',
             body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
-            if (response.ok) {
-                window.location.reload();
-            } else {
-                alert('교사 변경 중 오류가 발생했습니다.');
-            }
+            if (response.ok) window.location.reload();
+            else alert('교사 변경 중 오류가 발생했습니다.');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -716,7 +1085,26 @@
         });
     }
 
-    // 배정 해제 (교사 → 미배정)
+    function changeAssignmentType(assignmentId, newType) {
+        const formData = new FormData();
+        formData.append('assignment_type', newType);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        fetch(`/teachers/assignment/${assignmentId}/change-type/`, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (response.ok) window.location.reload();
+            else alert('배정 유형 변경 중 오류가 발생했습니다.');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('배정 유형 변경 중 오류가 발생했습니다.');
+        });
+    }
+
     function unassignStudent(assignmentId) {
         const formData = new FormData();
         formData.append('csrfmiddlewaretoken', csrfToken);
@@ -724,21 +1112,19 @@
         fetch(`/teachers/assignment/${assignmentId}/unassign/`, {
             method: 'POST',
             body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
-            if (response.ok) {
-                window.location.reload();
-            } else {
-                alert('배정 해제 중 오류가 발생했습니다.');
-            }
+            if (response.ok) window.location.reload();
+            else alert('배정 해제 중 오류가 발생했습니다.');
         })
         .catch(error => {
             console.error('Error:', error);
             alert('배정 해제 중 오류가 발생했습니다.');
         });
     }
+
+    // 초기화
+    document.addEventListener('DOMContentLoaded', initDragDrop);
 </script>
 {% endblock %}

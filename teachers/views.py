@@ -1310,10 +1310,21 @@ class AssignmentListView(LoginRequiredMixin, View):
         for teacher in available_teachers:
             teacher_assignments[teacher] = []
 
+        # 원장/결석/예외 학생 리스트
+        director_assignments = []
+        absent_assignments = []
+        exception_assignments = []
+
         for assignment in assignments:
-            if assignment.teacher in teacher_assignments:
+            assigned_student_ids.add(assignment.student_id)
+            if assignment.assignment_type == 'director':
+                director_assignments.append(assignment)
+            elif assignment.assignment_type == 'absent':
+                absent_assignments.append(assignment)
+            elif assignment.assignment_type == 'exception':
+                exception_assignments.append(assignment)
+            elif assignment.teacher in teacher_assignments:
                 teacher_assignments[assignment.teacher].append(assignment)
-                assigned_student_ids.add(assignment.student_id)
 
         # 배정되지 않은 학생들
         unassigned_students = Student.objects.filter(
@@ -1349,6 +1360,9 @@ class AssignmentListView(LoginRequiredMixin, View):
             'selected_date': check_date,
             'available_teachers': available_teachers,
             'teacher_assignments': teacher_assignments,
+            'director_assignments': director_assignments,
+            'absent_assignments': absent_assignments,
+            'exception_assignments': exception_assignments,
             'unassigned_students': unassigned_students,
             'unassigned_by_grade': unassigned_by_grade,
             'all_students': all_students,
@@ -1408,25 +1422,41 @@ class AssignmentCreateView(LoginRequiredMixin, View):
         date = request.POST.get('date')
         teacher_id = request.POST.get('teacher')
         student_ids = request.POST.getlist('students')
+        assignment_type = request.POST.get('assignment_type', 'normal')
 
-        if not date or not teacher_id or not student_ids:
+        # 결석/예외인 경우 teacher_id가 없어도 됨
+        if not date or not student_ids:
             messages.error(request, '필수 정보가 누락되었습니다.')
             return redirect('teachers:assignment_list')
 
-        teacher = get_object_or_404(Teacher, pk=teacher_id)
+        if assignment_type == 'normal' and not teacher_id:
+            messages.error(request, '교사를 선택해주세요.')
+            return redirect('teachers:assignment_list')
+
+        teacher = get_object_or_404(Teacher, pk=teacher_id) if teacher_id else None
         created_count = 0
 
         for student_id in student_ids:
             _, created = TeacherStudentAssignment.objects.get_or_create(
                 student_id=student_id,
                 date=date,
-                defaults={'teacher': teacher}
+                defaults={
+                    'teacher': teacher,
+                    'assignment_type': assignment_type
+                }
             )
             if created:
                 created_count += 1
 
         if created_count > 0:
-            messages.success(request, f'{teacher.name} 교사에게 {created_count}명의 학생이 배정되었습니다.')
+            if assignment_type == 'director':
+                messages.success(request, f'{created_count}명의 학생이 원장 배정되었습니다.')
+            elif assignment_type == 'absent':
+                messages.success(request, f'{created_count}명의 학생이 결석 처리되었습니다.')
+            elif assignment_type == 'exception':
+                messages.success(request, f'{created_count}명의 학생이 예외 처리되었습니다.')
+            else:
+                messages.success(request, f'{teacher.name} 교사에게 {created_count}명의 학생이 배정되었습니다.')
         else:
             messages.info(request, '이미 배정된 학생입니다.')
 
@@ -1441,9 +1471,13 @@ def assignment_delete(request, pk):
 
     if request.method == 'POST':
         student_name = assignment.student.name
-        teacher_name = assignment.teacher.name
+        if assignment.teacher:
+            teacher_name = assignment.teacher.name
+            messages.success(request, f'{student_name} 학생의 {teacher_name} 교사 배정이 삭제되었습니다.')
+        else:
+            type_label = dict(TeacherStudentAssignment.ASSIGNMENT_TYPE_CHOICES).get(assignment.assignment_type, assignment.assignment_type)
+            messages.success(request, f'{student_name} 학생의 {type_label} 배정이 삭제되었습니다.')
         assignment.delete()
-        messages.success(request, f'{student_name} 학생의 {teacher_name} 교사 배정이 삭제되었습니다.')
         return redirect(f"/teachers/assignment/?date={date_str}")
 
     return render(request, 'teachers/assignment_confirm_delete.html', {
@@ -1474,7 +1508,7 @@ def assignment_bulk_delete(request):
 
 @login_required
 def assignment_change_teacher(request, pk):
-    """배정 교사 변경"""
+    """배정 교사 변경 (결석/예외에서 교사로 변경 포함)"""
     from django.http import JsonResponse
 
     assignment = get_object_or_404(TeacherStudentAssignment, pk=pk)
@@ -1483,8 +1517,9 @@ def assignment_change_teacher(request, pk):
         new_teacher_id = request.POST.get('new_teacher')
         if new_teacher_id:
             new_teacher = get_object_or_404(Teacher, pk=new_teacher_id)
-            old_teacher_name = assignment.teacher.name
+            old_teacher_name = assignment.teacher.name if assignment.teacher else assignment.get_assignment_type_display()
             assignment.teacher = new_teacher
+            assignment.assignment_type = 'normal'  # 교사로 변경 시 일반 타입으로 변경
             assignment.save()
 
             # AJAX 요청인 경우 JSON 응답
@@ -1492,6 +1527,31 @@ def assignment_change_teacher(request, pk):
                 return JsonResponse({'success': True})
 
             messages.success(request, f'{assignment.student.name} 학생의 담당 교사가 {old_teacher_name}에서 {new_teacher.name}(으)로 변경되었습니다.')
+
+    return redirect(f"/teachers/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")
+
+
+@login_required
+def assignment_change_type(request, pk):
+    """배정 유형 변경 (교사 → 결석/예외 또는 결석 ↔ 예외)"""
+    from django.http import JsonResponse
+
+    assignment = get_object_or_404(TeacherStudentAssignment, pk=pk)
+
+    if request.method == 'POST':
+        new_type = request.POST.get('assignment_type')
+        if new_type in ['absent', 'exception']:
+            old_type = assignment.get_assignment_type_display()
+            assignment.assignment_type = new_type
+            assignment.teacher = None  # 결석/예외로 변경 시 교사 해제
+            assignment.save()
+
+            # AJAX 요청인 경우 JSON 응답
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+
+            new_type_display = '결석' if new_type == 'absent' else '예외'
+            messages.success(request, f'{assignment.student.name} 학생이 {new_type_display}(으)로 변경되었습니다.')
 
     return redirect(f"/teachers/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")
 

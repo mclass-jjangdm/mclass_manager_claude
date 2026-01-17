@@ -28,5 +28,6 @@ urlpatterns = [
     path('assignment/<int:pk>/delete/', views.assignment_delete, name='assignment_delete'),
     path('assignment/bulk-delete/', views.assignment_bulk_delete, name='assignment_bulk_delete'),
     path('assignment/<int:pk>/change-teacher/', views.assignment_change_teacher, name='assignment_change_teacher'),
+    path('assignment/<int:pk>/change-type/', views.assignment_change_type, name='assignment_change_type'),
     path('assignment/<int:pk>/unassign/', views.assignment_unassign, name='assignment_unassign'),
 ]

@@ -159,9 +159,17 @@ class TeacherUnavailability(models.Model):
 
 class TeacherStudentAssignment(models.Model):
     """날짜별 교사-학생 배정"""
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, verbose_name='교사')
+    ASSIGNMENT_TYPE_CHOICES = [
+        ('normal', '일반'),
+        ('director', '원장'),
+        ('absent', '결석'),
+        ('exception', '예외'),
+    ]
+
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True, verbose_name='교사')
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE, verbose_name='학생')
     date = models.DateField(verbose_name='날짜')
+    assignment_type = models.CharField(max_length=10, choices=ASSIGNMENT_TYPE_CHOICES, default='normal', verbose_name='배정 유형')
     memo = models.TextField(blank=True, null=True, verbose_name='메모')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='등록일시')
 
@@ -172,4 +180,10 @@ class TeacherStudentAssignment(models.Model):
         ordering = ['date', 'teacher__name', 'student__name']
 
     def __str__(self):
+        if self.assignment_type == 'director':
+            return f"{self.date} - {self.student.name} (원장)"
+        elif self.assignment_type == 'absent':
+            return f"{self.date} - {self.student.name} (결석)"
+        elif self.assignment_type == 'exception':
+            return f"{self.date} - {self.student.name} (예외)"
         return f"{self.date} - {self.teacher.name} → {self.student.name}"
