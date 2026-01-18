@@ -1,28 +1,29 @@
 # progress/urls.py
+# 학습 진도 관리 (학생 배정 및 진도 평가)
 
 from django.urls import path
+from teachers import views as teacher_views
 from . import views
 
 app_name = 'progress'
 
 urlpatterns = [
-    # 문제 유형 관리
-    path('types/', views.ProblemTypeListView.as_view(), name='problem_type_list'),
-    path('types/create/', views.ProblemTypeCreateView.as_view(), name='problem_type_create'),
-    path('types/upload/', views.ProblemTypeUploadView.as_view(), name='problem_type_upload'),
-    path('types/upload/template/', views.download_problem_type_template, name='problem_type_template'),
-    path('types/<int:pk>/delete/', views.ProblemTypeDeleteView.as_view(), name='problem_type_delete'),
+    # 메인 대시보드 (일별 수업 기록)
+    path('', teacher_views.DailyProgressSummaryView.as_view(), name='dashboard'),
 
-    # 교재-문제 연결 관리
-    path('problems/', views.BookProblemListView.as_view(), name='book_problem_list'),
-    path('problems/create/', views.BookProblemCreateView.as_view(), name='book_problem_create'),
-    path('problems/<int:pk>/delete/', views.BookProblemDeleteView.as_view(), name='book_problem_delete'),
+    # 학생 배정 관리
+    path('assignment/', teacher_views.AssignmentListView.as_view(), name='assignment_list'),
+    path('assignment/create/', teacher_views.AssignmentCreateView.as_view(), name='assignment_create'),
+    path('assignment/<int:pk>/delete/', teacher_views.assignment_delete, name='assignment_delete'),
+    path('assignment/bulk-delete/', teacher_views.assignment_bulk_delete, name='assignment_bulk_delete'),
+    path('assignment/<int:pk>/change-teacher/', teacher_views.assignment_change_teacher, name='assignment_change_teacher'),
+    path('assignment/<int:pk>/change-type/', teacher_views.assignment_change_type, name='assignment_change_type'),
+    path('assignment/<int:pk>/unassign/', teacher_views.assignment_unassign, name='assignment_unassign'),
 
-    # 학생 진도표 관리
-    path('', views.StudentProgressListView.as_view(), name='student_progress_list'),
-    path('create/', views.StudentProgressCreateView.as_view(), name='student_progress_create'),
-    path('<int:pk>/', views.StudentProgressDetailView.as_view(), name='student_progress_detail'),
+    # 교사용 진도 관리
+    path('teacher/', teacher_views.TeacherProgressView.as_view(), name='teacher_progress'),
+    path('teacher/<int:teacher_pk>/', teacher_views.TeacherProgressView.as_view(), name='teacher_progress_detail'),
 
-    # 진도 항목 업데이트 (AJAX)
-    path('entry/<int:pk>/update/', views.ProgressEntryUpdateView.as_view(), name='progress_entry_update'),
+    # 교사 자신의 진도 페이지
+    path('my/', teacher_views.TeacherMyProgressView.as_view(), name='my_progress'),
 ]

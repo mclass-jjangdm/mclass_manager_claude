@@ -140,6 +140,7 @@
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">수량</th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">단가</th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">금액</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">진도</th>
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">액션</th>
             </tr>
         </thead>
@@ -151,6 +152,16 @@
                 <td class="px-4 py-3 text-sm text-center text-gray-700">{{ sale.quantity }}권</td>
                 <td class="px-4 py-3 text-sm text-right text-gray-700">{{ sale.price|intcomma }}원</td>
                 <td class="px-4 py-3 text-sm text-right font-semibold text-red-600">{{ sale.get_total_price|intcomma }}원</td>
+                <td class="px-4 py-3 text-center">
+                    {% if sale.book.contents.exists %}
+                    <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}"
+                       class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors inline-block">
+                        진도 평가
+                    </a>
+                    {% else %}
+                    <span class="text-gray-400 text-xs">목차 없음</span>
+                    {% endif %}
+                </td>
                 <td class="px-4 py-3 text-center">
                     <div class="flex gap-1 justify-center">
                         <form method="POST" action="{% url 'bookstore:book_sale_settle' sale.pk %}" style="display: inline;">
@@ -174,7 +185,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="px-4 py-12 text-center text-gray-500">
+                <td colspan="7" class="px-4 py-12 text-center text-gray-500">
                     미납 교재가 없습니다.
                 </td>
             </tr>
@@ -197,6 +208,7 @@
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">수량</th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">단가</th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">금액</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">진도</th>
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">액션</th>
             </tr>
         </thead>
@@ -209,6 +221,16 @@
                 <td class="px-4 py-3 text-sm text-center text-gray-700">{{ sale.quantity }}권</td>
                 <td class="px-4 py-3 text-sm text-right text-gray-700">{{ sale.price|intcomma }}원</td>
                 <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">{{ sale.get_total_price|intcomma }}원</td>
+                <td class="px-4 py-3 text-center">
+                    {% if sale.book.contents.exists %}
+                    <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}"
+                       class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors inline-block">
+                        진도 평가
+                    </a>
+                    {% else %}
+                    <span class="text-gray-400 text-xs">목차 없음</span>
+                    {% endif %}
+                </td>
                 <td class="px-4 py-3 text-center">
                     <div class="flex gap-1 justify-center">
                         <form method="POST" action="{% url 'bookstore:book_sale_cancel' sale.pk %}" style="display: inline;">
@@ -232,7 +254,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+                <td colspan="8" class="px-4 py-12 text-center text-gray-500">
                     납부 완료된 교재가 없습니다.
                 </td>
             </tr>

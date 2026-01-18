@@ -47,4 +47,9 @@ urlpatterns = [
     path('<int:pk>/contents/<int:content_pk>/edit/', views.book_content_edit, name='book_content_edit'),
     path('<int:pk>/contents/<int:content_pk>/delete/', views.book_content_delete, name='book_content_delete'),
     path('<int:pk>/contents/delete-all/', views.book_content_delete_all, name='book_content_delete_all'),
+
+    # 학생 교재 진도 평가 관련 URL
+    path('sale/<int:sale_pk>/progress/', views.student_book_progress_list, name='student_book_progress_list'),
+    path('sale/<int:sale_pk>/progress/<int:progress_pk>/', views.student_book_progress_update, name='student_book_progress_update'),
+    path('sale/<int:sale_pk>/progress/bulk/', views.student_book_progress_bulk_update, name='student_book_progress_bulk_update'),
 ]

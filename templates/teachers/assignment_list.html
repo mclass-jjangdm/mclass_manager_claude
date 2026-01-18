@@ -512,6 +512,11 @@
         <p class="text-gray-500 text-sm mt-1">{{ selected_date|date:"Y년 n월 j일 (D)" }}</p>
     </div>
     <div class="date-controls">
+        <!-- 진도 관리 / 일별 요약 버튼 -->
+        <a href="{% url 'progress:dashboard' %}?date={{ selected_date|date:'Y-m-d' }}"
+           class="px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
+            일별 수업 기록
+        </a>
         <div class="view-tabs">
             <button class="view-tab active" data-view="card">
                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -872,7 +877,7 @@
 <div class="drag-hint" id="drag-hint"></div>
 
 <!-- 배정 폼 (숨김) -->
-<form id="assignmentForm" method="post" action="{% url 'teachers:assignment_create' %}" style="display: none;">
+<form id="assignmentForm" method="post" action="{% url 'progress:assignment_create' %}" style="display: none;">
     {% csrf_token %}
     <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
     <input type="hidden" name="teacher" id="form-teacher">
@@ -1070,7 +1075,7 @@
         formData.append('new_teacher', newTeacherId);
         formData.append('csrfmiddlewaretoken', csrfToken);
 
-        fetch(`/teachers/assignment/${assignmentId}/change-teacher/`, {
+        fetch(`/progress/assignment/${assignmentId}/change-teacher/`, {
             method: 'POST',
             body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -1090,7 +1095,7 @@
         formData.append('assignment_type', newType);
         formData.append('csrfmiddlewaretoken', csrfToken);
 
-        fetch(`/teachers/assignment/${assignmentId}/change-type/`, {
+        fetch(`/progress/assignment/${assignmentId}/change-type/`, {
             method: 'POST',
             body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -1109,7 +1114,7 @@
         const formData = new FormData();
         formData.append('csrfmiddlewaretoken', csrfToken);
 
-        fetch(`/teachers/assignment/${assignmentId}/unassign/`, {
+        fetch(`/progress/assignment/${assignmentId}/unassign/`, {
             method: 'POST',
             body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' }

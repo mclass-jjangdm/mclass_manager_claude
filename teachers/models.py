@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -17,7 +18,11 @@ class Teacher(models.Model):
         ('M', '남'),
         ('F', '여'),
     ]
-    
+
+    user = models.OneToOneField(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='teacher_profile', verbose_name='로그인 계정'
+    )
     name = models.CharField(max_length=100, verbose_name='이름')
     phone_number = models.CharField(
         max_length=11,  # 일시적으로 11자로 설정

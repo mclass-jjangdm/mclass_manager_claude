@@ -7,7 +7,7 @@
         <!-- Logo & Title -->
         <div class="text-center mb-8">
             <h3 class="text-3xl font-bold text-gray-900 mb-2">엠클래스수학과학전문학원</h3>
-            <h4 class="text-gray-600">M'Class Manager</h4>
+            <h4 class="text-gray-600">M'class manager</h4>
         </div>
 
         <!-- Login Form -->
@@ -46,12 +46,24 @@
                 </div>
 
                 <div>
-                    <button type="submit" 
+                    <button type="submit"
                             class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         로그인
                     </button>
                 </div>
             </form>
+
+            <!-- 교사 로그인 링크 -->
+            <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+                <a href="{% url 'teachers:teacher_login' %}"
+                   class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    선생님 로그인
+                </a>
+            </div>
         </div>
     </div>
 </div>

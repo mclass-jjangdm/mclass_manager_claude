@@ -208,6 +208,61 @@
     {% endif %}
 </div>
 
+<!-- 계정 관리 섹션 -->
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h3 class="text-xl font-bold text-gray-900 mb-6">로그인 계정 관리</h3>
+
+    {% if teacher.user %}
+    <!-- 계정이 있는 경우 -->
+    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mb-2">
+                    계정 활성화됨
+                </span>
+                <p class="text-gray-700">
+                    <strong>로그인 ID:</strong> {{ teacher.user.username }}
+                </p>
+                <p class="text-sm text-gray-500">
+                    마지막 로그인: {{ teacher.user.last_login|date:"Y-m-d H:i"|default:"없음" }}
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <a href="{% url 'teachers:teacher_password_reset' teacher.pk %}"
+                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    비밀번호 재설정
+                </a>
+                <a href="{% url 'teachers:teacher_account_delete' teacher.pk %}"
+                   class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    계정 삭제
+                </a>
+            </div>
+        </div>
+    </div>
+    <p class="text-sm text-gray-500">
+        교사 로그인: 메인 로그인 페이지를 사용합니다.
+    </p>
+    {% else %}
+    <!-- 계정이 없는 경우 -->
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mb-2">
+                    계정 없음
+                </span>
+                <p class="text-gray-600">
+                    이 교사는 아직 로그인 계정이 없습니다.
+                </p>
+            </div>
+            <a href="{% url 'teachers:teacher_account_create' teacher.pk %}"
+               class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                계정 생성
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
 <!-- 월별 급여 내역 섹션 -->
 <div class="bg-white rounded-lg shadow p-6 mb-8">
     <h3 class="text-xl font-bold text-gray-900 mb-6">월별 급여 내역</h3>

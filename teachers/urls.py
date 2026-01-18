@@ -30,4 +30,16 @@ urlpatterns = [
     path('assignment/<int:pk>/change-teacher/', views.assignment_change_teacher, name='assignment_change_teacher'),
     path('assignment/<int:pk>/change-type/', views.assignment_change_type, name='assignment_change_type'),
     path('assignment/<int:pk>/unassign/', views.assignment_unassign, name='assignment_unassign'),
+    # 교사용 진도 관리
+    path('progress/', views.TeacherProgressView.as_view(), name='teacher_progress'),
+    path('<int:teacher_pk>/progress/', views.TeacherProgressView.as_view(), name='teacher_progress_detail'),
+    # 관리자용 일별 기록 요약
+    path('daily-summary/', views.DailyProgressSummaryView.as_view(), name='daily_progress_summary'),
+    # 교사 계정 관리
+    path('login/', views.TeacherLoginView.as_view(), name='teacher_login'),
+    path('logout/', views.TeacherLogoutView.as_view(), name='teacher_logout'),
+    path('my-progress/', views.TeacherMyProgressView.as_view(), name='teacher_my_progress'),
+    path('<int:pk>/account/create/', views.teacher_account_create, name='teacher_account_create'),
+    path('<int:pk>/account/delete/', views.teacher_account_delete, name='teacher_account_delete'),
+    path('<int:pk>/password/reset/', views.teacher_password_reset, name='teacher_password_reset'),
 ]

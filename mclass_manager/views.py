@@ -1,5 +1,6 @@
 from django.views.generic import TemplateView
 from django.db.models import Count, Q
+from django.utils import timezone
 
 
 class IndexView(TemplateView):
@@ -15,7 +16,10 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             from students.models import Student
-            from teachers.models import Teacher
+            from teachers.models import Teacher, TeacherStudentAssignment
+            from bookstore.models import StudentBookProgress
+
+            today = timezone.now().date()
 
             # 학년별 학생 수 집계
             grade_counts = Student.objects.filter(
@@ -39,8 +43,18 @@ class IndexView(TemplateView):
                 Q(resignation_date__isnull=True)
             ).count()
 
+            # 오늘 학습 진도 통계
+            today_assignments = TeacherStudentAssignment.objects.filter(date=today)
+            today_assigned = today_assignments.filter(assignment_type='normal').count()
+            today_absent = today_assignments.filter(assignment_type='absent').count()
+            today_progress_records = StudentBookProgress.objects.filter(study_date=today).count()
+
             context['grade_stats'] = grade_stats
             context['total_students'] = total_students
             context['active_teachers'] = active_teachers
+            context['today'] = today
+            context['today_assigned'] = today_assigned
+            context['today_absent'] = today_absent
+            context['today_progress_records'] = today_progress_records
 
         return context

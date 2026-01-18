@@ -1,8 +1,10 @@
 # bookstore/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Book, BookStockLog, BookSupplier, BookSale, BookContent
+from django.urls import reverse
+from .models import Book, BookStockLog, BookSupplier, BookSale, BookContent, StudentBookProgress
 from .forms import BookForm, BookStockLogForm, BookSupplierForm, BookReturnForm, BookSaleForm, BookContentUploadForm
+from teachers.models import TeacherStudentAssignment, Teacher
 from django.db.models import Q
 from django.contrib import messages
 import pandas as pd # 엑셀 처리를 위해 필수
@@ -596,7 +598,12 @@ def book_sale_create(request, student_pk):
                         student.unpaid_amount += total_price
                         student.save()
 
+                    # 5. 교재 목차가 있는 경우 진도 레코드 자동 생성
+                    progress_count = sale.create_progress_records()
+
                     msg = f"'{book.title}' {sale.quantity}권이 지급되었습니다."
+                    if progress_count > 0:
+                        msg += f" (진도 항목 {progress_count}개 생성)"
                     if not sale.is_paid:
                         msg += " (비용이 미납금에 합산되었습니다)"
                     messages.success(request, msg)
@@ -941,4 +948,253 @@ def book_content_delete_all(request, pk):
         messages.success(request, f"'{book.title}'의 목차 {deleted_count}개가 모두 삭제되었습니다.")
 
     return redirect('bookstore:book_content_list', pk=pk)
+
+
+def student_book_progress_list(request, sale_pk):
+    """학생의 교재 진도 목록 조회"""
+    sale = get_object_or_404(BookSale, pk=sale_pk)
+    student = sale.student
+
+    # 교사 포털에서 접근했는지 확인
+    from_teacher_portal = request.GET.get('from') == 'teacher_portal'
+
+    # 교사가 접근한 경우, 배정된 학생인지 확인
+    if hasattr(request.user, 'teacher_profile') and not request.user.is_staff:
+        from teachers.models import TeacherStudentAssignment
+        from django.utils import timezone
+
+        teacher = request.user.teacher_profile
+        today = timezone.now().date()
+
+        # 오늘 이 교사에게 배정된 학생인지 확인
+        is_assigned = TeacherStudentAssignment.objects.filter(
+            teacher=teacher,
+            student=student,
+            date=today,
+            assignment_type='normal'
+        ).exists()
+
+        if not is_assigned:
+            messages.error(request, '이 학생은 오늘 배정된 학생이 아닙니다.')
+            return redirect('progress:my_progress')
+
+        from_teacher_portal = True
+
+    # 진도 레코드가 없으면 생성
+    if not sale.progress_records.exists():
+        created = sale.create_progress_records()
+        if created > 0:
+            messages.info(request, f"진도 항목 {created}개가 생성되었습니다.")
+
+    progress_records = sale.progress_records.select_related('book_content', 'teacher').order_by('book_content__page')
+    stats = sale.get_progress_stats()
+
+    # 대단원별 그룹화
+    chapters = {}
+    for record in progress_records:
+        content = record.book_content
+        chapter_key = (content.chapter_num, content.chapter_title)
+        if chapter_key not in chapters:
+            chapters[chapter_key] = {'sections': {}}
+
+        section_key = (content.section_num, content.section_title)
+        if section_key not in chapters[chapter_key]['sections']:
+            chapters[chapter_key]['sections'][section_key] = []
+
+        chapters[chapter_key]['sections'][section_key].append(record)
+
+    # 교사 포털에서 접근한 경우 별도 템플릿 사용
+    template_name = 'bookstore/student_book_progress_list_teacher.html' if from_teacher_portal else 'bookstore/student_book_progress_list.html'
+
+    return render(request, template_name, {
+        'sale': sale,
+        'student': student,
+        'book': sale.book,
+        'progress_records': progress_records,
+        'chapters': chapters,
+        'stats': stats,
+        'achievement_choices': StudentBookProgress.ACHIEVEMENT_CHOICES,
+        'from_teacher_portal': from_teacher_portal,
+    })
+
+
+def student_book_progress_update(request, sale_pk, progress_pk):
+    """개별 진도 항목 평가/수정"""
+    sale = get_object_or_404(BookSale, pk=sale_pk)
+    progress = get_object_or_404(StudentBookProgress, pk=progress_pk, book_sale=sale)
+    student = sale.student
+
+    # 교사 포털에서 접근했는지 확인
+    from_teacher_portal = request.GET.get('from') == 'teacher_portal' or request.POST.get('from_teacher_portal') == 'true'
+
+    # 교사가 접근한 경우, 배정된 학생인지 확인
+    if hasattr(request.user, 'teacher_profile') and not request.user.is_staff:
+        teacher = request.user.teacher_profile
+        today = timezone.now().date()
+
+        is_assigned = TeacherStudentAssignment.objects.filter(
+            teacher=teacher,
+            student=student,
+            date=today,
+            assignment_type='normal'
+        ).exists()
+
+        if not is_assigned:
+            messages.error(request, '이 학생은 오늘 배정된 학생이 아닙니다.')
+            return redirect('progress:my_progress')
+
+        from_teacher_portal = True
+
+    if request.method == 'POST':
+        try:
+            # 학습 날짜
+            study_date = request.POST.get('study_date')
+            progress.study_date = study_date if study_date else None
+
+            # 성취 수준
+            progress.achievement = request.POST.get('achievement', '')
+
+            # 보완 추천 여부
+            progress.needs_review = request.POST.get('needs_review') == 'on'
+
+            # 과제 수행 여부
+            progress.homework_done = request.POST.get('homework_done') == 'on'
+
+            # 담당 교사 자동 설정: 오늘 날짜 기준 배정된 교사 찾기
+            today = timezone.now().date()
+            assignment = TeacherStudentAssignment.objects.filter(
+                student=student,
+                date=today,
+                assignment_type='normal'
+            ).first()
+
+            if assignment and assignment.teacher:
+                progress.teacher = assignment.teacher
+
+            progress.save()
+            messages.success(request, f"p.{progress.book_content.page} 평가가 저장되었습니다.")
+
+        except Exception as e:
+            messages.error(request, f"저장 중 오류 발생: {e}")
+
+        # 다음 항목으로 이동하거나 목록으로 돌아가기
+        next_action = request.POST.get('next_action', 'list')
+
+        # 교사 포털 파라미터 유지
+        portal_param = '?from=teacher_portal' if from_teacher_portal else ''
+
+        if next_action == 'next':
+            # 다음 진도 항목 찾기
+            next_progress = StudentBookProgress.objects.filter(
+                book_sale=sale,
+                book_content__page__gt=progress.book_content.page
+            ).order_by('book_content__page').first()
+            if next_progress:
+                url = reverse('bookstore:student_book_progress_update', kwargs={'sale_pk': sale_pk, 'progress_pk': next_progress.pk})
+                return redirect(url + portal_param)
+
+        url = reverse('bookstore:student_book_progress_list', kwargs={'sale_pk': sale_pk})
+        return redirect(url + portal_param)
+
+    # 이전/다음 항목 찾기
+    prev_progress = StudentBookProgress.objects.filter(
+        book_sale=sale,
+        book_content__page__lt=progress.book_content.page
+    ).order_by('-book_content__page').first()
+
+    next_progress = StudentBookProgress.objects.filter(
+        book_sale=sale,
+        book_content__page__gt=progress.book_content.page
+    ).order_by('book_content__page').first()
+
+    # 교사 포털에서 접근한 경우 별도 템플릿 사용
+    template_name = 'bookstore/student_book_progress_update_teacher.html' if from_teacher_portal else 'bookstore/student_book_progress_update.html'
+
+    return render(request, template_name, {
+        'sale': sale,
+        'student': student,
+        'book': sale.book,
+        'progress': progress,
+        'content': progress.book_content,
+        'prev_progress': prev_progress,
+        'next_progress': next_progress,
+        'achievement_choices': StudentBookProgress.ACHIEVEMENT_CHOICES,
+        'from_teacher_portal': from_teacher_portal,
+    })
+
+
+def student_book_progress_bulk_update(request, sale_pk):
+    """여러 진도 항목 일괄 평가"""
+    sale = get_object_or_404(BookSale, pk=sale_pk)
+    student = sale.student
+
+    # 교사 포털에서 접근했는지 확인
+    from_teacher_portal = request.GET.get('from') == 'teacher_portal' or request.POST.get('from_teacher_portal') == 'true'
+
+    # 교사가 접근한 경우, 배정된 학생인지 확인
+    if hasattr(request.user, 'teacher_profile') and not request.user.is_staff:
+        teacher = request.user.teacher_profile
+        today = timezone.now().date()
+
+        is_assigned = TeacherStudentAssignment.objects.filter(
+            teacher=teacher,
+            student=student,
+            date=today,
+            assignment_type='normal'
+        ).exists()
+
+        if not is_assigned:
+            messages.error(request, '이 학생은 오늘 배정된 학생이 아닙니다.')
+            return redirect('progress:my_progress')
+
+        from_teacher_portal = True
+
+    if request.method == 'POST':
+        updated_count = 0
+        today = timezone.now().date()
+
+        # 배정된 교사 찾기
+        assignment = TeacherStudentAssignment.objects.filter(
+            student=student,
+            date=today,
+            assignment_type='normal'
+        ).first()
+        teacher = assignment.teacher if assignment else None
+
+        # 선택된 진도 항목들 처리
+        progress_ids = request.POST.getlist('progress_ids')
+
+        for progress_id in progress_ids:
+            try:
+                progress = StudentBookProgress.objects.get(pk=progress_id, book_sale=sale)
+
+                study_date = request.POST.get(f'study_date_{progress_id}')
+                achievement = request.POST.get(f'achievement_{progress_id}', '')
+                needs_review = request.POST.get(f'needs_review_{progress_id}') == 'on'
+                homework_done = request.POST.get(f'homework_done_{progress_id}') == 'on'
+
+                progress.study_date = study_date if study_date else None
+                progress.achievement = achievement
+                progress.needs_review = needs_review
+                progress.homework_done = homework_done
+
+                if teacher:
+                    progress.teacher = teacher
+
+                progress.save()
+                updated_count += 1
+
+            except StudentBookProgress.DoesNotExist:
+                continue
+
+        if updated_count > 0:
+            messages.success(request, f"{updated_count}개 항목이 업데이트되었습니다.")
+
+        portal_param = '?from=teacher_portal' if from_teacher_portal else ''
+        url = reverse('bookstore:student_book_progress_list', kwargs={'sale_pk': sale_pk})
+        return redirect(url + portal_param)
+
+    portal_param = '?from=teacher_portal' if from_teacher_portal else ''
+    url = reverse('bookstore:student_book_progress_list', kwargs={'sale_pk': sale_pk})
+    return redirect(url + portal_param)
 

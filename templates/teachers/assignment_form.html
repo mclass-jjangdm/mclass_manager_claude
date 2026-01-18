@@ -279,7 +279,7 @@
             </div>
 
             <div class="form-actions">
-                <a href="{% url 'teachers:assignment_list' %}?date={{ selected_date }}" class="btn btn-cancel">취소</a>
+                <a href="{% url 'progress:assignment_list' %}?date={{ selected_date }}" class="btn btn-cancel">취소</a>
                 <button type="submit" class="btn btn-submit" {% if not available_teachers or not available_students %}disabled{% endif %}>
                     배정 등록
                 </button>

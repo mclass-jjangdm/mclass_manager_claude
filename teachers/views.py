@@ -1427,11 +1427,11 @@ class AssignmentCreateView(LoginRequiredMixin, View):
         # 결석/예외인 경우 teacher_id가 없어도 됨
         if not date or not student_ids:
             messages.error(request, '필수 정보가 누락되었습니다.')
-            return redirect('teachers:assignment_list')
+            return redirect('progress:assignment_list')
 
         if assignment_type == 'normal' and not teacher_id:
             messages.error(request, '교사를 선택해주세요.')
-            return redirect('teachers:assignment_list')
+            return redirect('progress:assignment_list')
 
         teacher = get_object_or_404(Teacher, pk=teacher_id) if teacher_id else None
         created_count = 0
@@ -1460,7 +1460,7 @@ class AssignmentCreateView(LoginRequiredMixin, View):
         else:
             messages.info(request, '이미 배정된 학생입니다.')
 
-        return redirect(f"/teachers/assignment/?date={date}")
+        return redirect(f"/progress/assignment/?date={date}")
 
 
 @login_required
@@ -1478,7 +1478,7 @@ def assignment_delete(request, pk):
             type_label = dict(TeacherStudentAssignment.ASSIGNMENT_TYPE_CHOICES).get(assignment.assignment_type, assignment.assignment_type)
             messages.success(request, f'{student_name} 학생의 {type_label} 배정이 삭제되었습니다.')
         assignment.delete()
-        return redirect(f"/teachers/assignment/?date={date_str}")
+        return redirect(f"/progress/assignment/?date={date_str}")
 
     return render(request, 'teachers/assignment_confirm_delete.html', {
         'assignment': assignment,
@@ -1503,7 +1503,7 @@ def assignment_bulk_delete(request):
         else:
             messages.error(request, '날짜가 누락되었습니다.')
 
-    return redirect('teachers:assignment_list')
+    return redirect('progress:assignment_list')
 
 
 @login_required
@@ -1528,7 +1528,7 @@ def assignment_change_teacher(request, pk):
 
             messages.success(request, f'{assignment.student.name} 학생의 담당 교사가 {old_teacher_name}에서 {new_teacher.name}(으)로 변경되었습니다.')
 
-    return redirect(f"/teachers/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")
+    return redirect(f"/progress/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")
 
 
 @login_required
@@ -1553,7 +1553,7 @@ def assignment_change_type(request, pk):
             new_type_display = '결석' if new_type == 'absent' else '예외'
             messages.success(request, f'{assignment.student.name} 학생이 {new_type_display}(으)로 변경되었습니다.')
 
-    return redirect(f"/teachers/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")
+    return redirect(f"/progress/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")
 
 
 @login_required
@@ -1573,6 +1573,412 @@ def assignment_unassign(request, pk):
             return JsonResponse({'success': True})
 
         messages.success(request, f'{student_name} 학생의 배정이 해제되었습니다.')
-        return redirect(f"/teachers/assignment/?date={date_str}")
+        return redirect(f"/progress/assignment/?date={date_str}")
 
-    return redirect('teachers:assignment_list')
+    return redirect('progress:assignment_list')
+
+
+class TeacherProgressView(LoginRequiredMixin, View):
+    """교사용 배정 학생 진도 관리 페이지"""
+
+    def get(self, request, teacher_pk=None):
+        from students.models import Student
+        from bookstore.models import BookSale, StudentBookProgress
+
+        # 날짜 선택 (기본: 오늘)
+        selected_date = request.GET.get('date')
+        if selected_date:
+            try:
+                check_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            except ValueError:
+                check_date = timezone.now().date()
+        else:
+            check_date = timezone.now().date()
+
+        # 교사 선택 (URL 파라미터 또는 쿼리스트링)
+        teacher = None
+        if teacher_pk:
+            teacher = get_object_or_404(Teacher, pk=teacher_pk)
+        else:
+            teacher_id = request.GET.get('teacher')
+            if teacher_id:
+                teacher = get_object_or_404(Teacher, pk=teacher_id)
+
+        # 해당 날짜에 이 교사에게 배정된 학생들
+        assignments = []
+        student_data = []
+
+        if teacher:
+            assignments = TeacherStudentAssignment.objects.filter(
+                teacher=teacher,
+                date=check_date,
+                assignment_type='normal'
+            ).select_related('student')
+
+            # 각 학생별 교재 진도 정보 수집
+            for assignment in assignments:
+                student = assignment.student
+                # 학생에게 지급된 교재들
+                book_sales = BookSale.objects.filter(student=student).select_related('book')
+
+                books_data = []
+                for sale in book_sales:
+                    # 교재에 목차가 있는 경우만 진도 관리 가능
+                    if sale.book.contents.exists():
+                        stats = sale.get_progress_stats()
+                        books_data.append({
+                            'sale': sale,
+                            'book': sale.book,
+                            'stats': stats,
+                        })
+
+                student_data.append({
+                    'student': student,
+                    'assignment': assignment,
+                    'books': books_data,
+                })
+
+        # 활성 교사 목록 (교사 선택용)
+        available_teachers = Teacher.objects.filter(is_active=True).order_by('name')
+
+        context = {
+            'selected_date': check_date,
+            'teacher': teacher,
+            'available_teachers': available_teachers,
+            'assignments': assignments,
+            'student_data': student_data,
+        }
+
+        return render(request, 'teachers/teacher_progress.html', context)
+
+
+class DailyProgressSummaryView(LoginRequiredMixin, View):
+    """관리자용 일별 전체 수업 기록 조회"""
+
+    def get(self, request):
+        from students.models import Student
+        from bookstore.models import BookSale, StudentBookProgress
+
+        # 날짜 선택 (기본: 오늘)
+        selected_date = request.GET.get('date')
+        if selected_date:
+            try:
+                check_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            except ValueError:
+                check_date = timezone.now().date()
+        else:
+            check_date = timezone.now().date()
+
+        # 해당 날짜의 모든 배정 정보
+        all_assignments = TeacherStudentAssignment.objects.filter(
+            date=check_date
+        ).select_related('teacher', 'student').order_by('teacher__name', 'student__name')
+
+        # 교사별 데이터 구성
+        teacher_summary = {}
+
+        for assignment in all_assignments:
+            if assignment.assignment_type != 'normal':
+                continue  # 결석, 예외 등은 별도 처리
+
+            teacher = assignment.teacher
+            if teacher not in teacher_summary:
+                teacher_summary[teacher] = {
+                    'teacher': teacher,
+                    'students': [],
+                    'total_students': 0,
+                }
+
+            student = assignment.student
+
+            # 학생의 교재별 진도 정보
+            book_sales = BookSale.objects.filter(student=student).select_related('book')
+            books_progress = []
+
+            for sale in book_sales:
+                if sale.book.contents.exists():
+                    # 오늘 날짜로 기록된 진도 항목 수
+                    today_records = sale.progress_records.filter(study_date=check_date).count()
+                    stats = sale.get_progress_stats()
+                    books_progress.append({
+                        'sale': sale,
+                        'book': sale.book,
+                        'stats': stats,
+                        'today_records': today_records,
+                    })
+
+            teacher_summary[teacher]['students'].append({
+                'student': student,
+                'assignment': assignment,
+                'books': books_progress,
+            })
+            teacher_summary[teacher]['total_students'] += 1
+
+        # 결석 학생
+        absent_assignments = all_assignments.filter(assignment_type='absent')
+
+        # 예외 학생
+        exception_assignments = all_assignments.filter(assignment_type='exception')
+
+        # 원장 배정 학생
+        director_assignments = all_assignments.filter(assignment_type='director')
+
+        # 통계
+        total_assigned = all_assignments.filter(assignment_type='normal').count()
+        total_absent = absent_assignments.count()
+        total_exception = exception_assignments.count()
+        total_director = director_assignments.count()
+
+        # 오늘 기록된 총 진도 평가 수
+        total_progress_today = StudentBookProgress.objects.filter(study_date=check_date).count()
+
+        # 학생 기준 데이터 구성
+        student_list = []
+        for assignment in all_assignments:
+            if assignment.assignment_type != 'normal':
+                continue
+
+            student = assignment.student
+            teacher = assignment.teacher
+
+            # 학생의 교재별 진도 정보
+            book_sales = BookSale.objects.filter(student=student).select_related('book')
+            books_progress = []
+
+            for sale in book_sales:
+                if sale.book.contents.exists():
+                    today_records = sale.progress_records.filter(study_date=check_date).count()
+                    stats = sale.get_progress_stats()
+                    books_progress.append({
+                        'sale': sale,
+                        'book': sale.book,
+                        'stats': stats,
+                        'today_records': today_records,
+                    })
+
+            student_list.append({
+                'student': student,
+                'teacher': teacher,
+                'assignment': assignment,
+                'books': books_progress,
+            })
+
+        # 학생 이름순 정렬
+        student_list.sort(key=lambda x: x['student'].name)
+
+        # 뷰 모드 (teacher 또는 student)
+        view_mode = request.GET.get('view', 'student')
+
+        context = {
+            'selected_date': check_date,
+            'teacher_summary': teacher_summary,
+            'student_list': student_list,
+            'absent_assignments': absent_assignments,
+            'exception_assignments': exception_assignments,
+            'director_assignments': director_assignments,
+            'total_assigned': total_assigned,
+            'total_absent': total_absent,
+            'total_exception': total_exception,
+            'total_director': total_director,
+            'total_progress_today': total_progress_today,
+            'view_mode': view_mode,
+        }
+
+        return render(request, 'teachers/daily_progress_summary.html', context)
+
+
+# ==================== 교사 계정 관리 ====================
+
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+
+
+class TeacherLoginView(View):
+    """교사 전용 로그인 페이지"""
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            # 이미 로그인된 경우
+            if hasattr(request.user, 'teacher_profile'):
+                return redirect('progress:my_progress')
+            # 관리자 또는 일반 사용자는 메인 대시보드로
+            return redirect('index')
+        return render(request, 'teachers/teacher_login.html')
+
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            # 교사 프로필이 있으면 교사 진도 페이지로
+            if hasattr(user, 'teacher_profile'):
+                messages.success(request, f'{user.teacher_profile.name} 선생님, 환영합니다!')
+                return redirect('progress:my_progress')
+            else:
+                # 관리자 또는 일반 사용자는 메인 대시보드로
+                return redirect('index')
+        else:
+            return render(request, 'teachers/teacher_login.html', {
+                'error_message': '아이디 또는 비밀번호가 올바르지 않습니다.',
+                'username': username,  # 입력한 아이디 유지
+            })
+
+
+class TeacherLogoutView(View):
+    """교사 로그아웃"""
+
+    def get(self, request):
+        logout(request)
+        messages.info(request, '로그아웃되었습니다.')
+        return redirect('login')
+
+
+class TeacherMyProgressView(LoginRequiredMixin, View):
+    """교사 자신의 배정 학생 진도 관리 페이지"""
+
+    def get(self, request):
+        from bookstore.models import BookSale, StudentBookProgress
+
+        # 현재 로그인한 사용자의 교사 프로필 확인
+        if not hasattr(request.user, 'teacher_profile'):
+            messages.error(request, '교사 계정이 아닙니다.')
+            return redirect('students:student_list')
+
+        teacher = request.user.teacher_profile
+
+        # 날짜 선택 (기본: 오늘)
+        selected_date = request.GET.get('date')
+        if selected_date:
+            try:
+                check_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+            except ValueError:
+                check_date = timezone.now().date()
+        else:
+            check_date = timezone.now().date()
+
+        # 해당 날짜에 이 교사에게 배정된 학생들
+        assignments = TeacherStudentAssignment.objects.filter(
+            teacher=teacher,
+            date=check_date,
+            assignment_type='normal'
+        ).select_related('student')
+
+        # 각 학생별 교재 진도 정보 수집
+        student_data = []
+        for assignment in assignments:
+            student = assignment.student
+            book_sales = BookSale.objects.filter(student=student).select_related('book')
+
+            books_data = []
+            for sale in book_sales:
+                if sale.book.contents.exists():
+                    stats = sale.get_progress_stats()
+                    books_data.append({
+                        'sale': sale,
+                        'book': sale.book,
+                        'stats': stats,
+                    })
+
+            student_data.append({
+                'student': student,
+                'assignment': assignment,
+                'books': books_data,
+            })
+
+        context = {
+            'selected_date': check_date,
+            'teacher': teacher,
+            'student_data': student_data,
+            'is_my_page': True,  # 자신의 페이지임을 표시
+        }
+
+        return render(request, 'teachers/teacher_my_progress.html', context)
+
+
+@login_required
+def teacher_account_create(request, pk):
+    """교사에게 로그인 계정 생성 (관리자용)"""
+    teacher = get_object_or_404(Teacher, pk=pk)
+
+    if teacher.user:
+        messages.warning(request, f'{teacher.name} 선생님은 이미 계정이 있습니다.')
+        return redirect('teachers:teacher_detail', pk=pk)
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        password_confirm = request.POST.get('password_confirm', '')
+
+        # 유효성 검사
+        if not username:
+            messages.error(request, '사용자명을 입력해주세요.')
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, '이미 사용 중인 사용자명입니다.')
+        elif len(password) < 4:
+            messages.error(request, '비밀번호는 4자 이상이어야 합니다.')
+        elif password != password_confirm:
+            messages.error(request, '비밀번호가 일치하지 않습니다.')
+        else:
+            # 계정 생성
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=teacher.name,
+                email=teacher.email or ''
+            )
+            teacher.user = user
+            teacher.save()
+            messages.success(request, f'{teacher.name} 선생님의 계정이 생성되었습니다. (ID: {username})')
+            return redirect('teachers:teacher_detail', pk=pk)
+
+    return render(request, 'teachers/teacher_account_create.html', {'teacher': teacher})
+
+
+@login_required
+def teacher_account_delete(request, pk):
+    """교사 계정 삭제 (관리자용)"""
+    teacher = get_object_or_404(Teacher, pk=pk)
+
+    if not teacher.user:
+        messages.warning(request, f'{teacher.name} 선생님은 계정이 없습니다.')
+        return redirect('teachers:teacher_detail', pk=pk)
+
+    if request.method == 'POST':
+        user = teacher.user
+        teacher.user = None
+        teacher.save()
+        user.delete()
+        messages.success(request, f'{teacher.name} 선생님의 계정이 삭제되었습니다.')
+        return redirect('teachers:teacher_detail', pk=pk)
+
+    return render(request, 'teachers/teacher_account_delete.html', {'teacher': teacher})
+
+
+@login_required
+def teacher_password_reset(request, pk):
+    """교사 비밀번호 재설정 (관리자용)"""
+    teacher = get_object_or_404(Teacher, pk=pk)
+
+    if not teacher.user:
+        messages.warning(request, f'{teacher.name} 선생님은 계정이 없습니다.')
+        return redirect('teachers:teacher_detail', pk=pk)
+
+    if request.method == 'POST':
+        password = request.POST.get('password', '')
+        password_confirm = request.POST.get('password_confirm', '')
+
+        if len(password) < 4:
+            messages.error(request, '비밀번호는 4자 이상이어야 합니다.')
+        elif password != password_confirm:
+            messages.error(request, '비밀번호가 일치하지 않습니다.')
+        else:
+            teacher.user.set_password(password)
+            teacher.user.save()
+            messages.success(request, f'{teacher.name} 선생님의 비밀번호가 변경되었습니다.')
+            return redirect('teachers:teacher_detail', pk=pk)
+
+    return render(request, 'teachers/teacher_password_reset.html', {'teacher': teacher})

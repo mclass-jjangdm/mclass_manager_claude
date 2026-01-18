@@ -132,6 +132,33 @@ class BookSale(models.Model):
     def get_total_price(self):
         return self.price * self.quantity
 
+    def create_progress_records(self):
+        """교재의 모든 목차에 대한 진도 레코드 생성"""
+        from bookstore.models import StudentBookProgress
+        contents = self.book.contents.all()
+        created_count = 0
+        for content in contents:
+            _, created = StudentBookProgress.objects.get_or_create(
+                book_sale=self,
+                book_content=content
+            )
+            if created:
+                created_count += 1
+        return created_count
+
+    def get_progress_stats(self):
+        """진도 통계 반환"""
+        total = self.progress_records.count()
+        completed = self.progress_records.filter(study_date__isnull=False, achievement__gt='').count()
+        needs_review = self.progress_records.filter(needs_review=True).count()
+        return {
+            'total': total,
+            'completed': completed,
+            'remaining': total - completed,
+            'needs_review': needs_review,
+            'progress_percent': round(completed / total * 100, 1) if total > 0 else 0
+        }
+
     def __str__(self):
         return f"{self.student.name} - {self.book.title}"
 
@@ -169,6 +196,64 @@ class BookContent(models.Model):
 
     def __str__(self):
         return f"{self.book.title} - {self.chapter_title} > {self.section_title} > {self.subsection_title} (p.{self.page})"
+
+
+class StudentBookProgress(models.Model):
+    """학생별 교재 진도 평가 기록"""
+    ACHIEVEMENT_CHOICES = [
+        ('', '-'),
+        ('A', 'A (우수)'),
+        ('B', 'B (양호)'),
+        ('C', 'C (보통)'),
+        ('D', 'D (미흡)'),
+        ('F', 'F (재학습)'),
+    ]
+
+    # 연결 관계
+    book_sale = models.ForeignKey(BookSale, on_delete=models.CASCADE, related_name='progress_records', verbose_name="교재 지급")
+    book_content = models.ForeignKey(BookContent, on_delete=models.CASCADE, related_name='progress_records', verbose_name="목차 항목")
+
+    # 평가 정보
+    study_date = models.DateField(blank=True, null=True, verbose_name="학습 날짜")
+    achievement = models.CharField(max_length=1, choices=ACHIEVEMENT_CHOICES, blank=True, default='', verbose_name="성취 수준")
+    needs_review = models.BooleanField(default=False, verbose_name="보완 추천 여부")
+    homework_done = models.BooleanField(default=False, verbose_name="과제 수행 여부")
+
+    # 담당 교사 (평가 시 자동 기록)
+    teacher = models.ForeignKey(
+        'teachers.Teacher',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="담당쌤"
+    )
+
+    # 메타 정보
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일")
+
+    class Meta:
+        verbose_name = "학생 진도 기록"
+        verbose_name_plural = "학생 진도 기록"
+        ordering = ['book_sale', 'book_content__page']
+        # 학생의 특정 교재 지급 건에 대해 각 목차 항목은 하나만 존재
+        unique_together = ['book_sale', 'book_content']
+
+    def __str__(self):
+        return f"{self.book_sale.student.name} - {self.book_content.subsection_title} (p.{self.book_content.page})"
+
+    @property
+    def student(self):
+        return self.book_sale.student
+
+    @property
+    def book(self):
+        return self.book_sale.book
+
+    @property
+    def is_completed(self):
+        """학습 완료 여부 (학습 날짜가 있고 성취도가 입력된 경우)"""
+        return bool(self.study_date and self.achievement)
 
 
 class BookStockLog(models.Model):

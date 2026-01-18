@@ -80,6 +80,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'mclass_manager.middleware.TeacherAccessRestrictionMiddleware',  # 교사 접근 제한
 ]
 
 ROOT_URLCONF = 'mclass_manager.urls'
