@@ -1,0 +1,127 @@
+{% extends "bookstore/base_bookstore.html" %}
+
+{% block bookstore_content %}
+<div class="space-y-6">
+    <!-- 헤더 영역 -->
+    <div class="flex justify-between items-center">
+        <div>
+            <nav class="text-sm text-gray-500 mb-2">
+                <a href="{% url 'bookstore:book_list' %}" class="hover:text-indigo-600">교재 목록</a>
+                <span class="mx-2">/</span>
+                <a href="{% url 'bookstore:book_detail' book.pk %}" class="hover:text-indigo-600">{{ book.title }}</a>
+                <span class="mx-2">/</span>
+                <a href="{% url 'bookstore:book_content_list' book.pk %}" class="hover:text-indigo-600">세부 목차</a>
+                <span class="mx-2">/</span>
+                <span class="text-gray-700">수정</span>
+            </nav>
+            <h2 class="text-2xl font-bold text-gray-800">목차 항목 수정</h2>
+            <p class="text-gray-600 mt-1">p.{{ content.page }} - {{ content.subsection_title }}</p>
+        </div>
+
+        <a href="{% url 'bookstore:book_content_list' book.pk %}"
+           class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            돌아가기
+        </a>
+    </div>
+
+    <!-- 수정 폼 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 대단원 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        대단원 번호
+                    </label>
+                    <input type="number"
+                           name="chapter_num"
+                           value="{{ content.chapter_num }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        대단원 주제
+                    </label>
+                    <input type="text"
+                           name="chapter_title"
+                           value="{{ content.chapter_title }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <!-- 중단원 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        중단원 번호
+                    </label>
+                    <input type="number"
+                           name="section_num"
+                           value="{{ content.section_num }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        중단원 주제
+                    </label>
+                    <input type="text"
+                           name="section_title"
+                           value="{{ content.section_title }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <!-- 소단원 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        소단원 번호
+                    </label>
+                    <input type="text"
+                           name="subsection_num"
+                           value="{{ content.subsection_num }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        소단원 주제
+                    </label>
+                    <input type="text"
+                           name="subsection_title"
+                           value="{{ content.subsection_title }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <!-- 페이지 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        페이지
+                    </label>
+                    <input type="number"
+                           name="page"
+                           value="{{ content.page }}"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <a href="{% url 'bookstore:book_content_list' book.pk %}"
+                   class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    취소
+                </a>
+                <button type="submit"
+                        class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
+                    저장
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

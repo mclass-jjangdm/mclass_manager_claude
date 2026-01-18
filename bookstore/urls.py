@@ -40,4 +40,11 @@ urlpatterns = [
 
     # 판매 취소 (삭제) URL
     path('sale/<int:pk>/delete/', views.book_sale_delete, name='book_sale_delete'),
+
+    # 교재 세부 목차 관련 URL
+    path('<int:pk>/contents/', views.book_content_list, name='book_content_list'),
+    path('<int:pk>/contents/upload/', views.book_content_upload, name='book_content_upload'),
+    path('<int:pk>/contents/<int:content_pk>/edit/', views.book_content_edit, name='book_content_edit'),
+    path('<int:pk>/contents/<int:content_pk>/delete/', views.book_content_delete, name='book_content_delete'),
+    path('<int:pk>/contents/delete-all/', views.book_content_delete_all, name='book_content_delete_all'),
 ]

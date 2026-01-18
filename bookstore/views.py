@@ -1,8 +1,8 @@
 # bookstore/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Book, BookStockLog, BookSupplier, BookSale
-from .forms import BookForm, BookStockLogForm, BookSupplierForm, BookReturnForm, BookSaleForm
+from .models import Book, BookStockLog, BookSupplier, BookSale, BookContent
+from .forms import BookForm, BookStockLogForm, BookSupplierForm, BookReturnForm, BookSaleForm, BookContentUploadForm
 from django.db.models import Q
 from django.contrib import messages
 import pandas as pd # 엑셀 처리를 위해 필수
@@ -790,4 +790,155 @@ def book_sale_delete(request, pk):
             messages.error(request, f'처리 중 오류 발생: {e}')
 
     return redirect('students:student_detail', pk=student.pk)
+
+
+def book_content_list(request, pk):
+    """교재 세부 목차 조회"""
+    book = get_object_or_404(Book, pk=pk)
+    contents = book.contents.all().order_by('page')
+
+    # 대단원별로 그룹화
+    chapters = {}
+    for content in contents:
+        chapter_key = (content.chapter_num, content.chapter_title)
+        if chapter_key not in chapters:
+            chapters[chapter_key] = {'sections': {}}
+
+        section_key = (content.section_num, content.section_title)
+        if section_key not in chapters[chapter_key]['sections']:
+            chapters[chapter_key]['sections'][section_key] = []
+
+        chapters[chapter_key]['sections'][section_key].append(content)
+
+    return render(request, 'bookstore/book_content_list.html', {
+        'book': book,
+        'chapters': chapters,
+        'contents': contents,
+        'total_pages': contents.count(),
+    })
+
+
+def book_content_upload(request, pk):
+    """교재 세부 목차 CSV 업로드"""
+    book = get_object_or_404(Book, pk=pk)
+
+    if request.method == 'POST' and request.FILES.get('upload_file'):
+        upload_file = request.FILES['upload_file']
+        replace_existing = request.POST.get('replace_existing') == 'on'
+
+        try:
+            # CSV/Excel 파일 읽기
+            if upload_file.name.endswith('.csv'):
+                # 인코딩 자동 감지
+                try:
+                    df = pd.read_csv(upload_file, encoding='utf-8')
+                except UnicodeDecodeError:
+                    upload_file.seek(0)
+                    df = pd.read_csv(upload_file, encoding='cp949')
+            else:
+                df = pd.read_excel(upload_file)
+
+            # 기존 데이터 삭제 옵션
+            if replace_existing:
+                deleted_count = book.contents.all().delete()[0]
+                messages.info(request, f"기존 목차 {deleted_count}개가 삭제되었습니다.")
+
+            success_count = 0
+            skip_count = 0
+
+            for index, row in df.iterrows():
+                # 필수 필드 확인
+                chapter_num = row.get('대단원')
+                chapter_title = row.get('대단원 주제', '')
+                section_num = row.get('중단원')
+                section_title = row.get('중단원 주제', '')
+                subsection_num = row.get('소단원', '')
+                subsection_title = row.get('소단원 주제', '')
+                page = row.get('page')
+
+                # 필수값 체크
+                if pd.isna(chapter_num) or pd.isna(section_num) or pd.isna(page):
+                    skip_count += 1
+                    continue
+
+                # 중복 체크 (같은 페이지)
+                if not replace_existing and book.contents.filter(page=int(page)).exists():
+                    skip_count += 1
+                    continue
+
+                # 데이터 생성
+                BookContent.objects.update_or_create(
+                    book=book,
+                    page=int(page),
+                    defaults={
+                        'chapter_num': int(chapter_num),
+                        'chapter_title': str(chapter_title) if not pd.isna(chapter_title) else '',
+                        'section_num': int(section_num),
+                        'section_title': str(section_title) if not pd.isna(section_title) else '',
+                        'subsection_num': str(int(subsection_num)) if not pd.isna(subsection_num) else '',
+                        'subsection_title': str(subsection_title) if not pd.isna(subsection_title) else '',
+                    }
+                )
+                success_count += 1
+
+            messages.success(request, f"'{book.title}' 목차 {success_count}개가 업로드되었습니다. (건너뜀: {skip_count}개)")
+            return redirect('bookstore:book_content_list', pk=pk)
+
+        except Exception as e:
+            messages.error(request, f"파일 업로드 중 오류가 발생했습니다: {e}")
+            return redirect('bookstore:book_content_upload', pk=pk)
+
+    return render(request, 'bookstore/book_content_upload.html', {
+        'book': book,
+    })
+
+
+def book_content_edit(request, pk, content_pk):
+    """개별 목차 항목 수정"""
+    book = get_object_or_404(Book, pk=pk)
+    content = get_object_or_404(BookContent, pk=content_pk, book=book)
+
+    if request.method == 'POST':
+        try:
+            content.chapter_num = int(request.POST.get('chapter_num', content.chapter_num))
+            content.chapter_title = request.POST.get('chapter_title', content.chapter_title)
+            content.section_num = int(request.POST.get('section_num', content.section_num))
+            content.section_title = request.POST.get('section_title', content.section_title)
+            content.subsection_num = request.POST.get('subsection_num', content.subsection_num)
+            content.subsection_title = request.POST.get('subsection_title', content.subsection_title)
+            content.page = int(request.POST.get('page', content.page))
+            content.save()
+            messages.success(request, "목차 정보가 수정되었습니다.")
+        except Exception as e:
+            messages.error(request, f"수정 중 오류 발생: {e}")
+
+        return redirect('bookstore:book_content_list', pk=pk)
+
+    return render(request, 'bookstore/book_content_edit.html', {
+        'book': book,
+        'content': content,
+    })
+
+
+def book_content_delete(request, pk, content_pk):
+    """개별 목차 항목 삭제"""
+    book = get_object_or_404(Book, pk=pk)
+    content = get_object_or_404(BookContent, pk=content_pk, book=book)
+
+    if request.method == 'POST':
+        content.delete()
+        messages.success(request, "목차 항목이 삭제되었습니다.")
+
+    return redirect('bookstore:book_content_list', pk=pk)
+
+
+def book_content_delete_all(request, pk):
+    """교재의 모든 목차 삭제"""
+    book = get_object_or_404(Book, pk=pk)
+
+    if request.method == 'POST':
+        deleted_count = book.contents.all().delete()[0]
+        messages.success(request, f"'{book.title}'의 목차 {deleted_count}개가 모두 삭제되었습니다.")
+
+    return redirect('bookstore:book_content_list', pk=pk)
 

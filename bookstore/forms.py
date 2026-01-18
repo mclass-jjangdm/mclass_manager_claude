@@ -103,3 +103,16 @@ class BookSaleForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['book'].queryset = Book.objects.filter(stock__gt=0).order_by('title')
         self.fields['book'].label = "판매할 교재"
+
+
+class BookContentUploadForm(forms.Form):
+    """교재 목차 CSV 업로드 폼"""
+    upload_file = forms.FileField(
+        label="CSV/Excel 파일",
+        help_text="대단원, 대단원 주제, 중단원, 중단원 주제, 소단원, 소단원 주제, page 컬럼이 필요합니다."
+    )
+    replace_existing = forms.BooleanField(
+        required=False,
+        label="기존 목차 교체",
+        help_text="체크하면 기존 목차를 모두 삭제하고 새로 업로드합니다."
+    )

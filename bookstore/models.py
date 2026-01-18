@@ -141,6 +141,36 @@ class BookSale(models.Model):
         ordering = ['-sale_date']
 
 
+class BookContent(models.Model):
+    """교재 세부 목차 정보 (대단원, 중단원, 소단원, 페이지 등)"""
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='contents', verbose_name="교재")
+
+    # 대단원
+    chapter_num = models.PositiveIntegerField(verbose_name="대단원 번호")
+    chapter_title = models.CharField(max_length=200, verbose_name="대단원 주제")
+
+    # 중단원
+    section_num = models.PositiveIntegerField(verbose_name="중단원 번호")
+    section_title = models.CharField(max_length=200, verbose_name="중단원 주제")
+
+    # 소단원
+    subsection_num = models.CharField(max_length=10, verbose_name="소단원 번호")  # '01', '90' 등 문자열로
+    subsection_title = models.CharField(max_length=200, verbose_name="소단원 주제")
+
+    # 페이지
+    page = models.PositiveIntegerField(verbose_name="페이지")
+
+    class Meta:
+        verbose_name = "교재 목차"
+        verbose_name_plural = "교재 목차"
+        ordering = ['book', 'page']
+        # 같은 교재의 같은 페이지는 중복 불가
+        unique_together = ['book', 'page']
+
+    def __str__(self):
+        return f"{self.book.title} - {self.chapter_title} > {self.section_title} > {self.subsection_title} (p.{self.page})"
+
+
 class BookStockLog(models.Model):
     """교재 입고(재고 추가) 및 반품 기록"""
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='stock_logs', verbose_name="교재")

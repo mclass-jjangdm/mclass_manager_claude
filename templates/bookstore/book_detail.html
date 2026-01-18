@@ -6,6 +6,10 @@
 <div class="flex justify-between items-center mb-6">
     <h2 class="text-3xl font-bold text-gray-800">도서 상세 정보</h2>
     <div class="flex gap-2">
+        <a href="{% url 'bookstore:book_content_list' book.pk %}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            세부 목차
+        </a>
         <a href="{% url 'bookstore:book_restock' book.pk %}"
            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             + 재고 입고
