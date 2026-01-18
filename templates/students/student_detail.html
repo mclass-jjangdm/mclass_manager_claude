@@ -154,7 +154,7 @@
                 <td class="px-4 py-3 text-sm text-right font-semibold text-red-600">{{ sale.get_total_price|intcomma }}원</td>
                 <td class="px-4 py-3 text-center">
                     {% if sale.book.contents.exists %}
-                    <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}"
+                    <a href="{% url 'progress:student_book_progress_list' sale.pk %}"
                        class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors inline-block">
                         진도 평가
                     </a>
@@ -223,7 +223,7 @@
                 <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">{{ sale.get_total_price|intcomma }}원</td>
                 <td class="px-4 py-3 text-center">
                     {% if sale.book.contents.exists %}
-                    <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}"
+                    <a href="{% url 'progress:student_book_progress_list' sale.pk %}"
                        class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors inline-block">
                         진도 평가
                     </a>

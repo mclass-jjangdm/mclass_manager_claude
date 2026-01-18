@@ -16,9 +16,10 @@ class TeacherAccessRestrictionMiddleware:
     # 교사가 접근할 수 있는 URL 패턴
     ALLOWED_PATHS = [
         r'^/progress/my/$',  # 교사 자신의 수업 페이지
-        r'^/bookstore/sale/\d+/progress/$',  # 학생 진도 목록 페이지
-        r'^/bookstore/sale/\d+/progress/\d+/$',  # 진도 평가 상세 페이지
-        r'^/bookstore/sale/\d+/progress/bulk-update/$',  # 일괄 평가 페이지
+        r'^/progress/book/\d+/$',  # 학생 진도 목록 페이지 (새 URL)
+        r'^/progress/book/\d+/\d+/$',  # 진도 평가 상세 페이지 (새 URL)
+        r'^/progress/book/\d+/bulk/$',  # 일괄 평가 페이지 (새 URL)
+        r'^/bookstore/sale/\d+/progress/',  # 기존 URL 리다이렉트 허용
         r'^/accounts/',  # 로그인/로그아웃 관련 (django-allauth)
         r'^/login/$',  # 로그인
         r'^/logout/$',  # 로그아웃 (POST)

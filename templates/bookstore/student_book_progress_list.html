@@ -1,9 +1,7 @@
-{% extends "bookstore/base_bookstore.html" %}
+{% extends "progress/base_assignment.html" %}
 {% load humanize %}
 
-{% block container_class %}wide-screen{% endblock %}
-
-{% block bookstore_content %}
+{% block assignment_content %}
 <div class="space-y-6">
     <!-- 헤더 영역 -->
     <div class="flex justify-between items-center">
@@ -74,7 +72,7 @@
     </div>
     {% else %}
     <!-- 일괄 평가 폼 -->
-    <form method="POST" action="{% url 'bookstore:student_book_progress_bulk_update' sale.pk %}">
+    <form method="POST" action="{% url 'progress:student_book_progress_bulk_update' sale.pk %}">
         {% csrf_token %}
 
         <!-- 미완료 항목 섹션 -->
@@ -171,7 +169,7 @@
                                 {% if record.teacher %}{{ record.teacher.name }}{% else %}-{% endif %}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <a href="{% url 'bookstore:student_book_progress_update' sale.pk record.pk %}"
+                                <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
                                    class="text-indigo-600 hover:text-indigo-800 text-xs">
                                     상세
                                 </a>
@@ -292,7 +290,7 @@
                                     {% if record.teacher %}{{ record.teacher.name }}{% else %}-{% endif %}
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <a href="{% url 'bookstore:student_book_progress_update' sale.pk record.pk %}"
+                                    <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
                                        class="text-indigo-600 hover:text-indigo-800 text-xs">
                                         상세
                                     </a>
@@ -320,7 +318,7 @@
         <div class="flex flex-wrap gap-2">
             {% for record in progress_records %}
             {% if record.needs_review %}
-            <a href="{% url 'bookstore:student_book_progress_update' sale.pk record.pk %}"
+            <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
                class="inline-flex items-center px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-full text-sm transition-colors">
                 p.{{ record.book_content.page }} - {{ record.book_content.subsection_title|truncatechars:20 }}
             </a>

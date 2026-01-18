@@ -1,9 +1,30 @@
 # bookstore/urls.py
 
 from django.urls import path
+from django.shortcuts import redirect
+from django.urls import reverse
 from . import views
 
 app_name = 'bookstore'
+
+# 진도 평가 URL을 progress 앱으로 리다이렉트하는 뷰 함수들
+def redirect_progress_list(request, sale_pk):
+    url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
+    if request.GET:
+        url += '?' + request.GET.urlencode()
+    return redirect(url)
+
+def redirect_progress_update(request, sale_pk, progress_pk):
+    url = reverse('progress:student_book_progress_update', kwargs={'sale_pk': sale_pk, 'progress_pk': progress_pk})
+    if request.GET:
+        url += '?' + request.GET.urlencode()
+    return redirect(url)
+
+def redirect_progress_bulk(request, sale_pk):
+    url = reverse('progress:student_book_progress_bulk_update', kwargs={'sale_pk': sale_pk})
+    if request.GET:
+        url += '?' + request.GET.urlencode()
+    return redirect(url)
 
 urlpatterns = [
     path('', views.book_list, name='book_list'),
@@ -48,8 +69,8 @@ urlpatterns = [
     path('<int:pk>/contents/<int:content_pk>/delete/', views.book_content_delete, name='book_content_delete'),
     path('<int:pk>/contents/delete-all/', views.book_content_delete_all, name='book_content_delete_all'),
 
-    # 학생 교재 진도 평가 관련 URL
-    path('sale/<int:sale_pk>/progress/', views.student_book_progress_list, name='student_book_progress_list'),
-    path('sale/<int:sale_pk>/progress/<int:progress_pk>/', views.student_book_progress_update, name='student_book_progress_update'),
-    path('sale/<int:sale_pk>/progress/bulk/', views.student_book_progress_bulk_update, name='student_book_progress_bulk_update'),
+    # 학생 교재 진도 평가 관련 URL - progress 앱으로 리다이렉트 (하위 호환성)
+    path('sale/<int:sale_pk>/progress/', redirect_progress_list, name='student_book_progress_list'),
+    path('sale/<int:sale_pk>/progress/<int:progress_pk>/', redirect_progress_update, name='student_book_progress_update'),
+    path('sale/<int:sale_pk>/progress/bulk/', redirect_progress_bulk, name='student_book_progress_bulk_update'),
 ]

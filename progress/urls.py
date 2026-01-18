@@ -3,6 +3,7 @@
 
 from django.urls import path
 from teachers import views as teacher_views
+from bookstore import views as bookstore_views
 from . import views
 
 app_name = 'progress'
@@ -26,4 +27,9 @@ urlpatterns = [
 
     # 교사 자신의 진도 페이지
     path('my/', teacher_views.TeacherMyProgressView.as_view(), name='my_progress'),
+
+    # 학생 교재 진도 평가 (bookstore에서 이동)
+    path('book/<int:sale_pk>/', bookstore_views.student_book_progress_list, name='student_book_progress_list'),
+    path('book/<int:sale_pk>/<int:progress_pk>/', bookstore_views.student_book_progress_update, name='student_book_progress_update'),
+    path('book/<int:sale_pk>/bulk/', bookstore_views.student_book_progress_bulk_update, name='student_book_progress_bulk_update'),
 ]

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 서브 네비게이션 -->
+    <div class="bg-white shadow-sm">
+        <div class="container">
+            <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Progress">
+                <a href="{% url 'progress:assignment_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'assignment_list' or request.resolver_match.url_name == 'assignment_create' %}active{% endif %}">
+                    학생 배정
+                </a>
+                <a href="{% url 'progress:dashboard' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    일별 요약
+                </a>
+                <a href="{% url 'progress:teacher_progress' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'teacher_progress' or request.resolver_match.url_name == 'teacher_progress_detail' %}active{% endif %}">
+                    진도 현황
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="container">
+        {% block assignment_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

@@ -1090,10 +1090,10 @@ def student_book_progress_update(request, sale_pk, progress_pk):
                 book_content__page__gt=progress.book_content.page
             ).order_by('book_content__page').first()
             if next_progress:
-                url = reverse('bookstore:student_book_progress_update', kwargs={'sale_pk': sale_pk, 'progress_pk': next_progress.pk})
+                url = reverse('progress:student_book_progress_update', kwargs={'sale_pk': sale_pk, 'progress_pk': next_progress.pk})
                 return redirect(url + portal_param)
 
-        url = reverse('bookstore:student_book_progress_list', kwargs={'sale_pk': sale_pk})
+        url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
         return redirect(url + portal_param)
 
     # 이전/다음 항목 찾기
@@ -1191,10 +1191,10 @@ def student_book_progress_bulk_update(request, sale_pk):
             messages.success(request, f"{updated_count}개 항목이 업데이트되었습니다.")
 
         portal_param = '?from=teacher_portal' if from_teacher_portal else ''
-        url = reverse('bookstore:student_book_progress_list', kwargs={'sale_pk': sale_pk})
+        url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
         return redirect(url + portal_param)
 
     portal_param = '?from=teacher_portal' if from_teacher_portal else ''
-    url = reverse('bookstore:student_book_progress_list', kwargs={'sale_pk': sale_pk})
+    url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
     return redirect(url + portal_param)
 

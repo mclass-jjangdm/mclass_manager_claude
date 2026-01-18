@@ -1,6 +1,6 @@
-{% extends "bookstore/base_bookstore.html" %}
+{% extends "progress/base_assignment.html" %}
 
-{% block bookstore_content %}
+{% block assignment_content %}
 <div class="space-y-6">
     <!-- 헤더 영역 -->
     <div class="flex justify-between items-center">
@@ -8,7 +8,7 @@
             <nav class="text-sm text-gray-500 mb-2">
                 <a href="{% url 'students:student_detail' student.pk %}" class="hover:text-indigo-600">{{ student.name }}</a>
                 <span class="mx-2">/</span>
-                <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}" class="hover:text-indigo-600">{{ book.title }} 진도</a>
+                <a href="{% url 'progress:student_book_progress_list' sale.pk %}" class="hover:text-indigo-600">{{ book.title }} 진도</a>
                 <span class="mx-2">/</span>
                 <span class="text-gray-700">p.{{ content.page }}</span>
             </nav>
@@ -16,7 +16,7 @@
             <p class="text-gray-600 mt-1">{{ student.name }} - {{ book.title }}</p>
         </div>
 
-        <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}"
+        <a href="{% url 'progress:student_book_progress_list' sale.pk %}"
            class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             목록으로
         </a>
@@ -113,13 +113,13 @@
                 <!-- 이전/다음 네비게이션 -->
                 <div class="flex gap-2">
                     {% if prev_progress %}
-                    <a href="{% url 'bookstore:student_book_progress_update' sale.pk prev_progress.pk %}"
+                    <a href="{% url 'progress:student_book_progress_update' sale.pk prev_progress.pk %}"
                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         &larr; 이전 (p.{{ prev_progress.book_content.page }})
                     </a>
                     {% endif %}
                     {% if next_progress %}
-                    <a href="{% url 'bookstore:student_book_progress_update' sale.pk next_progress.pk %}"
+                    <a href="{% url 'progress:student_book_progress_update' sale.pk next_progress.pk %}"
                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         다음 (p.{{ next_progress.book_content.page }}) &rarr;
                     </a>
@@ -128,7 +128,7 @@
 
                 <!-- 저장 버튼 -->
                 <div class="flex gap-3">
-                    <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}"
+                    <a href="{% url 'progress:student_book_progress_list' sale.pk %}"
                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         취소
                     </a>

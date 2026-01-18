@@ -11,7 +11,7 @@
             <p class="text-gray-600 mt-1">{{ student.name }} - {{ book.title }}</p>
         </div>
 
-        <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}?from=teacher_portal"
+        <a href="{% url 'progress:student_book_progress_list' sale.pk %}?from=teacher_portal"
            class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             목록으로
         </a>
@@ -109,13 +109,13 @@
                 <!-- 이전/다음 네비게이션 -->
                 <div class="flex gap-2">
                     {% if prev_progress %}
-                    <a href="{% url 'bookstore:student_book_progress_update' sale.pk prev_progress.pk %}?from=teacher_portal"
+                    <a href="{% url 'progress:student_book_progress_update' sale.pk prev_progress.pk %}?from=teacher_portal"
                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         &larr; 이전 (p.{{ prev_progress.book_content.page }})
                     </a>
                     {% endif %}
                     {% if next_progress %}
-                    <a href="{% url 'bookstore:student_book_progress_update' sale.pk next_progress.pk %}?from=teacher_portal"
+                    <a href="{% url 'progress:student_book_progress_update' sale.pk next_progress.pk %}?from=teacher_portal"
                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         다음 (p.{{ next_progress.book_content.page }}) &rarr;
                     </a>
@@ -124,7 +124,7 @@
 
                 <!-- 저장 버튼 -->
                 <div class="flex gap-3">
-                    <a href="{% url 'bookstore:student_book_progress_list' sale.pk %}?from=teacher_portal"
+                    <a href="{% url 'progress:student_book_progress_list' sale.pk %}?from=teacher_portal"
                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         취소
                     </a>

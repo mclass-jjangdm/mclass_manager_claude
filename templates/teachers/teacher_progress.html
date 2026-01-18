@@ -1,7 +1,7 @@
-{% extends 'teachers/base_teachers.html' %}
+{% extends 'progress/base_assignment.html' %}
 {% load humanize %}
 
-{% block teacher_content %}
+{% block assignment_content %}
 <div class="space-y-6">
     <!-- 헤더 -->
     <div class="flex justify-between items-center">
@@ -115,7 +115,7 @@
                                 <h4 class="font-semibold text-gray-800">{{ book_data.book.title }}</h4>
                                 <p class="text-sm text-gray-500">ISBN: {{ book_data.book.isbn }}</p>
                             </div>
-                            <a href="{% url 'bookstore:student_book_progress_list' book_data.sale.pk %}"
+                            <a href="{% url 'progress:student_book_progress_list' book_data.sale.pk %}"
                                class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 진도 평가
                             </a>
