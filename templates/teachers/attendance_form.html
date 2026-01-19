@@ -95,7 +95,7 @@
                         </thead>
                         <tbody>
                             {% for teacher in teachers %}
-                            {% with is_unavailable=teacher.id|stringformat:"i" %}
+                            {% with existing=existing_attendances|get_item:teacher.id %}
                             <tr class="{% if teacher.id in unavailable_teacher_ids %}unavailable-row{% endif %}" data-teacher-id="{{ teacher.id }}">
                                 <td class="font-medium">
                                     {{ teacher.name }}
@@ -105,6 +105,9 @@
                                         {{ reason.get_reason_display }}
                                     </span>
                                     {% endwith %}
+                                    {% endif %}
+                                    {% if existing %}
+                                    <span class="ml-2 text-xs text-blue-600">(기록있음)</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -119,6 +122,7 @@
                                         <input type="checkbox"
                                                name="is_present_{{ teacher.id }}"
                                                id="is_present_{{ teacher.id }}"
+                                               {% if existing %}checked{% endif %}
                                                {% if teacher.id in unavailable_teacher_ids %}disabled{% endif %}
                                                class="attendance-checkbox">
                                         <label for="is_present_{{ teacher.id }}" class="ml-2 text-sm text-gray-600">
@@ -130,7 +134,7 @@
                                     <input type="time"
                                            name="start_time_{{ teacher.id }}"
                                            id="start_time_{{ teacher.id }}"
-                                           value="18:00"
+                                           value="{% if existing %}{{ existing.start_time|time:'H:i' }}{% else %}18:00{% endif %}"
                                            {% if teacher.id in unavailable_teacher_ids %}disabled{% endif %}
                                            class="time-input">
                                 </td>
@@ -138,7 +142,7 @@
                                     <input type="time"
                                            name="end_time_{{ teacher.id }}"
                                            id="end_time_{{ teacher.id }}"
-                                           value="20:00"
+                                           value="{% if existing %}{{ existing.end_time|time:'H:i' }}{% else %}20:00{% endif %}"
                                            {% if teacher.id in unavailable_teacher_ids %}disabled{% endif %}
                                            class="time-input">
                                 </td>
@@ -222,24 +226,16 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 날짜 변경 시 출근 불가 정보 업데이트
+        // 날짜 변경 시 해당 날짜로 페이지 리다이렉트
         const dateInput = document.getElementById('id_date');
-        const form = document.getElementById('attendance-form');
 
         dateInput.addEventListener('change', function() {
-            // 날짜 변경 시 서버에서 새로운 출근 불가 정보를 가져오기 위해 페이지 새로고침
             const newDate = this.value;
-            fetch(`/teachers/attendance/check-unavailability/?date=${newDate}`)
-                .then(response => response.json())
-                .then(data => {
-                    updateUnavailableTeachers(data.unavailable_teacher_ids, data.unavailability_reasons);
-                })
-                .catch(error => {
-                    console.log('AJAX not available, using form submission');
-                });
+            // 선택한 날짜로 페이지 새로고침
+            window.location.href = '{% url "teachers:attendance_create" %}?date=' + newDate;
         });
 
-        // 출근 불가 교사의 입력 필드만 비활성화 (시간 입력은 항상 가능)
+        // 출근 불가 교사의 입력 필드 비활성화
         const unavailableRows = document.querySelectorAll('.unavailable-row');
         unavailableRows.forEach(row => {
             const inputs = row.querySelectorAll('input');
@@ -248,23 +244,5 @@
             });
         });
     });
-
-    function updateUnavailableTeachers(unavailableIds, reasons) {
-        const rows = document.querySelectorAll('tbody tr[data-teacher-id]');
-        rows.forEach(row => {
-            const teacherId = parseInt(row.dataset.teacherId);
-            const isUnavailable = unavailableIds.includes(teacherId);
-            const inputs = row.querySelectorAll('input');
-
-            if (isUnavailable) {
-                row.classList.add('unavailable-row');
-                inputs.forEach(input => input.disabled = true);
-            } else {
-                row.classList.remove('unavailable-row');
-                // 출근 가능한 교사는 모든 입력 필드 활성화
-                inputs.forEach(input => input.disabled = false);
-            }
-        });
-    }
 </script>
 {% endblock %}

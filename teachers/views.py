@@ -231,13 +231,23 @@ class TeacherUpdateView(LoginRequiredMixin, UpdateView):
 class AttendanceCreateView(LoginRequiredMixin, View):
     def get(self, request):
         teachers = Teacher.objects.filter(is_active=True).order_by('name')
-        form = BulkAttendanceForm(teachers=teachers)
         current_date = timezone.now().date()
-        month_start = current_date.replace(day=1)
-        month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
-        # 선택된 날짜 (기본값: 오늘)
-        selected_date = current_date
+        # 선택된 날짜 (쿼리 파라미터 또는 기본값: 오늘)
+        date_param = request.GET.get('date')
+        if date_param:
+            try:
+                selected_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+            except ValueError:
+                selected_date = current_date
+        else:
+            selected_date = current_date
+
+        form = BulkAttendanceForm(teachers=teachers, initial={'date': selected_date})
+
+        # 선택된 날짜 기준으로 월 계산
+        month_start = selected_date.replace(day=1)
+        month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
         # 해당 날짜의 출근 불가 교사 조회
         unavailable_teacher_ids = set(
@@ -251,6 +261,15 @@ class AttendanceCreateView(LoginRequiredMixin, View):
         unavailability_reasons = {
             u.teacher_id: u
             for u in TeacherUnavailability.objects.filter(
+                date=selected_date,
+                teacher__is_active=True
+            ).select_related('teacher')
+        }
+
+        # 해당 날짜의 기존 근무 기록 조회 (수정용)
+        existing_attendances = {
+            a.teacher_id: a
+            for a in Attendance.objects.filter(
                 date=selected_date,
                 teacher__is_active=True
             ).select_related('teacher')
@@ -278,10 +297,11 @@ class AttendanceCreateView(LoginRequiredMixin, View):
             'form': form,
             'teachers': teachers,
             'teacher_records': teacher_records,
-            'current_month': current_date.strftime('%Y년 %m월'),
+            'current_month': selected_date.strftime('%Y년 %m월'),
             'selected_date': selected_date,
             'unavailable_teacher_ids': unavailable_teacher_ids,
             'unavailability_reasons': unavailability_reasons,
+            'existing_attendances': existing_attendances,
         }
         return render(request, 'teachers/attendance_form.html', context)
 
