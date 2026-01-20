@@ -71,126 +71,36 @@
         </a>
     </div>
     {% else %}
+
+    <!-- 보완 필요 항목 요약 (맨 위에 표시) -->
+    {% if stats.needs_review > 0 %}
+    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <h4 class="font-semibold text-orange-800 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            보완 추천 항목 ({{ stats.needs_review }}개)
+        </h4>
+        <div class="flex flex-wrap gap-2">
+            {% for record in progress_records %}
+            {% if record.needs_review %}
+            <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
+               class="inline-flex items-center px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-full text-sm transition-colors">
+                p.{{ record.book_content.page }} - {{ record.book_content.subsection_title|truncatechars:20 }}
+            </a>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- 일괄 평가 폼 -->
     <form method="POST" action="{% url 'progress:student_book_progress_bulk_update' sale.pk %}">
         {% csrf_token %}
 
-        <!-- 미완료 항목 섹션 -->
-        <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
-            <div class="p-4 border-b border-gray-200 bg-amber-50 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-500 text-white font-bold text-sm">
-                        {{ stats.remaining }}
-                    </span>
-                    <h3 class="text-lg font-semibold text-amber-800">미완료 항목</h3>
-                    <span class="text-sm text-amber-600">(학습이 필요한 항목)</span>
-                </div>
-                <button type="submit"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                    선택 항목 저장
-                </button>
-            </div>
-
-            {% if stats.remaining > 0 %}
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase w-10">
-                                <input type="checkbox" id="select-all-incomplete" class="rounded">
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-16">
-                                페이지
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                단원/주제
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-32">
-                                학습일
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24">
-                                성취도
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-20">
-                                보완
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-20">
-                                과제
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24">
-                                담당쌤
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-16">
-                                상세
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for record in progress_records %}
-                        {% if not record.is_completed %}
-                        <tr class="hover:bg-amber-50 transition-colors incomplete-row">
-                            <td class="px-3 py-3 text-center">
-                                <input type="checkbox" name="progress_ids" value="{{ record.pk }}" class="progress-checkbox incomplete-checkbox rounded">
-                            </td>
-                            <td class="px-4 py-3 text-center font-semibold text-gray-700">
-                                p.{{ record.book_content.page }}
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                <div class="text-indigo-600 text-xs">{{ record.book_content.chapter_num }}. {{ record.book_content.chapter_title }}</div>
-                                <div class="font-medium">{{ record.book_content.subsection_title }}</div>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <input type="date"
-                                       name="study_date_{{ record.pk }}"
-                                       value="{{ record.study_date|date:'Y-m-d' }}"
-                                       class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <select name="achievement_{{ record.pk }}"
-                                        class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
-                                    {% for value, label in achievement_choices %}
-                                    <option value="{{ value }}" {% if record.achievement == value %}selected{% endif %}>{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <input type="checkbox"
-                                       name="needs_review_{{ record.pk }}"
-                                       {% if record.needs_review %}checked{% endif %}
-                                       class="rounded text-orange-600 focus:ring-orange-500">
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <input type="checkbox"
-                                       name="homework_done_{{ record.pk }}"
-                                       {% if record.homework_done %}checked{% endif %}
-                                       class="rounded text-green-600 focus:ring-green-500">
-                            </td>
-                            <td class="px-4 py-3 text-center text-sm text-gray-600">
-                                {% if record.teacher %}{{ record.teacher.name }}{% else %}-{% endif %}
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
-                                   class="text-indigo-600 hover:text-indigo-800 text-xs">
-                                    상세
-                                </a>
-                            </td>
-                        </tr>
-                        {% endif %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="p-8 text-center text-gray-500">
-                <div class="text-4xl mb-2">🎉</div>
-                <p>모든 항목을 완료했습니다!</p>
-            </div>
-            {% endif %}
-        </div>
-
         <!-- 완료 항목 섹션 (접을 수 있음) -->
         {% if stats.completed > 0 %}
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
             <div class="p-4 border-b border-gray-200 bg-green-50 cursor-pointer"
                  onclick="toggleCompletedSection()" id="completed-header">
                 <div class="flex items-center justify-between">
@@ -263,7 +173,7 @@
                                 <td class="px-4 py-3 text-center">
                                     <input type="date"
                                            name="study_date_{{ record.pk }}"
-                                           value="{{ record.study_date|date:'Y-m-d' }}"
+                                           value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
                                            class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
                                 </td>
                                 <td class="px-4 py-3 text-center">
@@ -304,29 +214,120 @@
             </div>
         </div>
         {% endif %}
-    </form>
 
-    <!-- 보완 필요 항목 요약 -->
-    {% if stats.needs_review > 0 %}
-    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <h4 class="font-semibold text-orange-800 mb-2 flex items-center gap-2">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-            </svg>
-            보완 추천 항목 ({{ stats.needs_review }}개)
-        </h4>
-        <div class="flex flex-wrap gap-2">
-            {% for record in progress_records %}
-            {% if record.needs_review %}
-            <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
-               class="inline-flex items-center px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-full text-sm transition-colors">
-                p.{{ record.book_content.page }} - {{ record.book_content.subsection_title|truncatechars:20 }}
-            </a>
+        <!-- 미완료 항목 섹션 -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+            <div class="p-4 border-b border-gray-200 bg-amber-50 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-500 text-white font-bold text-sm">
+                        {{ stats.remaining }}
+                    </span>
+                    <h3 class="text-lg font-semibold text-amber-800">미완료 항목</h3>
+                    <span class="text-sm text-amber-600">(학습이 필요한 항목)</span>
+                </div>
+                <button type="submit"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    선택 항목 저장
+                </button>
+            </div>
+
+            {% if stats.remaining > 0 %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase w-10">
+                                <input type="checkbox" id="select-all-incomplete" class="rounded">
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-16">
+                                페이지
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                단원/주제
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-32">
+                                학습일
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24">
+                                성취도
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-20">
+                                보완
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-20">
+                                과제
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24">
+                                담당쌤
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-16">
+                                상세
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for record in progress_records %}
+                        {% if not record.is_completed %}
+                        <tr class="hover:bg-amber-50 transition-colors incomplete-row">
+                            <td class="px-3 py-3 text-center">
+                                <input type="checkbox" name="progress_ids" value="{{ record.pk }}" class="progress-checkbox incomplete-checkbox rounded">
+                            </td>
+                            <td class="px-4 py-3 text-center font-semibold text-gray-700">
+                                p.{{ record.book_content.page }}
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <div class="text-indigo-600 text-xs">{{ record.book_content.chapter_num }}. {{ record.book_content.chapter_title }}</div>
+                                <div class="font-medium">{{ record.book_content.subsection_title }}</div>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <input type="date"
+                                       name="study_date_{{ record.pk }}"
+                                       value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
+                                       class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <select name="achievement_{{ record.pk }}"
+                                        class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
+                                    {% for value, label in achievement_choices %}
+                                    <option value="{{ value }}" {% if record.achievement == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <input type="checkbox"
+                                       name="needs_review_{{ record.pk }}"
+                                       {% if record.needs_review %}checked{% endif %}
+                                       class="rounded text-orange-600 focus:ring-orange-500">
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <input type="checkbox"
+                                       name="homework_done_{{ record.pk }}"
+                                       {% if record.homework_done %}checked{% endif %}
+                                       class="rounded text-green-600 focus:ring-green-500">
+                            </td>
+                            <td class="px-4 py-3 text-center text-sm text-gray-600">
+                                {% if record.teacher %}{{ record.teacher.name }}{% else %}-{% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
+                                   class="text-indigo-600 hover:text-indigo-800 text-xs">
+                                    상세
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                <div class="text-4xl mb-2">🎉</div>
+                <p>모든 항목을 완료했습니다!</p>
+            </div>
             {% endif %}
-            {% endfor %}
         </div>
-    </div>
-    {% endif %}
+    </form>
 
     <!-- 단원별 요약 (접을 수 있음) -->
     <div class="bg-white rounded-lg shadow">

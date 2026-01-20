@@ -162,7 +162,7 @@
                                 <td class="px-4 py-3 text-center">
                                     <input type="date"
                                            name="study_date_{{ record.pk }}"
-                                           value="{{ record.study_date|date:'Y-m-d' }}"
+                                           value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
                                            class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
                                 </td>
                                 <td class="px-4 py-3 text-center">
@@ -265,7 +265,7 @@
                             <td class="px-4 py-3 text-center">
                                 <input type="date"
                                        name="study_date_{{ record.pk }}"
-                                       value="{{ record.study_date|date:'Y-m-d' }}"
+                                       value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
                                        class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
                             </td>
                             <td class="px-4 py-3 text-center">

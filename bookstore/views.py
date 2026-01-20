@@ -1006,6 +1006,9 @@ def student_book_progress_list(request, sale_pk):
     # 교사 포털에서 접근한 경우 별도 템플릿 사용
     template_name = 'bookstore/student_book_progress_list_teacher.html' if from_teacher_portal else 'bookstore/student_book_progress_list.html'
 
+    from django.utils import timezone
+    today = timezone.now().date()
+
     return render(request, template_name, {
         'sale': sale,
         'student': student,
@@ -1015,6 +1018,7 @@ def student_book_progress_list(request, sale_pk):
         'stats': stats,
         'achievement_choices': StudentBookProgress.ACHIEVEMENT_CHOICES,
         'from_teacher_portal': from_teacher_portal,
+        'today': today,
     })
 
 
