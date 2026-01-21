@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment
+from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment, Message
 from .forms import BulkAttendanceForm, TeacherForm, TeacherUnavailabilityForm, BulkUnavailabilityForm, TeacherStudentAssignmentForm
 from django.contrib import messages
 from reportlab.pdfbase import pdfmetrics
@@ -2002,3 +2002,193 @@ def teacher_password_reset(request, pk):
             return redirect('teachers:teacher_detail', pk=pk)
 
     return render(request, 'teachers/teacher_password_reset.html', {'teacher': teacher})
+
+
+# ==================== 메시지 관리 ====================
+
+class MessageListView(LoginRequiredMixin, View):
+    """메시지 목록 조회"""
+
+    def get(self, request):
+        user = request.user
+        is_teacher = hasattr(user, 'teacher_profile')
+
+        # 받은 메시지 (개인 + 전체 공지)
+        received_messages = Message.objects.filter(
+            models.Q(recipient=user) | models.Q(recipient__isnull=True)
+        ).exclude(sender=user).order_by('-created_at')
+
+        # 보낸 메시지
+        sent_messages = Message.objects.filter(sender=user).order_by('-created_at')
+
+        # 읽지 않은 메시지 수
+        unread_count = received_messages.filter(is_read=False).count()
+
+        # 탭 선택
+        tab = request.GET.get('tab', 'received')
+
+        context = {
+            'received_messages': received_messages,
+            'sent_messages': sent_messages,
+            'unread_count': unread_count,
+            'tab': tab,
+            'is_teacher': is_teacher,
+        }
+
+        return render(request, 'teachers/message_list.html', context)
+
+
+class MessageDetailView(LoginRequiredMixin, View):
+    """메시지 상세 조회"""
+
+    def get(self, request, pk):
+        message = get_object_or_404(Message, pk=pk)
+        user = request.user
+
+        # 권한 확인 (발신자, 수신자, 또는 전체 공지)
+        if message.sender != user and message.recipient != user and message.recipient is not None:
+            messages.error(request, '접근 권한이 없습니다.')
+            return redirect('teachers:message_list')
+
+        # 읽음 처리
+        if message.recipient == user and not message.is_read:
+            message.is_read = True
+            message.save()
+
+        # 답변 목록
+        replies = message.replies.all().order_by('created_at')
+
+        context = {
+            'message': message,
+            'replies': replies,
+        }
+
+        return render(request, 'teachers/message_detail.html', context)
+
+
+class MessageCreateView(LoginRequiredMixin, View):
+    """메시지 작성 (원장 → 교사 지시사항)"""
+
+    def get(self, request):
+        from students.models import Student
+
+        # 관리자(is_staff)만 지시사항 작성 가능
+        if not request.user.is_staff:
+            messages.error(request, '지시사항 작성 권한이 없습니다.')
+            return redirect('teachers:message_list')
+
+        # 교사 목록
+        teachers = Teacher.objects.filter(is_active=True, user__isnull=False).order_by('name')
+
+        # 학생 목록
+        students = Student.objects.filter(is_active=True).order_by('name')
+
+        # 미리 선택된 교사/학생 (URL 파라미터)
+        selected_teacher_id = request.GET.get('teacher')
+        selected_student_id = request.GET.get('student')
+
+        context = {
+            'teachers': teachers,
+            'students': students,
+            'selected_teacher_id': int(selected_teacher_id) if selected_teacher_id else None,
+            'selected_student_id': int(selected_student_id) if selected_student_id else None,
+        }
+
+        return render(request, 'teachers/message_form.html', context)
+
+    def post(self, request):
+        if not request.user.is_staff:
+            messages.error(request, '지시사항 작성 권한이 없습니다.')
+            return redirect('teachers:message_list')
+
+        recipient_id = request.POST.get('recipient')
+        student_id = request.POST.get('student')
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+
+        if not title or not content:
+            messages.error(request, '제목과 내용을 입력해주세요.')
+            return redirect('teachers:message_create')
+
+        # 수신자 (비워두면 전체 공지)
+        recipient = None
+        if recipient_id:
+            recipient = get_object_or_404(User, pk=recipient_id)
+
+        # 관련 학생
+        student = None
+        if student_id:
+            from students.models import Student
+            student = get_object_or_404(Student, pk=student_id)
+
+        Message.objects.create(
+            sender=request.user,
+            recipient=recipient,
+            student=student,
+            message_type='instruction',
+            title=title,
+            content=content,
+        )
+
+        if recipient:
+            messages.success(request, f'{recipient.teacher_profile.name if hasattr(recipient, "teacher_profile") else recipient.username} 님에게 메시지를 보냈습니다.')
+        else:
+            messages.success(request, '전체 공지가 등록되었습니다.')
+
+        return redirect('teachers:message_list')
+
+
+class MessageReplyView(LoginRequiredMixin, View):
+    """메시지 답변 작성"""
+
+    def post(self, request, pk):
+        parent_message = get_object_or_404(Message, pk=pk)
+        content = request.POST.get('content', '').strip()
+
+        if not content:
+            messages.error(request, '답변 내용을 입력해주세요.')
+            return redirect('teachers:message_detail', pk=pk)
+
+        # 답변 생성
+        Message.objects.create(
+            sender=request.user,
+            recipient=parent_message.sender,  # 원본 메시지 보낸 사람에게
+            student=parent_message.student,
+            message_type='reply',
+            parent=parent_message,
+            title=f'Re: {parent_message.title}',
+            content=content,
+        )
+
+        messages.success(request, '답변이 등록되었습니다.')
+        return redirect('teachers:message_detail', pk=pk)
+
+
+@login_required
+def message_delete(request, pk):
+    """메시지 삭제"""
+    message = get_object_or_404(Message, pk=pk)
+
+    # 본인이 보낸 메시지만 삭제 가능
+    if message.sender != request.user:
+        messages.error(request, '삭제 권한이 없습니다.')
+        return redirect('teachers:message_list')
+
+    if request.method == 'POST':
+        message.delete()
+        messages.success(request, '메시지가 삭제되었습니다.')
+        return redirect('teachers:message_list')
+
+    return render(request, 'teachers/message_confirm_delete.html', {'message': message})
+
+
+@login_required
+def message_mark_read(request):
+    """메시지 일괄 읽음 처리"""
+    if request.method == 'POST':
+        Message.objects.filter(
+            models.Q(recipient=request.user) | models.Q(recipient__isnull=True)
+        ).exclude(sender=request.user).update(is_read=True)
+        messages.success(request, '모든 메시지를 읽음 처리했습니다.')
+
+    return redirect('teachers:message_list')

@@ -192,3 +192,72 @@ class TeacherStudentAssignment(models.Model):
         elif self.assignment_type == 'exception':
             return f"{self.date} - {self.student.name} (예외)"
         return f"{self.date} - {self.teacher.name} → {self.student.name}"
+
+
+class Message(models.Model):
+    """원장-교사 간 메시지"""
+    MESSAGE_TYPE_CHOICES = [
+        ('instruction', '지시사항'),
+        ('reply', '답변'),
+        ('notice', '공지'),
+    ]
+
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='sent_messages',
+        verbose_name='보낸 사람'
+    )
+    recipient = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='received_messages',
+        null=True, blank=True,
+        verbose_name='받는 사람',
+        help_text='비워두면 전체 공지'
+    )
+    student = models.ForeignKey(
+        'students.Student', on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name='messages',
+        verbose_name='관련 학생'
+    )
+    message_type = models.CharField(
+        max_length=20,
+        choices=MESSAGE_TYPE_CHOICES,
+        default='instruction',
+        verbose_name='메시지 유형'
+    )
+    parent = models.ForeignKey(
+        'self', on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name='replies',
+        verbose_name='원본 메시지'
+    )
+    title = models.CharField(max_length=200, verbose_name='제목')
+    content = models.TextField(verbose_name='내용')
+    is_read = models.BooleanField(default=False, verbose_name='읽음')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='작성일시')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='수정일시')
+
+    class Meta:
+        verbose_name = '메시지'
+        verbose_name_plural = '메시지'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.get_message_type_display()}] {self.title}"
+
+    @property
+    def sender_name(self):
+        """보낸 사람 이름 반환"""
+        if hasattr(self.sender, 'teacher_profile'):
+            return f"{self.sender.teacher_profile.name} 선생님"
+        return "원장"
+
+    @property
+    def recipient_name(self):
+        """받는 사람 이름 반환"""
+        if not self.recipient:
+            return "전체"
+        if hasattr(self.recipient, 'teacher_profile'):
+            return f"{self.recipient.teacher_profile.name} 선생님"
+        return "원장"

@@ -1009,6 +1009,15 @@ def student_book_progress_list(request, sale_pk):
     from django.utils import timezone
     today = timezone.now().date()
 
+    # 학생 관련 메시지 조회 (교사 포털에서만)
+    student_messages = []
+    if from_teacher_portal:
+        from teachers.models import Message
+        student_messages = Message.objects.filter(
+            student=student,
+            message_type='instruction'
+        ).order_by('-created_at')[:5]
+
     return render(request, template_name, {
         'sale': sale,
         'student': student,
@@ -1019,6 +1028,7 @@ def student_book_progress_list(request, sale_pk):
         'achievement_choices': StudentBookProgress.ACHIEVEMENT_CHOICES,
         'from_teacher_portal': from_teacher_portal,
         'today': today,
+        'student_messages': student_messages,
     })
 
 

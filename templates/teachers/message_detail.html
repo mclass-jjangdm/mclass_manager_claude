@@ -1,0 +1,103 @@
+{% extends 'base_teacher_portal.html' %}
+{% load humanize %}
+
+{% block title %}{{ message.title }} - M'Class{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 헤더 -->
+    <div class="flex justify-between items-center">
+        <a href="{% url 'teachers:message_list' %}"
+           class="text-gray-600 hover:text-gray-800 flex items-center gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            목록으로
+        </a>
+
+        {% if message.sender == user %}
+        <a href="{% url 'teachers:message_delete' message.pk %}"
+           class="text-red-600 hover:text-red-800 text-sm">
+            삭제
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- 메시지 상세 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <!-- 메시지 헤더 -->
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <div class="flex items-center gap-2 mb-2">
+                {% if message.message_type == 'instruction' %}
+                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">지시사항</span>
+                {% elif message.message_type == 'reply' %}
+                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">답변</span>
+                {% else %}
+                <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">공지</span>
+                {% endif %}
+
+                {% if message.student %}
+                <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded">
+                    관련 학생: {{ message.student.name }}
+                </span>
+                {% endif %}
+            </div>
+
+            <h2 class="text-xl font-bold text-gray-900">{{ message.title }}</h2>
+
+            <div class="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                <span>보낸 사람: <strong class="text-gray-700">{{ message.sender_name }}</strong></span>
+                <span>받는 사람: <strong class="text-gray-700">{{ message.recipient_name }}</strong></span>
+                <span>{{ message.created_at|date:"Y년 m월 d일 H:i" }}</span>
+            </div>
+        </div>
+
+        <!-- 메시지 내용 -->
+        <div class="px-6 py-6">
+            <div class="prose max-w-none whitespace-pre-wrap">{{ message.content }}</div>
+        </div>
+    </div>
+
+    <!-- 답변 섹션 -->
+    {% if replies %}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
+            <h3 class="font-semibold text-gray-700">답변 ({{ replies|length }})</h3>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for reply in replies %}
+            <div class="px-6 py-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="font-medium text-gray-800">{{ reply.sender_name }}</span>
+                    <span class="text-xs text-gray-400">{{ reply.created_at|date:"m/d H:i" }}</span>
+                </div>
+                <p class="text-gray-700 whitespace-pre-wrap">{{ reply.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 답변 작성 폼 (원본 메시지의 수신자만 답변 가능) -->
+    {% if message.recipient == user or message.sender != user %}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
+            <h3 class="font-semibold text-gray-700">답변 작성</h3>
+        </div>
+        <form method="POST" action="{% url 'teachers:message_reply' message.pk %}" class="p-6">
+            {% csrf_token %}
+            <textarea name="content"
+                      rows="4"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="답변 내용을 입력하세요..."></textarea>
+            <div class="mt-4 text-right">
+                <button type="submit"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm transition-colors">
+                    답변 등록
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

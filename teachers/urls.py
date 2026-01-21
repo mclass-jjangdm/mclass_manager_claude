@@ -42,4 +42,11 @@ urlpatterns = [
     path('<int:pk>/account/create/', views.teacher_account_create, name='teacher_account_create'),
     path('<int:pk>/account/delete/', views.teacher_account_delete, name='teacher_account_delete'),
     path('<int:pk>/password/reset/', views.teacher_password_reset, name='teacher_password_reset'),
+    # 메시지 관리
+    path('messages/', views.MessageListView.as_view(), name='message_list'),
+    path('messages/create/', views.MessageCreateView.as_view(), name='message_create'),
+    path('messages/<int:pk>/', views.MessageDetailView.as_view(), name='message_detail'),
+    path('messages/<int:pk>/reply/', views.MessageReplyView.as_view(), name='message_reply'),
+    path('messages/<int:pk>/delete/', views.message_delete, name='message_delete'),
+    path('messages/mark-read/', views.message_mark_read, name='message_mark_read'),
 ]

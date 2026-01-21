@@ -139,6 +139,12 @@ class StudentForm(forms.ModelForm):
         self.fields['personal_file'].widget = forms.FileInput(attrs={
             'class': 'form-input'
         })
+        self.fields['director_memo'].widget = forms.Textarea(attrs={
+            'class': 'form-input',
+            'placeholder': '학생 특징 및 요구사항을 입력하세요 (선생님에게 표시됨)',
+            'rows': 3
+        })
+        self.fields['director_memo'].required = False
 
 
 class StudentImportForm(forms.Form):
