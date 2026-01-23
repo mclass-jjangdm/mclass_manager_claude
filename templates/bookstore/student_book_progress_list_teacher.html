@@ -54,10 +54,30 @@
         </div>
     </div>
 
-    <!-- 학생 메모 및 관련 메시지 표시 -->
-    {% if student.director_memo or student_messages %}
+    <!-- 학생 정보 및 원장 메모 표시 -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+        <!-- 학생 기본 정보 (학년, 학교) -->
+        <div class="p-4 border-b border-blue-200">
+            <h4 class="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
+                학생 정보
+            </h4>
+            <div class="flex flex-wrap gap-4 text-sm">
+                <div>
+                    <span class="text-blue-600">학교:</span>
+                    <span class="font-medium text-blue-800">{{ student.school.name|default:"-" }}</span>
+                </div>
+                <div>
+                    <span class="text-blue-600">학년:</span>
+                    <span class="font-medium text-blue-800">{{ student.get_grade_display|default:"-" }}</span>
+                </div>
+            </div>
+        </div>
+
         {% if student.director_memo %}
+        <!-- 원장 메모 -->
         <div class="p-4 {% if student_messages %}border-b border-blue-200{% endif %}">
             <h4 class="font-semibold text-blue-800 mb-2 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -70,6 +90,7 @@
         {% endif %}
 
         {% if student_messages %}
+        <!-- 관련 지시사항 -->
         <div class="p-4">
             <h4 class="font-semibold text-blue-800 mb-2 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -93,7 +114,6 @@
         </div>
         {% endif %}
     </div>
-    {% endif %}
 
     {% if stats.total == 0 %}
     <!-- 진도 항목이 없을 때 -->

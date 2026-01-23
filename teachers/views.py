@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment, Message
+from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment, Message, MessageReadStatus
 from .forms import BulkAttendanceForm, TeacherForm, TeacherUnavailabilityForm, BulkUnavailabilityForm, TeacherStudentAssignmentForm
 from django.contrib import messages
 from reportlab.pdfbase import pdfmetrics
@@ -1903,10 +1903,17 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
                         'stats': stats,
                     })
 
+            # 해당 학생에 대한 지시사항 메시지 조회
+            student_messages = Message.objects.filter(
+                student=student,
+                message_type='instruction'
+            ).order_by('-created_at')[:3]
+
             student_data.append({
                 'student': student,
                 'assignment': assignment,
                 'books': books_data,
+                'messages': student_messages,
             })
 
         context = {
@@ -2014,15 +2021,32 @@ class MessageListView(LoginRequiredMixin, View):
         is_teacher = hasattr(user, 'teacher_profile')
 
         # 받은 메시지 (개인 + 전체 공지)
-        received_messages = Message.objects.filter(
+        received_messages = list(Message.objects.filter(
             models.Q(recipient=user) | models.Q(recipient__isnull=True)
-        ).exclude(sender=user).order_by('-created_at')
+        ).exclude(sender=user).order_by('-created_at'))
+
+        # 전체 공지(recipient=None)의 읽음 상태를 MessageReadStatus에서 확인
+        global_notice_ids = [m.pk for m in received_messages if m.recipient is None]
+        read_global_ids = set(MessageReadStatus.objects.filter(
+            user=user,
+            message_id__in=global_notice_ids
+        ).values_list('message_id', flat=True))
+
+        # 각 메시지에 사용자별 읽음 상태 추가
+        unread_count = 0
+        for message in received_messages:
+            if message.recipient is None:
+                # 전체 공지는 MessageReadStatus로 확인
+                message.is_read_by_user = message.pk in read_global_ids
+            else:
+                # 개인 메시지는 기존 is_read 필드 사용
+                message.is_read_by_user = message.is_read
+
+            if not message.is_read_by_user:
+                unread_count += 1
 
         # 보낸 메시지
         sent_messages = Message.objects.filter(sender=user).order_by('-created_at')
-
-        # 읽지 않은 메시지 수
-        unread_count = received_messages.filter(is_read=False).count()
 
         # 탭 선택
         tab = request.GET.get('tab', 'received')
@@ -2045,15 +2069,45 @@ class MessageDetailView(LoginRequiredMixin, View):
         message = get_object_or_404(Message, pk=pk)
         user = request.user
 
-        # 권한 확인 (발신자, 수신자, 또는 전체 공지)
-        if message.sender != user and message.recipient != user and message.recipient is not None:
+        # 권한 확인
+        has_permission = False
+
+        # 1. 발신자는 항상 볼 수 있음
+        if message.sender == user:
+            has_permission = True
+        # 2. 수신자는 볼 수 있음
+        elif message.recipient == user:
+            has_permission = True
+        # 3. 전체 공지(recipient=None)는 모두 볼 수 있음
+        elif message.recipient is None:
+            has_permission = True
+        # 4. 학생 관련 메시지는 해당 학생을 담당하는 교사도 볼 수 있음
+        elif message.student and hasattr(user, 'teacher_profile'):
+            today = timezone.now().date()
+            is_assigned = TeacherStudentAssignment.objects.filter(
+                teacher=user.teacher_profile,
+                student=message.student,
+                date=today,
+                assignment_type='normal'
+            ).exists()
+            if is_assigned:
+                has_permission = True
+
+        if not has_permission:
             messages.error(request, '접근 권한이 없습니다.')
             return redirect('teachers:message_list')
 
         # 읽음 처리
         if message.recipient == user and not message.is_read:
+            # 특정 수신자가 있는 메시지는 기존 방식으로 처리
             message.is_read = True
             message.save()
+        elif message.recipient is None:
+            # 전체 공지는 MessageReadStatus로 읽음 상태 기록
+            MessageReadStatus.objects.get_or_create(
+                message=message,
+                user=user
+            )
 
         # 답변 목록
         replies = message.replies.all().order_by('created_at')
@@ -2186,9 +2240,22 @@ def message_delete(request, pk):
 def message_mark_read(request):
     """메시지 일괄 읽음 처리"""
     if request.method == 'POST':
-        Message.objects.filter(
-            models.Q(recipient=request.user) | models.Q(recipient__isnull=True)
-        ).exclude(sender=request.user).update(is_read=True)
+        user = request.user
+
+        # 개인 메시지 읽음 처리 (기존 방식)
+        Message.objects.filter(recipient=user).exclude(sender=user).update(is_read=True)
+
+        # 전체 공지 읽음 처리 (MessageReadStatus 생성)
+        global_notices = Message.objects.filter(
+            recipient__isnull=True
+        ).exclude(sender=user)
+
+        for notice in global_notices:
+            MessageReadStatus.objects.get_or_create(
+                message=notice,
+                user=user
+            )
+
         messages.success(request, '모든 메시지를 읽음 처리했습니다.')
 
     return redirect('teachers:message_list')

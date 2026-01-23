@@ -253,6 +253,25 @@
         </div>
     </div>
 
+    <!-- 원장 메모 섹션 -->
+    <div class="bg-blue-50 rounded-lg shadow p-6 border border-blue-200">
+        <h3 class="text-lg font-semibold text-blue-900 mb-4 pb-2 border-b border-blue-200">
+            원장 메모
+        </h3>
+        <div class="grid grid-cols-1 gap-6">
+            <div>
+                <label for="{{ form.director_memo.id_for_label }}" class="block text-sm font-medium text-blue-800 mb-2">
+                    학생 특징 및 요구사항
+                </label>
+                {{ form.director_memo }}
+                {% if form.director_memo.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.director_memo.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-blue-600">이 내용은 선생님의 교재 진도 평가 페이지에서 표시됩니다.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- 기타 정보 섹션 -->
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">

@@ -61,7 +61,7 @@
                         <div class="px-6 py-4 flex items-start gap-4">
                             <!-- 읽음 표시 -->
                             <div class="flex-shrink-0 pt-1">
-                                {% if not message.is_read %}
+                                {% if not message.is_read_by_user %}
                                 <span class="block w-2 h-2 bg-indigo-500 rounded-full"></span>
                                 {% else %}
                                 <span class="block w-2 h-2 bg-gray-200 rounded-full"></span>
@@ -84,7 +84,7 @@
                                     {% endif %}
                                 </div>
 
-                                <h4 class="font-medium text-gray-900 truncate {% if not message.is_read %}font-bold{% endif %}">
+                                <h4 class="font-medium text-gray-900 truncate {% if not message.is_read_by_user %}font-bold{% endif %}">
                                     {{ message.title }}
                                 </h4>
                                 <p class="text-sm text-gray-500 truncate">{{ message.content|truncatewords:20 }}</p>

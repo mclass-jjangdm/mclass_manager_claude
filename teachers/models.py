@@ -261,3 +261,26 @@ class Message(models.Model):
         if hasattr(self.recipient, 'teacher_profile'):
             return f"{self.recipient.teacher_profile.name} 선생님"
         return "원장"
+
+
+class MessageReadStatus(models.Model):
+    """메시지 읽음 상태 (사용자별 추적, 특히 전체 공지용)"""
+    message = models.ForeignKey(
+        Message, on_delete=models.CASCADE,
+        related_name='read_statuses',
+        verbose_name='메시지'
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='message_read_statuses',
+        verbose_name='사용자'
+    )
+    read_at = models.DateTimeField(auto_now_add=True, verbose_name='읽은 시간')
+
+    class Meta:
+        verbose_name = '메시지 읽음 상태'
+        verbose_name_plural = '메시지 읽음 상태'
+        unique_together = ['message', 'user']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.message.title} ({self.read_at})"

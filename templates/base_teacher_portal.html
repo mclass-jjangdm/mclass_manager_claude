@@ -45,9 +45,6 @@
                             <a href="{% url 'progress:my_progress' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">
                                 내 수업
                             </a>
-                            <a href="{% url 'teachers:message_list' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu relative">
-                                메시지
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -82,9 +79,6 @@
                 <a href="{% url 'progress:my_progress' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
                     내 수업
                 </a>
-                <a href="{% url 'teachers:message_list' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
-                    메시지
-                </a>
                 {% if user.teacher_profile %}
                 <div class="text-indigo-300 px-3 py-2 text-sm border-t border-indigo-600 mt-2 pt-2">
                     {{ user.teacher_profile.name }} 선생님
@@ -93,6 +87,60 @@
             </div>
         </div>
     </nav>
+    {% endif %}
+
+    <!-- 전체 공지 알림 -->
+    {% if global_notices %}
+    <div id="global-notices-container" class="bg-amber-50 border-b border-amber-200">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-amber-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="flex-grow">
+                    <h4 class="text-amber-800 font-semibold text-sm mb-2">
+                        전체 공지
+                        {% if unread_notice_count > 0 %}
+                        <span class="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unread_notice_count }}</span>
+                        {% endif %}
+                    </h4>
+                    <div id="notices-list" class="space-y-2">
+                        {% for notice in global_notices %}
+                        <div class="notice-item flex items-center gap-2 rounded p-2 border transition-colors {% if notice.is_read_by_user %}bg-gray-50 border-gray-200{% else %}bg-white border-amber-300{% endif %}">
+                            <a href="{% url 'teachers:message_detail' notice.pk %}"
+                               class="flex-grow hover:opacity-80">
+                                <div class="flex justify-between items-center">
+                                    <span class="{% if notice.is_read_by_user %}text-gray-600{% else %}font-medium text-amber-900{% endif %} text-sm flex items-center gap-2">
+                                        {% if not notice.is_read_by_user %}
+                                        <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                                        {% endif %}
+                                        {{ notice.title }}
+                                    </span>
+                                    <span class="text-xs {% if notice.is_read_by_user %}text-gray-400{% else %}text-amber-600{% endif %}">{{ notice.created_at|date:"m/d" }}</span>
+                                </div>
+                                <p class="text-xs {% if notice.is_read_by_user %}text-gray-500{% else %}text-amber-700{% endif %} truncate mt-1">{{ notice.content|truncatewords:20 }}</p>
+                            </a>
+                            <button onclick="this.closest('.notice-item').remove(); if(document.querySelectorAll('.notice-item').length === 0) document.getElementById('global-notices-container').style.display='none';"
+                                    class="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-200 transition-colors"
+                                    title="이 공지 닫기">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button onclick="document.getElementById('global-notices-container').style.display='none'" class="flex-shrink-0 text-amber-600 hover:text-amber-800" title="모든 공지 닫기">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
     {% endif %}
 
     <main class="flex-grow py-6">

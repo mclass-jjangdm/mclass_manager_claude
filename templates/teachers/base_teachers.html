@@ -43,6 +43,10 @@
                    class="nav-link {% if request.resolver_match.url_name == 'assignment_list' or request.resolver_match.url_name == 'assignment_create' %}active{% endif %}">
                     학생 배정
                 </a>
+                <a href="{% url 'teachers:message_list' %}"
+                   class="nav-link {% if 'message' in request.resolver_match.url_name %}active{% endif %}">
+                    메시지
+                </a>
             </nav>
         </div>
     </div>
