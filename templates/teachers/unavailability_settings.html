@@ -1,8 +1,6 @@
 {% extends 'teachers/base_teachers.html' %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
 <style>
     .page-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -135,7 +133,7 @@
                 <div class="form-group">
                     <label class="form-label">날짜 선택</label>
                     <input type="text" id="blocked-date-picker" name="blocked_date"
-                           class="form-input" placeholder="날짜를 선택하세요" readonly style="max-width: 200px;">
+                           class="form-input mclass-datepicker" placeholder="날짜를 선택하세요" readonly style="max-width: 200px;">
                 </div>
 
                 <div class="form-group">
@@ -211,8 +209,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
 <script>
     flatpickr("#blocked-date-picker", {
         locale: "ko",

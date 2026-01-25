@@ -26,10 +26,11 @@
         <form method="GET" class="flex flex-wrap gap-4 items-end">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">날짜</label>
-                <input type="date"
+                <input type="text"
                        name="date"
                        value="{{ selected_date|date:'Y-m-d' }}"
-                       class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                       class="px-4 py-2 border border-gray-300 rounded-lg mclass-datepicker"
+                       readonly>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">교사</label>

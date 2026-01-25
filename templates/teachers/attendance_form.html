@@ -77,7 +77,7 @@
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                         <label class="form-label" for="id_date">날짜</label>
-                        <input type="date" name="date" id="id_date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control" required>
+                        <input type="text" name="date" id="id_date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control mclass-datepicker" required readonly>
                     </div>
                 </div>
 
@@ -226,13 +226,14 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 날짜 변경 시 해당 날짜로 페이지 리다이렉트
-        const dateInput = document.getElementById('id_date');
-
-        dateInput.addEventListener('change', function() {
-            const newDate = this.value;
-            // 선택한 날짜로 페이지 새로고침
-            window.location.href = '{% url "teachers:attendance_create" %}?date=' + newDate;
+        // Flatpickr 달력에서 날짜 변경 시 해당 날짜로 페이지 리다이렉트
+        flatpickr('#id_date', {
+            dateFormat: 'Y-m-d',
+            onChange: function(selectedDates, dateStr) {
+                if (dateStr) {
+                    window.location.href = '{% url "teachers:attendance_create" %}?date=' + dateStr;
+                }
+            }
         });
 
         // 출근 불가 교사의 입력 필드 비활성화

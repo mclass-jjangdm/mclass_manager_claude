@@ -12,7 +12,7 @@ class BookForm(forms.ModelForm):
                   'cost_price', 'price', 'stock', 'memo']
         widgets = {
             'subject': forms.Select(attrs={'class': 'form-control'}),
-            'created_at': forms.DateInput(attrs={'type': 'date'}),
+            'created_at': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'isbn': forms.TextInput(attrs={
                 'placeholder': '바코드를 스캔하세요',
                 'autofocus': 'autofocus',
@@ -63,7 +63,7 @@ class BookStockLogForm(forms.ModelForm):
         fields = ['created_at', 'supplier', 'quantity', 'cost_price', 'memo']
 
         widgets = {
-            'created_at': forms.DateInput(attrs={'type': 'date'}),
+            'created_at': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'supplier': forms.Select(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'min': 1, 'autofocus': 'autofocus'}),
             'cost_price': forms.NumberInput(attrs={'step': 100}),
@@ -82,7 +82,7 @@ class BookReturnForm(forms.ModelForm):
             'quantity': forms.NumberInput(attrs={'min': 1, 'autofocus': 'autofocus'}),
             'cost_price': forms.NumberInput(attrs={'step': 100}),
             'total_payment': forms.NumberInput(attrs={'readonly': 'readonly', 'style': 'background-color: #eee;'}),
-            'payment_date': forms.DateInput(attrs={'type': 'date'}),
+            'payment_date': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'memo': forms.TextInput(attrs={'placeholder': '반품 사유'}),
         }
 
@@ -95,7 +95,7 @@ class BookSaleForm(forms.ModelForm):
             'book': forms.Select(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'min': 1, 'value': 1}),
             'price': forms.NumberInput(attrs={'step': 100}),
-            'sale_date': forms.DateInput(attrs={'type': 'date'}),
+            'sale_date': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'memo': forms.TextInput(attrs={'placeholder': '비고'}),
         }
 

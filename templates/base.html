@@ -17,7 +17,9 @@
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
 
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-    
+
+    <!-- Flatpickr 달력 공통 스타일 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         body {
             font-family: 'Noto Sans KR', 'nanum-gothic';
@@ -25,8 +27,131 @@
         .font-ubuntu {
             font-family: 'Ubuntu', sans-serif;
         }
+
+        /* 공통 달력 스타일 - Modern & Clean */
+        .flatpickr-calendar {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            border-radius: 16px !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+            border: none !important;
+            overflow: hidden;
+        }
+        .flatpickr-calendar.inline {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+        }
+        .flatpickr-months {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            padding: 12px 8px !important;
+            border-radius: 16px 16px 0 0 !important;
+        }
+        .flatpickr-months .flatpickr-month {
+            color: white !important;
+            fill: white !important;
+            height: 40px !important;
+        }
+        .flatpickr-current-month {
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            color: white !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            background: transparent !important;
+            color: white !important;
+            font-weight: 600 !important;
+        }
+        .flatpickr-current-month input.cur-year {
+            color: white !important;
+            font-weight: 600 !important;
+        }
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month {
+            fill: white !important;
+            color: white !important;
+            padding: 8px !important;
+            transition: all 0.2s ease !important;
+        }
+        .flatpickr-months .flatpickr-prev-month:hover,
+        .flatpickr-months .flatpickr-next-month:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-radius: 50% !important;
+        }
+        .flatpickr-months .flatpickr-prev-month svg,
+        .flatpickr-months .flatpickr-next-month svg {
+            fill: white !important;
+        }
+        .flatpickr-innerContainer {
+            padding: 8px !important;
+        }
+        .flatpickr-weekdays {
+            background: transparent !important;
+            padding: 8px 0 !important;
+        }
+        .flatpickr-weekday {
+            color: #6b7280 !important;
+            font-weight: 600 !important;
+            font-size: 0.8rem !important;
+        }
+        .flatpickr-day {
+            border-radius: 10px !important;
+            font-weight: 500 !important;
+            transition: all 0.15s ease !important;
+            margin: 2px !important;
+            height: 38px !important;
+            line-height: 38px !important;
+        }
+        .flatpickr-day:hover {
+            background: #f3f4f6 !important;
+            border-color: transparent !important;
+        }
+        .flatpickr-day.today {
+            border: 2px solid #667eea !important;
+            background: transparent !important;
+        }
+        .flatpickr-day.today:hover {
+            background: #eef2ff !important;
+        }
+        .flatpickr-day.selected,
+        .flatpickr-day.startRange,
+        .flatpickr-day.endRange {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-color: transparent !important;
+            color: white !important;
+            font-weight: 600 !important;
+        }
+        .flatpickr-day.selected:hover,
+        .flatpickr-day.startRange:hover,
+        .flatpickr-day.endRange:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+        }
+        .flatpickr-day.inRange {
+            background: #eef2ff !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+        }
+        .flatpickr-day.flatpickr-disabled,
+        .flatpickr-day.flatpickr-disabled:hover {
+            color: #d1d5db !important;
+            background: transparent !important;
+        }
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            color: #9ca3af !important;
+        }
+        /* 날짜 입력 필드 스타일 */
+        .mclass-datepicker {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important;
+            background-size: 20px !important;
+            padding-right: 40px !important;
+            cursor: pointer !important;
+        }
+        .mclass-datepicker:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+        }
     </style>
-    
+
     {% block extra_css %}
     {% endblock %}
 
@@ -111,6 +236,38 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+
+    <!-- Flatpickr 달력 공통 스크립트 -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+    <script>
+        // 공통 Flatpickr 설정
+        flatpickr.localize(flatpickr.l10ns.ko);
+
+        // 자동 초기화: .mclass-datepicker 클래스가 있는 input에 적용
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.mclass-datepicker').forEach(function(el) {
+                if (!el._flatpickr) {
+                    flatpickr(el, {
+                        dateFormat: "Y-m-d",
+                        disableMobile: true
+                    });
+                }
+            });
+
+            // 월 선택기 초기화: .mclass-monthpicker 클래스
+            document.querySelectorAll('.mclass-monthpicker').forEach(function(el) {
+                if (!el._flatpickr) {
+                    flatpickr(el, {
+                        plugins: [new monthSelectPlugin({shorthand: true, dateFormat: "Y-m", altFormat: "Y년 F"})],
+                        disableMobile: true
+                    });
+                }
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 
     {% block extra_js %}{% endblock %}
 </body>

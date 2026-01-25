@@ -19,11 +19,12 @@
     <div class="bg-white rounded-lg shadow p-4">
         <form method="GET" class="flex items-center gap-4">
             <label class="text-sm font-medium text-gray-700">날짜 선택:</label>
-            <input type="date"
+            <input type="text"
                    name="date"
+                   id="date-picker"
                    value="{{ selected_date|date:'Y-m-d' }}"
-                   onchange="this.form.submit()"
-                   class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                   class="px-4 py-2 border border-gray-300 rounded-lg mclass-datepicker"
+                   readonly>
             <a href="{% url 'progress:my_progress' %}"
                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">
                 오늘
@@ -166,4 +167,30 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 날짜 선택 시 자동 제출
+    document.addEventListener('DOMContentLoaded', function() {
+        const picker = document.getElementById('date-picker');
+        if (picker && picker._flatpickr) {
+            picker._flatpickr.config.onChange.push(function(selectedDates, dateStr) {
+                if (dateStr) {
+                    picker.form.submit();
+                }
+            });
+        } else {
+            // fallback: flatpickr 초기화 후 onChange 설정
+            flatpickr('#date-picker', {
+                dateFormat: 'Y-m-d',
+                onChange: function(selectedDates, dateStr) {
+                    if (dateStr) {
+                        document.querySelector('#date-picker').form.submit();
+                    }
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

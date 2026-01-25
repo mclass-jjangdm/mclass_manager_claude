@@ -24,13 +24,13 @@ class RoomForm(forms.ModelForm):
                 'min': '1',
                 'class': 'form-control'
             }),
-            'contract_start_date': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'form-control'
+            'contract_start_date': forms.TextInput(attrs={
+                'class': 'form-control mclass-datepicker',
+                'readonly': 'readonly'
             }),
-            'contract_end_date': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'form-control'
+            'contract_end_date': forms.TextInput(attrs={
+                'class': 'form-control mclass-datepicker',
+                'readonly': 'readonly'
             }),
         }
 
@@ -38,10 +38,11 @@ class RoomForm(forms.ModelForm):
 class MaintenanceForm(forms.Form):
     date = forms.CharField(
         label='부과년월',
-        widget=forms.DateInput(attrs={
-            'class': 'form-control',
-            'type': 'month',
-            'style': 'width: 150px;'
+        widget=forms.TextInput(attrs={
+            'class': 'form-control mclass-monthpicker',
+            'style': 'width: 150px;',
+            'readonly': 'readonly',
+            'placeholder': 'YYYY-MM'
         })
     )
     
@@ -70,9 +71,9 @@ class MaintenanceForm(forms.Form):
             self.fields[f'date_paid_{room.id}'] = forms.DateField(
                 label=f'{room.number}호 납부일자',
                 required=False,
-                widget=forms.DateInput(attrs={
-                    'class': 'form-control',
-                    'type': 'date',
+                widget=forms.TextInput(attrs={
+                    'class': 'form-control mclass-datepicker',
+                    'readonly': 'readonly',
                     'style': 'width: 100%;'
                 })
             )
@@ -95,9 +96,9 @@ class MaintenanceUpdateForm(forms.ModelForm):
                 'class': 'form-input',
                 'min': '0'
             }),
-            'date_paid': forms.DateInput(attrs={
-                'class': 'form-input',
-                'type': 'date'
+            'date_paid': forms.TextInput(attrs={
+                'class': 'form-input mclass-datepicker',
+                'readonly': 'readonly'
             }),
             'memo': forms.TextInput(attrs={
                 'class': 'form-input'

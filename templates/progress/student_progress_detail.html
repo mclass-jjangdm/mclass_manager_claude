@@ -96,10 +96,11 @@
                                    {% if entry.is_assigned %}checked{% endif %}>
                         </td>
                         <td class="px-3 py-2">
-                            <input type="date"
-                                   class="form-input text-sm py-1 px-2 w-full entry-input"
+                            <input type="text"
+                                   class="form-input text-sm py-1 px-2 w-full entry-input mclass-datepicker"
                                    data-field="study_date"
-                                   value="{{ entry.study_date|date:'Y-m-d'|default:'' }}">
+                                   value="{{ entry.study_date|date:'Y-m-d'|default:'' }}"
+                                   readonly>
                         </td>
                         <td class="px-3 py-2">
                             <select class="form-input text-sm py-1 px-2 w-full entry-select" data-field="teacher">

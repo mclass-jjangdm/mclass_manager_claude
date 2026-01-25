@@ -2323,10 +2323,15 @@ def teacher_my_unavailability_create(request):
     else:
         remaining_count = None  # None이면 무제한
 
+    # 차단 날짜 정보 (날짜와 사유 포함)
+    blocked_dates_info = {}
+    for blocked in UnavailabilityBlockedDate.objects.filter(date__gte=today):
+        blocked_dates_info[blocked.date.strftime('%Y-%m-%d')] = blocked.reason or '등록 불가'
+
     context = {
         'today': today,
         'reason_choices': TeacherUnavailability.REASON_CHOICES,
-        'blocked_dates': [d.strftime('%Y-%m-%d') for d in blocked_dates],
+        'blocked_dates_info': blocked_dates_info,
         'teacher': teacher,
         'remaining_count': remaining_count,
         'month_count': month_count,

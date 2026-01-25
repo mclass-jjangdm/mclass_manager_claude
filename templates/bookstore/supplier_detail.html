@@ -46,8 +46,8 @@
             <div class="bg-orange-50 p-3 rounded-lg border border-orange-200 flex justify-end items-center gap-3">
                 <label class="flex items-center gap-2 font-medium text-sm text-gray-700 whitespace-nowrap">
                     지급일:
-                    <input type="date" name="payment_date" value="{{ today }}" required
-                           class="form-input py-1 px-2 text-sm">
+                    <input type="text" name="payment_date" value="{{ today }}" required
+                           class="form-input py-1 px-2 text-sm mclass-datepicker" readonly>
                 </label>
                 <button type="submit"
                         onclick="return confirm('선택한 입고 건을 지급 완료 처리하시겠습니까?');"
@@ -104,8 +104,8 @@
             <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex justify-end items-center gap-3">
                 <label class="flex items-center gap-2 font-medium text-sm text-gray-700 whitespace-nowrap">
                     환불일:
-                    <input type="date" name="payment_date" value="{{ today }}" required
-                           class="form-input py-1 px-2 text-sm">
+                    <input type="text" name="payment_date" value="{{ today }}" required
+                           class="form-input py-1 px-2 text-sm mclass-datepicker" readonly>
                 </label>
                 <button type="submit"
                         onclick="return confirm('선택한 반품 건을 정산(차감) 완료 처리하시겠습니까?');"

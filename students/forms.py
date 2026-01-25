@@ -109,9 +109,9 @@ class StudentForm(forms.ModelForm):
             'class': 'form-input',
             'placeholder': '현금영수증용 번호를 입력하세요'
         })
-        self.fields['interview_date'].widget = forms.DateInput(attrs={
-            'class': 'form-input',
-            'type': 'date'
+        self.fields['interview_date'].widget = forms.TextInput(attrs={
+            'class': 'form-input mclass-datepicker',
+            'readonly': 'readonly'
         })
         self.fields['interview_score'].widget = forms.NumberInput(attrs={
             'class': 'form-input',
@@ -124,13 +124,13 @@ class StudentForm(forms.ModelForm):
             'placeholder': '인터뷰 정보를 입력하세요',
             'style': 'height: 100px; width: 100%;'  # width 추가
         })
-        self.fields['first_class_date'].widget = forms.DateInput(attrs={
-            'class': 'form-input',
-            'type': 'date'
+        self.fields['first_class_date'].widget = forms.TextInput(attrs={
+            'class': 'form-input mclass-datepicker',
+            'readonly': 'readonly'
         })
-        self.fields['quit_date'].widget = forms.DateInput(attrs={
-            'class': 'form-input',
-            'type': 'date'
+        self.fields['quit_date'].widget = forms.TextInput(attrs={
+            'class': 'form-input mclass-datepicker',
+            'readonly': 'readonly'
         })
         self.fields['etc'].widget = forms.TextInput(attrs={
             'class': 'form-input',

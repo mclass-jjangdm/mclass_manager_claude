@@ -195,7 +195,7 @@ class ProgressEntryForm(forms.ModelForm):
         fields = ['is_assigned', 'study_date', 'teacher', 'understanding', 'homework', 'memo']
         widgets = {
             'is_assigned': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5'}),
-            'study_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'study_date': forms.TextInput(attrs={'class': 'form-control mclass-datepicker', 'readonly': 'readonly'}),
             'teacher': forms.Select(attrs={'class': 'form-control'}),
             'understanding': forms.Select(attrs={'class': 'form-control'}),
             'homework': forms.TextInput(attrs={'placeholder': '과제 내용', 'class': 'form-control'}),

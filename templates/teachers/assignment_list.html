@@ -3,7 +3,6 @@
 {% block title %}학생 배정 - MClass Manager{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     /* ========== 공통 스타일 ========== */
     .view-tabs {
@@ -545,7 +544,7 @@
                 <span class="stat-label">미배정</span>
             </div>
         </div>
-        <input type="date" id="date-picker" class="date-input" value="{{ selected_date|date:'Y-m-d' }}">
+        <input type="text" id="date-picker" class="date-input mclass-datepicker" value="{{ selected_date|date:'Y-m-d' }}" readonly>
     </div>
 </div>
 
@@ -887,8 +886,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
 <script>
     // CSRF 토큰
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;

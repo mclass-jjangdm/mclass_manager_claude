@@ -1,9 +1,6 @@
 {% extends 'teachers/base_teachers.html' %}
 
 {% block extra_css %}
-<!-- Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
 <style>
     .calendar-container {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -109,24 +106,6 @@
     .reason-badge.other { background: #e5e7eb; color: #374151; }
     .reason-badge.other.selected { border-color: #6b7280; background: #6b7280; color: white; }
 
-    /* Flatpickr 커스텀 */
-    .flatpickr-calendar {
-        border-radius: 12px !important;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
-        border: none !important;
-    }
-    .flatpickr-day.selected {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        border-color: #667eea !important;
-    }
-    .flatpickr-day.selected.startRange,
-    .flatpickr-day.selected.endRange {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    }
-    .flatpickr-day.inRange {
-        background: rgba(102, 126, 234, 0.2) !important;
-        border-color: rgba(102, 126, 234, 0.2) !important;
-    }
     .selected-dates-preview {
         background: #f3f4f6;
         border-radius: 10px;
@@ -357,9 +336,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Flatpickr JS -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
 <script>
     // 탭 전환
     function switchTab(tab) {

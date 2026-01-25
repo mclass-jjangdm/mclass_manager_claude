@@ -221,10 +221,11 @@
                                     <div class="font-medium">{{ record.book_content.subsection_title }}</div>
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <input type="date"
+                                    <input type="text"
                                            name="study_date_{{ record.pk }}"
                                            value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
-                                           class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
+                                           class="w-full text-sm border border-gray-300 rounded px-2 py-1 mclass-datepicker"
+                                           readonly>
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <select name="achievement_{{ record.pk }}"
@@ -324,10 +325,11 @@
                                 <div class="font-medium">{{ record.book_content.subsection_title }}</div>
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <input type="date"
+                                <input type="text"
                                        name="study_date_{{ record.pk }}"
                                        value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
-                                       class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500">
+                                       class="w-full text-sm border border-gray-300 rounded px-2 py-1 mclass-datepicker"
+                                       readonly>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <select name="achievement_{{ record.pk }}"

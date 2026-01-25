@@ -22,11 +22,12 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <form method="GET" class="flex items-center gap-4">
                 <label class="text-sm font-medium text-gray-700">날짜 선택:</label>
-                <input type="date"
+                <input type="text"
                        name="date"
+                       id="date-picker"
                        value="{{ selected_date|date:'Y-m-d' }}"
-                       onchange="this.form.submit()"
-                       class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                       class="px-4 py-2 border border-gray-300 rounded-lg mclass-datepicker"
+                       readonly>
                 <input type="hidden" name="view" value="{{ view_mode }}">
                 <a href="?date={% now 'Y-m-d' %}&view={{ view_mode }}"
                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">
@@ -545,4 +546,20 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 날짜 선택 시 자동 제출
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr('#date-picker', {
+            dateFormat: 'Y-m-d',
+            onChange: function(selectedDates, dateStr) {
+                if (dateStr) {
+                    document.querySelector('#date-picker').form.submit();
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

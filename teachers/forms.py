@@ -67,13 +67,13 @@ class TeacherForm(forms.ModelForm):
                 'class': 'form-input',
                 'placeholder': '이메일'
             }),
-            'hire_date': forms.DateInput(attrs={
-                'class': 'form-input',
-                'type': 'date'
+            'hire_date': forms.TextInput(attrs={
+                'class': 'form-input mclass-datepicker',
+                'readonly': 'readonly'
             }),
-            'resignation_date': forms.DateInput(attrs={
-                'class': 'form-input',
-                'type': 'date'
+            'resignation_date': forms.TextInput(attrs={
+                'class': 'form-input mclass-datepicker',
+                'readonly': 'readonly'
             }),
             'base_salary': forms.NumberInput(attrs={
                 'class': 'form-input',
@@ -143,7 +143,7 @@ class AttendanceRecordForm(forms.Form):
     )
 
 class BulkAttendanceForm(forms.Form):
-    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), initial=timezone.now)
+    date = forms.DateField(widget=forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}), initial=timezone.now)
 
     def __init__(self, *args, **kwargs):
         teachers = kwargs.pop('teachers', None)
@@ -173,7 +173,7 @@ class TeacherUnavailabilityForm(forms.ModelForm):
         fields = ['teacher', 'date', 'reason', 'memo']
         widgets = {
             'teacher': forms.Select(attrs={'class': 'form-control'}),
-            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'date': forms.TextInput(attrs={'class': 'form-control mclass-datepicker', 'readonly': 'readonly'}),
             'reason': forms.Select(attrs={'class': 'form-control'}),
             'memo': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '상세 사유 (선택사항)'}),
         }
@@ -193,11 +193,11 @@ class BulkUnavailabilityForm(forms.Form):
     )
     start_date = forms.DateField(
         label='시작일',
-        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+        widget=forms.TextInput(attrs={'class': 'form-control mclass-datepicker', 'readonly': 'readonly'})
     )
     end_date = forms.DateField(
         label='종료일',
-        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+        widget=forms.TextInput(attrs={'class': 'form-control mclass-datepicker', 'readonly': 'readonly'})
     )
     reason = forms.ChoiceField(
         choices=TeacherUnavailability.REASON_CHOICES,
@@ -229,7 +229,7 @@ class TeacherStudentAssignmentForm(forms.ModelForm):
         widgets = {
             'teacher': forms.Select(attrs={'class': 'form-control'}),
             'student': forms.Select(attrs={'class': 'form-control'}),
-            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'date': forms.TextInput(attrs={'class': 'form-control mclass-datepicker', 'readonly': 'readonly'}),
             'memo': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': '메모 (선택사항)'}),
         }
 

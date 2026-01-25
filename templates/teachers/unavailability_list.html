@@ -1,9 +1,6 @@
 {% extends 'teachers/base_teachers.html' %}
 
 {% block extra_css %}
-<!-- Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
 <style>
     .page-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -462,8 +459,6 @@
 </div>
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
 <script>
     flatpickr("#date-calendar", {
         inline: true,
