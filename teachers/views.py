@@ -7,6 +7,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment, Message, MessageReadStatus
 from .forms import BulkAttendanceForm, TeacherForm, TeacherUnavailabilityForm, BulkUnavailabilityForm, TeacherStudentAssignmentForm
@@ -2101,8 +2102,12 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
 
 
 @login_required
+@staff_member_required
 def teacher_account_create(request, pk):
-    """교사에게 로그인 계정 생성 (관리자용)"""
+    """교사에게 로그인 계정 생성 (관리자용) - 임시 비밀번호 자동 생성"""
+    import secrets
+    import string
+
     teacher = get_object_or_404(Teacher, pk=pk)
 
     if teacher.user:
@@ -2111,30 +2116,33 @@ def teacher_account_create(request, pk):
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
-        password = request.POST.get('password', '')
-        password_confirm = request.POST.get('password_confirm', '')
 
         # 유효성 검사
         if not username:
             messages.error(request, '사용자명을 입력해주세요.')
         elif User.objects.filter(username=username).exists():
             messages.error(request, '이미 사용 중인 사용자명입니다.')
-        elif len(password) < 4:
-            messages.error(request, '비밀번호는 4자 이상이어야 합니다.')
-        elif password != password_confirm:
-            messages.error(request, '비밀번호가 일치하지 않습니다.')
         else:
+            # 임시 비밀번호 생성 (숫자 4자리)
+            temp_password = ''.join(secrets.choice(string.digits) for _ in range(4))
+
             # 계정 생성
             user = User.objects.create_user(
                 username=username,
-                password=password,
+                password=temp_password,
                 first_name=teacher.name,
                 email=teacher.email or ''
             )
             teacher.user = user
             teacher.save()
-            messages.success(request, f'{teacher.name} 선생님의 계정이 생성되었습니다. (ID: {username})')
-            return redirect('teachers:teacher_detail', pk=pk)
+
+            # 생성 완료 후 임시 비밀번호를 한 번만 표시
+            return render(request, 'teachers/teacher_account_create.html', {
+                'teacher': teacher,
+                'temp_password': temp_password,
+                'created_username': username,
+                'account_created': True,
+            })
 
     return render(request, 'teachers/teacher_account_create.html', {'teacher': teacher})
 
@@ -2160,29 +2168,71 @@ def teacher_account_delete(request, pk):
 
 
 @login_required
+@staff_member_required
 def teacher_password_reset(request, pk):
-    """교사 비밀번호 재설정 (관리자용)"""
+    """교사 비밀번호 재설정 (관리자용) - 임시 비밀번호 자동 생성"""
+    import secrets
+    import string
+
     teacher = get_object_or_404(Teacher, pk=pk)
 
     if not teacher.user:
         messages.warning(request, f'{teacher.name} 선생님은 계정이 없습니다.')
         return redirect('teachers:teacher_detail', pk=pk)
 
-    if request.method == 'POST':
-        password = request.POST.get('password', '')
-        password_confirm = request.POST.get('password_confirm', '')
+    temp_password = None
 
-        if len(password) < 4:
-            messages.error(request, '비밀번호는 4자 이상이어야 합니다.')
-        elif password != password_confirm:
-            messages.error(request, '비밀번호가 일치하지 않습니다.')
-        else:
-            teacher.user.set_password(password)
-            teacher.user.save()
-            messages.success(request, f'{teacher.name} 선생님의 비밀번호가 변경되었습니다.')
-            return redirect('teachers:teacher_detail', pk=pk)
+    if request.method == 'POST':
+        # 임시 비밀번호 생성 (숫자 4자리)
+        temp_password = ''.join(secrets.choice(string.digits) for _ in range(4))
+
+        teacher.user.set_password(temp_password)
+        teacher.user.save()
+
+        # 비밀번호를 템플릿에 한 번만 표시
+        return render(request, 'teachers/teacher_password_reset.html', {
+            'teacher': teacher,
+            'temp_password': temp_password,
+            'password_reset_success': True,
+        })
 
     return render(request, 'teachers/teacher_password_reset.html', {'teacher': teacher})
+
+
+@login_required
+def teacher_password_change(request):
+    """교사 자신의 비밀번호 변경"""
+    user = request.user
+
+    # 교사 계정인지 확인
+    if not hasattr(user, 'teacher_profile'):
+        messages.error(request, '교사 계정만 이용할 수 있습니다.')
+        return redirect('index')
+
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password', '')
+        new_password = request.POST.get('new_password', '')
+        new_password_confirm = request.POST.get('new_password_confirm', '')
+
+        # 현재 비밀번호 확인
+        if not user.check_password(current_password):
+            messages.error(request, '현재 비밀번호가 일치하지 않습니다.')
+        elif len(new_password) < 4:
+            messages.error(request, '새 비밀번호는 4자 이상이어야 합니다.')
+        elif new_password != new_password_confirm:
+            messages.error(request, '새 비밀번호가 일치하지 않습니다.')
+        elif current_password == new_password:
+            messages.error(request, '새 비밀번호는 현재 비밀번호와 달라야 합니다.')
+        else:
+            user.set_password(new_password)
+            user.save()
+            # 비밀번호 변경 후 다시 로그인
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, user)
+            messages.success(request, '비밀번호가 변경되었습니다.')
+            return redirect('progress:my_progress')
+
+    return render(request, 'teachers/teacher_password_change.html')
 
 
 # ==================== 메시지 관리 ====================

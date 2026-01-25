@@ -1,6 +1,22 @@
 from django.views.generic import TemplateView
+from django.contrib.auth.views import LoginView
+from django.contrib.auth import authenticate
+from django.contrib import messages
 from django.db.models import Count, Q
 from django.utils import timezone
+
+
+class AdminLoginView(LoginView):
+    """관리자 전용 로그인 뷰 - 교사 계정 차단"""
+    template_name = 'index.html'
+
+    def form_valid(self, form):
+        user = form.get_user()
+        # 교사 계정인 경우 로그인 차단
+        if hasattr(user, 'teacher_profile'):
+            messages.error(self.request, '선생님 계정은 "선생님 포털 로그인"을 이용해 주세요.')
+            return self.form_invalid(form)
+        return super().form_valid(form)
 
 
 class IndexView(TemplateView):
