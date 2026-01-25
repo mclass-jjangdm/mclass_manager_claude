@@ -186,14 +186,34 @@ LOGIN_REDIRECT_URL = 'index'
 
 
 # data logging
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'debug.log',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'django.log'),
+            'maxBytes': 1024 * 1024 * 10,  # 10MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'security': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'security.log'),
+            'maxBytes': 1024 * 1024 * 10,  # 10MB
+            'backupCount': 10,
+            'formatter': 'verbose',
         },
     },
     'loggers': {
@@ -201,6 +221,11 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'INFO',
             'propagate': True,
+        },
+        'django.security': {
+            'handlers': ['security'],
+            'level': 'WARNING',
+            'propagate': False,
         },
     },
 }
@@ -223,4 +248,79 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'jjangdm@mclass.co.kr')
 
+
+# ============================================
+# 보안 설정 (Security Settings)
+# ============================================
+
+# X-Frame-Options: Clickjacking 방지
+X_FRAME_OPTIONS = 'DENY'
+
+# Content-Type 스니핑 방지
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# XSS 필터 활성화
+SECURE_BROWSER_XSS_FILTER = True
+
+# 프로덕션 환경 보안 설정 (DEBUG=False일 때만 적용)
+if not DEBUG:
+    # HTTPS 강제 리다이렉트
+    SECURE_SSL_REDIRECT = True
+
+    # 프록시 뒤에서 HTTPS 감지
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # HSTS (HTTP Strict Transport Security) 설정
+    SECURE_HSTS_SECONDS = 31536000  # 1년
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # 쿠키 보안 설정
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # SameSite 쿠키 설정 (CSRF 방지)
+    SESSION_COOKIE_SAMESITE = 'Strict'
+    CSRF_COOKIE_SAMESITE = 'Strict'
+
+    # 세션 설정
+    SESSION_COOKIE_AGE = 3600 * 8  # 8시간
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+
+# ============================================
+# 파일 업로드 보안 설정
+# ============================================
+
+# 허용된 파일 확장자
+ALLOWED_UPLOAD_EXTENSIONS = {
+    'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+    'jpg', 'jpeg', 'png', 'gif', 'bmp',
+    'txt', 'csv', 'hwp', 'zip'
+}
+
+# 허용된 MIME 타입
+ALLOWED_UPLOAD_MIME_TYPES = {
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/bmp',
+    'text/plain',
+    'text/csv',
+    'application/x-hwp',
+    'application/zip',
+}
+
+# 최대 파일 크기 (10MB)
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024
+
+# Excel/CSV 가져오기용 최대 파일 크기 (5MB)
+MAX_IMPORT_FILE_SIZE = 5 * 1024 * 1024
 

@@ -1,6 +1,9 @@
 # forms.py
 from django import forms
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from .models import Student, School
+from common.utils import validate_uploaded_file, validate_file_size
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -150,15 +153,50 @@ class StudentForm(forms.ModelForm):
 class StudentImportForm(forms.Form):
     file = forms.FileField(
         label='파일 업로드',
-        help_text='허용된 확장자: .xlsx, .xls, .csv',
+        help_text='허용된 확장자: .xlsx, .xls, .csv (최대 5MB)',
     )
 
     def clean_file(self):
         file = self.cleaned_data['file']
         ext = file.name.split('.')[-1].lower()
 
+        # 확장자 검증
         if ext not in ['xlsx', 'xls', 'csv']:
             raise forms.ValidationError('엑셀 파일(.xlsx, .xls) 또는 CSV 파일(.csv)만 업로드 가능합니다.')
+
+        # 파일 크기 검증 (5MB)
+        max_size = getattr(settings, 'MAX_IMPORT_FILE_SIZE', 5 * 1024 * 1024)
+        if file.size > max_size:
+            max_mb = max_size / (1024 * 1024)
+            raise forms.ValidationError(f'파일 크기가 너무 큽니다. (최대 {max_mb:.0f}MB)')
+
+        return file
+
+
+class StudentFileUploadForm(forms.Form):
+    """학생 파일 업로드 폼 (보안 강화)"""
+    file = forms.FileField(
+        label='파일',
+        help_text='허용된 파일 형식: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG 등 (최대 10MB)',
+    )
+    description = forms.CharField(
+        label='설명',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': '파일 설명 (선택사항)'
+        })
+    )
+
+    def clean_file(self):
+        file = self.cleaned_data['file']
+
+        # 종합 파일 검증
+        try:
+            validate_uploaded_file(file)
+        except ValidationError as e:
+            raise forms.ValidationError(str(e))
 
         return file
 

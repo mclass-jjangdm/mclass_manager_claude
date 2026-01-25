@@ -1,17 +1,19 @@
+import logging
+import datetime
+import pandas as pd
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.generic import ListView
-from .models import Student, School  # Import School model
-from .forms import StudentForm, StudentImportForm, BulkSMSForm
-import pandas as pd
 from django.http import HttpResponse
-from .models import Student, StudentFile
-import datetime
-from common.utils import send_sms
+from .models import Student, School, StudentFile
+from .forms import StudentForm, StudentImportForm, BulkSMSForm, StudentFileUploadForm
+from common.utils import send_sms, validate_uploaded_file
+
+logger = logging.getLogger(__name__)
 
 
 class StudentListView(LoginRequiredMixin, ListView):
@@ -95,6 +97,7 @@ class StudentCreateView(LoginRequiredMixin, CreateView):
         return ''.join([str(random.randint(0, 9)) for _ in range(8)])
 
 
+@login_required
 def student_detail(request, pk):
     from bookstore.models import BookSale
     from grades.models import Grade
@@ -272,6 +275,7 @@ def student_detail(request, pk):
     return render(request, 'students/student_detail.html', context)
 
 
+@login_required
 def student_update(request, pk):
     student = get_object_or_404(Student, pk=pk)
     if request.method == 'POST':
@@ -285,6 +289,7 @@ def student_update(request, pk):
     return render(request, 'students/student_form.html', {'form': form})
 
 
+@login_required
 def student_import(request):
     if request.method == 'POST':
         form = StudentImportForm(request.POST, request.FILES)
@@ -356,7 +361,9 @@ def student_import(request):
                 messages.success(request, f"{new_count}명 학생이 새로 추가되었고, {duplicate_count}명 학생은 이미 존재하여 업데이트되었습니다.")
                 return redirect('students:student_list')
             except Exception as e:
-                messages.error(request, f"파일 처리 중 오류가 발생했습니다: {e}")
+                # 에러 로그는 서버에 기록하고 사용자에게는 일반 메시지만 표시
+                logger.error(f"Student import error: {str(e)}")
+                messages.error(request, "파일 처리 중 오류가 발생했습니다. 파일 형식을 확인해주세요.")
         else:
             messages.error(request, "폼이 유효하지 않습니다.")
     else:
@@ -364,6 +371,7 @@ def student_import(request):
     return render(request, 'students/student_import.html', {'form': form})
 
 
+@login_required
 def student_export(request):
     students = Student.objects.all()
 
@@ -391,6 +399,7 @@ def student_export(request):
     return response
 
 
+@login_required
 def student_import_sample(request):
     """학생 데이터 가져오기용 샘플 파일 다운로드"""
     file_format = request.GET.get('format', 'xlsx')
@@ -426,31 +435,46 @@ def student_import_sample(request):
 
     return response
 
+@login_required
 def student_files(request, pk):
     student = get_object_or_404(Student, pk=pk)
-    
+
     if request.method == 'POST':
-        if 'file' in request.FILES:
-            file = request.FILES['file']
-            description = request.POST.get('description', '')
-            
-            student_file = StudentFile(
-                student=student,
-                file=file,
-                file_name=file.name,
-                description=description
-            )
-            student_file.save()
-            messages.success(request, '파일이 성공적으로 업로드되었습니다.')
+        form = StudentFileUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.cleaned_data['file']
+            description = form.cleaned_data.get('description', '')
+
+            try:
+                student_file = StudentFile(
+                    student=student,
+                    file=file,
+                    file_name=file.name,
+                    description=description
+                )
+                student_file.save()
+                messages.success(request, '파일이 성공적으로 업로드되었습니다.')
+            except Exception as e:
+                logger.error(f"File upload error for student {pk}: {str(e)}")
+                messages.error(request, '파일 업로드 중 오류가 발생했습니다.')
+
             return redirect('students:student_files', pk=pk)
-        
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
+    else:
+        form = StudentFileUploadForm()
+
     files = student.files.all()
     context = {
         'student': student,
         'files': files,
+        'form': form,
     }
     return render(request, 'students/student_files.html', context)
 
+@login_required
 def delete_student_file(request, file_id):
     file = get_object_or_404(StudentFile, id=file_id)
     student_pk = file.student.pk
@@ -592,12 +616,8 @@ def student_send_email(request, pk):
                 messages.success(request, f'{student.name} 학생에게 이메일을 성공적으로 발송했습니다.')
                 return redirect('students:student_detail', pk=pk)
             except Exception as e:
-                import logging
-                import traceback
-                logger = logging.getLogger(__name__)
-                logger.error(f'Email sending failed: {str(e)}')
-                logger.error(traceback.format_exc())
-                messages.error(request, f'이메일 발송 중 오류가 발생했습니다: {str(e)}')
+                logger.error(f'Email sending failed for student {pk}: {str(e)}', exc_info=True)
+                messages.error(request, '이메일 발송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
     else:
         form = StudentEmailForm()
 
@@ -650,12 +670,8 @@ def student_send_sms(request, pk):
 
                 return redirect('students:student_detail', pk=pk)
             except Exception as e:
-                import logging
-                import traceback
-                logger = logging.getLogger(__name__)
-                logger.error(f'SMS sending failed: {str(e)}')
-                logger.error(traceback.format_exc())
-                messages.error(request, f'문자 발송 중 오류가 발생했습니다: {str(e)}')
+                logger.error(f'SMS sending failed for student {pk}: {str(e)}', exc_info=True)
+                messages.error(request, '문자 발송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
     else:
         form = StudentSMSForm()
 
@@ -708,12 +724,8 @@ def student_send_sms_parent(request, pk):
 
                 return redirect('students:student_detail', pk=pk)
             except Exception as e:
-                import logging
-                import traceback
-                logger = logging.getLogger(__name__)
-                logger.error(f'SMS sending failed: {str(e)}')
-                logger.error(traceback.format_exc())
-                messages.error(request, f'문자 발송 중 오류가 발생했습니다: {str(e)}')
+                logger.error(f'SMS sending to parent failed for student {pk}: {str(e)}', exc_info=True)
+                messages.error(request, '문자 발송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
     else:
         form = StudentSMSForm()
 
@@ -726,8 +738,9 @@ def student_send_sms_parent(request, pk):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_superuser)
 def grade_promotion_confirm(request):
-    """학년 일괄 증가 확인 페이지"""
+    """학년 일괄 증가 확인 페이지 (관리자 전용)"""
     # 현재 학년별 학생 수 집계
     from django.db.models import Count
 
@@ -770,8 +783,9 @@ def grade_promotion_confirm(request):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_superuser)
 def grade_promotion_execute(request):
-    """학년 일괄 증가 실행"""
+    """학년 일괄 증가 실행 (관리자 전용)"""
     if request.method != 'POST':
         messages.error(request, '잘못된 접근입니다.')
         return redirect('students:student_list')
