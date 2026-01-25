@@ -32,7 +32,7 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             from students.models import Student
-            from teachers.models import Teacher, TeacherStudentAssignment
+            from teachers.models import Teacher, TeacherStudentAssignment, TeacherUnavailability
             from bookstore.models import StudentBookProgress
 
             today = timezone.now().date()
@@ -59,6 +59,11 @@ class IndexView(TemplateView):
                 Q(resignation_date__isnull=True)
             ).count()
 
+            # 출근 불가 일정 승인 대기 건수
+            pending_unavailability_count = TeacherUnavailability.objects.filter(
+                status='pending'
+            ).count()
+
             # 오늘 학습 진도 통계
             today_assignments = TeacherStudentAssignment.objects.filter(date=today)
             today_assigned = today_assignments.filter(assignment_type='normal').count()
@@ -68,6 +73,7 @@ class IndexView(TemplateView):
             context['grade_stats'] = grade_stats
             context['total_students'] = total_students
             context['active_teachers'] = active_teachers
+            context['pending_unavailability_count'] = pending_unavailability_count
             context['today'] = today
             context['today_assigned'] = today_assigned
             context['today_absent'] = today_absent
