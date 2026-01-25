@@ -22,6 +22,9 @@ urlpatterns = [
     path('unavailability/create/', views.UnavailabilityCreateView.as_view(), name='unavailability_create'),
     path('unavailability/<int:pk>/delete/', views.unavailability_delete, name='unavailability_delete'),
     path('unavailability/bulk-delete/', views.unavailability_bulk_delete, name='unavailability_bulk_delete'),
+    path('unavailability/<int:pk>/approve/', views.unavailability_approve, name='unavailability_approve'),
+    path('unavailability/<int:pk>/reject/', views.unavailability_reject, name='unavailability_reject'),
+    path('unavailability/settings/', views.unavailability_settings, name='unavailability_settings'),
     # 교사-학생 배정 관리
     path('assignment/', views.AssignmentListView.as_view(), name='assignment_list'),
     path('assignment/create/', views.AssignmentCreateView.as_view(), name='assignment_create'),
@@ -43,6 +46,10 @@ urlpatterns = [
     path('<int:pk>/account/delete/', views.teacher_account_delete, name='teacher_account_delete'),
     path('<int:pk>/password/reset/', views.teacher_password_reset, name='teacher_password_reset'),
     path('password/change/', views.teacher_password_change, name='teacher_password_change'),
+    # 교사용 출근 불가 일정 관리
+    path('my-unavailability/', views.TeacherMyUnavailabilityView.as_view(), name='teacher_my_unavailability'),
+    path('my-unavailability/create/', views.teacher_my_unavailability_create, name='teacher_my_unavailability_create'),
+    path('my-unavailability/<int:pk>/delete/', views.teacher_my_unavailability_delete, name='teacher_my_unavailability_delete'),
     # 메시지 관리
     path('messages/', views.MessageListView.as_view(), name='message_list'),
     path('messages/create/', views.MessageCreateView.as_view(), name='message_create'),

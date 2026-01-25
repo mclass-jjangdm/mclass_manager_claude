@@ -1,0 +1,133 @@
+{% extends 'base_teacher_portal.html' %}
+
+{% block title %}출근 불가 일정 - M'Class 선생님 포털{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- 헤더 -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">출근 불가 일정</h1>
+            <p class="text-gray-500 text-sm mt-1">출근이 어려운 날짜를 미리 등록해 주세요.</p>
+        </div>
+        <a href="{% url 'teachers:teacher_my_unavailability_create' %}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            일정 등록
+        </a>
+    </div>
+
+    <!-- 예정된 출근 불가 일정 -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">예정된 일정</h2>
+        </div>
+
+        {% if unavailabilities %}
+        <div class="divide-y divide-gray-200">
+            {% for item in unavailabilities %}
+            <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4
+                        {% if item.status == 'pending' %}bg-yellow-100
+                        {% elif item.status == 'rejected' %}bg-red-100
+                        {% else %}bg-indigo-100{% endif %}">
+                        <span class="font-bold
+                            {% if item.status == 'pending' %}text-yellow-600
+                            {% elif item.status == 'rejected' %}text-red-600
+                            {% else %}text-indigo-600{% endif %}">{{ item.date|date:"d" }}</span>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">
+                            {{ item.date|date:"Y년 m월 d일" }} ({{ item.date|date:"D" }})
+                            {% if item.status == 'pending' %}
+                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                승인 대기
+                            </span>
+                            {% elif item.status == 'rejected' %}
+                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                반려됨
+                            </span>
+                            {% endif %}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                {% if item.reason == 'sick' %}bg-red-100 text-red-800
+                                {% elif item.reason == 'vacation' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ item.get_reason_display }}
+                            </span>
+                            {% if item.memo %}
+                            <span class="ml-2 text-gray-400">{{ item.memo }}</span>
+                            {% endif %}
+                        </p>
+                        {% if item.status == 'rejected' and item.reject_reason %}
+                        <p class="text-sm text-red-500 mt-1">반려 사유: {{ item.reject_reason }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if item.status != 'approved' or not item.created_by_admin %}
+                <form method="post" action="{% url 'teachers:teacher_my_unavailability_delete' item.pk %}"
+                      onsubmit="return confirm('{{ item.date|date:'Y-m-d' }} 일정을 삭제하시겠습니까?');">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </form>
+                {% else %}
+                <span class="text-xs text-gray-400">관리자 등록</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="px-6 py-12 text-center">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <p class="mt-4 text-gray-500">예정된 출근 불가 일정이 없습니다.</p>
+            <a href="{% url 'teachers:teacher_my_unavailability_create' %}"
+               class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                일정 등록하기
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 지난 출근 불가 일정 -->
+    {% if past_unavailabilities %}
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-500">지난 일정 (최근 30일)</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for item in past_unavailabilities %}
+            <div class="px-6 py-3 flex items-center text-gray-400">
+                <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                    <span class="text-gray-500 text-sm font-medium">{{ item.date|date:"d" }}</span>
+                </div>
+                <div>
+                    <p class="text-gray-600">{{ item.date|date:"Y년 m월 d일" }} ({{ item.date|date:"D" }})</p>
+                    <p class="text-sm">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                            {{ item.get_reason_display }}
+                        </span>
+                        {% if item.memo %}
+                        <span class="ml-2">{{ item.memo }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

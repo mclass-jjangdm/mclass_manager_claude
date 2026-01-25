@@ -48,7 +48,7 @@ class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
         fields = ['name', 'gender', 'phone_number', 'email', 'hire_date', 'resignation_date',
-                 'base_salary', 'bank', 'account_number']
+                 'base_salary', 'bank', 'account_number', 'max_unavailability_per_month']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -85,6 +85,12 @@ class TeacherForm(forms.ModelForm):
             'account_number': forms.TextInput(attrs={
                 'class': 'form-input',
                 'placeholder': '계좌번호'
+            }),
+            'max_unavailability_per_month': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': '비워두면 제한 없음',
+                'min': '1',
+                'max': '31'
             })
         }
         

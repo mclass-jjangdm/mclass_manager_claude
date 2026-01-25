@@ -40,6 +40,11 @@ class Teacher(models.Model):
     base_salary = models.IntegerField(blank=True, null=True, verbose_name='급여기준', default=15000)
     other_info = models.TextField(blank=True, null=True, verbose_name='기타')
     is_active = models.BooleanField(default=True, verbose_name="재직 중")
+    max_unavailability_per_month = models.PositiveIntegerField(
+        null=True, blank=True,
+        verbose_name='월간 출근 불가 제한',
+        help_text='비워두면 제한 없음'
+    )
     extra_field1 = models.CharField(max_length=100, blank=True, null=True, verbose_name='예비1')
     extra_field2 = models.CharField(max_length=100, blank=True, null=True, verbose_name='예비2')
     extra_field3 = models.CharField(max_length=100, blank=True, null=True, verbose_name='예비3')
@@ -146,11 +151,22 @@ class TeacherUnavailability(models.Model):
         ('other', '기타'),
     ]
 
+    STATUS_CHOICES = [
+        ('pending', '승인 대기'),
+        ('approved', '승인됨'),
+        ('rejected', '반려됨'),
+    ]
+
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, verbose_name='교사')
     date = models.DateField(verbose_name='날짜')
     reason = models.CharField(max_length=20, choices=REASON_CHOICES, default='personal', verbose_name='사유')
     memo = models.TextField(blank=True, null=True, verbose_name='메모')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='등록일시')
+    # 승인 관련 필드
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='approved', verbose_name='승인 상태')
+    created_by_admin = models.BooleanField(default=True, verbose_name='관리자 등록 여부')
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='검토일시')
+    reject_reason = models.TextField(blank=True, null=True, verbose_name='반려 사유')
 
     class Meta:
         unique_together = ['teacher', 'date']
@@ -160,6 +176,39 @@ class TeacherUnavailability(models.Model):
 
     def __str__(self):
         return f"{self.teacher.name} - {self.date} ({self.get_reason_display()})"
+
+
+class UnavailabilityBlockedDate(models.Model):
+    """출근 불가 등록 차단 날짜"""
+    date = models.DateField(unique=True, verbose_name='차단 날짜')
+    reason = models.CharField(max_length=200, blank=True, verbose_name='차단 사유')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='등록일시')
+
+    class Meta:
+        verbose_name = '출근 불가 차단 날짜'
+        verbose_name_plural = '출근 불가 차단 날짜'
+        ordering = ['date']
+
+    def __str__(self):
+        return f"{self.date} - {self.reason or '차단됨'}"
+
+
+class UnavailabilitySettings(models.Model):
+    """출근 불가 일정 설정 - 차단 날짜 관리용"""
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='수정일시')
+
+    class Meta:
+        verbose_name = '출근 불가 일정 설정'
+        verbose_name_plural = '출근 불가 일정 설정'
+
+    def __str__(self):
+        return "출근 불가 일정 설정"
+
+    @classmethod
+    def get_settings(cls):
+        """설정 가져오기 (없으면 생성)"""
+        settings, _ = cls.objects.get_or_create(pk=1)
+        return settings
 
 
 class TeacherStudentAssignment(models.Model):

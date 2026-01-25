@@ -60,6 +60,9 @@
                             <a href="{% url 'progress:my_progress' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">
                                 내 수업
                             </a>
+                            <a href="{% url 'teachers:teacher_my_unavailability' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">
+                                출근 불가 일정
+                            </a>
                             <a href="{% url 'teachers:teacher_password_change' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">
                                 비밀번호 변경
                             </a>
@@ -112,6 +115,9 @@
                 {% else %}
                 <a href="{% url 'progress:my_progress' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
                     내 수업
+                </a>
+                <a href="{% url 'teachers:teacher_my_unavailability' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
+                    출근 불가 일정
                 </a>
                 <a href="{% url 'teachers:teacher_password_change' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
                     비밀번호 변경

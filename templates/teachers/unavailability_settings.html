@@ -1,0 +1,224 @@
+{% extends 'teachers/base_teachers.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 24px;
+        color: white;
+        margin-bottom: 24px;
+    }
+    .settings-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .settings-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        font-weight: 600;
+        font-size: 18px;
+        color: #374151;
+    }
+    .settings-body {
+        padding: 24px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+    .form-hint {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+    .form-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+    .btn-action {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        border: none;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .btn-outline {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    .btn-outline:hover {
+        background: #667eea;
+        color: white;
+    }
+    .blocked-date-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 8px;
+        background: #fef3c7;
+        margin-bottom: 8px;
+    }
+    .blocked-date-item:last-child {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block teacher_content %}
+<div class="max-w-3xl mx-auto">
+    <!-- 헤더 -->
+    <div class="page-header">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h2 class="text-2xl font-bold">출근 불가 일정 설정</h2>
+                <p class="text-white/80 mt-1">출근 불가 등록 차단 날짜를 관리합니다</p>
+            </div>
+            <a href="{% url 'teachers:unavailability_list' %}"
+               class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-white/10 border border-white text-white rounded-lg hover:bg-white hover:text-indigo-600 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                일정 목록으로
+            </a>
+        </div>
+    </div>
+
+    <!-- 차단 날짜 관리 -->
+    <div class="settings-card">
+        <div class="settings-header">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                </svg>
+                차단 날짜 관리
+            </div>
+        </div>
+        <div class="settings-body">
+            <!-- 새 차단 날짜 추가 -->
+            <form method="post" class="mb-6 pb-6 border-b border-gray-200">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_blocked_date">
+
+                <div class="form-group">
+                    <label class="form-label">날짜 선택</label>
+                    <input type="text" id="blocked-date-picker" name="blocked_date"
+                           class="form-input" placeholder="날짜를 선택하세요" readonly style="max-width: 200px;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">차단 사유 (선택)</label>
+                    <input type="text" name="blocked_reason"
+                           class="form-input" placeholder="예: 학원 행사, 방학 등" style="max-width: 400px;">
+                </div>
+
+                <button type="submit" class="btn-action btn-outline">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    차단 날짜 추가
+                </button>
+            </form>
+
+            <!-- 현재 차단된 날짜 목록 -->
+            <div>
+                <h4 class="font-medium text-gray-700 mb-3">차단된 날짜 목록</h4>
+                {% if blocked_dates %}
+                <div class="space-y-2">
+                    {% for blocked in blocked_dates %}
+                    <div class="blocked-date-item">
+                        <div>
+                            <span class="font-medium text-yellow-800">{{ blocked.date|date:"Y-m-d" }}</span>
+                            <span class="text-yellow-700 text-sm">({{ blocked.date|date:"D" }})</span>
+                            {% if blocked.reason %}
+                            <span class="text-yellow-600 text-sm ml-2">- {{ blocked.reason }}</span>
+                            {% endif %}
+                        </div>
+                        <form method="post" class="inline"
+                              onsubmit="return confirm('{{ blocked.date|date:'Y-m-d' }} 차단을 해제하시겠습니까?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_blocked_date">
+                            <input type="hidden" name="blocked_id" value="{{ blocked.pk }}">
+                            <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <p>차단된 날짜가 없습니다</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 도움말 -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 class="font-medium text-blue-800 mb-2 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            설정 안내
+        </h4>
+        <ul class="text-sm text-blue-700 space-y-1 ml-7">
+            <li>• <strong>차단 날짜</strong>: 특정 날짜에 교사가 출근 불가 일정을 등록하지 못하게 합니다. (예: 학원 행사일)</li>
+            <li>• 교사가 등록한 출근 불가 일정은 <strong>관리자 승인 후</strong> 적용됩니다.</li>
+            <li>• 교사별 월간 제한 일수는 <strong>교사 정보 수정</strong> 페이지에서 개별 설정할 수 있습니다.</li>
+            <li>• 관리자가 직접 등록한 출근 불가 일정은 제한 없이 즉시 적용됩니다.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+<script>
+    flatpickr("#blocked-date-picker", {
+        locale: "ko",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: true
+    });
+</script>
+{% endblock %}

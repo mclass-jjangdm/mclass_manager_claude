@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
-from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment, Message, MessageReadStatus
+from .models import Teacher, Attendance, Salary, TeacherUnavailability, TeacherStudentAssignment, Message, MessageReadStatus, UnavailabilityBlockedDate, UnavailabilitySettings
 from .forms import BulkAttendanceForm, TeacherForm, TeacherUnavailabilityForm, BulkUnavailabilityForm, TeacherStudentAssignmentForm
 from django.contrib import messages
 from reportlab.pdfbase import pdfmetrics
@@ -1184,12 +1184,24 @@ class UnavailabilityListView(LoginRequiredMixin, View):
             }
         else:
             # 날짜 미선택 시 전체 일정 목록
+            today = timezone.now().date()
+
+            # 승인 대기 목록
+            pending_unavailabilities = TeacherUnavailability.objects.filter(
+                status='pending',
+                date__gte=today,
+                teacher__is_active=True
+            ).select_related('teacher').order_by('date', 'teacher__name')
+
             context = {
                 'selected_date': None,
                 'upcoming_unavailabilities': TeacherUnavailability.objects.filter(
-                    date__gte=timezone.now().date(),
+                    date__gte=today,
+                    status='approved',
                     teacher__is_active=True
                 ).select_related('teacher').order_by('date', 'teacher__name')[:50],
+                'pending_unavailabilities': pending_unavailabilities,
+                'pending_count': pending_unavailabilities.count(),
             }
 
         return render(request, 'teachers/unavailability_list.html', context)
@@ -1289,6 +1301,85 @@ def unavailability_bulk_delete(request):
             messages.error(request, '필수 정보가 누락되었습니다.')
 
     return redirect('teachers:unavailability_list')
+
+
+@login_required
+@staff_member_required
+def unavailability_approve(request, pk):
+    """출근 불가 일정 승인"""
+    unavailability = get_object_or_404(TeacherUnavailability, pk=pk)
+
+    if request.method == 'POST':
+        unavailability.status = 'approved'
+        unavailability.reviewed_at = timezone.now()
+        unavailability.save()
+        messages.success(request, f'{unavailability.teacher.name} 선생님의 {unavailability.date} 출근 불가 일정이 승인되었습니다.')
+
+    return redirect('teachers:unavailability_list')
+
+
+@login_required
+@staff_member_required
+def unavailability_reject(request, pk):
+    """출근 불가 일정 반려"""
+    unavailability = get_object_or_404(TeacherUnavailability, pk=pk)
+
+    if request.method == 'POST':
+        reject_reason = request.POST.get('reject_reason', '').strip()
+        unavailability.status = 'rejected'
+        unavailability.reviewed_at = timezone.now()
+        unavailability.reject_reason = reject_reason
+        unavailability.save()
+        messages.success(request, f'{unavailability.teacher.name} 선생님의 {unavailability.date} 출근 불가 일정이 반려되었습니다.')
+
+    return redirect('teachers:unavailability_list')
+
+
+@login_required
+@staff_member_required
+def unavailability_settings(request):
+    """출근 불가 일정 설정 관리 - 차단 날짜만 관리"""
+    today = timezone.now().date()
+
+    # 차단 날짜 목록
+    blocked_dates = UnavailabilityBlockedDate.objects.filter(date__gte=today).order_by('date')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'add_blocked_date':
+            date_str = request.POST.get('blocked_date', '')
+            reason = request.POST.get('blocked_reason', '').strip()
+
+            try:
+                blocked_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                if blocked_date < today:
+                    messages.error(request, '과거 날짜는 차단할 수 없습니다.')
+                elif UnavailabilityBlockedDate.objects.filter(date=blocked_date).exists():
+                    messages.warning(request, '이미 차단된 날짜입니다.')
+                else:
+                    UnavailabilityBlockedDate.objects.create(date=blocked_date, reason=reason)
+                    messages.success(request, f'{blocked_date} 날짜가 차단되었습니다.')
+            except ValueError:
+                messages.error(request, '올바른 날짜 형식이 아닙니다.')
+
+        elif action == 'remove_blocked_date':
+            blocked_id = request.POST.get('blocked_id')
+            try:
+                blocked = UnavailabilityBlockedDate.objects.get(pk=blocked_id)
+                date = blocked.date
+                blocked.delete()
+                messages.success(request, f'{date} 차단이 해제되었습니다.')
+            except UnavailabilityBlockedDate.DoesNotExist:
+                messages.error(request, '차단 날짜를 찾을 수 없습니다.')
+
+        return redirect('teachers:unavailability_settings')
+
+    context = {
+        'blocked_dates': blocked_dates,
+        'today': today,
+    }
+    return render(request, 'teachers/unavailability_settings.html', context)
 
 
 class AssignmentListView(LoginRequiredMixin, View):
@@ -2099,6 +2190,175 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
         }
 
         return render(request, 'teachers/teacher_my_progress.html', context)
+
+
+class TeacherMyUnavailabilityView(LoginRequiredMixin, View):
+    """교사 자신의 출근 불가 일정 관리"""
+
+    def get(self, request):
+        # 교사 계정 확인
+        if not hasattr(request.user, 'teacher_profile'):
+            messages.error(request, '교사 계정만 이용할 수 있습니다.')
+            return redirect('index')
+
+        teacher = request.user.teacher_profile
+        today = timezone.now().date()
+
+        # 오늘 이후의 출근 불가 일정 조회
+        unavailabilities = TeacherUnavailability.objects.filter(
+            teacher=teacher,
+            date__gte=today
+        ).order_by('date')
+
+        # 과거 일정 (최근 30일)
+        past_unavailabilities = TeacherUnavailability.objects.filter(
+            teacher=teacher,
+            date__lt=today,
+            date__gte=today - timedelta(days=30)
+        ).order_by('-date')
+
+        context = {
+            'unavailabilities': unavailabilities,
+            'past_unavailabilities': past_unavailabilities,
+            'today': today,
+        }
+        return render(request, 'teachers/teacher_my_unavailability.html', context)
+
+
+@login_required
+def teacher_my_unavailability_create(request):
+    """교사 자신의 출근 불가 일정 등록"""
+    # 교사 계정 확인
+    if not hasattr(request.user, 'teacher_profile'):
+        messages.error(request, '교사 계정만 이용할 수 있습니다.')
+        return redirect('index')
+
+    teacher = request.user.teacher_profile
+    today = timezone.now().date()
+
+    # 차단된 날짜 목록
+    blocked_dates = list(UnavailabilityBlockedDate.objects.filter(
+        date__gte=today
+    ).values_list('date', flat=True))
+
+    if request.method == 'POST':
+        date_str = request.POST.get('date', '')
+        reason = request.POST.get('reason', 'personal')
+        memo = request.POST.get('memo', '').strip()
+
+        try:
+            unavail_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            messages.error(request, '올바른 날짜 형식이 아닙니다.')
+            return redirect('teachers:teacher_my_unavailability')
+
+        # 과거 날짜 등록 불가
+        if unavail_date < today:
+            messages.error(request, '과거 날짜에는 출근 불가 일정을 등록할 수 없습니다.')
+            return redirect('teachers:teacher_my_unavailability')
+
+        # 차단된 날짜 확인
+        if unavail_date in blocked_dates:
+            blocked = UnavailabilityBlockedDate.objects.filter(date=unavail_date).first()
+            reason_text = f" ({blocked.reason})" if blocked and blocked.reason else ""
+            messages.error(request, f'{unavail_date} 날짜는 출근 불가 등록이 차단되어 있습니다{reason_text}.')
+            return redirect('teachers:teacher_my_unavailability')
+
+        # 중복 확인
+        if TeacherUnavailability.objects.filter(teacher=teacher, date=unavail_date).exists():
+            messages.warning(request, f'{unavail_date} 날짜에 이미 출근 불가 일정이 등록되어 있습니다.')
+            return redirect('teachers:teacher_my_unavailability')
+
+        # 교사별 월간 최대 등록 가능 일수 확인 (설정된 경우에만)
+        if teacher.max_unavailability_per_month:
+            month_start = unavail_date.replace(day=1)
+            if unavail_date.month == 12:
+                month_end = unavail_date.replace(year=unavail_date.year + 1, month=1, day=1) - timedelta(days=1)
+            else:
+                month_end = unavail_date.replace(month=unavail_date.month + 1, day=1) - timedelta(days=1)
+
+            month_count = TeacherUnavailability.objects.filter(
+                teacher=teacher,
+                date__gte=month_start,
+                date__lte=month_end,
+                status__in=['pending', 'approved']
+            ).count()
+
+            if month_count >= teacher.max_unavailability_per_month:
+                messages.error(request, f'{unavail_date.month}월에는 이미 최대 {teacher.max_unavailability_per_month}일의 출근 불가 일정이 등록되어 있습니다.')
+                return redirect('teachers:teacher_my_unavailability')
+
+        # 교사가 등록한 일정은 항상 승인 대기 상태
+        TeacherUnavailability.objects.create(
+            teacher=teacher,
+            date=unavail_date,
+            reason=reason,
+            memo=memo,
+            status='pending',
+            created_by_admin=False
+        )
+
+        messages.success(request, f'{unavail_date} 출근 불가 일정이 등록되었습니다. 관리자 승인 후 적용됩니다.')
+        return redirect('teachers:teacher_my_unavailability')
+
+    # GET 요청 시 폼 페이지
+    # 이번 달 등록 현황 계산
+    month_start = today.replace(day=1)
+    if today.month == 12:
+        month_end = today.replace(year=today.year + 1, month=1, day=1) - timedelta(days=1)
+    else:
+        month_end = today.replace(month=today.month + 1, day=1) - timedelta(days=1)
+
+    month_count = TeacherUnavailability.objects.filter(
+        teacher=teacher,
+        date__gte=month_start,
+        date__lte=month_end,
+        status__in=['pending', 'approved']
+    ).count()
+
+    # 교사별 제한 (없으면 무제한)
+    max_days = teacher.max_unavailability_per_month
+    if max_days:
+        remaining_count = max(0, max_days - month_count)
+    else:
+        remaining_count = None  # None이면 무제한
+
+    context = {
+        'today': today,
+        'reason_choices': TeacherUnavailability.REASON_CHOICES,
+        'blocked_dates': [d.strftime('%Y-%m-%d') for d in blocked_dates],
+        'teacher': teacher,
+        'remaining_count': remaining_count,
+        'month_count': month_count,
+        'max_days': max_days,
+    }
+    return render(request, 'teachers/teacher_my_unavailability_form.html', context)
+
+
+@login_required
+def teacher_my_unavailability_delete(request, pk):
+    """교사 자신의 출근 불가 일정 삭제"""
+    # 교사 계정 확인
+    if not hasattr(request.user, 'teacher_profile'):
+        messages.error(request, '교사 계정만 이용할 수 있습니다.')
+        return redirect('index')
+
+    teacher = request.user.teacher_profile
+    today = timezone.now().date()
+
+    unavailability = get_object_or_404(TeacherUnavailability, pk=pk, teacher=teacher)
+
+    # 과거 일정 삭제 불가
+    if unavailability.date < today:
+        messages.error(request, '과거 일정은 삭제할 수 없습니다.')
+        return redirect('teachers:teacher_my_unavailability')
+
+    if request.method == 'POST':
+        date = unavailability.date
+        unavailability.delete()
+        messages.success(request, f'{date} 출근 불가 일정이 삭제되었습니다.')
+
+    return redirect('teachers:teacher_my_unavailability')
 
 
 @login_required
