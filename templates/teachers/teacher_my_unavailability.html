@@ -68,18 +68,25 @@
                         {% endif %}
                     </div>
                 </div>
-                {% if item.status != 'approved' or not item.created_by_admin %}
+                {% if item.status == 'pending' %}
+                <!-- 승인 대기 상태만 취소 가능 -->
                 <form method="post" action="{% url 'teachers:teacher_my_unavailability_delete' item.pk %}"
-                      onsubmit="return confirm('{{ item.date|date:'Y-m-d' }} 일정을 삭제하시겠습니까?');">
+                      onsubmit="return confirm('{{ item.date|date:'Y-m-d' }} 신청을 취소하시겠습니까?');">
                     {% csrf_token %}
-                    <button type="submit" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50">
+                    <button type="submit" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50" title="신청 취소">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </form>
-                {% else %}
-                <span class="text-xs text-gray-400">관리자 등록</span>
+                {% elif item.status == 'approved' %}
+                <!-- 승인된 일정은 수정 불가 표시 -->
+                <span class="text-xs text-green-600 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    승인됨
+                </span>
                 {% endif %}
             </div>
             {% endfor %}

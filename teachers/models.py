@@ -167,6 +167,7 @@ class TeacherUnavailability(models.Model):
     created_by_admin = models.BooleanField(default=True, verbose_name='관리자 등록 여부')
     reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='검토일시')
     reject_reason = models.TextField(blank=True, null=True, verbose_name='반려 사유')
+    reject_notified = models.BooleanField(default=False, verbose_name='반려 알림 확인')
 
     class Meta:
         unique_together = ['teacher', 'date']

@@ -1159,9 +1159,10 @@ class UnavailabilityListView(LoginRequiredMixin, View):
             except ValueError:
                 check_date = timezone.now().date()
 
-            # 해당 날짜에 출근 불가인 교사들
+            # 해당 날짜에 출근 불가인 교사들 (승인된 일정만)
             unavailable_records = TeacherUnavailability.objects.filter(
                 date=check_date,
+                status='approved',  # 승인된 일정만 출근 불가로 표시
                 teacher__is_active=True
             ).select_related('teacher')
 
@@ -2136,6 +2137,23 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
 
         teacher = request.user.teacher_profile
 
+        # 반려된 출근 불가 일정 알림 (읽지 않은 것만)
+        rejected_unavailabilities = TeacherUnavailability.objects.filter(
+            teacher=teacher,
+            status='rejected',
+            reject_notified=False  # 아직 알림을 보지 않은 것
+        ).order_by('-reviewed_at')
+
+        if rejected_unavailabilities.exists():
+            for unavail in rejected_unavailabilities:
+                reject_reason = unavail.reject_reason or '사유 없음'
+                messages.warning(
+                    request,
+                    f'⚠️ {unavail.date.strftime("%Y-%m-%d")} 출근 불가 일정이 반려되었습니다. (사유: {reject_reason})'
+                )
+            # 알림 표시 완료 처리
+            rejected_unavailabilities.update(reject_notified=True)
+
         # 날짜 선택 (기본: 오늘)
         selected_date = request.GET.get('date')
         if selected_date:
@@ -2342,7 +2360,7 @@ def teacher_my_unavailability_create(request):
 
 @login_required
 def teacher_my_unavailability_delete(request, pk):
-    """교사 자신의 출근 불가 일정 삭제"""
+    """교사 자신의 출근 불가 일정 삭제 (승인 대기 상태만 가능)"""
     # 교사 계정 확인
     if not hasattr(request.user, 'teacher_profile'):
         messages.error(request, '교사 계정만 이용할 수 있습니다.')
@@ -2358,10 +2376,15 @@ def teacher_my_unavailability_delete(request, pk):
         messages.error(request, '과거 일정은 삭제할 수 없습니다.')
         return redirect('teachers:teacher_my_unavailability')
 
+    # 승인 대기 상태만 삭제 가능 (승인/반려된 일정은 이력 보존)
+    if unavailability.status != 'pending':
+        messages.error(request, '승인 또는 반려된 일정은 삭제할 수 없습니다.')
+        return redirect('teachers:teacher_my_unavailability')
+
     if request.method == 'POST':
         date = unavailability.date
         unavailability.delete()
-        messages.success(request, f'{date} 출근 불가 일정이 삭제되었습니다.')
+        messages.success(request, f'{date} 출근 불가 신청이 취소되었습니다.')
 
     return redirect('teachers:teacher_my_unavailability')
 
