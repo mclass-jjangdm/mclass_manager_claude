@@ -37,6 +37,21 @@
             <div class="flex items-center justify-between h-16">
 
                 <div class="flex items-center">
+                    {% if user.is_staff and not user.teacher_profile %}
+                    <a href="{% url 'progress:dashboard' %}" class="font-medium text-xl font-ubuntu">
+                        M'Class 관리자
+                    </a>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="{% url 'progress:dashboard' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">
+                                관리자 메인
+                            </a>
+                            <a href="{% url 'teachers:message_list' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">
+                                메시지
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
                     <a href="{% url 'progress:my_progress' %}" class="font-medium text-xl font-ubuntu">
                         M'Class 선생님 포털
                     </a>
@@ -47,12 +62,17 @@
                             </a>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
 
                 <div class="flex items-center">
                     {% if user.teacher_profile %}
                     <span class="text-indigo-200 text-sm mr-4 hidden md:inline">
                         {{ user.teacher_profile.name }} 선생님
+                    </span>
+                    {% elif user.is_staff %}
+                    <span class="text-indigo-200 text-sm mr-4 hidden md:inline">
+                        관리자
                     </span>
                     {% endif %}
 
@@ -76,6 +96,17 @@
 
         <div class="hidden md:hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-indigo-800">
+                {% if user.is_staff and not user.teacher_profile %}
+                <a href="{% url 'progress:dashboard' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
+                    관리자 메인
+                </a>
+                <a href="{% url 'teachers:message_list' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
+                    메시지
+                </a>
+                <div class="text-indigo-300 px-3 py-2 text-sm border-t border-indigo-600 mt-2 pt-2">
+                    관리자
+                </div>
+                {% else %}
                 <a href="{% url 'progress:my_progress' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
                     내 수업
                 </a>
@@ -83,6 +114,7 @@
                 <div class="text-indigo-300 px-3 py-2 text-sm border-t border-indigo-600 mt-2 pt-2">
                     {{ user.teacher_profile.name }} 선생님
                 </div>
+                {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -108,7 +140,7 @@
                     </h4>
                     <div id="notices-list" class="space-y-2">
                         {% for notice in global_notices %}
-                        <div class="notice-item flex items-center gap-2 rounded p-2 border transition-colors {% if notice.is_read_by_user %}bg-gray-50 border-gray-200{% else %}bg-white border-amber-300{% endif %}">
+                        <div class="notice-item flex items-center gap-2 rounded p-2 border transition-colors {% if notice.is_read_by_user %}bg-gray-50 border-gray-200{% else %}bg-white border-amber-300{% endif %}" data-notice-id="{{ notice.pk }}">
                             <a href="{% url 'teachers:message_detail' notice.pk %}"
                                class="flex-grow hover:opacity-80">
                                 <div class="flex justify-between items-center">
@@ -122,7 +154,7 @@
                                 </div>
                                 <p class="text-xs {% if notice.is_read_by_user %}text-gray-500{% else %}text-amber-700{% endif %} truncate mt-1">{{ notice.content|truncatewords:20 }}</p>
                             </a>
-                            <button onclick="this.closest('.notice-item').remove(); if(document.querySelectorAll('.notice-item').length === 0) document.getElementById('global-notices-container').style.display='none';"
+                            <button onclick="dismissNotice({{ notice.pk }}, this)"
                                     class="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-200 transition-colors"
                                     title="이 공지 닫기">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -133,7 +165,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                <button onclick="document.getElementById('global-notices-container').style.display='none'" class="flex-shrink-0 text-amber-600 hover:text-amber-800" title="모든 공지 닫기">
+                <button onclick="dismissAllNotices()" class="flex-shrink-0 text-amber-600 hover:text-amber-800" title="모든 공지 닫기">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                     </svg>
@@ -166,6 +198,57 @@
             M'Class 수학과학전문학원 선생님 포털
         </div>
     </footer>
+
+    <!-- 공지 닫기 기능 -->
+    <script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function dismissNotice(noticeId, btn) {
+        fetch(`/teachers/messages/${noticeId}/dismiss/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (response.ok) {
+                const item = btn.closest('.notice-item');
+                item.remove();
+                if (document.querySelectorAll('.notice-item').length === 0) {
+                    document.getElementById('global-notices-container').style.display = 'none';
+                }
+            }
+        });
+    }
+
+    function dismissAllNotices() {
+        const items = document.querySelectorAll('.notice-item');
+        items.forEach(item => {
+            const noticeId = item.dataset.noticeId;
+            fetch(`/teachers/messages/${noticeId}/dismiss/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            });
+        });
+        document.getElementById('global-notices-container').style.display = 'none';
+    }
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

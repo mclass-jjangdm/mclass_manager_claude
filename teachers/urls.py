@@ -48,5 +48,6 @@ urlpatterns = [
     path('messages/<int:pk>/', views.MessageDetailView.as_view(), name='message_detail'),
     path('messages/<int:pk>/reply/', views.MessageReplyView.as_view(), name='message_reply'),
     path('messages/<int:pk>/delete/', views.message_delete, name='message_delete'),
+    path('messages/<int:pk>/dismiss/', views.message_dismiss, name='message_dismiss'),
     path('messages/mark-read/', views.message_mark_read, name='message_mark_read'),
 ]

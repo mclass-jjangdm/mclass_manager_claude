@@ -1675,6 +1675,104 @@ class TeacherProgressView(LoginRequiredMixin, View):
 class DailyProgressSummaryView(LoginRequiredMixin, View):
     """관리자용 일별 전체 수업 기록 조회"""
 
+    def get_chapter_progress(self, book_sale):
+        """교재의 대단원별 진행 상황 분석"""
+        from bookstore.models import BookContent
+        from django.db.models import Count, Q
+
+        book = book_sale.book
+        chapters = {}
+
+        # 대단원별 전체 항목 수
+        chapter_totals = BookContent.objects.filter(book=book).values(
+            'chapter_num', 'chapter_title'
+        ).annotate(total=Count('id'))
+
+        for ch in chapter_totals:
+            chapters[ch['chapter_num']] = {
+                'title': ch['chapter_title'],
+                'total': ch['total'],
+                'completed': 0,
+            }
+
+        # 대단원별 완료 항목 수
+        completed_records = book_sale.progress_records.filter(
+            study_date__isnull=False
+        ).exclude(achievement='').select_related('book_content')
+
+        for record in completed_records:
+            ch_num = record.book_content.chapter_num
+            if ch_num in chapters:
+                chapters[ch_num]['completed'] += 1
+
+        # 마무리 중인 대단원 (80% 이상 완료)
+        finishing_chapters = []
+        for ch_num, ch_data in chapters.items():
+            if ch_data['total'] > 0:
+                progress = ch_data['completed'] / ch_data['total']
+                if progress >= 0.8 and progress < 1.0:
+                    finishing_chapters.append({
+                        'chapter_num': ch_num,
+                        'title': ch_data['title'],
+                        'completed': ch_data['completed'],
+                        'total': ch_data['total'],
+                        'progress': int(progress * 100),
+                    })
+
+        return finishing_chapters
+
+    def get_section_progress(self, book_sale):
+        """교재의 중단원별 진행 상황 분석"""
+        from bookstore.models import BookContent
+        from django.db.models import Count
+
+        book = book_sale.book
+        sections = {}
+
+        # 중단원별 전체 항목 수 (대단원+중단원 조합으로 그룹화)
+        section_totals = BookContent.objects.filter(book=book).values(
+            'chapter_num', 'chapter_title', 'section_num', 'section_title'
+        ).annotate(total=Count('id'))
+
+        for sec in section_totals:
+            key = (sec['chapter_num'], sec['section_num'])
+            sections[key] = {
+                'chapter_num': sec['chapter_num'],
+                'chapter_title': sec['chapter_title'],
+                'section_num': sec['section_num'],
+                'section_title': sec['section_title'],
+                'total': sec['total'],
+                'completed': 0,
+            }
+
+        # 중단원별 완료 항목 수
+        completed_records = book_sale.progress_records.filter(
+            study_date__isnull=False
+        ).exclude(achievement='').select_related('book_content')
+
+        for record in completed_records:
+            key = (record.book_content.chapter_num, record.book_content.section_num)
+            if key in sections:
+                sections[key]['completed'] += 1
+
+        # 마무리 중인 중단원 (80% 이상 완료)
+        finishing_sections = []
+        for key, sec_data in sections.items():
+            if sec_data['total'] > 0:
+                progress = sec_data['completed'] / sec_data['total']
+                if progress >= 0.8 and progress < 1.0:
+                    finishing_sections.append({
+                        'chapter_num': sec_data['chapter_num'],
+                        'chapter_title': sec_data['chapter_title'],
+                        'section_num': sec_data['section_num'],
+                        'section_title': sec_data['section_title'],
+                        'completed': sec_data['completed'],
+                        'total': sec_data['total'],
+                        'progress': int(progress * 100),
+                    })
+
+        return finishing_sections
+
     def get(self, request):
         from students.models import Student
         from bookstore.models import BookSale, StudentBookProgress
@@ -1693,6 +1791,12 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
         all_assignments = TeacherStudentAssignment.objects.filter(
             date=check_date
         ).select_related('teacher', 'student').order_by('teacher__name', 'student__name')
+
+        # 알림 목록 수집
+        homework_not_done_list = []  # 과제 미수행 학생
+        needs_review_list = []  # 보완 추천 대상
+        chapter_finishing_list = []  # 대단원 마무리 중인 학생
+        section_finishing_list = []  # 중단원 마무리 중인 학생
 
         # 교사별 데이터 구성
         teacher_summary = {}
@@ -1720,6 +1824,67 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
                     # 오늘 날짜로 기록된 진도 항목 수
                     today_records = sale.progress_records.filter(study_date=check_date).count()
                     stats = sale.get_progress_stats()
+
+                    # 과제 미수행 항목 (학습 완료했지만 과제 미수행)
+                    homework_pending = sale.progress_records.filter(
+                        study_date__isnull=False,
+                        homework_done=False
+                    ).exclude(achievement='').select_related('book_content')
+
+                    for record in homework_pending:
+                        homework_not_done_list.append({
+                            'student': student,
+                            'teacher': teacher,
+                            'book': sale.book,
+                            'content': record.book_content,
+                            'study_date': record.study_date,
+                        })
+
+                    # 보완 추천 항목
+                    review_items = sale.progress_records.filter(
+                        needs_review=True
+                    ).select_related('book_content')
+
+                    for record in review_items:
+                        needs_review_list.append({
+                            'student': student,
+                            'teacher': teacher,
+                            'book': sale.book,
+                            'sale': sale,
+                            'content': record.book_content,
+                            'achievement': record.achievement,
+                        })
+
+                    # 대단원 마무리 중인 항목
+                    finishing_chapters = self.get_chapter_progress(sale)
+                    for ch in finishing_chapters:
+                        chapter_finishing_list.append({
+                            'student': student,
+                            'teacher': teacher,
+                            'book': sale.book,
+                            'chapter_num': ch['chapter_num'],
+                            'chapter_title': ch['title'],
+                            'progress': ch['progress'],
+                            'completed': ch['completed'],
+                            'total': ch['total'],
+                        })
+
+                    # 중단원 마무리 중인 항목
+                    finishing_sections = self.get_section_progress(sale)
+                    for sec in finishing_sections:
+                        section_finishing_list.append({
+                            'student': student,
+                            'teacher': teacher,
+                            'book': sale.book,
+                            'chapter_num': sec['chapter_num'],
+                            'chapter_title': sec['chapter_title'],
+                            'section_num': sec['section_num'],
+                            'section_title': sec['section_title'],
+                            'progress': sec['progress'],
+                            'completed': sec['completed'],
+                            'total': sec['total'],
+                        })
+
                     books_progress.append({
                         'sale': sale,
                         'book': sale.book,
@@ -1802,6 +1967,11 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
             'total_director': total_director,
             'total_progress_today': total_progress_today,
             'view_mode': view_mode,
+            # 알림 목록 추가
+            'homework_not_done_list': homework_not_done_list,
+            'needs_review_list': needs_review_list,
+            'chapter_finishing_list': chapter_finishing_list,
+            'section_finishing_list': section_finishing_list,
         }
 
         return render(request, 'teachers/daily_progress_summary.html', context)
@@ -1865,8 +2035,12 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
 
         # 현재 로그인한 사용자의 교사 프로필 확인
         if not hasattr(request.user, 'teacher_profile'):
-            messages.error(request, '교사 계정이 아닙니다.')
-            return redirect('students:student_list')
+            # 관리자(staff)는 관리자 대시보드로, 일반 사용자도 대시보드로
+            if request.user.is_staff:
+                return redirect('progress:dashboard')
+            else:
+                messages.error(request, '교사 계정이 아닙니다.')
+                return redirect('progress:dashboard')
 
         teacher = request.user.teacher_profile
 
@@ -2259,3 +2433,27 @@ def message_mark_read(request):
         messages.success(request, '모든 메시지를 읽음 처리했습니다.')
 
     return redirect('teachers:message_list')
+
+
+@login_required
+def message_dismiss(request, pk):
+    """메시지 알림 닫기 (배너에서 X 버튼 클릭 시)"""
+    from django.http import JsonResponse
+
+    if request.method == 'POST':
+        message = get_object_or_404(Message, pk=pk)
+        user = request.user
+
+        # MessageReadStatus 생성 또는 업데이트
+        status, created = MessageReadStatus.objects.get_or_create(
+            message=message,
+            user=user,
+            defaults={'dismissed': True}
+        )
+        if not created:
+            status.dismissed = True
+            status.save()
+
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False}, status=400)

@@ -1,7 +1,7 @@
 services:
-  # MySQL 데이터베이스
+  # MariaDB 데이터베이스
   db:
-    image: mysql:8.0
+    image: mariadb:10.11
     container_name: mclass_db_main
     restart: always
     environment:
@@ -10,14 +10,11 @@ services:
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_general_ci
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
     ports:
       - "3306:3306"
-    command:
-      - --authentication-policy=caching_sha2_password
-      - --host-cache-size=0
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,6 +46,6 @@ services:
       - .env
 
 volumes:
-  mysql_data:
+  mariadb_data:
   static_volume:
   media_volume:

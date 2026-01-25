@@ -72,6 +72,184 @@
         </div>
     </div>
 
+    <!-- 알림 섹션 -->
+    {% if homework_not_done_list or needs_review_list or chapter_finishing_list or section_finishing_list %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- 과제 미수행 학생 -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b border-red-200 bg-red-50">
+                <h3 class="text-lg font-semibold text-red-800 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    과제 미수행
+                    {% if homework_not_done_list %}
+                    <span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">{{ homework_not_done_list|length }}</span>
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="p-4 max-h-64 overflow-y-auto">
+                {% if homework_not_done_list %}
+                <ul class="space-y-2">
+                    {% for item in homework_not_done_list %}
+                    <li class="flex items-start gap-2 p-2 bg-red-50 rounded border border-red-100">
+                        <div class="flex-grow">
+                            <a href="{% url 'students:student_detail' item.student.pk %}" class="font-medium text-gray-900 hover:text-red-600">
+                                {{ item.student.name }}
+                            </a>
+                            <span class="text-xs text-gray-500">({{ item.teacher.name }})</span>
+                            <div class="text-xs text-gray-600 mt-1">
+                                {{ item.book.title|truncatechars:20 }} - p.{{ item.content.page }}
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                학습일: {{ item.study_date|date:"m/d" }}
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-gray-500 text-sm text-center py-4">과제 미수행 학생이 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 보완 추천 대상 -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b border-orange-200 bg-orange-50">
+                <h3 class="text-lg font-semibold text-orange-800 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    보완 추천
+                    {% if needs_review_list %}
+                    <span class="bg-orange-600 text-white text-xs px-2 py-0.5 rounded-full">{{ needs_review_list|length }}</span>
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="p-4 max-h-64 overflow-y-auto">
+                {% if needs_review_list %}
+                <ul class="space-y-2">
+                    {% for item in needs_review_list %}
+                    <li class="flex items-start gap-2 p-2 bg-orange-50 rounded border border-orange-100">
+                        <div class="flex-grow">
+                            <a href="{% url 'progress:student_book_progress_list' item.sale.pk %}#review" class="font-medium text-gray-900 hover:text-orange-600">
+                                {{ item.student.name }}
+                            </a>
+                            <span class="text-xs text-gray-500">({{ item.teacher.name }})</span>
+                            {% if item.achievement %}
+                            <span class="ml-1 text-xs px-1.5 py-0.5 rounded {% if item.achievement == 'D' or item.achievement == 'F' %}bg-red-100 text-red-700{% else %}bg-orange-100 text-orange-700{% endif %}">
+                                {{ item.achievement }}
+                            </span>
+                            {% endif %}
+                            <div class="text-xs text-gray-600 mt-1">
+                                <a href="{% url 'progress:student_book_progress_list' item.sale.pk %}#review" class="hover:text-orange-600">
+                                    {{ item.book.title|truncatechars:20 }} - p.{{ item.content.page }}
+                                </a>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ item.content.chapter_title|truncatechars:15 }} > {{ item.content.section_title|truncatechars:15 }}
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-gray-500 text-sm text-center py-4">보완 추천 항목이 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 대단원 마무리 중 -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b border-green-200 bg-green-50">
+                <h3 class="text-lg font-semibold text-green-800 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    대단원 마무리
+                    {% if chapter_finishing_list %}
+                    <span class="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">{{ chapter_finishing_list|length }}</span>
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="p-4 max-h-64 overflow-y-auto">
+                {% if chapter_finishing_list %}
+                <ul class="space-y-2">
+                    {% for item in chapter_finishing_list %}
+                    <li class="flex items-start gap-2 p-2 bg-green-50 rounded border border-green-100">
+                        <div class="flex-grow">
+                            <a href="{% url 'students:student_detail' item.student.pk %}" class="font-medium text-gray-900 hover:text-green-600">
+                                {{ item.student.name }}
+                            </a>
+                            <span class="text-xs text-gray-500">({{ item.teacher.name }})</span>
+                            <div class="text-xs text-gray-600 mt-1">
+                                {{ item.book.title|truncatechars:20 }}
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-xs font-medium text-green-700">
+                                    {{ item.chapter_num }}. {{ item.chapter_title|truncatechars:15 }}
+                                </span>
+                                <span class="text-xs bg-green-200 text-green-800 px-1.5 py-0.5 rounded">
+                                    {{ item.progress }}% ({{ item.completed }}/{{ item.total }})
+                                </span>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-gray-500 text-sm text-center py-4">마무리 중인 대단원이 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 중단원 마무리 중 -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b border-teal-200 bg-teal-50">
+                <h3 class="text-lg font-semibold text-teal-800 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    중단원 마무리
+                    {% if section_finishing_list %}
+                    <span class="bg-teal-600 text-white text-xs px-2 py-0.5 rounded-full">{{ section_finishing_list|length }}</span>
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="p-4 max-h-64 overflow-y-auto">
+                {% if section_finishing_list %}
+                <ul class="space-y-2">
+                    {% for item in section_finishing_list %}
+                    <li class="flex items-start gap-2 p-2 bg-teal-50 rounded border border-teal-100">
+                        <div class="flex-grow">
+                            <a href="{% url 'students:student_detail' item.student.pk %}" class="font-medium text-gray-900 hover:text-teal-600">
+                                {{ item.student.name }}
+                            </a>
+                            <span class="text-xs text-gray-500">({{ item.teacher.name }})</span>
+                            <div class="text-xs text-gray-600 mt-1">
+                                {{ item.book.title|truncatechars:20 }}
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-xs font-medium text-teal-700">
+                                    {{ item.chapter_num }}-{{ item.section_num }}. {{ item.section_title|truncatechars:12 }}
+                                </span>
+                                <span class="text-xs bg-teal-200 text-teal-800 px-1.5 py-0.5 rounded">
+                                    {{ item.progress }}% ({{ item.completed }}/{{ item.total }})
+                                </span>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-gray-500 text-sm text-center py-4">마무리 중인 중단원이 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     {% if not student_list and not teacher_summary %}
     <!-- 데이터 없음 -->
     <div class="bg-white rounded-lg shadow p-12 text-center">

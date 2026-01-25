@@ -276,6 +276,7 @@ class MessageReadStatus(models.Model):
         verbose_name='사용자'
     )
     read_at = models.DateTimeField(auto_now_add=True, verbose_name='읽은 시간')
+    dismissed = models.BooleanField(default=False, verbose_name='알림 닫음')
 
     class Meta:
         verbose_name = '메시지 읽음 상태'
