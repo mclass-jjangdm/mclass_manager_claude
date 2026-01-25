@@ -1,5 +1,6 @@
 # Django and extensions
-Django==5.2.4
+# Django 6.0은 주요 변경사항이 많아 5.2 LTS 유지 권장 (프로덕션 안정성)
+Django==5.2.10
 django-crispy-forms==2.4
 crispy-bootstrap4==2025.6
 django-import-export==4.3.9
@@ -11,12 +12,13 @@ PyMySQL==1.1.1
 psycopg2-binary==2.9.10
 
 # PDF and reporting
-reportlab==4.4.3
-pillow==11.3.0
+reportlab==4.4.9
+pillow==12.1.0
 
 # Data processing
-pandas==2.3.1
-numpy==2.3.1
+# pandas 3.0은 주요 breaking changes가 있어 2.x 최신 유지 권장
+pandas==2.3.3
+numpy==2.4.1
 python-dateutil==2.9.0.post0
 xlsxwriter==3.2.0
 openpyxl==3.1.5
@@ -28,8 +30,8 @@ pytz==2025.2
 tablib==3.8.0
 
 # API Client
-requests==2.31.0
+requests==2.32.5
 
 # Server
-gunicorn==23.0.0
-whitenoise==6.8.2
+gunicorn==24.1.1
+whitenoise==6.11.0
