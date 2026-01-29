@@ -1194,6 +1194,16 @@ class UnavailabilityListView(LoginRequiredMixin, View):
                 teacher__is_active=True
             ).select_related('teacher').order_by('date', 'teacher__name')
 
+            # 최근 승인/반려 이력 (최근 30일 이내, 최대 20건)
+            from datetime import timedelta
+            thirty_days_ago = today - timedelta(days=30)
+            review_history = TeacherUnavailability.objects.filter(
+                status__in=['approved', 'rejected'],
+                reviewed_at__isnull=False,
+                reviewed_at__date__gte=thirty_days_ago,
+                created_by_admin=False  # 교사가 신청한 것만 (관리자 직접 등록 제외)
+            ).select_related('teacher').order_by('-reviewed_at')[:20]
+
             context = {
                 'selected_date': None,
                 'upcoming_unavailabilities': TeacherUnavailability.objects.filter(
@@ -1203,6 +1213,7 @@ class UnavailabilityListView(LoginRequiredMixin, View):
                 ).select_related('teacher').order_by('date', 'teacher__name')[:50],
                 'pending_unavailabilities': pending_unavailabilities,
                 'pending_count': pending_unavailabilities.count(),
+                'review_history': review_history,
             }
 
         return render(request, 'teachers/unavailability_list.html', context)

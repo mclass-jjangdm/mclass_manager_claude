@@ -35,11 +35,26 @@ class SalaryAdmin(admin.ModelAdmin):
 
 @admin.register(TeacherUnavailability)
 class TeacherUnavailabilityAdmin(admin.ModelAdmin):
-    list_display = ('teacher', 'date', 'reason', 'memo', 'created_at')
-    list_filter = ('reason', 'date', 'teacher')
-    search_fields = ('teacher__name', 'memo')
+    list_display = ('teacher', 'date', 'reason', 'status_display', 'created_by_admin', 'reviewed_at', 'created_at')
+    list_filter = ('status', 'reason', 'date', 'teacher', 'created_by_admin')
+    search_fields = ('teacher__name', 'memo', 'reject_reason')
     date_hierarchy = 'date'
     ordering = ['-date', 'teacher__name']
+    readonly_fields = ('created_at', 'reviewed_at')
+
+    def status_display(self, obj):
+        colors = {
+            'pending': '#f59e0b',  # 노란색
+            'approved': '#10b981',  # 녹색
+            'rejected': '#ef4444',  # 빨간색
+        }
+        color = colors.get(obj.status, '#6b7280')
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            color,
+            obj.get_status_display()
+        )
+    status_display.short_description = '승인 상태'
 
 
 @admin.register(TeacherStudentAssignment)

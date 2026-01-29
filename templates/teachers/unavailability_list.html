@@ -242,6 +242,44 @@
                 </div>
                 {% endif %}
             </div>
+
+            <!-- 승인/반려 이력 (달력 아래) -->
+            {% if review_history and not selected_date %}
+            <div class="date-picker-card mt-4">
+                <div class="px-4 py-3 border-b bg-gray-50">
+                    <h4 class="text-sm font-semibold text-gray-800 flex items-center">
+                        <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                        승인/반려 이력
+                    </h4>
+                </div>
+                <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+                    {% for record in review_history %}
+                    <div class="px-4 py-2.5 hover:bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                {% if record.status == 'approved' %}
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                {% else %}
+                                <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                                {% endif %}
+                                <span class="text-sm font-medium text-gray-800">{{ record.teacher.name }}</span>
+                            </div>
+                            <span class="text-xs text-gray-400">{{ record.reviewed_at|date:"m/d" }}</span>
+                        </div>
+                        <div class="ml-4 mt-0.5">
+                            <span class="text-xs text-gray-500">{{ record.date|date:"Y-m-d" }}</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded {{ record.reason }}-tag ml-1">{{ record.get_reason_display }}</span>
+                            {% if record.status == 'rejected' and record.reject_reason %}
+                            <p class="text-xs text-red-500 mt-0.5">{{ record.reject_reason|truncatechars:25 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- 오른쪽: 결과 -->
@@ -347,7 +385,7 @@
 
             {% else %}
             <!-- 날짜 미선택: 예정된 일정 목록 -->
-            <div class="date-picker-card">
+            <div class="date-picker-card mb-6">
                 <div class="px-6 py-4 border-b bg-gray-50">
                     <h3 class="text-lg font-semibold text-gray-800">예정된 출근 불가 일정</h3>
                     <p class="text-sm text-gray-500">오늘 이후 등록된 일정을 표시합니다</p>
