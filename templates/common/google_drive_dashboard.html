@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Google Drive 관리{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
+        border-radius: 16px;
+        padding: 24px;
+        color: white;
+        margin-bottom: 24px;
+    }
+    .drive-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .folder-item {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        border-bottom: 1px solid #e5e7eb;
+        transition: background 0.2s;
+    }
+    .folder-item:hover {
+        background: #f9fafb;
+    }
+    .folder-item:last-child {
+        border-bottom: none;
+    }
+    .folder-icon {
+        width: 48px;
+        height: 48px;
+        background: #FFC107;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+    }
+    .folder-icon svg {
+        width: 28px;
+        height: 28px;
+        color: white;
+    }
+    .btn-google {
+        background: #4285F4;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        transition: background 0.2s;
+    }
+    .btn-google:hover {
+        background: #3367D6;
+        color: white;
+    }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    .status-badge.success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    .status-badge.error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: #6b7280;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-6">
+    <!-- 헤더 -->
+    <div class="page-header">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h2 class="text-2xl font-bold flex items-center">
+                    <svg class="w-8 h-8 mr-3" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                        <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+                        <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
+                        <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+                        <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+                        <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+                        <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+                    </svg>
+                    Google Drive 관리
+                </h2>
+                <p class="text-white/80 mt-1">교사/학생 폴더 관리 및 파일 업로드</p>
+            </div>
+            <div class="flex gap-2 mt-4 md:mt-0">
+                <a href="{% url 'index' %}" class="btn-action bg-white/10 border-white text-white hover:bg-white hover:text-blue-600 border px-4 py-2 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    대시보드
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상태 표시 -->
+    <div class="mb-6">
+        {% if is_available %}
+        <span class="status-badge success">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Google Drive API 연결됨
+        </span>
+        {% else %}
+        <span class="status-badge error">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            {{ error_message }}
+        </span>
+        {% endif %}
+    </div>
+
+    {% if is_available %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 왼쪽: 폴더 목록 -->
+        <div class="lg:col-span-2">
+            <div class="drive-card">
+                <div class="px-6 py-4 border-b bg-gray-50 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">폴더 목록</h3>
+                    <button onclick="showCreateFolderModal()" class="btn-google text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        새 폴더
+                    </button>
+                </div>
+
+                {% if folders %}
+                <div>
+                    {% for folder in folders %}
+                    <div class="folder-item">
+                        <div class="folder-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <a href="{% url 'google_drive_folder_detail' folder.id %}" class="text-gray-800 hover:text-blue-600 font-medium">
+                                {{ folder.name }}
+                            </a>
+                        </div>
+                        <div class="flex gap-2">
+                            {% if folder.webViewLink %}
+                            <a href="{{ folder.webViewLink }}" target="_blank" class="text-blue-500 hover:text-blue-700 p-2" title="Google Drive에서 열기">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                            </a>
+                            {% endif %}
+                            <form method="post" action="{% url 'google_drive_delete' folder.id %}" class="inline" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-500 hover:text-red-700 p-2" title="삭제">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                    <p class="text-lg font-medium mb-2">폴더가 없습니다</p>
+                    <p class="text-sm mb-4">MClass 폴더 구조를 초기화하거나 새 폴더를 만들어 보세요</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 오른쪽: 빠른 작업 -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- 초기 설정 -->
+            <div class="drive-card p-6">
+                <h4 class="font-semibold text-gray-800 mb-4">빠른 설정</h4>
+                <form method="post" action="{% url 'google_drive_setup' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-google w-full justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        MClass 폴더 구조 생성
+                    </button>
+                </form>
+                <p class="text-sm text-gray-500 mt-3">
+                    교사, 학생, 공유자료 폴더를 자동으로 생성합니다.
+                </p>
+            </div>
+
+            <!-- 파일 업로드 -->
+            <div class="drive-card p-6">
+                <h4 class="font-semibold text-gray-800 mb-4">파일 업로드</h4>
+                <form method="post" action="{% url 'google_drive_upload_file' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">폴더 선택</label>
+                        <select name="folder_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">루트 폴더</option>
+                            {% for folder in folders %}
+                            <option value="{{ folder.id }}">{{ folder.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">파일</label>
+                        <input type="file" name="file" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="btn-google w-full justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                        업로드
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 새 폴더 생성 모달 -->
+<div id="createFolderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">새 폴더 만들기</h3>
+        </div>
+        <form method="post" action="{% url 'google_drive_create_folder' %}">
+            {% csrf_token %}
+            <div class="px-6 py-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">폴더 이름</label>
+                    <input type="text" name="folder_name" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="폴더 이름을 입력하세요">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">상위 폴더</label>
+                    <select name="parent_folder_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">루트 폴더</option>
+                        {% for folder in folders %}
+                        <option value="{{ folder.id }}">{{ folder.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 flex justify-end gap-2 rounded-b-lg">
+                <button type="button" onclick="hideCreateFolderModal()"
+                        class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
+                    취소
+                </button>
+                <button type="submit" class="btn-google">
+                    생성
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showCreateFolderModal() {
+    document.getElementById('createFolderModal').classList.remove('hidden');
+}
+
+function hideCreateFolderModal() {
+    document.getElementById('createFolderModal').classList.add('hidden');
+}
+
+document.getElementById('createFolderModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideCreateFolderModal();
+    }
+});
+</script>
+{% endblock %}

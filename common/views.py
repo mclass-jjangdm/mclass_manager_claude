@@ -2,11 +2,16 @@ import os
 import subprocess
 import logging
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.contrib.auth.decorators import user_passes_test, login_required
-from django.views.decorators.http import require_http_methods
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
+from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.csrf import csrf_protect
+
+from .services import GoogleDriveService
 
 logger = logging.getLogger(__name__)
 
@@ -80,3 +85,179 @@ def db_backup(request):
     except Exception as e:
         logger.error(f"DB backup error: {str(e)}")
         return HttpResponse("서버 오류가 발생했습니다.", status=500)
+
+
+# ============================================
+# Google Drive 관리 뷰
+# ============================================
+
+@login_required
+@staff_member_required
+def google_drive_dashboard(request):
+    """Google Drive 관리 대시보드"""
+    drive_service = GoogleDriveService()
+
+    context = {
+        'is_available': drive_service.is_available(),
+        'folders': [],
+        'error_message': None,
+    }
+
+    if not drive_service.is_available():
+        context['error_message'] = 'Google Drive API가 설정되지 않았습니다. 서비스 계정 JSON 파일을 확인하세요.'
+    else:
+        # 루트 폴더 목록 조회
+        context['folders'] = drive_service.list_folders()
+
+    return render(request, 'common/google_drive_dashboard.html', context)
+
+
+@login_required
+@staff_member_required
+@require_POST
+def google_drive_setup(request):
+    """MClass 폴더 구조 초기화"""
+    drive_service = GoogleDriveService()
+
+    if not drive_service.is_available():
+        messages.error(request, 'Google Drive API를 사용할 수 없습니다.')
+        return redirect('google_drive_dashboard')
+
+    folder_ids = drive_service.setup_mclass_folder_structure()
+
+    if folder_ids:
+        messages.success(request, f'폴더 구조가 생성되었습니다. (생성된 폴더: {len(folder_ids)}개)')
+    else:
+        messages.error(request, '폴더 구조 생성에 실패했습니다.')
+
+    return redirect('google_drive_dashboard')
+
+
+@login_required
+@staff_member_required
+def google_drive_folder_detail(request, folder_id):
+    """폴더 상세 보기 (파일 및 하위 폴더 목록)"""
+    drive_service = GoogleDriveService()
+
+    if not drive_service.is_available():
+        messages.error(request, 'Google Drive API를 사용할 수 없습니다.')
+        return redirect('google_drive_dashboard')
+
+    context = {
+        'folder_id': folder_id,
+        'folders': drive_service.list_folders(parent_folder_id=folder_id),
+        'files': drive_service.list_files(folder_id=folder_id),
+    }
+
+    return render(request, 'common/google_drive_folder_detail.html', context)
+
+
+@login_required
+@staff_member_required
+@require_POST
+def google_drive_create_folder(request):
+    """폴더 생성"""
+    drive_service = GoogleDriveService()
+
+    if not drive_service.is_available():
+        return JsonResponse({'success': False, 'error': 'API를 사용할 수 없습니다.'})
+
+    folder_name = request.POST.get('folder_name', '').strip()
+    parent_folder_id = request.POST.get('parent_folder_id', '').strip() or None
+
+    if not folder_name:
+        return JsonResponse({'success': False, 'error': '폴더 이름을 입력하세요.'})
+
+    folder_id = drive_service.create_folder(folder_name, parent_folder_id)
+
+    if folder_id:
+        messages.success(request, f'폴더 "{folder_name}"가 생성되었습니다.')
+        return JsonResponse({'success': True, 'folder_id': folder_id})
+    else:
+        return JsonResponse({'success': False, 'error': '폴더 생성에 실패했습니다.'})
+
+
+@login_required
+@staff_member_required
+@require_POST
+def google_drive_upload_file(request):
+    """파일 업로드"""
+    drive_service = GoogleDriveService()
+
+    if not drive_service.is_available():
+        messages.error(request, 'Google Drive API를 사용할 수 없습니다.')
+        return redirect('google_drive_dashboard')
+
+    folder_id = request.POST.get('folder_id', '').strip() or None
+    uploaded_file = request.FILES.get('file')
+
+    if not uploaded_file:
+        messages.error(request, '파일을 선택하세요.')
+        return redirect('google_drive_dashboard')
+
+    # 파일 크기 검사
+    if uploaded_file.size > settings.MAX_UPLOAD_SIZE:
+        messages.error(request, f'파일 크기가 너무 큽니다. (최대: {settings.MAX_UPLOAD_SIZE // 1024 // 1024}MB)')
+        return redirect('google_drive_dashboard')
+
+    result = drive_service.upload_file_from_bytes(
+        file_content=uploaded_file.read(),
+        file_name=uploaded_file.name,
+        folder_id=folder_id,
+        mime_type=uploaded_file.content_type
+    )
+
+    if result:
+        messages.success(request, f'파일 "{uploaded_file.name}"가 업로드되었습니다.')
+    else:
+        messages.error(request, '파일 업로드에 실패했습니다.')
+
+    if folder_id:
+        return redirect('google_drive_folder_detail', folder_id=folder_id)
+    return redirect('google_drive_dashboard')
+
+
+@login_required
+@staff_member_required
+@require_POST
+def google_drive_share_folder(request):
+    """폴더 공유"""
+    drive_service = GoogleDriveService()
+
+    if not drive_service.is_available():
+        return JsonResponse({'success': False, 'error': 'API를 사용할 수 없습니다.'})
+
+    folder_id = request.POST.get('folder_id', '').strip()
+    email = request.POST.get('email', '').strip()
+    role = request.POST.get('role', 'reader')
+
+    if not folder_id or not email:
+        return JsonResponse({'success': False, 'error': '필수 정보가 누락되었습니다.'})
+
+    success = drive_service.share_with_user(folder_id, email, role)
+
+    if success:
+        return JsonResponse({'success': True, 'message': f'{email}에게 공유되었습니다.'})
+    else:
+        return JsonResponse({'success': False, 'error': '공유 설정에 실패했습니다.'})
+
+
+@login_required
+@staff_member_required
+@require_POST
+def google_drive_delete(request, file_id):
+    """파일/폴더 삭제"""
+    drive_service = GoogleDriveService()
+
+    if not drive_service.is_available():
+        messages.error(request, 'Google Drive API를 사용할 수 없습니다.')
+        return redirect('google_drive_dashboard')
+
+    success = drive_service.delete_file(file_id)
+
+    if success:
+        messages.success(request, '삭제되었습니다.')
+    else:
+        messages.error(request, '삭제에 실패했습니다.')
+
+    return redirect(request.META.get('HTTP_REFERER', 'google_drive_dashboard'))

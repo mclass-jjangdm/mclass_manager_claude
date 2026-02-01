@@ -22,7 +22,16 @@ from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from .views import IndexView, AdminLoginView
 from django.contrib.auth.views import LogoutView
-from common.views import db_backup
+from common.views import (
+    db_backup,
+    google_drive_dashboard,
+    google_drive_setup,
+    google_drive_folder_detail,
+    google_drive_create_folder,
+    google_drive_upload_file,
+    google_drive_share_folder,
+    google_drive_delete,
+)
 
 
 admin.site.site_header = "엠클래스수학과학전문학원"  # 로그인 페이지와 관리자 페이지 상단의 타이틀
@@ -33,6 +42,14 @@ admin.site.index_title = "m'class manager"  # 관리자 페이지의 메인 타�
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     path('admin/db-backup/', db_backup, name='db_backup'),
+    # Google Drive 관리
+    path('admin/google-drive/', google_drive_dashboard, name='google_drive_dashboard'),
+    path('admin/google-drive/setup/', google_drive_setup, name='google_drive_setup'),
+    path('admin/google-drive/folder/<str:folder_id>/', google_drive_folder_detail, name='google_drive_folder_detail'),
+    path('admin/google-drive/create-folder/', google_drive_create_folder, name='google_drive_create_folder'),
+    path('admin/google-drive/upload/', google_drive_upload_file, name='google_drive_upload_file'),
+    path('admin/google-drive/share/', google_drive_share_folder, name='google_drive_share_folder'),
+    path('admin/google-drive/delete/<str:file_id>/', google_drive_delete, name='google_drive_delete'),
     path('admin/', admin.site.urls),
     path('login/', AdminLoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),

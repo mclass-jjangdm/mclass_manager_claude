@@ -324,3 +324,27 @@ MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 # Excel/CSV 가져오기용 최대 파일 크기 (5MB)
 MAX_IMPORT_FILE_SIZE = 5 * 1024 * 1024
 
+
+# ============================================
+# Google Drive API 설정
+# ============================================
+
+# 서비스 계정 JSON 키 파일 경로
+GOOGLE_SERVICE_ACCOUNT_FILE = os.environ.get(
+    'GOOGLE_SERVICE_ACCOUNT_FILE',
+    os.path.join(BASE_DIR, 'credentials', 'google_service_account.json')
+)
+
+# Google Drive API 스코프
+GOOGLE_DRIVE_SCOPES = [
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/drive.file',
+]
+
+# Google Drive 루트 폴더 ID (MClass 전용 폴더)
+# 설정하지 않으면 서비스 계정의 드라이브 루트에 생성됨
+GOOGLE_DRIVE_ROOT_FOLDER_ID = os.environ.get('GOOGLE_DRIVE_ROOT_FOLDER_ID', '')
+
+# 도메인 전체 위임 사용 시 위임할 사용자 이메일
+GOOGLE_DELEGATED_USER_EMAIL = os.environ.get('GOOGLE_DELEGATED_USER_EMAIL', '')
+
