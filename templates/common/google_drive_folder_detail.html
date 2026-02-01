@@ -125,13 +125,16 @@
                 </p>
             </div>
             <div class="flex gap-2 mt-4 md:mt-0">
-                {% if folder_path|length > 1 %}
-                <a href="{% url 'google_drive_folder_detail' folder_path|slice:':-1'|last.id %}" class="btn-action bg-white/10 border-white text-white hover:bg-white hover:text-blue-600 border px-4 py-2 rounded-lg flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    상위 폴더
-                </a>
+                {% with parent_path=folder_path|slice:":-1" %}
+                {% if parent_path %}
+                    {% with parent_folder=parent_path|last %}
+                    <a href="{% url 'google_drive_folder_detail' parent_folder.id %}" class="btn-action bg-white/10 border-white text-white hover:bg-white hover:text-blue-600 border px-4 py-2 rounded-lg flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        상위 폴더
+                    </a>
+                    {% endwith %}
                 {% else %}
                 <a href="{% url 'google_drive_dashboard' %}" class="btn-action bg-white/10 border-white text-white hover:bg-white hover:text-blue-600 border px-4 py-2 rounded-lg flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,6 +143,7 @@
                     뒤로가기
                 </a>
                 {% endif %}
+                {% endwith %}
             </div>
         </div>
     </div>
