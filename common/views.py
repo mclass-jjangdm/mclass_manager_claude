@@ -143,8 +143,14 @@ def google_drive_folder_detail(request, folder_id):
         messages.error(request, 'Google Drive API를 사용할 수 없습니다.')
         return redirect('google_drive_dashboard')
 
+    # 현재 폴더 정보 및 경로 조회
+    current_folder = drive_service.get_file_info(folder_id)
+    folder_path = drive_service.get_folder_path(folder_id)
+
     context = {
         'folder_id': folder_id,
+        'current_folder': current_folder,
+        'folder_path': folder_path,
         'folders': drive_service.list_folders(parent_folder_id=folder_id),
         'files': drive_service.list_files(folder_id=folder_id),
     }
@@ -160,21 +166,29 @@ def google_drive_create_folder(request):
     drive_service = GoogleDriveService()
 
     if not drive_service.is_available():
-        return JsonResponse({'success': False, 'error': 'API를 사용할 수 없습니다.'})
+        messages.error(request, 'Google Drive API를 사용할 수 없습니다.')
+        return redirect('google_drive_dashboard')
 
     folder_name = request.POST.get('folder_name', '').strip()
     parent_folder_id = request.POST.get('parent_folder_id', '').strip() or None
 
     if not folder_name:
-        return JsonResponse({'success': False, 'error': '폴더 이름을 입력하세요.'})
+        messages.error(request, '폴더 이름을 입력하세요.')
+        if parent_folder_id:
+            return redirect('google_drive_folder_detail', folder_id=parent_folder_id)
+        return redirect('google_drive_dashboard')
 
     folder_id = drive_service.create_folder(folder_name, parent_folder_id)
 
     if folder_id:
         messages.success(request, f'폴더 "{folder_name}"가 생성되었습니다.')
-        return JsonResponse({'success': True, 'folder_id': folder_id})
+        # 생성된 폴더로 이동
+        return redirect('google_drive_folder_detail', folder_id=folder_id)
     else:
-        return JsonResponse({'success': False, 'error': '폴더 생성에 실패했습니다.'})
+        messages.error(request, '폴더 생성에 실패했습니다.')
+        if parent_folder_id:
+            return redirect('google_drive_folder_detail', folder_id=parent_folder_id)
+        return redirect('google_drive_dashboard')
 
 
 @login_required

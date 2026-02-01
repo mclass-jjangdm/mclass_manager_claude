@@ -76,6 +76,73 @@ class GoogleDriveService:
     # 폴더 관리 기능
     # ==========================================
 
+    def get_file_info(self, file_id: str) -> Optional[Dict[str, Any]]:
+        """
+        파일/폴더 정보 조회
+
+        Args:
+            file_id: 파일 또는 폴더 ID
+
+        Returns:
+            파일 정보 {id, name, parents, webViewLink} 또는 None
+        """
+        if not self.is_available():
+            return None
+
+        try:
+            file_info = self.service.files().get(
+                fileId=file_id,
+                fields='id, name, parents, webViewLink, mimeType'
+            ).execute()
+            return file_info
+        except HttpError as e:
+            logger.error(f'파일 정보 조회 실패: {str(e)}')
+            return None
+
+    def get_folder_path(self, folder_id: str) -> List[Dict[str, str]]:
+        """
+        폴더 경로(breadcrumb) 조회
+
+        Args:
+            folder_id: 폴더 ID
+
+        Returns:
+            경로 목록 [{id, name}, ...] (루트부터 현재 폴더까지)
+        """
+        if not self.is_available():
+            return []
+
+        path = []
+        current_id = folder_id
+
+        try:
+            # 최대 10단계까지 탐색 (무한 루프 방지)
+            for _ in range(10):
+                if not current_id:
+                    break
+
+                file_info = self.service.files().get(
+                    fileId=current_id,
+                    fields='id, name, parents'
+                ).execute()
+
+                path.insert(0, {
+                    'id': file_info.get('id'),
+                    'name': file_info.get('name')
+                })
+
+                parents = file_info.get('parents', [])
+                if parents:
+                    current_id = parents[0]
+                else:
+                    break
+
+            return path
+
+        except HttpError as e:
+            logger.error(f'폴더 경로 조회 실패: {str(e)}')
+            return path
+
     def create_folder(
         self,
         name: str,
