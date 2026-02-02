@@ -12,6 +12,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+
+# .env 파일 로드 (로컬 개발 환경용, Docker에서는 환경변수 직접 사용)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv가 없으면 환경변수 직접 사용
+
 try:
     import mclass_settings
 except ImportError:
