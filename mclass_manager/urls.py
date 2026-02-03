@@ -32,6 +32,7 @@ from common.views import (
     google_drive_share_folder,
     google_drive_delete,
 )
+from students.views import parent_lookup
 
 
 admin.site.site_header = "엠클래스수학과학전문학원"  # 로그인 페이지와 관리자 페이지 상단의 타이틀
@@ -41,6 +42,7 @@ admin.site.index_title = "m'class manager"  # 관리자 페이지의 메인 타�
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
+    path('parent/', parent_lookup, name='parent_lookup'),
     path('admin/db-backup/', db_backup, name='db_backup'),
     # Google Drive 관리
     path('admin/google-drive/', google_drive_dashboard, name='google_drive_dashboard'),

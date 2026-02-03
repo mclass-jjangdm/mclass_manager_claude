@@ -868,3 +868,51 @@ def student_readmit(request, pk):
         return redirect('students:student_detail', pk=pk)
 
     return render(request, 'students/student_readmit_confirm.html', {'student': student})
+
+
+def parent_lookup(request):
+    """학부모 교재 결제 내역 조회 (로그인 불필요)"""
+    from bookstore.models import BookSale
+
+    student = None
+    unpaid_sales = []
+    paid_sales = []
+    total_unpaid = 0
+    total_paid = 0
+    error_message = None
+
+    if request.method == 'POST':
+        student_name = request.POST.get('student_name', '').strip()
+        student_id = request.POST.get('student_id', '').strip()
+
+        if student_name and student_id:
+            try:
+                student = Student.objects.get(name=student_name, student_id=student_id)
+
+                # 미결제 내역
+                unpaid_sales = BookSale.objects.filter(
+                    student=student, is_paid=False
+                ).select_related('book').order_by('-sale_date')
+                total_unpaid = sum(sale.get_total_price() for sale in unpaid_sales)
+
+                # 결제 완료 내역
+                paid_sales = BookSale.objects.filter(
+                    student=student, is_paid=True
+                ).select_related('book').order_by('-payment_date')
+                total_paid = sum(sale.get_total_price() for sale in paid_sales)
+
+            except Student.DoesNotExist:
+                error_message = '학생 정보를 찾을 수 없습니다. 이름과 고유번호를 확인해 주세요.'
+        else:
+            error_message = '학생 이름과 고유번호를 모두 입력해 주세요.'
+
+    context = {
+        'student': student,
+        'unpaid_sales': unpaid_sales,
+        'paid_sales': paid_sales,
+        'total_unpaid': total_unpaid,
+        'total_paid': total_paid,
+        'error_message': error_message,
+        'bank_account': '신한은행 110-247-214359 장동민(엠클래스수학과학전문학원)',
+    }
+    return render(request, 'students/parent_lookup.html', context)
