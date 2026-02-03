@@ -23,6 +23,9 @@ class StudentListView(LoginRequiredMixin, ListView):
     context_object_name = 'students'
 
     def get_queryset(self):
+        from django.db.models import Sum, F, Case, When, IntegerField
+        from bookstore.models import BookSale
+
         queryset = Student.objects.select_related('school')
         search_query = self.request.GET.get('search', '')
         show_inactive = self.request.GET.get('show_inactive') == 'on'
@@ -31,6 +34,18 @@ class StudentListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(name__icontains=search_query)
         if not show_inactive:
             queryset = queryset.filter(is_active=True)
+
+        # 미결제 도서 금액 총액을 annotate로 추가
+        queryset = queryset.annotate(
+            unpaid_book_total=Sum(
+                Case(
+                    When(book_sales__is_paid=False,
+                         then=F('book_sales__price') * F('book_sales__quantity')),
+                    default=0,
+                    output_field=IntegerField()
+                )
+            )
+        )
 
         return queryset.order_by('-is_active', 'grade', 'name')
 
