@@ -196,14 +196,20 @@ def google_drive_create_folder(request):
 @require_POST
 def google_drive_upload_file(request):
     """파일 업로드"""
+    import logging
+    logger = logging.getLogger(__name__)
+
     drive_service = GoogleDriveService()
 
     if not drive_service.is_available():
+        logger.error('Google Drive API를 사용할 수 없습니다.')
         messages.error(request, 'Google Drive API를 사용할 수 없습니다.')
         return redirect('google_drive_dashboard')
 
     folder_id = request.POST.get('folder_id', '').strip() or None
     uploaded_file = request.FILES.get('file')
+
+    logger.info(f'파일 업로드 시도: folder_id={folder_id}, file={uploaded_file}')
 
     if not uploaded_file:
         messages.error(request, '파일을 선택하세요.')
@@ -214,12 +220,22 @@ def google_drive_upload_file(request):
         messages.error(request, f'파일 크기가 너무 큽니다. (최대: {settings.MAX_UPLOAD_SIZE // 1024 // 1024}MB)')
         return redirect('google_drive_dashboard')
 
-    result = drive_service.upload_file_from_bytes(
-        file_content=uploaded_file.read(),
-        file_name=uploaded_file.name,
-        folder_id=folder_id,
-        mime_type=uploaded_file.content_type
-    )
+    logger.info(f'파일 정보: name={uploaded_file.name}, size={uploaded_file.size}, content_type={uploaded_file.content_type}')
+
+    try:
+        file_content = uploaded_file.read()
+        logger.info(f'파일 읽기 완료: {len(file_content)} bytes')
+
+        result = drive_service.upload_file_from_bytes(
+            file_content=file_content,
+            file_name=uploaded_file.name,
+            folder_id=folder_id,
+            mime_type=uploaded_file.content_type
+        )
+        logger.info(f'업로드 결과: {result}')
+    except Exception as e:
+        logger.error(f'파일 업로드 중 예외 발생: {str(e)}', exc_info=True)
+        result = None
 
     if result:
         messages.success(request, f'파일 "{uploaded_file.name}"가 업로드되었습니다.')

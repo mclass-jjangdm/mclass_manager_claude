@@ -387,12 +387,16 @@ class GoogleDriveService:
             elif getattr(settings, 'GOOGLE_DRIVE_ROOT_FOLDER_ID', ''):
                 file_metadata['parents'] = [settings.GOOGLE_DRIVE_ROOT_FOLDER_ID]
 
+            logger.info(f'파일 메타데이터: {file_metadata}')
+            logger.info(f'파일 크기: {len(file_content)} bytes, MIME 타입: {mime_type}')
+
             media = MediaIoBaseUpload(
                 BytesIO(file_content),
                 mimetype=mime_type,
                 resumable=True
             )
 
+            logger.info('Google Drive API 호출 시작...')
             file = self.service.files().create(
                 body=file_metadata,
                 media_body=media,
@@ -407,7 +411,10 @@ class GoogleDriveService:
             }
 
         except HttpError as e:
-            logger.error(f'파일 업로드 실패: {str(e)}')
+            logger.error(f'파일 업로드 실패 (HttpError): {str(e)}')
+            return None
+        except Exception as e:
+            logger.error(f'파일 업로드 실패 (Exception): {str(e)}', exc_info=True)
             return None
 
     def list_files(
