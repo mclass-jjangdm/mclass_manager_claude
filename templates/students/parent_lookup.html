@@ -67,10 +67,16 @@
                             {{ student.school.name|default:"-" }} / {{ student.grade|default:"-" }}
                         </p>
                     </div>
-                    <a href="{% url 'parent_student_update' student.student_id %}"
-                       class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-                        정보 수정
-                    </a>
+                    <div class="flex items-center space-x-2">
+                        <a href="{% url 'parent_student_update' student.student_id %}"
+                           class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                            정보 수정
+                        </a>
+                        <a href="{% url 'parent_logout' %}"
+                           class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-sm">
+                            나가기
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -163,22 +169,17 @@
                 {% endif %}
             </div>
 
-            <!-- 나가기 버튼 -->
-            <div class="text-center mt-6">
-                <a href="{% url 'parent_logout' %}"
-                   class="inline-flex items-center px-6 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
-                    나가기
-                </a>
-            </div>
         </div>
         {% endif %}
 
         <!-- 푸터 -->
-        <div class="text-center mt-8 text-sm text-gray-500">
-            <p>문의: 엠클래스 수학과학전문학원</p>
+        <div class="text-center mt-8 text-sm text-gray-500 space-y-1">
+            <p class="font-medium">문의: 엠클래스 수학과학전문학원</p>
+            <p>
+                <a href="tel:031-439-1222" class="hover:text-indigo-600">031-439-1222</a>
+                &nbsp;|&nbsp;
+                <a href="mailto:jjangdm@mclass.co.kr" class="hover:text-indigo-600">jjangdm@mclass.co.kr</a>
+            </p>
         </div>
     </div>
 </body>
