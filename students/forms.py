@@ -201,6 +201,36 @@ class StudentFileUploadForm(forms.Form):
         return file
 
 
+class ParentStudentUpdateForm(forms.ModelForm):
+    """부모님용 학생 정보 수정 폼 (제한된 필드만 수정 가능)"""
+    class Meta:
+        model = Student
+        fields = ['phone_number', 'email', 'parent_phone', 'receipt_number']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['phone_number'].widget = forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+            'placeholder': '010-0000-0000'
+        })
+        self.fields['phone_number'].required = False
+        self.fields['email'].widget = forms.EmailInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+            'placeholder': 'example@email.com'
+        })
+        self.fields['email'].required = False
+        self.fields['parent_phone'].widget = forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+            'placeholder': '010-0000-0000'
+        })
+        self.fields['parent_phone'].required = False
+        self.fields['receipt_number'].widget = forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+            'placeholder': '현금영수증 발급용 번호'
+        })
+        self.fields['receipt_number'].required = False
+
+
 class BulkSMSForm(forms.Form):
     TARGET_CHOICES = [
         ('student', '학생'),

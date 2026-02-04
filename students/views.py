@@ -881,30 +881,39 @@ def parent_lookup(request):
     total_paid = 0
     error_message = None
 
-    if request.method == 'POST':
-        student_name = request.POST.get('student_name', '').strip()
-        student_id = request.POST.get('student_id', '').strip()
+    # 세션에서 학생 정보 복원 시도
+    student_name = request.POST.get('student_name', '').strip()
+    student_id = request.POST.get('student_id', '').strip()
 
-        if student_name and student_id:
-            try:
-                student = Student.objects.get(name=student_name, student_id=student_id)
+    # POST 요청이 아니면 세션에서 복원
+    if request.method != 'POST' and 'parent_student_id' in request.session:
+        student_id = request.session.get('parent_student_id', '')
+        student_name = request.session.get('parent_student_name', '')
 
-                # 미결제 내역
-                unpaid_sales = BookSale.objects.filter(
-                    student=student, is_paid=False
-                ).select_related('book').order_by('-sale_date')
-                total_unpaid = sum(sale.get_total_price() for sale in unpaid_sales)
+    if student_name and student_id:
+        try:
+            student = Student.objects.get(name=student_name, student_id=student_id)
 
-                # 결제 완료 내역
-                paid_sales = BookSale.objects.filter(
-                    student=student, is_paid=True
-                ).select_related('book').order_by('-payment_date')
-                total_paid = sum(sale.get_total_price() for sale in paid_sales)
+            # 세션에 학생 정보 저장
+            request.session['parent_student_id'] = student_id
+            request.session['parent_student_name'] = student_name
 
-            except Student.DoesNotExist:
-                error_message = '학생 정보를 찾을 수 없습니다. 이름과 고유번호를 확인해 주세요.'
-        else:
-            error_message = '학생 이름과 고유번호를 모두 입력해 주세요.'
+            # 미결제 내역
+            unpaid_sales = BookSale.objects.filter(
+                student=student, is_paid=False
+            ).select_related('book').order_by('-sale_date')
+            total_unpaid = sum(sale.get_total_price() for sale in unpaid_sales)
+
+            # 결제 완료 내역
+            paid_sales = BookSale.objects.filter(
+                student=student, is_paid=True
+            ).select_related('book').order_by('-payment_date')
+            total_paid = sum(sale.get_total_price() for sale in paid_sales)
+
+        except Student.DoesNotExist:
+            error_message = '학생 정보를 찾을 수 없습니다. 이름과 고유번호를 확인해 주세요.'
+    elif request.method == 'POST':
+        error_message = '학생 이름과 고유번호를 모두 입력해 주세요.'
 
     context = {
         'student': student,
@@ -916,3 +925,36 @@ def parent_lookup(request):
         'bank_account': '신한은행 110-247-214359 장동민(엠클래스수학과학전문학원)',
     }
     return render(request, 'students/parent_lookup.html', context)
+
+
+def parent_logout(request):
+    """부모님 페이지 나가기 (세션 정리)"""
+    if 'parent_student_id' in request.session:
+        del request.session['parent_student_id']
+    if 'parent_student_name' in request.session:
+        del request.session['parent_student_name']
+    return redirect('index')
+
+
+def parent_student_update(request, student_id):
+    """부모님용 학생 정보 수정 (로그인 불필요, 제한된 필드만 수정 가능)"""
+    from .forms import ParentStudentUpdateForm
+
+    student = get_object_or_404(Student, student_id=student_id)
+
+    if request.method == 'POST':
+        form = ParentStudentUpdateForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            return render(request, 'students/parent_student_update.html', {
+                'student': student,
+                'form': form,
+                'success_message': '학생 정보가 성공적으로 수정되었습니다.'
+            })
+    else:
+        form = ParentStudentUpdateForm(instance=student)
+
+    return render(request, 'students/parent_student_update.html', {
+        'student': student,
+        'form': form,
+    })
