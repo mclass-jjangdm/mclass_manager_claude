@@ -14,7 +14,8 @@
             <!-- <p class="text-gray-600 mt-2">교재 결제 내역 조회</p> -->
         </div>
 
-        <!-- 조회 폼 -->
+        <!-- 조회 폼 (학생 정보가 없을 때만 표시) -->
+        {% if not student %}
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <form method="post" class="space-y-4">
                 {% csrf_token %}
@@ -42,6 +43,7 @@
                 </div>
             </form>
         </div>
+        {% endif %}
 
         <!-- 에러 메시지 -->
         {% if error_message %}
