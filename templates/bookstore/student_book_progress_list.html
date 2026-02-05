@@ -118,19 +118,14 @@
             </div>
 
             <div id="completed-section" class="hidden">
-                {% if user.is_staff %}
-                <!-- 관리자용 일괄 초기화 폼 -->
-                <form method="POST" action="{% url 'progress:student_book_progress_bulk_reset' sale.pk %}" id="completed-reset-form">
-                    {% csrf_token %}
-                {% endif %}
                     {% if user.is_staff %}
                     <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <div class="flex items-center gap-2">
                             <input type="checkbox" id="select-all-completed" class="rounded">
                             <label for="select-all-completed" class="text-sm text-gray-600">전체 선택</label>
                         </div>
-                        <button type="submit"
-                                onclick="return confirm('선택한 항목을 미완료 상태로 초기화하시겠습니까?');"
+                        <button type="button"
+                                onclick="bulkResetProgress({{ sale.pk }})"
                                 class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-sm font-medium transition-colors">
                             선택 항목 초기화
                         </button>
@@ -241,9 +236,6 @@
                         </tbody>
                     </table>
                 </div>
-                {% if user.is_staff %}
-                </form>
-                {% endif %}
             </div>
         </div>
         {% endif %}
@@ -499,10 +491,43 @@ function resetProgress(salePk, progressPk, pageName) {
         form.submit();
     }
 }
+
+// 선택 항목 일괄 초기화 (form 중첩 문제 해결)
+function bulkResetProgress(salePk) {
+    const checkboxes = document.querySelectorAll('.completed-checkbox:checked');
+    if (checkboxes.length === 0) {
+        alert('초기화할 항목을 선택해주세요.');
+        return;
+    }
+
+    if (confirm('선택한 ' + checkboxes.length + '개 항목을 미완료 상태로 초기화하시겠습니까?')) {
+        const form = document.getElementById('bulk-reset-form');
+        form.action = '/progress/book/' + salePk + '/bulk-reset/';
+
+        // 기존 hidden input 제거
+        form.querySelectorAll('input[name="completed_progress_ids"]').forEach(el => el.remove());
+
+        // 선택된 체크박스 값 추가
+        checkboxes.forEach(checkbox => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'completed_progress_ids';
+            input.value = checkbox.value;
+            form.appendChild(input);
+        });
+
+        form.submit();
+    }
+}
 </script>
 
 <!-- 개별 초기화용 숨겨진 폼 (form 중첩 방지) -->
 <form method="POST" id="single-reset-form" style="display:none;">
+    {% csrf_token %}
+</form>
+
+<!-- 일괄 초기화용 숨겨진 폼 (form 중첩 방지) -->
+<form method="POST" id="bulk-reset-form" style="display:none;">
     {% csrf_token %}
 </form>
 {% endblock %}
