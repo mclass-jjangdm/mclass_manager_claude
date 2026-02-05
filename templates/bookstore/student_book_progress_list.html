@@ -218,7 +218,7 @@
         </div>
         {% endif %}
 
-        <!-- 미완료 항목 섹션 -->
+        <!-- 미완료 항목 섹션 (대단원별 폴딩) -->
         <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
             <div class="p-4 border-b border-gray-200 bg-amber-50 flex justify-between items-center">
                 <div class="flex items-center gap-2">
@@ -226,7 +226,7 @@
                         {{ stats.remaining }}
                     </span>
                     <h3 class="text-lg font-semibold text-amber-800">미완료 항목</h3>
-                    <span class="text-sm text-amber-600">(학습이 필요한 항목)</span>
+                    <span class="text-sm text-amber-600">(대단원 클릭하여 펼치기)</span>
                 </div>
                 <button type="submit"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
@@ -235,90 +235,117 @@
             </div>
 
             {% if stats.remaining > 0 %}
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase w-10">
-                                <input type="checkbox" id="select-all-incomplete" class="rounded">
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-16">
-                                페이지
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                단원/주제
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase" style="min-width: 130px;">
-                                학습일
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase" style="min-width: 100px;">
-                                성취도
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-20">
-                                보완
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-20">
-                                과제
-                            </th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-16">
-                                상세
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for record in progress_records %}
-                        {% if not record.is_completed %}
-                        <tr class="hover:bg-amber-50 transition-colors incomplete-row">
-                            <td class="px-3 py-3 text-center">
-                                <input type="checkbox" name="progress_ids" value="{{ record.pk }}" class="progress-checkbox incomplete-checkbox rounded" checked>
-                            </td>
-                            <td class="px-4 py-3 text-center font-semibold text-gray-700">
-                                p.{{ record.book_content.page }}
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                <div class="text-indigo-600 text-xs">{{ record.book_content.chapter_num }}. {{ record.book_content.chapter_title }}</div>
-                                <div class="font-medium">{{ record.book_content.subsection_title }}</div>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <input type="text"
-                                       name="study_date_{{ record.pk }}"
-                                       value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
-                                       class="text-sm border border-gray-300 rounded px-2 py-1 mclass-datepicker"
-                                       style="min-width: 110px;"
-                                       readonly>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <select name="achievement_{{ record.pk }}"
-                                        class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500"
-                                        style="min-width: 90px;">
-                                    {% for value, label in achievement_choices %}
-                                    <option value="{{ value }}" {% if record.achievement == value %}selected{% endif %}>{{ label }}</option>
+            <div class="p-4 space-y-3">
+                {% for chapter_key, chapter_data in chapters.items %}
+                {% with chapter_id=forloop.counter %}
+                <!-- 대단원별 미완료 항목 체크 -->
+                {% with has_incomplete=False incomplete_count=0 %}
+                {% for section_key, records in chapter_data.sections.items %}
+                {% for record in records %}
+                {% if not record.is_completed %}
+                {% with has_incomplete=True %}{% endwith %}
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+                {% endwith %}
+
+                <div class="border border-gray-200 rounded-lg overflow-hidden chapter-card" data-chapter="{{ chapter_id }}">
+                    <!-- 대단원 헤더 -->
+                    <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 px-4 py-3 cursor-pointer flex items-center justify-between hover:from-indigo-100 hover:to-indigo-200 transition-colors"
+                         onclick="toggleChapter({{ chapter_id }})">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm">
+                                {{ chapter_key.0 }}
+                            </span>
+                            <div>
+                                <h4 class="font-semibold text-indigo-900">{{ chapter_key.1 }}</h4>
+                                <span class="text-xs text-indigo-600 incomplete-count-{{ chapter_id }}"></span>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-indigo-600 transform transition-transform duration-200 chapter-chevron-{{ chapter_id }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+
+                    <!-- 대단원 내용 (기본 접힘) -->
+                    <div class="hidden chapter-content-{{ chapter_id }}">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-10">
+                                            <input type="checkbox" class="rounded select-all-chapter" data-chapter="{{ chapter_id }}">
+                                        </th>
+                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-14">페이지</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">주제</th>
+                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style="min-width: 120px;">학습일</th>
+                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style="min-width: 90px;">성취도</th>
+                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-16">보완</th>
+                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-16">과제</th>
+                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-14">상세</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for section_key, records in chapter_data.sections.items %}
+                                    {% for record in records %}
+                                    {% if not record.is_completed %}
+                                    <tr class="hover:bg-amber-50 transition-colors incomplete-row chapter-{{ chapter_id }}-row">
+                                        <td class="px-3 py-2 text-center">
+                                            <input type="checkbox" name="progress_ids" value="{{ record.pk }}" class="progress-checkbox incomplete-checkbox chapter-{{ chapter_id }}-checkbox rounded">
+                                        </td>
+                                        <td class="px-3 py-2 text-center font-semibold text-gray-700 text-sm">
+                                            p.{{ record.book_content.page }}
+                                        </td>
+                                        <td class="px-3 py-2 text-sm">
+                                            <div class="text-blue-600 text-xs">{{ record.book_content.section_num }}. {{ record.book_content.section_title }}</div>
+                                            <div class="font-medium text-gray-800">{{ record.book_content.subsection_title }}</div>
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <input type="text"
+                                                   name="study_date_{{ record.pk }}"
+                                                   value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
+                                                   class="text-sm border border-gray-300 rounded px-2 py-1 mclass-datepicker"
+                                                   style="width: 105px;"
+                                                   readonly>
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <select name="achievement_{{ record.pk }}"
+                                                    class="text-sm border border-gray-300 rounded px-1 py-1 focus:ring-1 focus:ring-indigo-500"
+                                                    style="width: 80px;">
+                                                {% for value, label in achievement_choices %}
+                                                <option value="{{ value }}" {% if record.achievement == value %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <input type="checkbox"
+                                                   name="needs_review_{{ record.pk }}"
+                                                   {% if record.needs_review %}checked{% endif %}
+                                                   class="rounded text-orange-600 focus:ring-orange-500">
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <input type="checkbox"
+                                                   name="homework_done_{{ record.pk }}"
+                                                   {% if record.homework_done %}checked{% endif %}
+                                                   class="rounded text-green-600 focus:ring-green-500">
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
+                                               class="text-indigo-600 hover:text-indigo-800 text-xs">
+                                                상세
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
                                     {% endfor %}
-                                </select>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <input type="checkbox"
-                                       name="needs_review_{{ record.pk }}"
-                                       {% if record.needs_review %}checked{% endif %}
-                                       class="rounded text-orange-600 focus:ring-orange-500">
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <input type="checkbox"
-                                       name="homework_done_{{ record.pk }}"
-                                       {% if record.homework_done %}checked{% endif %}
-                                       class="rounded text-green-600 focus:ring-green-500">
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
-                                   class="text-indigo-600 hover:text-indigo-800 text-xs">
-                                    상세
-                                </a>
-                            </td>
-                        </tr>
-                        {% endif %}
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
             </div>
             {% else %}
             <div class="p-8 text-center text-gray-500">
@@ -387,10 +414,43 @@ function toggleChapterSummary() {
     }
 }
 
-// 미완료 항목 전체 선택
-document.getElementById('select-all-incomplete')?.addEventListener('change', function() {
-    document.querySelectorAll('.incomplete-checkbox').forEach(checkbox => {
-        checkbox.checked = this.checked;
+// 대단원별 토글
+function toggleChapter(chapterId) {
+    const content = document.querySelector('.chapter-content-' + chapterId);
+    const chevron = document.querySelector('.chapter-chevron-' + chapterId);
+
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+    } else {
+        content.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+    }
+}
+
+// 페이지 로드 시 각 대단원별 미완료 항목 개수 표시 및 빈 대단원 숨김
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.chapter-card').forEach(card => {
+        const chapterId = card.dataset.chapter;
+        const rows = card.querySelectorAll('.chapter-' + chapterId + '-row');
+        const countEl = card.querySelector('.incomplete-count-' + chapterId);
+
+        if (rows.length === 0) {
+            // 미완료 항목이 없는 대단원은 숨김
+            card.style.display = 'none';
+        } else {
+            countEl.textContent = '미완료 ' + rows.length + '개';
+        }
+    });
+
+    // 대단원별 전체 선택
+    document.querySelectorAll('.select-all-chapter').forEach(selectAll => {
+        selectAll.addEventListener('change', function() {
+            const chapterId = this.dataset.chapter;
+            document.querySelectorAll('.chapter-' + chapterId + '-checkbox').forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
     });
 });
 
