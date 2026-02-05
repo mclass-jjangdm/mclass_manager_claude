@@ -32,4 +32,6 @@ urlpatterns = [
     path('book/<int:sale_pk>/', bookstore_views.student_book_progress_list, name='student_book_progress_list'),
     path('book/<int:sale_pk>/<int:progress_pk>/', bookstore_views.student_book_progress_update, name='student_book_progress_update'),
     path('book/<int:sale_pk>/bulk/', bookstore_views.student_book_progress_bulk_update, name='student_book_progress_bulk_update'),
+    path('book/<int:sale_pk>/<int:progress_pk>/reset/', bookstore_views.student_book_progress_reset, name='student_book_progress_reset'),
+    path('book/<int:sale_pk>/bulk-reset/', bookstore_views.student_book_progress_bulk_reset, name='student_book_progress_bulk_reset'),
 ]

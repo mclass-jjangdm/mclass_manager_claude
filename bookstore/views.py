@@ -1212,3 +1212,59 @@ def student_book_progress_bulk_update(request, sale_pk):
     url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
     return redirect(url + portal_param)
 
+
+@login_required
+def student_book_progress_reset(request, sale_pk, progress_pk):
+    """완료된 진도 항목을 미완료 상태로 초기화 (관리자 전용)"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 이 기능을 사용할 수 있습니다.')
+        return redirect('progress:student_book_progress_list', sale_pk=sale_pk)
+
+    sale = get_object_or_404(BookSale, pk=sale_pk)
+    progress = get_object_or_404(StudentBookProgress, pk=progress_pk, book_sale=sale)
+
+    if request.method == 'POST':
+        # 진도 항목 초기화
+        progress.study_date = None
+        progress.achievement = ''
+        progress.needs_review = False
+        progress.homework_done = False
+        progress.teacher = None
+        progress.save()
+
+        messages.success(request, f"p.{progress.book_content.page} 항목이 미완료 상태로 초기화되었습니다.")
+
+    return redirect('progress:student_book_progress_list', sale_pk=sale_pk)
+
+
+@login_required
+def student_book_progress_bulk_reset(request, sale_pk):
+    """여러 완료된 진도 항목을 일괄 미완료 상태로 초기화 (관리자 전용)"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 이 기능을 사용할 수 있습니다.')
+        return redirect('progress:student_book_progress_list', sale_pk=sale_pk)
+
+    sale = get_object_or_404(BookSale, pk=sale_pk)
+
+    if request.method == 'POST':
+        progress_ids = request.POST.getlist('completed_progress_ids')
+        reset_count = 0
+
+        for progress_id in progress_ids:
+            try:
+                progress = StudentBookProgress.objects.get(pk=progress_id, book_sale=sale)
+                progress.study_date = None
+                progress.achievement = ''
+                progress.needs_review = False
+                progress.homework_done = False
+                progress.teacher = None
+                progress.save()
+                reset_count += 1
+            except StudentBookProgress.DoesNotExist:
+                continue
+
+        if reset_count > 0:
+            messages.success(request, f"{reset_count}개 항목이 미완료 상태로 초기화되었습니다.")
+
+    return redirect('progress:student_book_progress_list', sale_pk=sale_pk)
+
