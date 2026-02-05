@@ -122,6 +122,8 @@
                 <!-- 관리자용 일괄 초기화 폼 -->
                 <form method="POST" action="{% url 'progress:student_book_progress_bulk_reset' sale.pk %}" id="completed-reset-form">
                     {% csrf_token %}
+                {% endif %}
+                    {% if user.is_staff %}
                     <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                         <div class="flex items-center gap-2">
                             <input type="checkbox" id="select-all-completed" class="rounded">
@@ -133,7 +135,7 @@
                             선택 항목 초기화
                         </button>
                     </div>
-                {% endif %}
+                    {% endif %}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
