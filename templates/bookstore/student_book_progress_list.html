@@ -309,7 +309,7 @@
                                         </th>
                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-14">페이지</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">주제</th>
-                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style="min-width: 130px;">학습일</th>
+                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style="min-width: 145px;">학습일</th>
                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase" style="min-width: 95px;">성취도</th>
                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-16">보완</th>
                                         <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-16">과제</th>
@@ -336,7 +336,7 @@
                                                    name="study_date_{{ record.pk }}"
                                                    value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
                                                    class="text-sm border border-gray-300 rounded px-2 py-1 mclass-datepicker"
-                                                   style="width: 115px;"
+                                                   style="width: 130px;"
                                                    readonly>
                                         </td>
                                         <td class="px-3 py-2 text-center">
