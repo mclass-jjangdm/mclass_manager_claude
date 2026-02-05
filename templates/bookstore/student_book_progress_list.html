@@ -226,14 +226,11 @@
                                         수정
                                     </a>
                                     {% if user.is_staff %}
-                                    <form method="POST" action="{% url 'progress:student_book_progress_reset' sale.pk record.pk %}" class="inline">
-                                        {% csrf_token %}
-                                        <button type="submit"
-                                                onclick="return confirm('이 항목을 미완료 상태로 초기화하시겠습니까?');"
-                                                class="text-red-600 hover:text-red-800 text-xs">
-                                            초기화
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            onclick="resetProgress({{ sale.pk }}, {{ record.pk }}, 'p.{{ record.book_content.page }}')"
+                                            class="text-red-600 hover:text-red-800 text-xs">
+                                        초기화
+                                    </button>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -491,5 +488,19 @@ document.getElementById('select-all-completed')?.addEventListener('change', func
         checkbox.checked = this.checked;
     });
 });
+
+// 개별 진도 항목 초기화 (form 중첩 문제 해결)
+function resetProgress(salePk, progressPk, pageName) {
+    if (confirm(pageName + ' 항목을 미완료 상태로 초기화하시겠습니까?')) {
+        const form = document.getElementById('single-reset-form');
+        form.action = '/progress/book/' + salePk + '/' + progressPk + '/reset/';
+        form.submit();
+    }
+}
 </script>
+
+<!-- 개별 초기화용 숨겨진 폼 (form 중첩 방지) -->
+<form method="POST" id="single-reset-form" style="display:none;">
+    {% csrf_token %}
+</form>
 {% endblock %}
