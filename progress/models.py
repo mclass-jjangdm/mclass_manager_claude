@@ -199,12 +199,9 @@ class StudentActivity(models.Model):
     교재 진도(StudentBookProgress)와 독립적으로 관리
     """
     ACTIVITY_TYPE_CHOICES = [
-        ('print', '프린트'),
-        ('worksheet', '학습지'),
-        ('lecture', '강의'),
-        ('discussion', '토론'),
-        ('practice', '연습문제'),
-        ('review', '복습'),
+        ('quiz', '퀴즈'),
+        ('practice', '추가 연습 문제'),
+        ('booklet', '제본 교재'),
         ('other', '기타'),
     ]
 
@@ -266,6 +263,14 @@ class StudentActivity(models.Model):
         null=True,
         blank=True,
         verbose_name="만점"
+    )
+    needs_review = models.BooleanField(
+        default=False,
+        verbose_name="보완 필요"
+    )
+    homework_checked = models.BooleanField(
+        default=False,
+        verbose_name="과제 확인"
     )
 
     memo = models.TextField(blank=True, verbose_name="메모")

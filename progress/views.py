@@ -37,7 +37,7 @@ def student_activity_create(request):
     ).values_list('student_id', flat=True)
 
     # 배정된 학생들 + 활성 학생들
-    students = Student.objects.filter(status='active').select_related('school').order_by('name')
+    students = Student.objects.filter(is_active=True).select_related('school').order_by('name')
 
     if request.method == 'POST':
         form = StudentActivityForm(request.POST, initial_date=initial_date, students=students)

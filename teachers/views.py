@@ -2146,6 +2146,7 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
 
     def get(self, request):
         from bookstore.models import BookSale, StudentBookProgress
+        from progress.models import StudentActivity
 
         # 현재 로그인한 사용자의 교사 프로필 확인
         if not hasattr(request.user, 'teacher_profile'):
@@ -2214,21 +2215,169 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
                 message_type='instruction'
             ).order_by('-created_at')[:3]
 
+            # 해당 학생의 오늘 수업 활동 조회
+            student_activities = StudentActivity.objects.filter(
+                student=student,
+                date=check_date
+            ).select_related('subject')
+
             student_data.append({
                 'student': student,
                 'assignment': assignment,
                 'books': books_data,
                 'messages': student_messages,
+                'activities': student_activities,
             })
+
+        # 오늘 이 교사의 전체 수업 활동 조회
+        my_activities = StudentActivity.objects.filter(
+            teacher=teacher,
+            date=check_date
+        ).select_related('student', 'subject')
 
         context = {
             'selected_date': check_date,
             'teacher': teacher,
             'student_data': student_data,
+            'my_activities': my_activities,
+            'total_activities': my_activities.count(),
             'is_my_page': True,  # 자신의 페이지임을 표시
         }
 
         return render(request, 'teachers/teacher_my_progress.html', context)
+
+
+@login_required
+def teacher_activity_create(request):
+    """교사 자신의 수업 활동 생성"""
+    from progress.models import StudentActivity
+    from progress.forms import StudentActivityForm
+    from students.models import Student
+
+    # 교사 계정 확인
+    if not hasattr(request.user, 'teacher_profile'):
+        messages.error(request, '교사 계정만 이용할 수 있습니다.')
+        return redirect('progress:my_progress')
+
+    teacher = request.user.teacher_profile
+
+    # 날짜 파라미터 확인
+    date_str = request.GET.get('date') or request.POST.get('date')
+    if date_str:
+        try:
+            initial_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            initial_date = timezone.now().date()
+    else:
+        initial_date = timezone.now().date()
+
+    # 해당 날짜에 이 교사에게 배정된 학생들만 선택 가능
+    assigned_student_ids = TeacherStudentAssignment.objects.filter(
+        teacher=teacher,
+        date=initial_date
+    ).values_list('student_id', flat=True)
+
+    students = Student.objects.filter(
+        id__in=assigned_student_ids,
+        is_active=True
+    ).select_related('school').order_by('name')
+
+    if request.method == 'POST':
+        form = StudentActivityForm(request.POST, initial_date=initial_date, students=students, hide_student_id=True)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.teacher = teacher  # 자동으로 현재 교사 설정
+            activity.save()
+            messages.success(request, f"'{activity.title}' 수업 활동이 등록되었습니다.")
+
+            next_url = request.POST.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect(f'/progress/my/?date={initial_date.strftime("%Y-%m-%d")}')
+    else:
+        form = StudentActivityForm(initial_date=initial_date, students=students, hide_student_id=True)
+        # 교사 필드 초기값 설정 및 숨김
+        form.initial['teacher'] = teacher
+
+    return render(request, 'teachers/teacher_activity_form.html', {
+        'form': form,
+        'title': '수업 활동 추가',
+        'selected_date': initial_date,
+        'teacher': teacher,
+    })
+
+
+@login_required
+def teacher_activity_update(request, pk):
+    """교사 자신의 수업 활동 수정"""
+    from progress.models import StudentActivity
+    from progress.forms import StudentActivityForm
+
+    # 교사 계정 확인
+    if not hasattr(request.user, 'teacher_profile'):
+        messages.error(request, '교사 계정만 이용할 수 있습니다.')
+        return redirect('progress:my_progress')
+
+    teacher = request.user.teacher_profile
+    activity = get_object_or_404(StudentActivity, pk=pk)
+
+    # 자신이 등록한 활동만 수정 가능
+    if activity.teacher != teacher:
+        messages.error(request, '자신이 등록한 수업 활동만 수정할 수 있습니다.')
+        return redirect('progress:my_progress')
+
+    if request.method == 'POST':
+        form = StudentActivityForm(request.POST, instance=activity, hide_student_id=True)
+        if form.is_valid():
+            activity = form.save()
+            messages.success(request, f"'{activity.title}' 수업 활동이 수정되었습니다.")
+
+            next_url = request.POST.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect(f'/progress/my/?date={activity.date.strftime("%Y-%m-%d")}')
+    else:
+        form = StudentActivityForm(instance=activity, hide_student_id=True)
+
+    return render(request, 'teachers/teacher_activity_form.html', {
+        'form': form,
+        'activity': activity,
+        'title': '수업 활동 수정',
+        'selected_date': activity.date,
+        'teacher': teacher,
+    })
+
+
+@login_required
+def teacher_activity_delete(request, pk):
+    """교사 자신의 수업 활동 삭제"""
+    from progress.models import StudentActivity
+
+    # 교사 계정 확인
+    if not hasattr(request.user, 'teacher_profile'):
+        messages.error(request, '교사 계정만 이용할 수 있습니다.')
+        return redirect('progress:my_progress')
+
+    teacher = request.user.teacher_profile
+    activity = get_object_or_404(StudentActivity, pk=pk)
+
+    # 자신이 등록한 활동만 삭제 가능
+    if activity.teacher != teacher:
+        messages.error(request, '자신이 등록한 수업 활동만 삭제할 수 있습니다.')
+        return redirect('progress:my_progress')
+
+    if request.method == 'POST':
+        date = activity.date
+        title = activity.title
+        activity.delete()
+        messages.success(request, f"'{title}' 수업 활동이 삭제되었습니다.")
+
+        next_url = request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect(f'/progress/my/?date={date.strftime("%Y-%m-%d")}')
+
+    return redirect('progress:my_progress')
 
 
 class TeacherMyUnavailabilityView(LoginRequiredMixin, View):

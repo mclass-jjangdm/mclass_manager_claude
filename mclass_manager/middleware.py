@@ -23,6 +23,7 @@ class TeacherAccessRestrictionMiddleware:
         r'^/teachers/messages/',  # 메시지 관련 페이지
         r'^/teachers/password/change/$',  # 비밀번호 변경 페이지
         r'^/teachers/my-unavailability/',  # 출근 불가 일정 관리
+        r'^/teachers/my-activity/',  # 교사용 수업 활동 관리
         r'^/accounts/',  # 로그인/로그아웃 관련 (django-allauth)
         r'^/login/$',  # 로그인
         r'^/logout/$',  # 로그아웃 (POST)

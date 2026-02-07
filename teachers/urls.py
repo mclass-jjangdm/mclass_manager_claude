@@ -46,6 +46,10 @@ urlpatterns = [
     path('<int:pk>/account/delete/', views.teacher_account_delete, name='teacher_account_delete'),
     path('<int:pk>/password/reset/', views.teacher_password_reset, name='teacher_password_reset'),
     path('password/change/', views.teacher_password_change, name='teacher_password_change'),
+    # 교사용 수업 활동 관리
+    path('my-activity/create/', views.teacher_activity_create, name='teacher_activity_create'),
+    path('my-activity/<int:pk>/update/', views.teacher_activity_update, name='teacher_activity_update'),
+    path('my-activity/<int:pk>/delete/', views.teacher_activity_delete, name='teacher_activity_delete'),
     # 교사용 출근 불가 일정 관리
     path('my-unavailability/', views.TeacherMyUnavailabilityView.as_view(), name='teacher_my_unavailability'),
     path('my-unavailability/create/', views.teacher_my_unavailability_create, name='teacher_my_unavailability_create'),

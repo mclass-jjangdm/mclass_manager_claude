@@ -239,7 +239,7 @@ class StudentActivityForm(forms.ModelForm):
     class Meta:
         model = StudentActivity
         fields = ['student', 'teacher', 'date', 'activity_type', 'title', 'subject',
-                  'achievement', 'score', 'total_score', 'memo']
+                  'homework_checked', 'achievement', 'score', 'total_score', 'needs_review', 'memo']
         widgets = {
             'student': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
@@ -256,10 +256,13 @@ class StudentActivityForm(forms.ModelForm):
             }),
             'title': forms.TextInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
-                'placeholder': '예: 1학기 중간고사 대비 프린트'
+                'placeholder': '예: 중간고사 대비 추가 문제'
             }),
             'subject': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'homework_checked': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500'
             }),
             'achievement': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
@@ -274,6 +277,9 @@ class StudentActivityForm(forms.ModelForm):
                 'placeholder': '만점',
                 'step': '0.1'
             }),
+            'needs_review': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500'
+            }),
             'memo': forms.Textarea(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
                 'rows': 3,
@@ -284,6 +290,7 @@ class StudentActivityForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         initial_date = kwargs.pop('initial_date', None)
         initial_students = kwargs.pop('students', None)
+        hide_student_id = kwargs.pop('hide_student_id', False)
         super().__init__(*args, **kwargs)
 
         # 학생 목록 필터링 (활성 학생만)
@@ -291,8 +298,12 @@ class StudentActivityForm(forms.ModelForm):
             self.fields['student'].queryset = initial_students
         else:
             self.fields['student'].queryset = Student.objects.filter(
-                status='active'
+                is_active=True
             ).select_related('school').order_by('name')
+
+        # 학생 고유번호 숨기기 옵션
+        if hide_student_id:
+            self.fields['student'].label_from_instance = lambda obj: obj.name
 
         # 교사 목록 (활성 교사만)
         self.fields['teacher'].queryset = Teacher.objects.filter(

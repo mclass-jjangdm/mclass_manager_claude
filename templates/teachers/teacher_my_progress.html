@@ -32,6 +32,17 @@
         </form>
     </div>
 
+    <!-- 수업 활동 추가 버튼 -->
+    <div class="flex gap-3">
+        <a href="{% url 'teachers:teacher_activity_create' %}?date={{ selected_date|date:'Y-m-d' }}"
+           class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            수업 활동 추가
+        </a>
+    </div>
+
     {% if not student_data %}
     <!-- 배정된 학생 없음 -->
     <div class="bg-white rounded-lg shadow p-12 text-center">
@@ -54,7 +65,96 @@
             <div class="text-sm text-gray-500">교재 보유 학생</div>
         </div>
         {% endwith %}
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-3xl font-bold text-purple-600">{{ total_activities }}</div>
+            <div class="text-sm text-gray-500">수업 활동</div>
+        </div>
     </div>
+
+    <!-- 오늘 내 수업 활동 목록 -->
+    {% if my_activities %}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="p-4 border-b border-gray-200 bg-purple-50">
+            <h3 class="text-lg font-semibold text-purple-800 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                </svg>
+                오늘 내 수업 활동 ({{ my_activities|length }}건)
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">학생</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">유형</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">활동명</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">성취도</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">점수</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">보완</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">관리</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for activity in my_activities %}
+                    <tr class="hover:bg-purple-50 {% if activity.needs_review %}bg-orange-50{% endif %}">
+                        <td class="px-4 py-3 font-medium text-gray-900">{{ activity.student.name }}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                {% if activity.activity_type == 'print' %}bg-blue-100 text-blue-800
+                                {% elif activity.activity_type == 'quiz' %}bg-purple-100 text-purple-800
+                                {% elif activity.activity_type == 'homework_check' %}bg-teal-100 text-teal-800
+                                {% elif activity.activity_type == 'review' %}bg-orange-100 text-orange-800
+                                {% elif activity.activity_type == 'practice' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ activity.get_activity_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-800">{{ activity.title|truncatechars:30 }}</td>
+                        <td class="px-4 py-3 text-center">
+                            {% if activity.achievement %}
+                            <span class="px-2 py-1 rounded text-xs font-medium
+                                {% if activity.achievement == 'A' %}bg-green-100 text-green-800
+                                {% elif activity.achievement == 'B' %}bg-blue-100 text-blue-800
+                                {% elif activity.achievement == 'C' %}bg-yellow-100 text-yellow-800
+                                {% elif activity.achievement == 'D' %}bg-orange-100 text-orange-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ activity.get_achievement_display }}
+                            </span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-center text-sm text-gray-600">
+                            {{ activity.score_display|default:"-" }}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            {% if activity.needs_review %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                필요
+                            </span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="{% url 'teachers:teacher_activity_update' activity.pk %}"
+                               class="text-indigo-600 hover:text-indigo-800 text-xs mr-2">수정</a>
+                            <form method="POST" action="{% url 'teachers:teacher_activity_delete' activity.pk %}" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{% url 'progress:my_progress' %}?date={{ selected_date|date:'Y-m-d' }}">
+                                <button type="submit" onclick="return confirm('이 수업 활동을 삭제하시겠습니까?');"
+                                        class="text-red-600 hover:text-red-800 text-xs">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- 학생별 진도 카드 -->
     <div class="space-y-6">
