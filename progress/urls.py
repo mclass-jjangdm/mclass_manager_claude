@@ -34,4 +34,10 @@ urlpatterns = [
     path('book/<int:sale_pk>/bulk/', bookstore_views.student_book_progress_bulk_update, name='student_book_progress_bulk_update'),
     path('book/<int:sale_pk>/<int:progress_pk>/reset/', bookstore_views.student_book_progress_reset, name='student_book_progress_reset'),
     path('book/<int:sale_pk>/bulk-reset/', bookstore_views.student_book_progress_bulk_reset, name='student_book_progress_bulk_reset'),
+
+    # 수업 활동 관리
+    path('activity/create/', views.student_activity_create, name='student_activity_create'),
+    path('activity/<int:pk>/update/', views.student_activity_update, name='student_activity_update'),
+    path('activity/<int:pk>/delete/', views.student_activity_delete, name='student_activity_delete'),
+    path('activity/list/', views.student_activity_list_ajax, name='student_activity_list_ajax'),
 ]

@@ -2021,6 +2021,13 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
         # 오늘 기록된 총 진도 평가 수
         total_progress_today = StudentBookProgress.objects.filter(study_date=check_date).count()
 
+        # 오늘의 수업 활동 조회
+        from progress.models import StudentActivity
+        activities = StudentActivity.objects.filter(
+            date=check_date
+        ).select_related('student', 'teacher', 'subject').order_by('-created_at')
+        total_activities = activities.count()
+
         # 학생 기준 데이터 구성
         student_list = []
         for assignment in all_assignments:
@@ -2076,6 +2083,9 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
             'needs_review_list': needs_review_list,
             'chapter_finishing_list': chapter_finishing_list,
             'section_finishing_list': section_finishing_list,
+            # 수업 활동
+            'activities': activities,
+            'total_activities': total_activities,
         }
 
         return render(request, 'teachers/daily_progress_summary.html', context)

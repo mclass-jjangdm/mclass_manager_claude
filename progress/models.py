@@ -191,3 +191,104 @@ class ProgressEntry(models.Model):
 
     def __str__(self):
         return f"{self.progress.student.name} - {self.book_problem.problem_type.code_number}"
+
+
+class StudentActivity(models.Model):
+    """
+    교재 외 수업 활동 기록 (프린트, 학습지, 강의 등)
+    교재 진도(StudentBookProgress)와 독립적으로 관리
+    """
+    ACTIVITY_TYPE_CHOICES = [
+        ('print', '프린트'),
+        ('worksheet', '학습지'),
+        ('lecture', '강의'),
+        ('discussion', '토론'),
+        ('practice', '연습문제'),
+        ('review', '복습'),
+        ('other', '기타'),
+    ]
+
+    ACHIEVEMENT_CHOICES = [
+        ('A', '매우 우수'),
+        ('B', '우수'),
+        ('C', '보통'),
+        ('D', '미흡'),
+        ('F', '매우 미흡'),
+    ]
+
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='activities',
+        verbose_name="학생"
+    )
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='student_activities',
+        verbose_name="담당 교사"
+    )
+    date = models.DateField(verbose_name="활동 날짜")
+    activity_type = models.CharField(
+        max_length=20,
+        choices=ACTIVITY_TYPE_CHOICES,
+        default='print',
+        verbose_name="활동 유형"
+    )
+    title = models.CharField(max_length=200, verbose_name="활동명")
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="과목"
+    )
+
+    # 평가 정보 (선택적)
+    achievement = models.CharField(
+        max_length=1,
+        choices=ACHIEVEMENT_CHOICES,
+        blank=True,
+        verbose_name="성취도"
+    )
+    score = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        verbose_name="점수"
+    )
+    total_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        verbose_name="만점"
+    )
+
+    memo = models.TextField(blank=True, verbose_name="메모")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="등록일")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일")
+
+    class Meta:
+        verbose_name = "수업 활동"
+        verbose_name_plural = "수업 활동 목록"
+        ordering = ['-date', '-created_at']
+        indexes = [
+            models.Index(fields=['student', 'date']),
+            models.Index(fields=['date']),
+        ]
+
+    def __str__(self):
+        return f"{self.student.name} - {self.get_activity_type_display()} - {self.title}"
+
+    @property
+    def score_display(self):
+        """점수 표시 (예: 85/100)"""
+        if self.score is not None and self.total_score is not None:
+            return f"{self.score}/{self.total_score}"
+        elif self.score is not None:
+            return str(self.score)
+        return None
