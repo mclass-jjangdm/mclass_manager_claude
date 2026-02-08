@@ -48,7 +48,7 @@
                     </label>
                     <input type="text"
                            name="study_date"
-                           value="{{ progress.study_date|date:'Y-m-d' }}"
+                           value="{{ progress.date|date:'Y-m-d' }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg mclass-datepicker"
                            readonly>
                 </div>
@@ -86,7 +86,7 @@
                     <input type="checkbox"
                            name="homework_done"
                            id="homework_done"
-                           {% if progress.homework_done %}checked{% endif %}
+                           {% if progress.homework_checked %}checked{% endif %}
                            class="h-5 w-5 rounded text-green-600 focus:ring-green-500">
                     <label for="homework_done" class="text-gray-700">
                         <span class="font-medium">과제 완료</span>

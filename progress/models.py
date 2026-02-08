@@ -297,3 +297,184 @@ class StudentActivity(models.Model):
         elif self.score is not None:
             return str(self.score)
         return None
+
+
+class LearningRecord(models.Model):
+    """
+    통합 학습 기록 모델
+    교재 진도(StudentBookProgress)와 수업 활동(StudentActivity)을 하나로 통합
+    통계 및 관리를 단순화하기 위한 구조
+    """
+    RECORD_TYPE_CHOICES = [
+        ('textbook', '교재 진도'),      # 기존 StudentBookProgress
+        ('quiz', '퀴즈'),               # 수업 활동
+        ('practice', '추가 연습 문제'),  # 수업 활동
+        ('booklet', '제본 교재'),        # 수업 활동
+        ('other', '기타'),              # 수업 활동
+    ]
+
+    ACHIEVEMENT_CHOICES = [
+        ('', '-'),
+        ('A', 'A (우수)'),
+        ('B', 'B (양호)'),
+        ('C', 'C (보통)'),
+        ('D', 'D (미흡)'),
+        ('F', 'F (재학습)'),
+    ]
+
+    # 기본 정보 (필수)
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='learning_records',
+        verbose_name="학생"
+    )
+    record_type = models.CharField(
+        max_length=20,
+        choices=RECORD_TYPE_CHOICES,
+        default='textbook',
+        verbose_name="기록 유형"
+    )
+    date = models.DateField(null=True, blank=True, verbose_name="학습 날짜")
+    title = models.CharField(max_length=200, verbose_name="학습 내용")
+
+    # 교재 진도인 경우만 사용 (record_type='textbook')
+    book_sale = models.ForeignKey(
+        'bookstore.BookSale',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='learning_records',
+        verbose_name="교재 지급"
+    )
+    book_content = models.ForeignKey(
+        'bookstore.BookContent',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='learning_records',
+        verbose_name="목차 항목"
+    )
+
+    # 과목 (선택)
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="과목"
+    )
+
+    # 평가 정보
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='learning_records',
+        verbose_name="담당 교사"
+    )
+    achievement = models.CharField(
+        max_length=1,
+        choices=ACHIEVEMENT_CHOICES,
+        blank=True,
+        default='',
+        verbose_name="성취도"
+    )
+    score = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        verbose_name="점수"
+    )
+    total_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        verbose_name="만점"
+    )
+
+    # 체크 항목 (공통)
+    homework_checked = models.BooleanField(default=False, verbose_name="과제 확인")
+    needs_review = models.BooleanField(default=False, verbose_name="보완 필요")
+
+    # 메모 및 메타 정보
+    memo = models.TextField(blank=True, verbose_name="메모")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="등록일")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일")
+
+    class Meta:
+        verbose_name = "학습 기록"
+        verbose_name_plural = "학습 기록 목록"
+        ordering = ['-date', '-created_at']
+        indexes = [
+            models.Index(fields=['student', 'date']),
+            models.Index(fields=['date']),
+            models.Index(fields=['record_type']),
+            models.Index(fields=['book_sale']),
+        ]
+        # 교재 진도의 경우 중복 방지
+        constraints = [
+            models.UniqueConstraint(
+                fields=['book_sale', 'book_content'],
+                condition=models.Q(record_type='textbook'),
+                name='unique_textbook_progress'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.student.name} - {self.get_record_type_display()} - {self.title}"
+
+    @property
+    def is_textbook_record(self):
+        """교재 진도 기록인지 여부"""
+        return self.record_type == 'textbook'
+
+    @property
+    def is_activity_record(self):
+        """수업 활동 기록인지 여부"""
+        return self.record_type != 'textbook'
+
+    @property
+    def is_completed(self):
+        """학습 완료 여부 (학습 날짜가 있고 성취도가 입력된 경우)"""
+        return bool(self.date and self.achievement)
+
+    @property
+    def is_pending(self):
+        """미완료 항목인지 여부"""
+        return not self.is_completed
+
+    @property
+    def book(self):
+        """연결된 교재"""
+        if self.book_sale:
+            return self.book_sale.book
+        return None
+
+    @property
+    def score_display(self):
+        """점수 표시 (예: 85/100)"""
+        if self.score is not None and self.total_score is not None:
+            return f"{self.score}/{self.total_score}"
+        elif self.score is not None:
+            return str(self.score)
+        return None
+
+    def clean(self):
+        """유효성 검사"""
+        super().clean()
+        # 교재 진도인 경우 book_sale과 book_content 필수
+        if self.record_type == 'textbook':
+            if not self.book_sale or not self.book_content:
+                raise ValidationError(
+                    "교재 진도 기록에는 교재 지급 정보와 목차 항목이 필요합니다."
+                )
+        # 수업 활동인 경우 title 필수
+        else:
+            if not self.title:
+                raise ValidationError(
+                    "수업 활동 기록에는 활동명이 필요합니다."
+                )

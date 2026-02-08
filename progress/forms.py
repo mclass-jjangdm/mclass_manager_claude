@@ -3,7 +3,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .models import ProblemType, BookProblem, StudentProgress, ProgressEntry, StudentActivity
+from .models import ProblemType, BookProblem, StudentProgress, ProgressEntry, StudentActivity, LearningRecord
 from bookstore.models import Book, BookSale
 from teachers.models import Teacher
 from students.models import Student
@@ -292,6 +292,126 @@ class StudentActivityForm(forms.ModelForm):
         initial_students = kwargs.pop('students', None)
         hide_student_id = kwargs.pop('hide_student_id', False)
         super().__init__(*args, **kwargs)
+
+        # 학생 목록 필터링 (활성 학생만)
+        if initial_students:
+            self.fields['student'].queryset = initial_students
+        else:
+            self.fields['student'].queryset = Student.objects.filter(
+                is_active=True
+            ).select_related('school').order_by('name')
+
+        # 학생 고유번호 숨기기 옵션
+        if hide_student_id:
+            self.fields['student'].label_from_instance = lambda obj: obj.name
+
+        # 교사 목록 (활성 교사만)
+        self.fields['teacher'].queryset = Teacher.objects.filter(
+            is_active=True
+        ).order_by('name')
+        self.fields['teacher'].required = False
+
+        # 과목 목록
+        self.fields['subject'].queryset = Subject.objects.all().order_by('name')
+        self.fields['subject'].required = False
+
+        # 선택적 필드
+        self.fields['achievement'].required = False
+        self.fields['score'].required = False
+        self.fields['total_score'].required = False
+        self.fields['memo'].required = False
+
+        # 초기 날짜 설정
+        if initial_date and not self.instance.pk:
+            self.initial['date'] = initial_date
+        elif not self.instance.pk:
+            self.initial['date'] = timezone.now().date()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        score = cleaned_data.get('score')
+        total_score = cleaned_data.get('total_score')
+
+        # 점수와 만점 일관성 검사
+        if score is not None and total_score is not None:
+            if score > total_score:
+                raise ValidationError({'score': '점수는 만점보다 클 수 없습니다.'})
+
+        return cleaned_data
+
+
+class LearningRecordForm(forms.ModelForm):
+    """
+    통합 학습 기록 폼 (LearningRecord 모델 사용)
+    수업 활동 기록용 (record_type != 'textbook')
+    """
+    # 수업 활동 유형 선택지 (교재 진도 제외)
+    ACTIVITY_TYPE_CHOICES = [
+        ('quiz', '퀴즈'),
+        ('practice', '추가 연습 문제'),
+        ('booklet', '제본 교재'),
+        ('other', '기타'),
+    ]
+
+    class Meta:
+        model = LearningRecord
+        fields = ['student', 'teacher', 'date', 'record_type', 'title', 'subject',
+                  'homework_checked', 'achievement', 'score', 'total_score', 'needs_review', 'memo']
+        widgets = {
+            'student': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'teacher': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'date': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg mclass-datepicker',
+                'readonly': 'readonly'
+            }),
+            'record_type': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'title': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': '예: 중간고사 대비 추가 문제'
+            }),
+            'subject': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'homework_checked': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500'
+            }),
+            'achievement': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'score': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': '점수',
+                'step': '0.1'
+            }),
+            'total_score': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': '만점',
+                'step': '0.1'
+            }),
+            'needs_review': forms.CheckboxInput(attrs={
+                'class': 'w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500'
+            }),
+            'memo': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500',
+                'rows': 3,
+                'placeholder': '메모'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        initial_date = kwargs.pop('initial_date', None)
+        initial_students = kwargs.pop('students', None)
+        hide_student_id = kwargs.pop('hide_student_id', False)
+        super().__init__(*args, **kwargs)
+
+        # record_type 선택지를 수업 활동 유형만으로 제한 (교재 진도 제외)
+        self.fields['record_type'].choices = self.ACTIVITY_TYPE_CHOICES
 
         # 학생 목록 필터링 (활성 학생만)
         if initial_students:

@@ -218,7 +218,7 @@
                                     <div class="font-medium">{{ record.book_content.subsection_title }}</div>
                                 </td>
                                 <td class="px-4 py-3 text-center text-sm text-gray-700">
-                                    {{ record.study_date|date:"Y-m-d"|default:"-" }}
+                                    {{ record.date|date:"Y-m-d"|default:"-" }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <span class="px-2 py-1 rounded text-xs font-medium
@@ -238,7 +238,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    {% if record.homework_done %}
+                                    {% if record.homework_checked %}
                                     <span class="text-green-500">✓</span>
                                     {% else %}
                                     <span class="text-gray-300">-</span>
@@ -337,7 +337,7 @@
                                         <td class="px-3 py-2 text-center">
                                             <input type="text"
                                                    name="study_date_{{ record.pk }}"
-                                                   value="{% if record.study_date %}{{ record.study_date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
+                                                   value="{% if record.date %}{{ record.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
                                                    class="text-sm border border-gray-300 rounded px-2 py-1 mclass-datepicker"
                                                    style="width: 130px;"
                                                    readonly>
@@ -360,7 +360,7 @@
                                         <td class="px-3 py-2 text-center">
                                             <input type="checkbox"
                                                    name="homework_done_{{ record.pk }}"
-                                                   {% if record.homework_done %}checked{% endif %}
+                                                   {% if record.homework_checked %}checked{% endif %}
                                                    class="rounded text-green-600 focus:ring-green-500">
                                         </td>
                                         <td class="px-3 py-2 text-center">

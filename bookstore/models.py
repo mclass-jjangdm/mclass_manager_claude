@@ -133,24 +133,34 @@ class BookSale(models.Model):
         return self.price * self.quantity
 
     def create_progress_records(self):
-        """교재의 모든 목차에 대한 진도 레코드 생성"""
-        from bookstore.models import StudentBookProgress
+        """교재의 모든 목차에 대한 진도 레코드 생성 (LearningRecord 사용)"""
+        from progress.models import LearningRecord
         contents = self.book.contents.all()
         created_count = 0
         for content in contents:
-            _, created = StudentBookProgress.objects.get_or_create(
+            title = f"{content.subsection_title} (p.{content.page})"
+            _, created = LearningRecord.objects.get_or_create(
                 book_sale=self,
-                book_content=content
+                book_content=content,
+                record_type='textbook',
+                defaults={
+                    'student': self.student,
+                    'title': title,
+                    'subject': self.book.subject,
+                    'date': None,
+                    'achievement': '',
+                }
             )
             if created:
                 created_count += 1
         return created_count
 
     def get_progress_stats(self):
-        """진도 통계 반환"""
-        total = self.progress_records.count()
-        completed = self.progress_records.filter(study_date__isnull=False, achievement__gt='').count()
-        needs_review = self.progress_records.filter(needs_review=True).count()
+        """진도 통계 반환 (LearningRecord 사용)"""
+        records = self.learning_records.filter(record_type='textbook')
+        total = records.count()
+        completed = records.filter(date__isnull=False, achievement__gt='').count()
+        needs_review = records.filter(needs_review=True).count()
         return {
             'total': total,
             'completed': completed,

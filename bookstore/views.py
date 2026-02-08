@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from .models import Book, BookStockLog, BookSupplier, BookSale, BookContent, StudentBookProgress
+from progress.models import LearningRecord
 from .forms import BookForm, BookStockLogForm, BookSupplierForm, BookReturnForm, BookSaleForm, BookContentUploadForm
 from teachers.models import TeacherStudentAssignment, Teacher
 from django.db.models import Q
@@ -952,7 +953,7 @@ def book_content_delete_all(request, pk):
 
 
 def student_book_progress_list(request, sale_pk):
-    """학생의 교재 진도 목록 조회"""
+    """학생의 교재 진도 목록 조회 (LearningRecord 사용)"""
     sale = get_object_or_404(BookSale, pk=sale_pk)
     student = sale.student
 
@@ -981,13 +982,14 @@ def student_book_progress_list(request, sale_pk):
 
         from_teacher_portal = True
 
-    # 진도 레코드가 없으면 생성
-    if not sale.progress_records.exists():
+    # 진도 레코드가 없으면 생성 (LearningRecord)
+    if not sale.learning_records.filter(record_type='textbook').exists():
         created = sale.create_progress_records()
         if created > 0:
             messages.info(request, f"진도 항목 {created}개가 생성되었습니다.")
 
-    progress_records = sale.progress_records.select_related('book_content', 'teacher').order_by('book_content__page')
+    # LearningRecord 사용
+    progress_records = sale.learning_records.filter(record_type='textbook').select_related('book_content', 'teacher').order_by('book_content__page')
     stats = sale.get_progress_stats()
 
     # 대단원별 그룹화
@@ -1026,7 +1028,7 @@ def student_book_progress_list(request, sale_pk):
         'progress_records': progress_records,
         'chapters': chapters,
         'stats': stats,
-        'achievement_choices': StudentBookProgress.ACHIEVEMENT_CHOICES,
+        'achievement_choices': LearningRecord.ACHIEVEMENT_CHOICES,
         'from_teacher_portal': from_teacher_portal,
         'today': today,
         'student_messages': student_messages,
@@ -1034,9 +1036,10 @@ def student_book_progress_list(request, sale_pk):
 
 
 def student_book_progress_update(request, sale_pk, progress_pk):
-    """개별 진도 항목 평가/수정"""
+    """개별 진도 항목 평가/수정 (LearningRecord 사용)"""
     sale = get_object_or_404(BookSale, pk=sale_pk)
-    progress = get_object_or_404(StudentBookProgress, pk=progress_pk, book_sale=sale)
+    # LearningRecord에서 조회
+    progress = get_object_or_404(LearningRecord, pk=progress_pk, book_sale=sale, record_type='textbook')
     student = sale.student
 
     # 교사 포털에서 접근했는지 확인
@@ -1064,7 +1067,7 @@ def student_book_progress_update(request, sale_pk, progress_pk):
         try:
             # 학습 날짜
             study_date = request.POST.get('study_date')
-            progress.study_date = study_date if study_date else None
+            progress.date = study_date if study_date else None
 
             # 성취 수준
             progress.achievement = request.POST.get('achievement', '')
@@ -1073,7 +1076,7 @@ def student_book_progress_update(request, sale_pk, progress_pk):
             progress.needs_review = request.POST.get('needs_review') == 'on'
 
             # 과제 수행 여부
-            progress.homework_done = request.POST.get('homework_done') == 'on'
+            progress.homework_checked = request.POST.get('homework_done') == 'on'
 
             # 담당 교사 자동 설정: 오늘 날짜 기준 배정된 교사 찾기
             today = timezone.now().date()
@@ -1099,9 +1102,10 @@ def student_book_progress_update(request, sale_pk, progress_pk):
         portal_param = '?from=teacher_portal' if from_teacher_portal else ''
 
         if next_action == 'next':
-            # 다음 진도 항목 찾기
-            next_progress = StudentBookProgress.objects.filter(
+            # 다음 진도 항목 찾기 (LearningRecord)
+            next_progress = LearningRecord.objects.filter(
                 book_sale=sale,
+                record_type='textbook',
                 book_content__page__gt=progress.book_content.page
             ).order_by('book_content__page').first()
             if next_progress:
@@ -1111,14 +1115,16 @@ def student_book_progress_update(request, sale_pk, progress_pk):
         url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
         return redirect(url + portal_param)
 
-    # 이전/다음 항목 찾기
-    prev_progress = StudentBookProgress.objects.filter(
+    # 이전/다음 항목 찾기 (LearningRecord)
+    prev_progress = LearningRecord.objects.filter(
         book_sale=sale,
+        record_type='textbook',
         book_content__page__lt=progress.book_content.page
     ).order_by('-book_content__page').first()
 
-    next_progress = StudentBookProgress.objects.filter(
+    next_progress = LearningRecord.objects.filter(
         book_sale=sale,
+        record_type='textbook',
         book_content__page__gt=progress.book_content.page
     ).order_by('book_content__page').first()
 
@@ -1133,13 +1139,13 @@ def student_book_progress_update(request, sale_pk, progress_pk):
         'content': progress.book_content,
         'prev_progress': prev_progress,
         'next_progress': next_progress,
-        'achievement_choices': StudentBookProgress.ACHIEVEMENT_CHOICES,
+        'achievement_choices': LearningRecord.ACHIEVEMENT_CHOICES,
         'from_teacher_portal': from_teacher_portal,
     })
 
 
 def student_book_progress_bulk_update(request, sale_pk):
-    """여러 진도 항목 일괄 평가"""
+    """여러 진도 항목 일괄 평가 (LearningRecord 사용)"""
     sale = get_object_or_404(BookSale, pk=sale_pk)
     student = sale.student
 
@@ -1181,17 +1187,18 @@ def student_book_progress_bulk_update(request, sale_pk):
 
         for progress_id in progress_ids:
             try:
-                progress = StudentBookProgress.objects.get(pk=progress_id, book_sale=sale)
+                # LearningRecord에서 조회
+                progress = LearningRecord.objects.get(pk=progress_id, book_sale=sale, record_type='textbook')
 
                 study_date = request.POST.get(f'study_date_{progress_id}')
                 achievement = request.POST.get(f'achievement_{progress_id}', '')
                 needs_review = request.POST.get(f'needs_review_{progress_id}') == 'on'
                 homework_done = request.POST.get(f'homework_done_{progress_id}') == 'on'
 
-                progress.study_date = study_date if study_date else None
+                progress.date = study_date if study_date else None
                 progress.achievement = achievement
                 progress.needs_review = needs_review
-                progress.homework_done = homework_done
+                progress.homework_checked = homework_done
 
                 if teacher:
                     progress.teacher = teacher
@@ -1199,7 +1206,7 @@ def student_book_progress_bulk_update(request, sale_pk):
                 progress.save()
                 updated_count += 1
 
-            except StudentBookProgress.DoesNotExist:
+            except LearningRecord.DoesNotExist:
                 continue
 
         if updated_count > 0:
@@ -1216,20 +1223,21 @@ def student_book_progress_bulk_update(request, sale_pk):
 
 @login_required
 def student_book_progress_reset(request, sale_pk, progress_pk):
-    """완료된 진도 항목을 미완료 상태로 초기화 (관리자 전용)"""
+    """완료된 진도 항목을 미완료 상태로 초기화 (관리자 전용, LearningRecord 사용)"""
     if not request.user.is_staff:
         messages.error(request, '관리자만 이 기능을 사용할 수 있습니다.')
         return redirect('progress:student_book_progress_list', sale_pk=sale_pk)
 
     sale = get_object_or_404(BookSale, pk=sale_pk)
-    progress = get_object_or_404(StudentBookProgress, pk=progress_pk, book_sale=sale)
+    # LearningRecord에서 조회
+    progress = get_object_or_404(LearningRecord, pk=progress_pk, book_sale=sale, record_type='textbook')
 
     if request.method == 'POST':
         # 진도 항목 초기화
-        progress.study_date = None
+        progress.date = None
         progress.achievement = ''
         progress.needs_review = False
-        progress.homework_done = False
+        progress.homework_checked = False
         progress.teacher = None
         progress.save()
 
@@ -1240,7 +1248,7 @@ def student_book_progress_reset(request, sale_pk, progress_pk):
 
 @login_required
 def student_book_progress_bulk_reset(request, sale_pk):
-    """여러 완료된 진도 항목을 일괄 미완료 상태로 초기화 (관리자 전용)"""
+    """여러 완료된 진도 항목을 일괄 미완료 상태로 초기화 (관리자 전용, LearningRecord 사용)"""
     if not request.user.is_staff:
         messages.error(request, '관리자만 이 기능을 사용할 수 있습니다.')
         return redirect('progress:student_book_progress_list', sale_pk=sale_pk)
@@ -1253,15 +1261,16 @@ def student_book_progress_bulk_reset(request, sale_pk):
 
         for progress_id in progress_ids:
             try:
-                progress = StudentBookProgress.objects.get(pk=progress_id, book_sale=sale)
-                progress.study_date = None
+                # LearningRecord에서 조회
+                progress = LearningRecord.objects.get(pk=progress_id, book_sale=sale, record_type='textbook')
+                progress.date = None
                 progress.achievement = ''
                 progress.needs_review = False
-                progress.homework_done = False
+                progress.homework_checked = False
                 progress.teacher = None
                 progress.save()
                 reset_count += 1
-            except StudentBookProgress.DoesNotExist:
+            except LearningRecord.DoesNotExist:
                 continue
 
         if reset_count > 0:

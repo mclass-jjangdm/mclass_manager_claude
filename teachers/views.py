@@ -2018,14 +2018,14 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
         total_exception = exception_assignments.count()
         total_director = director_assignments.count()
 
-        # 오늘 기록된 총 진도 평가 수
-        total_progress_today = StudentBookProgress.objects.filter(study_date=check_date).count()
+        # 오늘 기록된 총 진도 평가 수 (LearningRecord 사용)
+        from progress.models import LearningRecord
+        total_progress_today = LearningRecord.objects.filter(date=check_date, record_type='textbook').count()
 
-        # 오늘의 수업 활동 조회
-        from progress.models import StudentActivity
-        activities = StudentActivity.objects.filter(
+        # 오늘의 수업 활동 조회 (LearningRecord 사용, 교재 진도 제외)
+        activities = LearningRecord.objects.filter(
             date=check_date
-        ).select_related('student', 'teacher', 'subject').order_by('-created_at')
+        ).exclude(record_type='textbook').select_related('student', 'teacher', 'subject').order_by('-created_at')
         total_activities = activities.count()
 
         # 학생 기준 데이터 구성
@@ -2142,11 +2142,11 @@ class TeacherLogoutView(View):
 
 
 class TeacherMyProgressView(LoginRequiredMixin, View):
-    """교사 자신의 배정 학생 진도 관리 페이지"""
+    """교사 자신의 배정 학생 진도 관리 페이지 (LearningRecord 사용)"""
 
     def get(self, request):
         from bookstore.models import BookSale, StudentBookProgress
-        from progress.models import StudentActivity
+        from progress.models import LearningRecord
 
         # 현재 로그인한 사용자의 교사 프로필 확인
         if not hasattr(request.user, 'teacher_profile'):
@@ -2215,11 +2215,11 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
                 message_type='instruction'
             ).order_by('-created_at')[:3]
 
-            # 해당 학생의 오늘 수업 활동 조회
-            student_activities = StudentActivity.objects.filter(
+            # 해당 학생의 오늘 수업 활동 조회 (LearningRecord 사용, 교재 진도 제외)
+            student_activities = LearningRecord.objects.filter(
                 student=student,
                 date=check_date
-            ).select_related('subject')
+            ).exclude(record_type='textbook').select_related('subject')
 
             student_data.append({
                 'student': student,
@@ -2229,11 +2229,11 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
                 'activities': student_activities,
             })
 
-        # 오늘 이 교사의 전체 수업 활동 조회
-        my_activities = StudentActivity.objects.filter(
+        # 오늘 이 교사의 전체 수업 활동 조회 (LearningRecord 사용, 교재 진도 제외)
+        my_activities = LearningRecord.objects.filter(
             teacher=teacher,
             date=check_date
-        ).select_related('student', 'subject')
+        ).exclude(record_type='textbook').select_related('student', 'subject')
 
         context = {
             'selected_date': check_date,
@@ -2249,9 +2249,9 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
 
 @login_required
 def teacher_activity_create(request):
-    """교사 자신의 수업 활동 생성"""
-    from progress.models import StudentActivity
-    from progress.forms import StudentActivityForm
+    """교사 자신의 수업 활동 생성 (LearningRecord 사용)"""
+    from progress.models import LearningRecord
+    from progress.forms import LearningRecordForm
     from students.models import Student
 
     # 교사 계정 확인
@@ -2283,7 +2283,7 @@ def teacher_activity_create(request):
     ).select_related('school').order_by('name')
 
     if request.method == 'POST':
-        form = StudentActivityForm(request.POST, initial_date=initial_date, students=students, hide_student_id=True)
+        form = LearningRecordForm(request.POST, initial_date=initial_date, students=students, hide_student_id=True)
         if form.is_valid():
             activity = form.save(commit=False)
             activity.teacher = teacher  # 자동으로 현재 교사 설정
@@ -2295,7 +2295,7 @@ def teacher_activity_create(request):
                 return redirect(next_url)
             return redirect(f'/progress/my/?date={initial_date.strftime("%Y-%m-%d")}')
     else:
-        form = StudentActivityForm(initial_date=initial_date, students=students, hide_student_id=True)
+        form = LearningRecordForm(initial_date=initial_date, students=students, hide_student_id=True)
         # 교사 필드 초기값 설정 및 숨김
         form.initial['teacher'] = teacher
 
@@ -2309,9 +2309,9 @@ def teacher_activity_create(request):
 
 @login_required
 def teacher_activity_update(request, pk):
-    """교사 자신의 수업 활동 수정"""
-    from progress.models import StudentActivity
-    from progress.forms import StudentActivityForm
+    """교사 자신의 수업 활동 수정 (LearningRecord 사용)"""
+    from progress.models import LearningRecord
+    from progress.forms import LearningRecordForm
 
     # 교사 계정 확인
     if not hasattr(request.user, 'teacher_profile'):
@@ -2319,7 +2319,13 @@ def teacher_activity_update(request, pk):
         return redirect('progress:my_progress')
 
     teacher = request.user.teacher_profile
-    activity = get_object_or_404(StudentActivity, pk=pk)
+    # LearningRecord에서 조회 (수업 활동: textbook 제외)
+    activity = get_object_or_404(LearningRecord, pk=pk)
+
+    # 교재 진도 기록은 이 뷰에서 수정 불가
+    if activity.record_type == 'textbook':
+        messages.error(request, '교재 진도 기록은 진도 평가 페이지에서 수정해주세요.')
+        return redirect('progress:my_progress')
 
     # 자신이 등록한 활동만 수정 가능
     if activity.teacher != teacher:
@@ -2327,7 +2333,7 @@ def teacher_activity_update(request, pk):
         return redirect('progress:my_progress')
 
     if request.method == 'POST':
-        form = StudentActivityForm(request.POST, instance=activity, hide_student_id=True)
+        form = LearningRecordForm(request.POST, instance=activity, hide_student_id=True)
         if form.is_valid():
             activity = form.save()
             messages.success(request, f"'{activity.title}' 수업 활동이 수정되었습니다.")
@@ -2337,7 +2343,7 @@ def teacher_activity_update(request, pk):
                 return redirect(next_url)
             return redirect(f'/progress/my/?date={activity.date.strftime("%Y-%m-%d")}')
     else:
-        form = StudentActivityForm(instance=activity, hide_student_id=True)
+        form = LearningRecordForm(instance=activity, hide_student_id=True)
 
     return render(request, 'teachers/teacher_activity_form.html', {
         'form': form,
@@ -2350,8 +2356,8 @@ def teacher_activity_update(request, pk):
 
 @login_required
 def teacher_activity_delete(request, pk):
-    """교사 자신의 수업 활동 삭제"""
-    from progress.models import StudentActivity
+    """교사 자신의 수업 활동 삭제 (LearningRecord 사용)"""
+    from progress.models import LearningRecord
 
     # 교사 계정 확인
     if not hasattr(request.user, 'teacher_profile'):
@@ -2359,7 +2365,13 @@ def teacher_activity_delete(request, pk):
         return redirect('progress:my_progress')
 
     teacher = request.user.teacher_profile
-    activity = get_object_or_404(StudentActivity, pk=pk)
+    # LearningRecord에서 조회
+    activity = get_object_or_404(LearningRecord, pk=pk)
+
+    # 교재 진도 기록은 삭제 불가
+    if activity.record_type == 'textbook':
+        messages.error(request, '교재 진도 기록은 삭제할 수 없습니다.')
+        return redirect('progress:my_progress')
 
     # 자신이 등록한 활동만 삭제 가능
     if activity.teacher != teacher:
