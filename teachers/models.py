@@ -221,10 +221,25 @@ class TeacherStudentAssignment(models.Model):
         ('exception', '예외'),
     ]
 
+    ABSENCE_REASON_CHOICES = [
+        ('', '-'),
+        ('sick', '아파서'),
+        ('family', '가족 모임'),
+        ('personal', '개인 일정'),
+        ('other', '기타'),
+    ]
+
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True, verbose_name='교사')
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE, verbose_name='학생')
     date = models.DateField(verbose_name='날짜')
     assignment_type = models.CharField(max_length=10, choices=ASSIGNMENT_TYPE_CHOICES, default='normal', verbose_name='배정 유형')
+    absence_reason = models.CharField(
+        max_length=20,
+        choices=ABSENCE_REASON_CHOICES,
+        blank=True,
+        default='',
+        verbose_name='결석 사유'
+    )
     memo = models.TextField(blank=True, null=True, verbose_name='메모')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='등록일시')
 

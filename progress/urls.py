@@ -20,6 +20,7 @@ urlpatterns = [
     path('assignment/<int:pk>/change-teacher/', teacher_views.assignment_change_teacher, name='assignment_change_teacher'),
     path('assignment/<int:pk>/change-type/', teacher_views.assignment_change_type, name='assignment_change_type'),
     path('assignment/<int:pk>/unassign/', teacher_views.assignment_unassign, name='assignment_unassign'),
+    path('assignment/<int:pk>/update-absence-reason/', teacher_views.assignment_update_absence_reason, name='assignment_update_absence_reason'),
 
     # 교사용 진도 관리
     path('teacher/', teacher_views.TeacherProgressView.as_view(), name='teacher_progress'),

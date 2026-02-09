@@ -1702,6 +1702,38 @@ def assignment_unassign(request, pk):
     return redirect('progress:assignment_list')
 
 
+@login_required
+def assignment_update_absence_reason(request, pk):
+    """결석 사유 업데이트"""
+    from django.http import JsonResponse
+
+    assignment = get_object_or_404(TeacherStudentAssignment, pk=pk)
+
+    if request.method == 'POST':
+        absence_reason = request.POST.get('absence_reason', '')
+
+        # 유효한 사유인지 확인
+        valid_reasons = ['', 'sick', 'family', 'personal', 'other']
+        if absence_reason in valid_reasons:
+            assignment.absence_reason = absence_reason
+            assignment.save()
+
+            # AJAX 요청인 경우 JSON 응답
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'absence_reason': absence_reason,
+                    'absence_reason_display': assignment.get_absence_reason_display()
+                })
+
+            messages.success(request, f'{assignment.student.name} 학생의 결석 사유가 변경되었습니다.')
+        else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': '유효하지 않은 결석 사유입니다.'}, status=400)
+
+    return redirect(f"/progress/assignment/?date={assignment.date.strftime('%Y-%m-%d')}")
+
+
 class TeacherProgressView(LoginRequiredMixin, View):
     """교사용 배정 학생 진도 관리 페이지"""
 
