@@ -17,8 +17,9 @@ pillow==12.1.0
 
 # Data processing
 # pandas 3.0은 주요 breaking changes가 있어 2.x 최신 유지 권장
-pandas==2.3.3
-numpy==2.4.1
+# numpy 2.x는 오래된 CPU(X86_V2 미지원)에서 동작하지 않으므로 1.x 사용
+pandas==2.2.3
+numpy==1.26.4
 python-dateutil==2.9.0.post0
 xlsxwriter==3.2.0
 openpyxl==3.1.5
