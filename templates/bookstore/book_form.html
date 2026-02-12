@@ -201,7 +201,6 @@
             // 이미 조회한 ISBN이면 중복 호출 방지
             if (finalIsbn && finalIsbn !== lastFetchedIsbn) {
                 lastFetchedIsbn = finalIsbn;
-                console.log('ISBN 조회 시작:', finalIsbn);  // 디버깅용
                 fetchBookInfo(finalIsbn);
             }
         }
@@ -227,19 +226,11 @@
             document.body.style.cursor = 'wait';
 
             const apiUrl = `/bookstore/api/search/?isbn=${isbn}`;
-            console.log('API 요청 URL:', apiUrl);
 
             // API 호출
             fetch(apiUrl)
-                .then(response => {
-                    console.log('API 응답 상태:', response.status, response.statusText);
-                    if (!response.ok) {
-                        console.error('API 응답 에러:', response.status);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log('API 응답 데이터:', data);
                     document.body.style.cursor = 'default';
                     if (!data.error) {
                         const titleInput = document.getElementById('id_title');
@@ -253,11 +244,9 @@
                         if (originalPriceInput && data.price && data.price !== '0' && !originalPriceInput.value) {
                             originalPriceInput.value = data.price;
                         }
-                        console.log('교재 정보 자동 입력 완료');
                         // 제목으로 포커스 이동
                         if (titleInput) titleInput.focus();
                     } else {
-                        console.log('API 에러 응답:', data.error);
                         // 에러여도 제목으로 이동
                         const titleInput = document.getElementById('id_title');
                         if (titleInput) titleInput.focus();
@@ -265,7 +254,6 @@
                 })
                 .catch(error => {
                     document.body.style.cursor = 'default';
-                    console.error('API Error:', error);
                     const titleInput = document.getElementById('id_title');
                     if (titleInput) titleInput.focus();
                 });

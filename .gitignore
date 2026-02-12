@@ -49,3 +49,8 @@ credentials/
 *.json
 
 db_backup/
+
+# Production/Hosting
+cache/
+tmp/
+*.sql

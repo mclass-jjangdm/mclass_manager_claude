@@ -554,7 +554,6 @@ def search_book_api(request):
                     'publisher': publisher,
                     'price': price,
                 }
-                print(f"최종 데이터 매핑 성공: {result}")
                 return JsonResponse(result)
             else:
                 return JsonResponse({'error': '도서 정보 리스트가 비어있습니다.'}, status=404)
@@ -562,7 +561,6 @@ def search_book_api(request):
             return JsonResponse({'error': '해당 도서 정보가 없습니다.'}, status=404)
 
     except Exception as e:
-        print(f"에러 발생: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -627,17 +625,13 @@ def book_sale_create(request, student_pk):
 
 
 def book_sale_settle(request, pk):
-    """개별 교재 판매 건 납부(정산) 처리 (디버깅 추가)"""
-    print(f"[디버깅] 납부 처리 요청 받음 - Sale ID: {pk}")
+    """개별 교재 판매 건 납부(정산) 처리"""
     sale = get_object_or_404(BookSale, pk=pk)
 
     if request.method == 'POST':
-        print("[디버깅] POST 요청 확인.")
         payment_date = request.POST.get('payment_date')
-        print(f"[디버깅] 제출된 납부일: {payment_date}")
 
         if not payment_date:
-            print("[디버깅] 납부일이 누락되었습니다.")
             messages.error(request, "납부일이 입력되지 않았습니다.")
             return redirect('students:student_detail', pk=sale.student.pk)
 
@@ -650,24 +644,16 @@ def book_sale_settle(request, pk):
                 # 날짜 문자열을 date 객체로 변환 (YYYY-MM-DD)
                 sale.payment_date = datetime.strptime(payment_date, '%Y-%m-%d').date()
                 sale.save()
-                print("[디버깅] 판매 기록 업데이트 완료 (결제 상태 변경).")
 
                 # 2. 학생 미납금 차감
                 total_price = sale.get_total_price()
                 sale.student.unpaid_amount -= total_price
                 sale.student.save()
-                print(f"[디버깅] 학생 미납금 차감 완료. (남은 미납액: {sale.student.unpaid_amount})")
 
                 messages.success(request, f"'{sale.book.title}' 납부 처리가 완료되었습니다.")
 
         except Exception as e:
-            print(f"[디버깅] 처리 중 치명적 에러 발생: {e}")
-            import traceback
-            print(traceback.format_exc())  # 에러 상세 내용 출력
             messages.error(request, f"처리 중 오류 발생: {e}")
-
-    else:
-        print("[디버깅] POST 요청이 아닙니다.")
 
     return redirect('students:student_detail', pk=sale.student.pk)
 
