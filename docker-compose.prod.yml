@@ -1,0 +1,94 @@
+services:
+  # MariaDB 데이터베이스
+  db:
+    image: mariadb:10.11
+    container_name: mclass_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-mclass_manager_db}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_general_ci
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    # 외부 노출하지 않음 (보안)
+    expose:
+      - "3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mclass_network
+
+  # Django 애플리케이션
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mclass_web
+    restart: always
+    command: gunicorn mclass_manager.wsgi:application --bind 0.0.0.0:8000 --workers 2 --threads 2 --timeout 300 --graceful-timeout 300 --keep-alive 5
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./logs:/app/logs
+    expose:
+      - "8000"
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME:-mclass_manager_db}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-mclass.co.kr,www.mclass.co.kr}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mclass_network
+
+  # Nginx 리버스 프록시
+  nginx:
+    image: nginx:alpine
+    container_name: mclass_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+      - certbot_www:/var/www/certbot:ro
+      - certbot_conf:/etc/letsencrypt:ro
+    depends_on:
+      - web
+    networks:
+      - mclass_network
+
+  # SSL 인증서 자동 갱신 (Let's Encrypt)
+  certbot:
+    image: certbot/certbot
+    container_name: mclass_certbot
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    # 인증서 갱신 (12시간마다 체크)
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - mclass_network
+
+volumes:
+  mariadb_data:
+  static_volume:
+  media_volume:
+  certbot_www:
+  certbot_conf:
+
+networks:
+  mclass_network:
+    driver: bridge
