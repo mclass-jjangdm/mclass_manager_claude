@@ -10,9 +10,10 @@ ENV PYTHONUNBUFFERED=1 \
 # 작업 디렉터리 설정
 WORKDIR /app
 
-# 시스템 패키지 설치 (MySQL 클라이언트 라이브러리 포함)
+# 시스템 패키지 설치 (MySQL 클라이언트 라이브러리 + 빌드 도구 포함)
 RUN apt-get update && apt-get install -y \
     gcc \
+    g++ \
     default-libmysqlclient-dev \
     pkg-config \
     libpq-dev \
