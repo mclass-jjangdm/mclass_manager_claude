@@ -272,8 +272,8 @@ SECURE_BROWSER_XSS_FILTER = True
 
 # 프로덕션 환경 보안 설정 (DEBUG=False일 때만 적용)
 if not DEBUG:
-    # HTTPS 강제 리다이렉트
-    SECURE_SSL_REDIRECT = True
+    # HTTPS 강제 리다이렉트 (SSL 설정 전에는 False로 설정)
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
 
     # 프록시 뒤에서 HTTPS 감지
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
