@@ -34,6 +34,7 @@ services:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
       - ./logs:/app/logs
+      - ./credentials:/app/credentials:ro
     expose:
       - "8000"
     environment:
@@ -49,6 +50,8 @@ services:
       - SECURE_SSL_REDIRECT=${SECURE_SSL_REDIRECT:-True}
       - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-True}
       - CSRF_COOKIE_SECURE=${CSRF_COOKIE_SECURE:-True}
+      - GOOGLE_SERVICE_ACCOUNT_FILE=${GOOGLE_SERVICE_ACCOUNT_FILE:-}
+      - GOOGLE_DRIVE_ROOT_FOLDER_ID=${GOOGLE_DRIVE_ROOT_FOLDER_ID:-}
     depends_on:
       db:
         condition: service_healthy
