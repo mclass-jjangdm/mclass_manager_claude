@@ -109,11 +109,11 @@ docker compose -f docker-compose.prod.yml up -d db web nginx
 ### 4.3 SSL 인증서 발급
 ```bash
 # 도메인이 서버를 가리키고 있어야 함
+# 카페24 도메인 예시 (실제 도메인으로 변경)
 docker compose -f docker-compose.prod.yml run --rm certbot certonly \
   --webroot \
   --webroot-path=/var/www/certbot \
-  -d mclass.co.kr \
-  -d www.mclass.co.kr \
+  -d mclassmanager.cafe24.com \
   --email your-email@example.com \
   --agree-tos \
   --no-eff-email
