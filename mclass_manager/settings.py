@@ -289,13 +289,13 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-    # 쿠키 보안 설정
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # 쿠키 보안 설정 (HTTPS 환경에서만 True로 설정)
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'True') == 'True'
+    CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'True') == 'True'
 
     # SameSite 쿠키 설정 (CSRF 방지)
-    SESSION_COOKIE_SAMESITE = 'Strict'
-    CSRF_COOKIE_SAMESITE = 'Strict'
+    SESSION_COOKIE_SAMESITE = 'Lax'  # Strict는 일부 브라우저에서 문제 발생
+    CSRF_COOKIE_SAMESITE = 'Lax'
 
     # 세션 설정
     SESSION_COOKIE_AGE = 3600 * 8  # 8시간
