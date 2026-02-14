@@ -1,6 +1,8 @@
 import logging
 import datetime
-import pandas as pd
+import csv
+import io
+from openpyxl import load_workbook, Workbook
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
@@ -313,39 +315,55 @@ def student_import(request):
                 file = form.cleaned_data['file']
                 file_ext = file.name.split('.')[-1].lower()
 
-                # 파일 형식에 따라 적절한 방법으로 읽기
+                # 헬퍼 함수: 빈값 체크
+                def is_empty(value):
+                    return value is None or str(value).strip() == ''
+
+                # 날짜 필드 처리 함수
+                def parse_date(value):
+                    if is_empty(value):
+                        return None
+                    elif isinstance(value, (datetime.date, datetime.datetime)):
+                        return value.date() if isinstance(value, datetime.datetime) else value
+                    elif isinstance(value, str):
+                        for fmt in ('%Y-%m-%d', '%Y.%m.%d', '%Y/%m/%d'):
+                            try:
+                                return datetime.datetime.strptime(value.strip(), fmt).date()
+                            except ValueError:
+                                continue
+                        return None  # 지원되지 않는 형식일 경우
+                    else:
+                        return None
+
+                # 파일 읽기
+                rows = []
                 if file_ext == 'csv':
-                    df = pd.read_csv(file)
+                    content = file.read()
+                    try:
+                        decoded = content.decode('utf-8-sig')
+                    except UnicodeDecodeError:
+                        decoded = content.decode('cp949')
+                    reader = csv.DictReader(io.StringIO(decoded))
+                    rows = list(reader)
                 else:
-                    df = pd.read_excel(file)
+                    wb = load_workbook(file, read_only=True)
+                    ws = wb.active
+                    headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
+                    for excel_row in ws.iter_rows(min_row=2, values_only=True):
+                        rows.append(dict(zip(headers, excel_row)))
+                    wb.close()
 
                 # 중복 체크를 위한 카운터 초기화
                 new_count = 0
                 duplicate_count = 0
 
-                # 데이터프레임의 각 행 처리
-                for index, row in df.iterrows():
-                    school_name = row.get('school', '').strip()
+                # 각 행 처리
+                for row in rows:
+                    school_name = str(row.get('school') or '').strip()
                     if school_name:
                         school, created = School.objects.get_or_create(name=school_name)
                     else:
                         school = None
-
-                    # 날짜 필드 처리 함수
-                    def parse_date(value):
-                        if pd.isnull(value):
-                            return None
-                        elif isinstance(value, (pd.Timestamp, datetime.date, datetime.datetime)):
-                            return value.date()
-                        elif isinstance(value, str):
-                            for fmt in ('%Y-%m-%d', '%Y.%m.%d', '%Y/%m/%d'):
-                                try:
-                                    return datetime.datetime.strptime(value, fmt).date()
-                                except ValueError:
-                                    continue
-                            return None  # 지원되지 않는 형식일 경우
-                        else:
-                            return None
 
                     first_class_date = parse_date(row.get('first_class_date'))
                     quit_date = parse_date(row.get('quit_date'))
@@ -390,26 +408,40 @@ def student_import(request):
 def student_export(request):
     students = Student.objects.all()
 
-    df = pd.DataFrame({
-        'name': [student.name for student in students],
-        'school': [student.school.name if student.school else '' for student in students],
-        'grade': [student.grade for student in students],
-        'phone_number': [student.phone_number for student in students],
-        'email': [student.email for student in students],
-        'gender': [student.get_gender_display() for student in students],
-        'parent_phone': [student.parent_phone for student in students],
-        'receipt_number': [student.receipt_number for student in students],
-        'interview_date': [student.interview_date.strftime('%Y-%m-%d') if student.interview_date else '' for student in students],
-        'interview_score': [student.interview_score for student in students],
-        'interview_info': [student.interview_info for student in students],
-        'first_class_date': [student.first_class_date.strftime('%Y-%m-%d') if student.first_class_date else '' for student in students],
-        'quit_date': [student.quit_date.strftime('%Y-%m-%d') if student.quit_date else '' for student in students],
-        'etc': [student.etc for student in students]
-    })
+    # openpyxl로 Excel 파일 생성
+    wb = Workbook()
+    ws = wb.active
+    ws.title = '학생 목록'
+
+    # 헤더 작성
+    headers = ['name', 'school', 'grade', 'phone_number', 'email', 'gender',
+               'parent_phone', 'receipt_number', 'interview_date', 'interview_score',
+               'interview_info', 'first_class_date', 'quit_date', 'etc']
+    ws.append(headers)
+
+    # 데이터 작성
+    for student in students:
+        row = [
+            student.name,
+            student.school.name if student.school else '',
+            student.grade,
+            student.phone_number,
+            student.email,
+            student.get_gender_display(),
+            student.parent_phone,
+            student.receipt_number,
+            student.interview_date.strftime('%Y-%m-%d') if student.interview_date else '',
+            student.interview_score,
+            student.interview_info,
+            student.first_class_date.strftime('%Y-%m-%d') if student.first_class_date else '',
+            student.quit_date.strftime('%Y-%m-%d') if student.quit_date else '',
+            student.etc,
+        ]
+        ws.append(row)
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="students.xlsx"'
-    df.to_excel(response, sheet_name='학생 목록', index=False, engine='xlsxwriter')
+    wb.save(response)
 
     return response
 
@@ -420,33 +452,33 @@ def student_import_sample(request):
     file_format = request.GET.get('format', 'xlsx')
 
     # 샘플 데이터
-    sample_data = {
-        'name': ['홍길동', '김철수'],
-        'school': ['서울중학교', '한국고등학교'],
-        'grade': ['K7', 'K10'],
-        'phone_number': ['010-1234-5678', '010-9876-5432'],
-        'email': ['hong@example.com', 'kim@example.com'],
-        'gender': ['M', 'F'],
-        'parent_phone': ['010-1111-2222', '010-3333-4444'],
-        'receipt_number': ['010-1111-2222', '010-3333-4444'],
-        'interview_date': ['2024-01-15', '2024-02-20'],
-        'interview_score': [8, 7],
-        'interview_info': ['성실한 학생', '수학에 관심이 많음'],
-        'first_class_date': ['2024-02-01', '2024-03-01'],
-        'quit_date': ['', ''],
-        'etc': ['특이사항 없음', '']
-    }
+    headers = ['name', 'school', 'grade', 'phone_number', 'email', 'gender',
+               'parent_phone', 'receipt_number', 'interview_date', 'interview_score',
+               'interview_info', 'first_class_date', 'quit_date', 'etc']
 
-    df = pd.DataFrame(sample_data)
+    sample_rows = [
+        ['홍길동', '서울중학교', 'K7', '010-1234-5678', 'hong@example.com', 'M',
+         '010-1111-2222', '010-1111-2222', '2024-01-15', 8, '성실한 학생', '2024-02-01', '', '특이사항 없음'],
+        ['김철수', '한국고등학교', 'K10', '010-9876-5432', 'kim@example.com', 'F',
+         '010-3333-4444', '010-3333-4444', '2024-02-20', 7, '수학에 관심이 많음', '2024-03-01', '', ''],
+    ]
 
     if file_format == 'csv':
         response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
         response['Content-Disposition'] = 'attachment; filename="student_import_sample.csv"'
-        df.to_csv(response, index=False, encoding='utf-8-sig')
+        writer = csv.writer(response)
+        writer.writerow(headers)
+        writer.writerows(sample_rows)
     else:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = '학생 샘플'
+        ws.append(headers)
+        for row in sample_rows:
+            ws.append(row)
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="student_import_sample.xlsx"'
-        df.to_excel(response, sheet_name='학생 샘플', index=False, engine='xlsxwriter')
+        wb.save(response)
 
     return response
 

@@ -9,7 +9,9 @@ from .forms import BookForm, BookStockLogForm, BookSupplierForm, BookReturnForm,
 from teachers.models import TeacherStudentAssignment, Teacher
 from django.db.models import Q
 from django.contrib import messages
-import pandas as pd # 엑셀 처리를 위해 필수
+import csv
+import io
+from openpyxl import load_workbook
 import re # ISBN 정리를 위해 필요
 from django.utils import timezone
 import requests # 외부 API 호출용
@@ -272,20 +274,44 @@ def book_upload(request):
                 pass
 
         try:
+            # 헬퍼 함수: 숫자 변환
+            def to_numeric(value, default=0):
+                if value is None or value == '':
+                    return default
+                try:
+                    return int(float(str(value).replace(',', '')))
+                except (ValueError, TypeError):
+                    return default
+
+            # 헬퍼 함수: 빈값 체크
+            def is_empty(value):
+                return value is None or str(value).strip() == ''
+
+            # 파일 읽기
+            rows = []
             if upload_file.name.endswith('.csv'):
-                df = pd.read_csv(upload_file)
+                # CSV 파일 처리
+                decoded = upload_file.read().decode('utf-8-sig')
+                reader = csv.DictReader(io.StringIO(decoded))
+                rows = list(reader)
             else:
-                df = pd.read_excel(upload_file)
+                # Excel 파일 처리
+                wb = load_workbook(upload_file, read_only=True)
+                ws = wb.active
+                headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
+                for excel_row in ws.iter_rows(min_row=2, values_only=True):
+                    rows.append(dict(zip(headers, excel_row)))
+                wb.close()
 
             success_count = 0
             skip_count = 0
 
-            for index, row in df.iterrows():
+            for row in rows:
                 # 1. 필수값(ISBN, 교재명) 확인
                 title = row.get('교재명')
-                raw_isbn = str(row.get('ISBN', '')).strip()
+                raw_isbn = str(row.get('ISBN', '') or '').strip()
 
-                if pd.isna(title) or not raw_isbn:
+                if is_empty(title) or not raw_isbn:
                     continue
 
                 # 2. ISBN 정리 (하이픈 제거 및 13자리 변환 로직 간소화)
@@ -299,7 +325,7 @@ def book_upload(request):
                 # 4. 파일에서 과목코드 읽기 (있는 경우)
                 subject = selected_subject  # 기본값: 폼에서 선택한 과목
                 subject_code = row.get('과목코드')
-                if subject_code and not pd.isna(subject_code):
+                if subject_code and not is_empty(subject_code):
                     subject_code = str(subject_code).strip()
                     try:
                         subject = Subject.objects.get(subject_code=subject_code)
@@ -311,12 +337,12 @@ def book_upload(request):
                     subject=subject,
                     title=title,
                     isbn=isbn,
-                    author=row.get('저자', ''),
-                    publisher=row.get('출판사', ''),
-                    original_price=pd.to_numeric(row.get('정상가격'), errors='coerce') or 0,
-                    cost_price=pd.to_numeric(row.get('입고가격'), errors='coerce') or 0,
-                    price=pd.to_numeric(row.get('판매가격'), errors='coerce') or 0,
-                    stock=pd.to_numeric(row.get('재고'), errors='coerce') or 0,
+                    author=row.get('저자') or '',
+                    publisher=row.get('출판사') or '',
+                    original_price=to_numeric(row.get('정상가격')),
+                    cost_price=to_numeric(row.get('입고가격')),
+                    price=to_numeric(row.get('판매가격')),
+                    stock=to_numeric(row.get('재고')),
                 )
                 success_count += 1
 
@@ -822,16 +848,37 @@ def book_content_upload(request, pk):
         replace_existing = request.POST.get('replace_existing') == 'on'
 
         try:
+            # 헬퍼 함수: 빈값 체크
+            def is_empty(value):
+                return value is None or str(value).strip() == ''
+
+            # 헬퍼 함수: 정수 변환
+            def to_int(value, default=None):
+                if is_empty(value):
+                    return default
+                try:
+                    return int(float(str(value)))
+                except (ValueError, TypeError):
+                    return default
+
             # CSV/Excel 파일 읽기
+            rows = []
             if upload_file.name.endswith('.csv'):
                 # 인코딩 자동 감지
+                content = upload_file.read()
                 try:
-                    df = pd.read_csv(upload_file, encoding='utf-8')
+                    decoded = content.decode('utf-8-sig')
                 except UnicodeDecodeError:
-                    upload_file.seek(0)
-                    df = pd.read_csv(upload_file, encoding='cp949')
+                    decoded = content.decode('cp949')
+                reader = csv.DictReader(io.StringIO(decoded))
+                rows = list(reader)
             else:
-                df = pd.read_excel(upload_file)
+                wb = load_workbook(upload_file, read_only=True)
+                ws = wb.active
+                headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
+                for excel_row in ws.iter_rows(min_row=2, values_only=True):
+                    rows.append(dict(zip(headers, excel_row)))
+                wb.close()
 
             # 기존 데이터 삭제 옵션
             if replace_existing:
@@ -841,7 +888,7 @@ def book_content_upload(request, pk):
             success_count = 0
             skip_count = 0
 
-            for index, row in df.iterrows():
+            for row in rows:
                 # 필수 필드 확인
                 chapter_num = row.get('대단원')
                 chapter_title = row.get('대단원 주제', '')
@@ -852,26 +899,31 @@ def book_content_upload(request, pk):
                 page = row.get('page')
 
                 # 필수값 체크
-                if pd.isna(chapter_num) or pd.isna(section_num) or pd.isna(page):
+                if is_empty(chapter_num) or is_empty(section_num) or is_empty(page):
+                    skip_count += 1
+                    continue
+
+                page_int = to_int(page)
+                if page_int is None:
                     skip_count += 1
                     continue
 
                 # 중복 체크 (같은 페이지)
-                if not replace_existing and book.contents.filter(page=int(page)).exists():
+                if not replace_existing and book.contents.filter(page=page_int).exists():
                     skip_count += 1
                     continue
 
                 # 데이터 생성
                 BookContent.objects.update_or_create(
                     book=book,
-                    page=int(page),
+                    page=page_int,
                     defaults={
-                        'chapter_num': int(chapter_num),
-                        'chapter_title': str(chapter_title) if not pd.isna(chapter_title) else '',
-                        'section_num': int(section_num),
-                        'section_title': str(section_title) if not pd.isna(section_title) else '',
-                        'subsection_num': str(int(subsection_num)) if not pd.isna(subsection_num) else '',
-                        'subsection_title': str(subsection_title) if not pd.isna(subsection_title) else '',
+                        'chapter_num': to_int(chapter_num, 0),
+                        'chapter_title': str(chapter_title) if not is_empty(chapter_title) else '',
+                        'section_num': to_int(section_num, 0),
+                        'section_title': str(section_title) if not is_empty(section_title) else '',
+                        'subsection_num': str(to_int(subsection_num, '')) if not is_empty(subsection_num) else '',
+                        'subsection_title': str(subsection_title) if not is_empty(subsection_title) else '',
                     }
                 )
                 success_count += 1
