@@ -41,7 +41,10 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # GitHub Secrets 설정 전까지 비활성화
+    # 활성화하려면 아래 조건을 복원하고 GitHub Secrets 설정 필요:
+    # SERVER_HOST, SERVER_USER, SERVER_SSH_KEY, SERVER_PORT
+    if: false  # github.ref == 'refs/heads/main'
 
     steps:
       - name: Deploy to server via SSH
