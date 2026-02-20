@@ -20,9 +20,9 @@ class BookForm(forms.ModelForm):
                 'id': 'id_isbn',
             }),
             'supplier': forms.Select(attrs={'class': 'form-control'}),
-            'original_price': forms.NumberInput(attrs={'step': '100'}),
-            'cost_price': forms.NumberInput(attrs={'step': '1'}),
-            'price': forms.NumberInput(attrs={'step': '100'}),
+            'original_price': forms.NumberInput(attrs={'step': '50'}),
+            'cost_price': forms.NumberInput(attrs={'step': '50'}),
+            'price': forms.NumberInput(attrs={'step': '50'}),
             'memo': forms.TextInput(attrs={'placeholder': '비고 (선택 사항)'}),
         }
 
@@ -66,7 +66,7 @@ class BookStockLogForm(forms.ModelForm):
             'created_at': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'supplier': forms.Select(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'min': 1, 'autofocus': 'autofocus'}),
-            'cost_price': forms.NumberInput(attrs={'step': 100}),
+            'cost_price': forms.NumberInput(attrs={'step': 50}),
             'memo': forms.TextInput(attrs={'placeholder': '비고'}),
         }
         labels = {
@@ -80,7 +80,7 @@ class BookReturnForm(forms.ModelForm):
         widgets = {
             'supplier': forms.Select(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'min': 1, 'autofocus': 'autofocus'}),
-            'cost_price': forms.NumberInput(attrs={'step': 100}),
+            'cost_price': forms.NumberInput(attrs={'step': 50}),
             'total_payment': forms.NumberInput(attrs={'readonly': 'readonly', 'style': 'background-color: #eee;'}),
             'payment_date': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'memo': forms.TextInput(attrs={'placeholder': '반품 사유'}),
@@ -94,7 +94,7 @@ class BookSaleForm(forms.ModelForm):
         widgets = {
             'book': forms.Select(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'min': 1, 'value': 1}),
-            'price': forms.NumberInput(attrs={'step': 100}),
+            'price': forms.NumberInput(attrs={'step': 50}),
             'sale_date': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'memo': forms.TextInput(attrs={'placeholder': '비고'}),
         }
