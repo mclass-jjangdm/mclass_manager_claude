@@ -14,7 +14,7 @@
 
 <!-- 기간 검색 폼 -->
 <div class="content-card mb-6">
-    <form method="get" class="flex flex-wrap gap-4 items-end">
+    <form method="get" id="filter-form" class="flex flex-wrap gap-4 items-end">
         <div>
             <label class="form-label">시작일</label>
             <input type="text" name="start_date" value="{{ start_date|date:'Y-m-d' }}"
@@ -27,7 +27,6 @@
         </div>
         <div class="flex gap-2">
             <button type="submit" class="form-button">조회</button>
-            <!-- 빠른 기간 선택 -->
             <button type="button" onclick="setThisMonth()"
                     class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm">
                 이번 달
@@ -42,19 +41,16 @@
 
 <!-- 요약 카드 -->
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-    <!-- 입고 합계 -->
     <div class="bg-green-50 border border-green-200 rounded-xl p-5">
         <p class="text-sm font-medium text-green-700 mb-1">📦 입고 금액</p>
         <p class="text-2xl font-bold text-green-800">{{ inbound_payment|intcomma }}원</p>
         <p class="text-sm text-green-600 mt-1">총 {{ inbound_quantity }}권 입고</p>
     </div>
-    <!-- 반품 합계 -->
     <div class="bg-red-50 border border-red-200 rounded-xl p-5">
         <p class="text-sm font-medium text-red-700 mb-1">↩️ 반품 금액</p>
         <p class="text-2xl font-bold text-red-800">{{ return_payment|intcomma }}원</p>
         <p class="text-sm text-red-600 mt-1">총 {{ return_quantity }}권 반품</p>
     </div>
-    <!-- 실 지급 예정 -->
     <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5">
         <p class="text-sm font-medium text-indigo-700 mb-1">💰 실 지급 금액</p>
         <p class="text-2xl font-bold text-indigo-800">{{ total_payment|intcomma }}원</p>
@@ -62,112 +58,158 @@
     </div>
 </div>
 
-<!-- 입고 기록 테이블 -->
-<div class="content-card">
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">입고일</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">도서명</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">구매처</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">구분</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">단가</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">입고 금액</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">정산 여부</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">정산일</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">비고</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for log in logs %}
-                <tr class="hover:bg-gray-50 {% if log.quantity < 0 %}bg-red-50{% endif %}">
-                    <!-- 입고일 -->
-                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
-                        {{ log.created_at|date:"Y-m-d" }}
-                    </td>
-                    <!-- 도서명 -->
-                    <td class="px-4 py-3 font-semibold text-gray-900">
-                        <a href="{% url 'bookstore:book_detail' log.book.pk %}"
-                           class="hover:text-indigo-600 hover:underline">
-                            {{ log.book.title }}
-                        </a>
-                    </td>
-                    <!-- 구매처 -->
-                    <td class="px-4 py-3 text-gray-700">
-                        {% if log.supplier %}
-                            <a href="{% url 'bookstore:supplier_detail' log.supplier.pk %}"
-                               class="hover:text-indigo-600 hover:underline">
-                                {{ log.supplier.name }}
-                            </a>
-                        {% else %}
-                            <span class="text-gray-400">-</span>
-                        {% endif %}
-                    </td>
-                    <!-- 구분 -->
-                    <td class="px-4 py-3 text-center">
-                        {% if log.quantity > 0 %}
-                            <span class="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">입고</span>
-                        {% else %}
-                            <span class="inline-block bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-full">반품</span>
-                        {% endif %}
-                    </td>
-                    <!-- 수량 -->
-                    <td class="px-4 py-3 text-center font-medium
-                               {% if log.quantity > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                        {% if log.quantity > 0 %}+{% endif %}{{ log.quantity }}
-                    </td>
-                    <!-- 단가 -->
-                    <td class="px-4 py-3 text-right text-gray-700">
-                        {{ log.cost_price|intcomma }}원
-                    </td>
-                    <!-- 입고 금액 -->
-                    <td class="px-4 py-3 text-right font-semibold text-gray-900">
-                        {{ log.total_payment|intcomma }}원
-                    </td>
-                    <!-- 정산 여부 -->
-                    <td class="px-4 py-3 text-center">
-                        {% if log.is_paid %}
-                            <span class="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">정산 완료</span>
-                        {% else %}
-                            <span class="inline-block bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-0.5 rounded-full">미정산</span>
-                        {% endif %}
-                    </td>
-                    <!-- 정산일 -->
-                    <td class="px-4 py-3 text-center text-gray-700 whitespace-nowrap">
-                        {{ log.payment_date|date:"Y-m-d"|default:"-" }}
-                    </td>
-                    <!-- 비고 -->
-                    <td class="px-4 py-3 text-gray-500 text-xs">
-                        {{ log.memo|default:"-" }}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="10" class="px-4 py-12 text-center text-gray-400">
-                        해당 기간에 입고 기록이 없습니다.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            {% if logs %}
-            <tfoot class="bg-gray-50">
-                <tr>
-                    <td colspan="6" class="px-4 py-3 text-right font-semibold text-gray-700">기간 합계</td>
-                    <td class="px-4 py-3 text-right font-bold text-indigo-700">{{ total_payment|intcomma }}원</td>
-                    <td colspan="3"></td>
-                </tr>
-            </tfoot>
-            {% endif %}
-        </table>
+<!-- 일괄 정산 폼 + 테이블 -->
+<form method="post" action="{% url 'bookstore:stock_log_settle' %}" id="settle-form">
+    {% csrf_token %}
+    <!-- 현재 조회 기간을 redirect 후에도 유지 -->
+    <input type="hidden" name="query_string"
+           value="start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}">
+
+    <!-- 일괄 정산 액션바 (로그가 있을 때만) -->
+    {% if logs %}
+    <div class="bg-orange-50 border border-orange-200 rounded-xl px-5 py-3 mb-4 flex flex-wrap gap-4 items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-sm font-medium text-orange-800">선택한 항목 일괄 정산</span>
+            <span id="selected-info" class="text-sm text-orange-700">
+                0건 선택 / 0원
+            </span>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+            <label class="text-sm font-medium text-gray-700 whitespace-nowrap">정산일</label>
+            <input type="text" name="payment_date" value="{{ today }}" required
+                   class="form-input py-1.5 px-3 text-sm mclass-datepicker" readonly>
+            <button type="submit"
+                    onclick="return confirmSettle()"
+                    class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-1.5 rounded-lg font-medium text-sm transition-colors">
+                선택 항목 정산
+            </button>
+        </div>
     </div>
-</div>
+    {% endif %}
+
+    <!-- 테이블 -->
+    <div class="content-card">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-3 text-center w-10">
+                            <input type="checkbox" id="check-all" class="form-checkbox h-4 w-4"
+                                   aria-label="미정산 전체 선택">
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">입고일</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">도서명</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">구매처</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">구분</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">단가</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">입고 금액</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">정산 여부</th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">정산일</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">비고</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for log in logs %}
+                    <tr class="hover:bg-gray-50 {% if log.quantity < 0 %}bg-red-50{% endif %}"
+                        data-payment="{{ log.total_payment }}"
+                        data-paid="{{ log.is_paid|yesno:'true,false' }}">
+                        <!-- 체크박스: 미정산만 선택 가능 -->
+                        <td class="px-3 py-3 text-center">
+                            {% if not log.is_paid %}
+                            <input type="checkbox" name="log_ids" value="{{ log.pk }}"
+                                   class="form-checkbox h-4 w-4 row-check" aria-label="선택">
+                            {% else %}
+                            <span class="text-gray-300 text-xs">—</span>
+                            {% endif %}
+                        </td>
+                        <!-- 입고일 -->
+                        <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
+                            {{ log.created_at|date:"Y-m-d" }}
+                        </td>
+                        <!-- 도서명 -->
+                        <td class="px-4 py-3 font-semibold text-gray-900">
+                            <a href="{% url 'bookstore:book_detail' log.book.pk %}"
+                               class="hover:text-indigo-600 hover:underline">
+                                {{ log.book.title }}
+                            </a>
+                        </td>
+                        <!-- 구매처 -->
+                        <td class="px-4 py-3 text-gray-700">
+                            {% if log.supplier %}
+                                <a href="{% url 'bookstore:supplier_detail' log.supplier.pk %}"
+                                   class="hover:text-indigo-600 hover:underline">
+                                    {{ log.supplier.name }}
+                                </a>
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <!-- 구분 -->
+                        <td class="px-4 py-3 text-center">
+                            {% if log.quantity > 0 %}
+                                <span class="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">입고</span>
+                            {% else %}
+                                <span class="inline-block bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-full">반품</span>
+                            {% endif %}
+                        </td>
+                        <!-- 수량 -->
+                        <td class="px-4 py-3 text-center font-medium
+                                   {% if log.quantity > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if log.quantity > 0 %}+{% endif %}{{ log.quantity }}
+                        </td>
+                        <!-- 단가 -->
+                        <td class="px-4 py-3 text-right text-gray-700">
+                            {{ log.cost_price|intcomma }}원
+                        </td>
+                        <!-- 입고 금액 -->
+                        <td class="px-4 py-3 text-right font-semibold text-gray-900">
+                            {{ log.total_payment|intcomma }}원
+                        </td>
+                        <!-- 정산 여부 -->
+                        <td class="px-4 py-3 text-center">
+                            {% if log.is_paid %}
+                                <span class="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">정산 완료</span>
+                            {% else %}
+                                <span class="inline-block bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-0.5 rounded-full">미정산</span>
+                            {% endif %}
+                        </td>
+                        <!-- 정산일 -->
+                        <td class="px-4 py-3 text-center text-gray-700 whitespace-nowrap">
+                            {{ log.payment_date|date:"Y-m-d"|default:"-" }}
+                        </td>
+                        <!-- 비고 -->
+                        <td class="px-4 py-3 text-gray-500 text-xs">
+                            {{ log.memo|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="px-4 py-12 text-center text-gray-400">
+                            해당 기간에 입고 기록이 없습니다.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if logs %}
+                <tfoot class="bg-gray-50">
+                    <tr>
+                        <td colspan="7" class="px-4 py-3 text-right font-semibold text-gray-700">기간 합계 (실 지급)</td>
+                        <td class="px-4 py-3 text-right font-bold text-indigo-700">{{ total_payment|intcomma }}원</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</form>
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// ── 빠른 기간 선택 ──────────────────────────────
 function setThisMonth() {
     const now = new Date();
     const y = now.getFullYear();
@@ -186,6 +228,63 @@ function setLastMonth() {
         `${first.getFullYear()}-${pad(first.getMonth()+1)}-01`;
     document.querySelector('input[name="end_date"]').value =
         `${last.getFullYear()}-${pad(last.getMonth()+1)}-${pad(last.getDate())}`;
+}
+
+// ── 체크박스 / 선택 금액 실시간 표시 ────────────
+const checkAll = document.getElementById('check-all');
+const selectedInfo = document.getElementById('selected-info');
+
+function updateSelectedInfo() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    let total = 0;
+    checked.forEach(cb => {
+        const row = cb.closest('tr');
+        total += parseInt(row.dataset.payment || 0, 10);
+    });
+    if (selectedInfo) {
+        selectedInfo.textContent =
+            `${checked.length}건 선택 / ${total.toLocaleString()}원`;
+    }
+}
+
+if (checkAll) {
+    // 전체 선택 토글 (미정산만)
+    checkAll.addEventListener('change', function () {
+        document.querySelectorAll('.row-check').forEach(cb => {
+            cb.checked = checkAll.checked;
+        });
+        updateSelectedInfo();
+    });
+}
+
+document.querySelectorAll('.row-check').forEach(cb => {
+    cb.addEventListener('change', function () {
+        const allChecks = document.querySelectorAll('.row-check');
+        const checkedCount = document.querySelectorAll('.row-check:checked').length;
+        if (checkAll) {
+            checkAll.checked = checkedCount === allChecks.length;
+            checkAll.indeterminate = checkedCount > 0 && checkedCount < allChecks.length;
+        }
+        updateSelectedInfo();
+    });
+});
+
+// ── 정산 확인 ────────────────────────────────────
+function confirmSettle() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    if (checked.length === 0) {
+        alert('정산할 항목을 선택해주세요.');
+        return false;
+    }
+    const paymentDate = document.querySelector('input[name="payment_date"]').value;
+    let total = 0;
+    checked.forEach(cb => {
+        total += parseInt(cb.closest('tr').dataset.payment || 0, 10);
+    });
+    return confirm(
+        `${checked.length}건 (${total.toLocaleString()}원)을 ` +
+        `${paymentDate} 기준으로 정산 처리하시겠습니까?`
+    );
 }
 </script>
 {% endblock %}

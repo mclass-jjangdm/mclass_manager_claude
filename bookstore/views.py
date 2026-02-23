@@ -1377,6 +1377,33 @@ def stock_log_list(request):
         'inbound_quantity': inbound_agg['inbound_quantity'] or 0,
         'return_payment': return_payment,
         'return_quantity': abs(return_agg['return_quantity'] or 0),
+        'today': date.today().strftime('%Y-%m-%d'),
     }
     return render(request, 'bookstore/stock_log_list.html', context)
+
+
+@login_required
+def stock_log_settle(request):
+    """체크된 입고 기록 일괄 정산 처리"""
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('log_ids')
+        payment_date = request.POST.get('payment_date')
+        # 현재 조회 기간을 redirect 시 유지하기 위해 GET 파라미터 보존
+        qs = request.POST.get('query_string', '')
+
+        if not selected_ids:
+            messages.error(request, '정산할 항목을 선택해주세요.')
+        elif not payment_date:
+            messages.error(request, '정산일을 입력해주세요.')
+        else:
+            updated = BookStockLog.objects.filter(
+                id__in=selected_ids,
+                is_paid=False,
+            ).update(is_paid=True, payment_date=payment_date)
+            messages.success(request, f'{updated}건이 정산 처리되었습니다. (정산일: {payment_date})')
+
+        redirect_url = f"{reverse('bookstore:stock_log_list')}?{qs}" if qs else reverse('bookstore:stock_log_list')
+        return redirect(redirect_url)
+
+    return redirect('bookstore:stock_log_list')
 
