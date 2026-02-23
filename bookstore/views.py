@@ -1349,14 +1349,8 @@ def stock_log_list(request):
         .order_by('-created_at')
     )
 
-    # 전체 집계
-    agg = logs.aggregate(
-        total_payment=Sum('total_payment'),
-        total_quantity=Sum('quantity'),
-    )
-    total_payment = agg['total_payment'] or 0
-
     # 입고 / 반품 분리 집계
+    # total_payment는 반품도 양수로 저장되므로 입고-반품으로 실 지급액 계산
     inbound_logs = logs.filter(quantity__gt=0)
     return_logs = logs.filter(quantity__lt=0)
 
@@ -1369,14 +1363,19 @@ def stock_log_list(request):
         return_quantity=Sum('quantity'),
     )
 
+    inbound_payment = inbound_agg['inbound_payment'] or 0
+    return_payment = return_agg['return_payment'] or 0
+    # 실 지급 금액 = 입고 금액 - 반품 금액
+    total_payment = inbound_payment - return_payment
+
     context = {
         'logs': logs,
         'start_date': start_date,
         'end_date': end_date,
         'total_payment': total_payment,
-        'inbound_payment': inbound_agg['inbound_payment'] or 0,
+        'inbound_payment': inbound_payment,
         'inbound_quantity': inbound_agg['inbound_quantity'] or 0,
-        'return_payment': return_agg['return_payment'] or 0,
+        'return_payment': return_payment,
         'return_quantity': abs(return_agg['return_quantity'] or 0),
     }
     return render(request, 'bookstore/stock_log_list.html', context)
