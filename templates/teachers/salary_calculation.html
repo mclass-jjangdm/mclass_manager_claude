@@ -37,12 +37,11 @@
                         조회하기
                     </button>
                 </div>
-                <!-- Add this near the submit button -->
-                <a href="{% url 'teachers:salary_pdf_report' year=year month=month %}" 
-                   class="form-button bg-green-600 hover:bg-green-700" 
-                   target="_blank">
+                <!-- PDF 출력: 추가급여 입력값을 URL 파라미터로 전달 -->
+                <button type="button" id="pdf-btn"
+                        class="form-button bg-green-600 hover:bg-green-700">
                     PDF 출력
-                </a>
+                </button>
             </form>
         </div>
     </div>
@@ -162,4 +161,18 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('pdf-btn').addEventListener('click', function () {
+    const baseUrl = "{% url 'teachers:salary_pdf_report' year=year month=month %}";
+    const params = new URLSearchParams();
+    document.querySelectorAll('input[name^="additional_amount_"]').forEach(function (input) {
+        const teacherId = input.name.replace('additional_amount_', '');
+        params.append('additional_' + teacherId, input.value || '0');
+    });
+    window.open(baseUrl + '?' + params.toString(), '_blank');
+});
+</script>
 {% endblock %}

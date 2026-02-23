@@ -930,13 +930,6 @@ class TeacherPDFReportView(LoginRequiredMixin, View):
 class SalaryPDFReportView(LoginRequiredMixin, View):
     def get(self, request, year, month):
 
-        # 날짜 범위 계산
-        start_date = datetime(year, month, 1)
-        if month == 12:
-            end_date = datetime(year + 1, 1, 1) - timedelta(days=1)
-        else:
-            end_date = datetime(year, month + 1, 1) - timedelta(days=1)
-
         buffer = BytesIO()
 
         # **PDF 문서 생성 및 메타데이터 설정**
@@ -991,23 +984,39 @@ class SalaryPDFReportView(LoginRequiredMixin, View):
         elements.append(Paragraph(title, styles['KoreanTitle']))
         elements.append(Spacer(1, 20))
 
-        # 급여 데이터 계산 - Salary 모델에서 가져오기
-        salaries = Salary.objects.filter(year=year, month=month).select_related('teacher')
+        # 급여 데이터 실시간 계산
+        salary_view = SalaryCalculationView()
+        teachers = salary_view.get_active_teachers_for_month(year, month)
 
         data = [['이름', '기본급', '추가급여', '총 급여']]
         total_base = 0
         total_additional = 0
         total_amount = 0
 
-        for salary in salaries:
-            total_base += salary.base_amount
-            total_additional += salary.additional_amount
-            total_amount += salary.total_amount
+        for teacher in teachers:
+            work_hours, work_days = salary_view.calculate_work_hours(teacher, year, month)
+            base_amount = int(work_hours * teacher.base_salary)
+
+            # URL 파라미터로 전달된 추가급여 우선 사용, 없으면 DB에서 가져오기
+            param_key = f'additional_{teacher.id}'
+            if param_key in request.GET:
+                additional_amount = int(request.GET.get(param_key) or 0)
+            else:
+                try:
+                    existing_salary = Salary.objects.get(teacher=teacher, year=year, month=month)
+                    additional_amount = existing_salary.additional_amount
+                except Salary.DoesNotExist:
+                    additional_amount = 0
+
+            row_total = base_amount + additional_amount
+            total_base += base_amount
+            total_additional += additional_amount
+            total_amount += row_total
             data.append([
-                salary.teacher.name,
-                f"{salary.base_amount:,}원",
-                f"{salary.additional_amount:,}원",
-                f"{salary.total_amount:,}원"
+                teacher.name,
+                f"{base_amount:,}원",
+                f"{additional_amount:,}원",
+                f"{row_total:,}원"
             ])
 
         data.append([
