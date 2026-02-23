@@ -3,13 +3,14 @@
 
 {% block student_content %}
 
-<div class="mb-6">
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">학생 목록</h1>
+<div class="mb-5">
+    <!-- 제목 + 검색 영역: 모바일은 세로 / md는 가로 -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <h1 class="text-2xl font-bold text-gray-800">학생 목록</h1>
 
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center gap-2 flex-wrap">
             <!-- 검색 폼 -->
-            <form method="get" class="flex items-center">
+            <form method="get" class="flex items-center flex-1 sm:flex-none">
                 {% if show_inactive %}
                 <input type="hidden" name="show_inactive" value="on" />
                 {% endif %}
@@ -21,25 +22,25 @@
                     name="search"
                     value="{{ search_query }}"
                     placeholder="학생 이름 검색..."
-                    class="form-input rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    class="form-input rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 flex-1 sm:w-48"
                 />
                 <button
                     type="submit"
-                    class="ml-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md text-sm"
+                    class="ml-2 bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-2 rounded-md text-sm whitespace-nowrap"
                 >
                     검색
                 </button>
             </form>
 
             <!-- 퇴원자 포함 체크박스 -->
-            <form method="get" class="flex items-center">
+            <form method="get">
                 {% if search_query %}
                 <input type="hidden" name="search" value="{{ search_query }}" />
                 {% endif %}
                 {% if group_by %}
                 <input type="hidden" name="group_by" value="{{ group_by }}" />
                 {% endif %}
-                <label class="inline-flex items-center">
+                <label class="inline-flex items-center cursor-pointer">
                     <input
                         type="checkbox"
                         name="show_inactive"
@@ -47,36 +48,36 @@
                         class="form-checkbox h-4 w-4 text-indigo-600"
                         onchange="this.form.submit()"
                     />
-                    <span class="ml-2 text-sm text-gray-600">퇴원자 포함</span>
+                    <span class="ml-2 text-sm text-gray-600 whitespace-nowrap">퇴원자 포함</span>
                 </label>
             </form>
         </div>
     </div>
 
-    <!-- 그룹화 옵션 (강조) -->
-    <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
-        <form method="get" class="flex items-center">
+    <!-- 그룹화 옵션 -->
+    <div class="bg-indigo-50 border-l-4 border-indigo-500 px-4 py-3 rounded-r-lg">
+        <form method="get" class="flex flex-wrap items-center gap-3">
             {% if search_query %}
             <input type="hidden" name="search" value="{{ search_query }}" />
             {% endif %}
             {% if show_inactive %}
             <input type="hidden" name="show_inactive" value="on" />
             {% endif %}
-            <label class="text-base font-semibold text-indigo-900 mr-4">정렬 방식:</label>
-            <div class="flex space-x-3">
+            <label class="text-sm font-semibold text-indigo-900 flex-shrink-0">정렬 방식:</label>
+            <div class="flex gap-4">
                 <label class="inline-flex items-center cursor-pointer">
                     <input type="radio" name="group_by" value="grade"
                            {% if group_by == 'grade' %}checked{% endif %}
                            onchange="this.form.submit()"
-                           class="form-radio h-5 w-5 text-indigo-600">
-                    <span class="ml-2 text-base text-indigo-900 font-medium">학년별</span>
+                           class="form-radio h-4 w-4 text-indigo-600">
+                    <span class="ml-2 text-sm text-indigo-900 font-medium">학년별</span>
                 </label>
                 <label class="inline-flex items-center cursor-pointer">
                     <input type="radio" name="group_by" value="school"
                            {% if group_by == 'school' %}checked{% endif %}
                            onchange="this.form.submit()"
-                           class="form-radio h-5 w-5 text-indigo-600">
-                    <span class="ml-2 text-base text-indigo-900 font-medium">학교별</span>
+                           class="form-radio h-4 w-4 text-indigo-600">
+                    <span class="ml-2 text-sm text-indigo-900 font-medium">학교별</span>
                 </label>
             </div>
         </form>

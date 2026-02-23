@@ -4,24 +4,24 @@
 {% block title %}선생님 목록 - MClass Manager{% endblock %}
 
 {% block teacher_content %}
-<div class="mb-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-bold text-gray-800">선생님 목록</h1>
-        <div class="flex items-center space-x-4">
+<div class="mb-5">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-2xl font-bold text-gray-800">선생님 목록</h1>
+        <div class="flex items-center gap-3 flex-wrap">
             <!-- 퇴사자 포함 체크박스 -->
-            <form method="get" class="flex items-center">
-                <label class="inline-flex items-center">
+            <form method="get">
+                <label class="inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="show_inactive"
                            {% if show_inactive %}checked{% endif %}
                            class="form-checkbox h-4 w-4 text-indigo-600"
                            onchange="this.form.submit()">
-                    <span class="ml-2 text-sm text-gray-600">퇴사자 포함</span>
+                    <span class="ml-2 text-sm text-gray-600 whitespace-nowrap">퇴사자 포함</span>
                 </label>
             </form>
             <!-- 선생님 등록 버튼 -->
             <a href="{% url 'teachers:teacher_create' %}"
-               class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                선생님 등록
+               class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
+                + 선생님 등록
             </a>
         </div>
     </div>

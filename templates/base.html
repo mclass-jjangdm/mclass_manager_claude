@@ -160,70 +160,96 @@
     {% if user.is_authenticated %}
     <nav class="bg-gray-800 text-white">
         <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between h-16">
-                
-                <div class="flex items-center">
-                    <a href="{% url 'index' %}" class="font-medium text-xl font-ubuntu">
-                        M'Class Manager
-                    </a>
-                    <div class="hidden md:block ml-10">
-                        <div class="flex items-baseline space-x-4">
-                            <a href="{% url 'students:student_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">학생 관리</a>
-                            <a href="{% url 'teachers:teacher_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">선생님 관리</a>
-                            <a href="{% url 'subjects:subject_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">과목 관리</a>
-                            <a href="{% url 'bookstore:book_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">교재 관리</a>
-                            <a href="{% url 'progress:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">학습 진도</a>
-                            <a href="{% url 'maintenance:create' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">관리비</a>
-                            <a href="{% url 'payment:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">납부 현황</a>
-                            </div>
-                    </div>
+            <div class="flex items-center justify-between h-14">
+
+                <!-- 로고 -->
+                <a href="{% url 'index' %}" class="font-medium text-lg font-ubuntu flex-shrink-0">
+                    M'Class Manager
+                </a>
+
+                <!-- 데스크탑 메뉴 -->
+                <div class="hidden md:flex items-baseline space-x-1 ml-8">
+                    <a href="{% url 'students:student_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">👨‍🎓 학생 관리</a>
+                    <a href="{% url 'teachers:teacher_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">👩‍🏫 선생님 관리</a>
+                    <a href="{% url 'subjects:subject_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">📚 과목 관리</a>
+                    <a href="{% url 'bookstore:book_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">📦 교재 관리</a>
+                    <a href="{% url 'progress:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">📖 학습 진도</a>
+                    <a href="{% url 'maintenance:create' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">🏢 관리비</a>
+                    <a href="{% url 'payment:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">💳 납부 현황</a>
                 </div>
 
-                <div class="flex items-center"> {% if user.is_superuser %}
-                        <form method="post" action="{% url 'db_backup' %}" class="inline hidden md:inline-block mr-2">
-                            {% csrf_token %}
-                            <button type="submit" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                                DB 백업
-                            </button>
-                        </form>
+                <!-- 데스크탑 우측: DB백업 + 로그아웃 -->
+                <div class="hidden md:flex items-center gap-2 ml-auto">
+                    {% if user.is_superuser %}
+                    <form method="post" action="{% url 'db_backup' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-1.5 rounded-md text-sm font-medium">
+                            💾 DB 백업
+                        </button>
+                    </form>
                     {% endif %}
-                    
                     <form method="post" action="{% url 'logout' %}" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="text-gray-300 hover:text-white text-sm font-medium font-ubuntu">
+                        <button type="submit" class="text-gray-300 hover:text-white text-sm font-medium font-ubuntu px-3 py-1.5 rounded-md hover:bg-gray-700">
                             로그아웃
                         </button>
                     </form>
                 </div>
 
-                <div class="-mr-2 flex md:hidden ml-4">
-                    <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
-                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                </div>
+                <!-- 모바일 햄버거 버튼 -->
+                <button type="button" id="mobile-menu-btn"
+                        onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
+                        class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none ml-2">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
             </div>
         </div>
 
+        <!-- 모바일 메뉴 (2열 그리드) -->
         <div class="hidden md:hidden" id="mobile-menu">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-900">
-                <a href="{% url 'students:student_list' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">학생 관리</a>
-                <a href="{% url 'teachers:teacher_list' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">선생님 관리</a>
-                <a href="{% url 'subjects:subject_list' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">과목 관리</a>
-                <a href="{% url 'bookstore:book_list' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">교재 관리</a>
-                <a href="{% url 'progress:dashboard' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">학습 진도</a>
-                <a href="{% url 'maintenance:create' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">관리비</a>
-                <a href="{% url 'payment:dashboard' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">납부 현황</a>
-
-                {% if user.is_superuser %}
-                    <form method="post" action="{% url 'db_backup' %}" class="border-t border-gray-700 mt-2 pt-2">
+            <div class="bg-gray-900 px-3 pt-3 pb-4">
+                <div class="grid grid-cols-2 gap-1">
+                    <a href="{% url 'students:student_list' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">👨‍🎓</span> 학생 관리
+                    </a>
+                    <a href="{% url 'teachers:teacher_list' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">👩‍🏫</span> 선생님 관리
+                    </a>
+                    <a href="{% url 'subjects:subject_list' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">📚</span> 과목 관리
+                    </a>
+                    <a href="{% url 'bookstore:book_list' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">📦</span> 교재 관리
+                    </a>
+                    <a href="{% url 'progress:dashboard' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">📖</span> 학습 진도
+                    </a>
+                    <a href="{% url 'maintenance:create' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">🏢</span> 관리비
+                    </a>
+                    <a href="{% url 'payment:dashboard' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">💳</span> 납부 현황
+                    </a>
+                </div>
+                <!-- 하단 구분선 + 로그아웃/DB백업 -->
+                <div class="border-t border-gray-700 mt-3 pt-3 flex items-center justify-between gap-2">
+                    {% if user.is_superuser %}
+                    <form method="post" action="{% url 'db_backup' %}" class="flex-1">
                         {% csrf_token %}
-                        <button type="submit" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu w-full text-left">
-                            DB 백업
+                        <button type="submit" class="w-full text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium text-center">
+                            💾 DB 백업
                         </button>
                     </form>
-                {% endif %}
+                    {% endif %}
+                    <form method="post" action="{% url 'logout' %}" class="flex-1">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium text-center">
+                            🚪 로그아웃
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>
