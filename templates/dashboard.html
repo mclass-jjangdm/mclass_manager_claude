@@ -1,173 +1,197 @@
 {% extends 'base.html' %}
+{% load humanize %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
-        <div class="border-4 border-dashed border-gray-200 rounded-lg p-4">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">
-                환영합니다, {{ user.username }}님
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- 학생 관리 -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <h3 class="text-lg font-medium text-gray-900">학생 관리</h3>
-                        <p class="mt-1 text-sm text-gray-500">총 {{ total_students }}명</p>
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
 
-                        <!-- 학년별 통계 -->
-                        {% if grade_stats %}
-                        <div class="mt-3 grid grid-cols-4 gap-2">
-                            {% for grade, count in grade_stats %}
-                            <div class="text-center">
-                                <div class="text-xs text-gray-500">{{ grade }}</div>
-                                <div class="text-lg font-bold text-indigo-600">{{ count }}</div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
-                        <div class="mt-4">
-                            <a href="{% url 'students:student_list' %}"
-                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                바로가기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 선생님 관리 -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <h3 class="text-lg font-medium text-gray-900">선생님 관리</h3>
-                        <p class="mt-1 text-sm text-gray-500">재직 중 {{ active_teachers }}명</p>
-
-                        {% if pending_unavailability_count > 0 %}
-                        <div class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                            <a href="{% url 'teachers:unavailability_list' %}"
-                               class="flex items-center text-yellow-800 hover:text-yellow-900">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-sm font-medium">승인 대기 {{ pending_unavailability_count }}건</span>
-                            </a>
-                        </div>
-                        {% endif %}
-
-                        <div class="mt-4">
-                            <a href="{% url 'teachers:teacher_list' %}"
-                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                바로가기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 교재 관리 -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <h3 class="text-lg font-medium text-gray-900">교재 관리</h3>
-                        <p class="mt-1 text-sm text-gray-500">교재 정보 / 재고 관리</p>
-                        <div class="mt-4">
-                            <a href="{% url 'bookstore:book_list' %}"
-                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                바로가기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 학습 진도 -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <h3 class="text-lg font-medium text-gray-900">학습 진도</h3>
-                        <p class="mt-1 text-sm text-gray-500">{{ today|date:"m월 d일" }} 기준</p>
-
-                        <div class="mt-3 grid grid-cols-3 gap-2">
-                            <div class="text-center">
-                                <div class="text-xs text-gray-500">배정</div>
-                                <div class="text-lg font-bold text-indigo-600">{{ today_assigned }}</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-xs text-gray-500">결석</div>
-                                <div class="text-lg font-bold text-red-600">{{ today_absent }}</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-xs text-gray-500">평가</div>
-                                <div class="text-lg font-bold text-green-600">{{ today_progress_records }}</div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 flex gap-2">
-                            <a href="{% url 'progress:dashboard' %}"
-                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                일별 기록 →
-                            </a>
-                            <span class="text-gray-300">|</span>
-                            <a href="{% url 'progress:assignment_list' %}"
-                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                학생 배정 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <!-- 관리비 -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <h3 class="text-lg font-medium text-gray-900">관리비</h3>
-                        <p class="mt-1 text-sm text-gray-500">관리비 등록 및 조회</p>
-                        <div class="mt-4">
-                            <a href="{% url 'maintenance:create' %}" 
-                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                바로가기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 납부 현황 -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <h3 class="text-lg font-medium text-gray-900">납부 현황</h3>
-                        <p class="mt-1 text-sm text-gray-500">납부 현황 및 조회</p>
-                        <div class="mt-4">
-                            <a href="{% url 'payment:dashboard' %}"
-                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                바로가기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Google Drive -->
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                            <svg class="w-5 h-5 mr-2" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
-                                <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-                                <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
-                                <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
-                                <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
-                                <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
-                                <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
-                            </svg>
-                            Google Drive
-                        </h3>
-                        <p class="mt-1 text-sm text-gray-500">교사/학생 폴더 및 파일 관리</p>
-                        <div class="mt-4">
-                            <a href="{% url 'google_drive_dashboard' %}"
-                               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                바로가기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+    <!-- 인사말 -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">안녕하세요, {{ user.username }}님 👋</h1>
+            <p class="text-sm text-gray-500 mt-1">{{ today|date:"Y년 m월 d일 (D)" }} 기준</p>
         </div>
     </div>
+
+    <!-- 핵심 지표 카드 -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <!-- 재학생 -->
+        <a href="{% url 'students:student_list' %}"
+           class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+            <p class="text-xs font-medium text-gray-500 mb-1">재학생</p>
+            <p class="text-3xl font-bold text-indigo-600">{{ total_students }}<span class="text-base font-normal text-gray-400 ml-1">명</span></p>
+        </a>
+        <!-- 재직 교사 -->
+        <a href="{% url 'teachers:teacher_list' %}"
+           class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+            <p class="text-xs font-medium text-gray-500 mb-1">재직 교사</p>
+            <p class="text-3xl font-bold text-emerald-600">{{ active_teachers }}<span class="text-base font-normal text-gray-400 ml-1">명</span></p>
+            <p class="text-xs text-gray-400 mt-1">오늘 출근 {{ today_present }}명</p>
+        </a>
+        <!-- 미납 학생 -->
+        <a href="{% url 'payment:dashboard' %}"
+           class="bg-white rounded-xl shadow-sm border border-{% if unpaid_student_count > 0 %}red{% else %}gray{% endif %}-100 p-5 hover:shadow-md transition-shadow">
+            <p class="text-xs font-medium text-gray-500 mb-1">미납 학생</p>
+            <p class="text-3xl font-bold text-{% if unpaid_student_count > 0 %}red{% else %}gray{% endif %}-600">
+                {{ unpaid_student_count }}<span class="text-base font-normal text-gray-400 ml-1">명</span>
+            </p>
+        </a>
+        <!-- 재고 부족 교재 -->
+        <a href="{% url 'bookstore:book_list' %}"
+           class="bg-white rounded-xl shadow-sm border border-{% if low_stock_count > 0 %}amber{% else %}gray{% endif %}-100 p-5 hover:shadow-md transition-shadow">
+            <p class="text-xs font-medium text-gray-500 mb-1">재고 부족 교재</p>
+            <p class="text-3xl font-bold text-{% if low_stock_count > 0 %}amber{% else %}gray{% endif %}-600">
+                {{ low_stock_count }}<span class="text-base font-normal text-gray-400 ml-1">종</span>
+            </p>
+            <p class="text-xs text-gray-400 mt-1">3권 이하</p>
+        </a>
+    </div>
+
+    <!-- 2열 그리드 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- 학생 학년별 현황 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-gray-800">🎓 학년별 학생 현황</h2>
+                <a href="{% url 'students:student_list' %}" class="text-xs text-indigo-500 hover:underline">전체보기 →</a>
+            </div>
+            {% if grade_stats %}
+            <div class="grid grid-cols-4 gap-3">
+                {% for grade, count in grade_stats %}
+                <div class="bg-indigo-50 rounded-lg p-3 text-center">
+                    <p class="text-xs text-indigo-500 font-medium">{{ grade }}</p>
+                    <p class="text-2xl font-bold text-indigo-700 mt-1">{{ count }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-400 text-center py-6">학생 데이터가 없습니다.</p>
+            {% endif %}
+        </div>
+
+        <!-- 오늘 학습 진도 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-gray-800">📖 오늘 학습 진도</h2>
+                <a href="{% url 'progress:dashboard' %}" class="text-xs text-indigo-500 hover:underline">일별 기록 →</a>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <p class="text-xs text-gray-500 mb-1">배정</p>
+                    <p class="text-3xl font-bold text-indigo-600">{{ today_assigned }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-gray-500 mb-1">결석</p>
+                    <p class="text-3xl font-bold text-red-500">{{ today_absent }}</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-gray-500 mb-1">평가</p>
+                    <p class="text-3xl font-bold text-green-600">{{ today_progress_records }}</p>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                <a href="{% url 'progress:assignment_list' %}" class="text-xs text-indigo-500 hover:underline">학생 배정 →</a>
+            </div>
+        </div>
+
+        <!-- 이번 달 교재 입고 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-gray-800">📦 이번 달 입고 현황</h2>
+                <a href="{% url 'bookstore:stock_log_list' %}" class="text-xs text-indigo-500 hover:underline">입고 기록 →</a>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-green-50 rounded-lg p-4 text-center">
+                    <p class="text-xs text-green-600 font-medium mb-1">입고 금액</p>
+                    <p class="text-xl font-bold text-green-700">{{ month_inbound_payment|intcomma }}원</p>
+                </div>
+                <div class="bg-orange-50 rounded-lg p-4 text-center">
+                    <p class="text-xs text-orange-600 font-medium mb-1">미정산 금액</p>
+                    <p class="text-xl font-bold text-orange-700">{{ month_unpaid_payment|intcomma }}원</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 교사/알림 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-gray-800">🔔 알림</h2>
+                <a href="{% url 'teachers:teacher_list' %}" class="text-xs text-indigo-500 hover:underline">교사 관리 →</a>
+            </div>
+            <div class="space-y-3">
+                {% if pending_unavailability_count > 0 %}
+                <a href="{% url 'teachers:unavailability_list' %}"
+                   class="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3 hover:bg-yellow-100 transition-colors">
+                    <span class="text-yellow-500 text-lg">⚠️</span>
+                    <span class="text-sm font-medium text-yellow-800">
+                        출근 불가 승인 대기 <strong>{{ pending_unavailability_count }}건</strong>
+                    </span>
+                </a>
+                {% endif %}
+                {% if unpaid_student_count > 0 %}
+                <a href="{% url 'payment:dashboard' %}"
+                   class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-lg p-3 hover:bg-red-100 transition-colors">
+                    <span class="text-red-500 text-lg">💳</span>
+                    <span class="text-sm font-medium text-red-800">
+                        미납 학생 <strong>{{ unpaid_student_count }}명</strong> 확인 필요
+                    </span>
+                </a>
+                {% endif %}
+                {% if low_stock_count > 0 %}
+                <a href="{% url 'bookstore:book_list' %}"
+                   class="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg p-3 hover:bg-amber-100 transition-colors">
+                    <span class="text-amber-500 text-lg">📚</span>
+                    <span class="text-sm font-medium text-amber-800">
+                        재고 부족 교재 <strong>{{ low_stock_count }}종</strong>
+                    </span>
+                </a>
+                {% endif %}
+                {% if not pending_unavailability_count and not unpaid_student_count and not low_stock_count %}
+                <p class="text-sm text-gray-400 text-center py-4">처리할 알림이 없습니다. ✅</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 바로가기 그리드 -->
+    <div>
+        <h2 class="text-sm font-medium text-gray-500 mb-3">바로가기</h2>
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            {% with links='' %}
+            <a href="{% url 'students:student_list' %}"
+               class="flex flex-col items-center bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow text-center">
+                <span class="text-2xl mb-1">👨‍🎓</span>
+                <span class="text-xs font-medium text-gray-700">학생 관리</span>
+            </a>
+            <a href="{% url 'teachers:salary_calculation' %}"
+               class="flex flex-col items-center bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow text-center">
+                <span class="text-2xl mb-1">💰</span>
+                <span class="text-xs font-medium text-gray-700">급여 계산</span>
+            </a>
+            <a href="{% url 'teachers:attendance_stats' %}"
+               class="flex flex-col items-center bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow text-center">
+                <span class="text-2xl mb-1">📊</span>
+                <span class="text-xs font-medium text-gray-700">출근 통계</span>
+            </a>
+            <a href="{% url 'bookstore:stock_log_list' %}"
+               class="flex flex-col items-center bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow text-center">
+                <span class="text-2xl mb-1">📦</span>
+                <span class="text-xs font-medium text-gray-700">입고 기록</span>
+            </a>
+            <a href="{% url 'bookstore:supplier_list' %}"
+               class="flex flex-col items-center bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow text-center">
+                <span class="text-2xl mb-1">🏪</span>
+                <span class="text-xs font-medium text-gray-700">공급처</span>
+            </a>
+            <a href="{% url 'maintenance:create' %}"
+               class="flex flex-col items-center bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow text-center">
+                <span class="text-2xl mb-1">🏢</span>
+                <span class="text-xs font-medium text-gray-700">관리비</span>
+            </a>
+            {% endwith %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}

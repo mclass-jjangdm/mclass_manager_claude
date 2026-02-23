@@ -483,6 +483,79 @@ class SalaryCalculationView(LoginRequiredMixin, View):
         return redirect(f'{request.path}?year={year}&month={month}')
 
 
+class AttendanceStatsView(LoginRequiredMixin, View):
+    """교사별 월별 근무시간 통계 대시보드 (Chart.js)"""
+    template_name = 'teachers/attendance_stats.html'
+
+    def get(self, request):
+        import json as _json
+        current_year = timezone.now().year
+        year = int(request.GET.get('year', current_year))
+
+        teachers = Teacher.objects.filter(is_active=True).order_by('name')
+        months = list(range(1, 13))
+        month_labels = [f"{m}월" for m in months]
+
+        # 교사별 월별 근무시간 집계
+        datasets = []
+        COLORS = [
+            '#6366f1', '#f59e0b', '#10b981', '#ef4444',
+            '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6',
+        ]
+        for idx, teacher in enumerate(teachers):
+            monthly_hours = []
+            for month in months:
+                attendances = Attendance.objects.filter(
+                    teacher=teacher, date__year=year, date__month=month, is_present=True
+                )
+                total = 0
+                for a in attendances:
+                    if a.start_time and a.end_time:
+                        start = datetime.combine(a.date, a.start_time)
+                        end = datetime.combine(a.date, a.end_time)
+                        total += (end - start).total_seconds() / 3600
+                monthly_hours.append(round(total, 1))
+            color = COLORS[idx % len(COLORS)]
+            datasets.append({
+                'label': teacher.name,
+                'data': monthly_hours,
+                'borderColor': color,
+                'backgroundColor': color + '33',
+                'tension': 0.3,
+                'fill': False,
+            })
+
+        # 연간 합계 (교사별)
+        summary = []
+        for teacher in teachers:
+            attendances = Attendance.objects.filter(
+                teacher=teacher, date__year=year, is_present=True
+            )
+            total_hours = 0
+            for a in attendances:
+                if a.start_time and a.end_time:
+                    start = datetime.combine(a.date, a.start_time)
+                    end = datetime.combine(a.date, a.end_time)
+                    total_hours += (end - start).total_seconds() / 3600
+            total_days = Attendance.objects.filter(
+                teacher=teacher, date__year=year, is_present=True
+            ).count()
+            summary.append({
+                'teacher': teacher,
+                'total_hours': round(total_hours, 1),
+                'total_days': total_days,
+            })
+
+        context = {
+            'year': year,
+            'years': range(2020, current_year + 1),
+            'month_labels_json': _json.dumps(month_labels, ensure_ascii=False),
+            'datasets_json': _json.dumps(datasets, ensure_ascii=False),
+            'summary': summary,
+        }
+        return render(request, self.template_name, context)
+
+
 class SalaryTableView(LoginRequiredMixin, View):
     def get(self, request):
         current_year = timezone.now().year
@@ -1059,6 +1132,146 @@ class SalaryPDFReportView(LoginRequiredMixin, View):
         response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{encoded_filename}'
         response.write(pdf)
 
+        return response
+
+
+class SalarySlipPDFView(LoginRequiredMixin, View):
+    """교사 개인 급여 명세서 PDF 생성"""
+    def get(self, request, teacher_pk, year, month):
+        teacher = get_object_or_404(Teacher, pk=teacher_pk)
+
+        # 실시간 급여 계산
+        salary_view = SalaryCalculationView()
+        work_hours, work_days = salary_view.calculate_work_hours(teacher, year, month)
+        base_amount = int(work_hours * teacher.base_salary)
+
+        # 추가급여: URL 파라미터 우선, 없으면 DB
+        param_key = f'additional_{teacher.pk}'
+        if param_key in request.GET:
+            additional_amount = int(request.GET.get(param_key) or 0)
+        else:
+            try:
+                existing = Salary.objects.get(teacher=teacher, year=year, month=month)
+                additional_amount = existing.additional_amount
+            except Salary.DoesNotExist:
+                additional_amount = 0
+
+        total_amount = base_amount + additional_amount
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer, pagesize=A4,
+            rightMargin=25*mm, leftMargin=25*mm,
+            topMargin=25*mm, bottomMargin=20*mm,
+            title=f"{year}년 {month}월 급여 명세서 - {teacher.name}",
+            author="엠클래스수학과학전문학원",
+        )
+
+        def add_footer(canvas, doc):
+            canvas.saveState()
+            canvas.setFont('NanumGothicBold', 9)
+            canvas.drawCentredString(A4[0] / 2, 12 * mm, "엠클래스수학과학전문학원")
+            canvas.restoreState()
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='KR', fontName='NanumGothic', fontSize=10, leading=16))
+        styles.add(ParagraphStyle(name='KRTitle', fontName='NanumGothicBold', fontSize=17,
+                                  leading=22, alignment=1))
+        styles.add(ParagraphStyle(name='KRSub', fontName='NanumGothicBold', fontSize=11,
+                                  leading=16, alignment=1, textColor=colors.HexColor('#4338ca')))
+        styles.add(ParagraphStyle(name='KRLabel', fontName='NanumGothicBold', fontSize=10, leading=16))
+
+        elements = []
+
+        # 제목
+        elements.append(Paragraph(f"{year}년 {month}월 급여 명세서", styles['KRTitle']))
+        elements.append(Spacer(1, 6*mm))
+        elements.append(Paragraph(teacher.name, styles['KRSub']))
+        elements.append(Spacer(1, 8*mm))
+
+        # 기본 정보 테이블
+        info_data = [
+            ['성명', teacher.name, '지급월', f"{year}년 {month}월"],
+            ['근무일수', f"{work_days}일", '근무시간', f"{work_hours:.1f}시간"],
+            ['시급', f"{teacher.base_salary:,}원", '', ''],
+        ]
+        info_table = Table(info_data, colWidths=[30*mm, 55*mm, 30*mm, 55*mm])
+        info_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothic'),
+            ('FONTNAME', (0, 0), (0, -1), 'NanumGothicBold'),
+            ('FONTNAME', (2, 0), (2, -1), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f3f4f6')),
+            ('BACKGROUND', (2, 0), (2, -1), colors.HexColor('#f3f4f6')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUND', (0, 2), (-1, 2), colors.white),
+        ]))
+        elements.append(info_table)
+        elements.append(Spacer(1, 8*mm))
+
+        # 급여 내역 테이블
+        pay_data = [
+            ['항목', '금액'],
+            ['기본급 (시급 × 근무시간)', f"{base_amount:,}원"],
+            ['추가급여', f"{additional_amount:,}원"],
+        ]
+        pay_table = Table(pay_data, colWidths=[100*mm, 70*mm])
+        pay_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothic'),
+            ('FONTNAME', (0, 0), (-1, 0), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e0e7ff')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(pay_table)
+        elements.append(Spacer(1, 0))
+
+        # 합계 행
+        total_data = [['지급 합계', f"{total_amount:,}원"]]
+        total_table = Table(total_data, colWidths=[100*mm, 70*mm])
+        total_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#4338ca')),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#eef2ff')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#1e1b4b')),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(total_table)
+
+        # 계좌 정보
+        elements.append(Spacer(1, 10*mm))
+        bank_info = teacher.bank.name if teacher.bank else '-'
+        account_data = [
+            ['입금 계좌', f"{bank_info}  {teacher.account_number or '-'}"],
+        ]
+        account_table = Table(account_data, colWidths=[30*mm, 140*mm])
+        account_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothic'),
+            ('FONTNAME', (0, 0), (0, 0), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (0, 0), colors.HexColor('#f3f4f6')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(account_table)
+
+        doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
+        pdf = buffer.getvalue()
+        buffer.close()
+
+        filename = f"{year}년 {month}월 급여명세서_{teacher.name}.pdf"
+        encoded_filename = urllib.parse.quote(filename.encode('utf-8'))
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{encoded_filename}'
+        response.write(pdf)
         return response
 
 

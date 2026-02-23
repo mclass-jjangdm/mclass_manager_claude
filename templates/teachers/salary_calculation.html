@@ -66,13 +66,14 @@
                                 <th style="text-align: right;">기본급</th>
                                 <th style="text-align: right;">추가급여</th>
                                 <th style="text-align: right;">총 급여</th>
+                                <th class="text-center">명세서</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- 재직 중인 선생님 -->
                             {% for data in salary_data %}
                                 {% if data.teacher.is_active %}
-                                    <tr class="hover:bg-gray-50">
+                                    <tr class="hover:bg-gray-50" data-teacher-id="{{ data.teacher_id }}">
                                         <td class="text-center">{{ data.teacher.name }}</td>
                                         <td class="text-center">{{ data.bank_name|default:"-" }}</td>
                                         <td>{{ data.account_number|default:"-" }}</td>
@@ -83,12 +84,20 @@
                                             <input type="number"
                                                    name="additional_amount_{{ data.teacher_id }}"
                                                    value="{{ data.additional_amount }}"
-                                                   class="form-input w-32 text-right"
+                                                   class="form-input w-32 text-right additional-input"
+                                                   data-teacher-id="{{ data.teacher_id }}"
                                                    min="0"
                                                    step="1000">
                                         </td>
                                         <td style="text-align: right;" class="font-semibold">
                                             {{ data.total_amount|intcomma }}
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button"
+                                                    onclick="openSlipPDF({{ data.teacher_id }})"
+                                                    class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-medium px-2 py-1 rounded transition-colors whitespace-nowrap">
+                                                📄 명세서
+                                            </button>
                                         </td>
                                     </tr>
                                 {% endif %}
@@ -97,7 +106,7 @@
                             <!-- 퇴직한 선생님 -->
                             {% for data in salary_data %}
                                 {% if not data.teacher.is_active %}
-                                    <tr class="hover:bg-gray-50 bg-red-100">
+                                    <tr class="hover:bg-gray-50 bg-red-100" data-teacher-id="{{ data.teacher_id }}">
                                         <td class="text-center text-gray-500" style="color: gray;">{{ data.teacher.name }}</td>
                                         <td class="text-center text-gray-500" style="color: gray;">{{ data.bank_name|default:"-" }}</td>
                                         <td class="text-gray-500" style="color: gray;">{{ data.account_number|default:"-" }}</td>
@@ -108,12 +117,20 @@
                                             <input type="number"
                                                    name="additional_amount_{{ data.teacher_id }}"
                                                    value="{{ data.additional_amount }}"
-                                                   class="form-input w-32 text-right bg-red-50"
+                                                   class="form-input w-32 text-right bg-red-50 additional-input"
+                                                   data-teacher-id="{{ data.teacher_id }}"
                                                    min="0"
                                                    step="1000">
                                         </td>
                                         <td style="text-align: right; color: gray;" class="font-semibold">
                                             {{ data.total_amount|intcomma }}
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button"
+                                                    onclick="openSlipPDF({{ data.teacher_id }})"
+                                                    class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium px-2 py-1 rounded transition-colors whitespace-nowrap">
+                                                📄 명세서
+                                            </button>
                                         </td>
                                     </tr>
                                 {% endif %}
@@ -121,7 +138,7 @@
                         </tbody>
                         <tfoot>
                             <tr class="bg-gray-50">
-                                <td colspan="7" class="text-right font-semibold">
+                                <td colspan="8" class="text-right font-semibold">
                                     총 급여 합계
                                 </td>
                                 <td class="text-right font-semibold text-indigo-600" style="text-align: right;">
@@ -165,6 +182,7 @@
 
 {% block extra_js %}
 <script>
+// 전체 PDF 출력 (현재 추가급여 입력값 반영)
 document.getElementById('pdf-btn').addEventListener('click', function () {
     const baseUrl = "{% url 'teachers:salary_pdf_report' year=year month=month %}";
     const params = new URLSearchParams();
@@ -174,5 +192,13 @@ document.getElementById('pdf-btn').addEventListener('click', function () {
     });
     window.open(baseUrl + '?' + params.toString(), '_blank');
 });
+
+// 개별 명세서 PDF 출력
+function openSlipPDF(teacherId) {
+    const additionalInput = document.querySelector(`input[data-teacher-id="${teacherId}"]`);
+    const additionalValue = additionalInput ? (additionalInput.value || '0') : '0';
+    const baseUrl = `/teachers/salary/pdf/{{ year }}/{{ month }}/teacher/${teacherId}/`;
+    window.open(baseUrl + `?additional_${teacherId}=${additionalValue}`, '_blank');
+}
 </script>
 {% endblock %}

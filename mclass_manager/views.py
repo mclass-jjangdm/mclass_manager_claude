@@ -2,7 +2,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import authenticate
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 
 
@@ -32,26 +32,19 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             from students.models import Student
-            from teachers.models import Teacher, TeacherStudentAssignment, TeacherUnavailability
-            from bookstore.models import StudentBookProgress
+            from teachers.models import Teacher, TeacherStudentAssignment, TeacherUnavailability, Attendance
+            from bookstore.models import StudentBookProgress, Book, BookStockLog
 
             today = timezone.now().date()
+            this_month = today.replace(day=1)
 
             # 학년별 학생 수 집계
             grade_counts = Student.objects.filter(
                 is_active=True
-            ).values('grade').annotate(
-                count=Count('id')
-            )
-
-            # 학년별 딕셔너리로 변환
+            ).values('grade').annotate(count=Count('id'))
             grade_dict = {item['grade']: item['count'] for item in grade_counts if item['grade']}
-
-            # K5~K12 순서대로 정렬된 리스트 생성
             grade_order = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12']
             grade_stats = [(grade, grade_dict.get(grade, 0)) for grade in grade_order if grade in grade_dict]
-
-            # 총 학생 수
             total_students = Student.objects.filter(is_active=True).count()
 
             # 재직 중인 교사 수
@@ -70,13 +63,37 @@ class IndexView(TemplateView):
             today_absent = today_assignments.filter(assignment_type='absent').count()
             today_progress_records = StudentBookProgress.objects.filter(study_date=today).count()
 
-            context['grade_stats'] = grade_stats
-            context['total_students'] = total_students
-            context['active_teachers'] = active_teachers
-            context['pending_unavailability_count'] = pending_unavailability_count
-            context['today'] = today
-            context['today_assigned'] = today_assigned
-            context['today_absent'] = today_absent
-            context['today_progress_records'] = today_progress_records
+            # 이번 달 입고 금액 / 미정산 금액
+            month_logs = BookStockLog.objects.filter(created_at__date__gte=this_month)
+            inbound = month_logs.filter(quantity__gt=0).aggregate(s=Sum('total_payment'))['s'] or 0
+            returned = month_logs.filter(quantity__lt=0).aggregate(s=Sum('total_payment'))['s'] or 0
+            month_inbound_payment = inbound - returned
+            month_unpaid_payment = month_logs.filter(is_paid=False, quantity__gt=0).aggregate(
+                s=Sum('total_payment'))['s'] or 0
+
+            # 재고 부족 교재 (3권 이하)
+            low_stock_count = Book.objects.filter(stock__lte=3).count()
+
+            # 미납 학생 수 (unpaid_amount > 0)
+            unpaid_student_count = Student.objects.filter(is_active=True, unpaid_amount__gt=0).count()
+
+            # 오늘 출근 교사 수
+            today_present = Attendance.objects.filter(date=today, is_present=True).count()
+
+            context.update({
+                'grade_stats': grade_stats,
+                'total_students': total_students,
+                'active_teachers': active_teachers,
+                'pending_unavailability_count': pending_unavailability_count,
+                'today': today,
+                'today_assigned': today_assigned,
+                'today_absent': today_absent,
+                'today_progress_records': today_progress_records,
+                'month_inbound_payment': month_inbound_payment,
+                'month_unpaid_payment': month_unpaid_payment,
+                'low_stock_count': low_stock_count,
+                'unpaid_student_count': unpaid_student_count,
+                'today_present': today_present,
+            })
 
         return context

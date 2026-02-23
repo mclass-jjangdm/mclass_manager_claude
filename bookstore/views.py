@@ -52,10 +52,16 @@ def book_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # 재고 부족 알림 (재고 3권 이하, 검색 중이 아닐 때만)
+    low_stock_books = []
+    if not query:
+        low_stock_books = Book.objects.filter(stock__lte=3).order_by('stock', 'title')
+
     return render(request, 'bookstore/book_list.html', {
         'page_obj': page_obj,
         'query': query,
         'is_search_empty': is_search_empty,
+        'low_stock_books': low_stock_books,
     })
 
 
@@ -1401,6 +1407,28 @@ def stock_log_settle(request):
                 is_paid=False,
             ).update(is_paid=True, payment_date=payment_date)
             messages.success(request, f'{updated}건이 정산 처리되었습니다. (정산일: {payment_date})')
+
+        redirect_url = f"{reverse('bookstore:stock_log_list')}?{qs}" if qs else reverse('bookstore:stock_log_list')
+        return redirect(redirect_url)
+
+    return redirect('bookstore:stock_log_list')
+
+
+@login_required
+def stock_log_settle_cancel(request):
+    """체크된 입고 기록 정산 취소 처리"""
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('log_ids')
+        qs = request.POST.get('query_string', '')
+
+        if not selected_ids:
+            messages.error(request, '취소할 항목을 선택해주세요.')
+        else:
+            updated = BookStockLog.objects.filter(
+                id__in=selected_ids,
+                is_paid=True,
+            ).update(is_paid=False, payment_date=None)
+            messages.warning(request, f'{updated}건의 정산이 취소되었습니다.')
 
         redirect_url = f"{reverse('bookstore:stock_log_list')}?{qs}" if qs else reverse('bookstore:stock_log_list')
         return redirect(redirect_url)

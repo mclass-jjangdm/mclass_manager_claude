@@ -1,0 +1,117 @@
+{% extends 'teachers/base_teachers.html' %}
+{% load humanize %}
+
+{% block title %}출근 통계 - MClass Manager{% endblock %}
+
+{% block teacher_content %}
+<div class="space-y-6">
+
+    <!-- 헤더 & 연도 선택 -->
+    <div class="content-card">
+        <div class="card-header flex justify-between items-center">
+            <h1 class="text-xl font-semibold text-gray-900">출근 통계 대시보드</h1>
+            <form method="get" class="flex items-center gap-3">
+                <select name="year" onchange="this.form.submit()" class="form-input min-w-[110px]">
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}년</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- 월별 근무시간 차트 -->
+    <div class="content-card">
+        <div class="card-body">
+            <h2 class="text-base font-semibold text-gray-800 mb-4">{{ year }}년 교사별 월별 근무시간 (시간)</h2>
+            <div class="relative" style="height: 380px;">
+                <canvas id="attendanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 연간 합계 테이블 -->
+    <div class="content-card">
+        <div class="card-body">
+            <h2 class="text-base font-semibold text-gray-800 mb-4">{{ year }}년 연간 근무 합계</h2>
+            <div class="overflow-x-auto">
+                <table class="content-table">
+                    <thead>
+                        <tr>
+                            <th class="text-center">선생님</th>
+                            <th class="text-right">총 근무일수</th>
+                            <th class="text-right">총 근무시간</th>
+                            <th class="text-right">월 평균 시간</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in summary %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="text-center font-medium">{{ item.teacher.name }}</td>
+                            <td class="text-right">{{ item.total_days }}일</td>
+                            <td class="text-right font-semibold text-indigo-700">{{ item.total_hours }}시간</td>
+                            <td class="text-right text-gray-600">
+                                {% if item.total_hours %}
+                                    {{ item.total_hours|floatformat:1 }}h ÷ 12 ≈
+                                    {% widthratio item.total_hours 12 1 %}시간
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-8 text-gray-400">
+                                {{ year }}년 출근 데이터가 없습니다.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('attendanceChart').getContext('2d');
+const labels = {{ month_labels_json|safe }};
+const datasets = {{ datasets_json|safe }};
+
+new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { family: "'Noto Sans KR', sans-serif", size: 12 }, padding: 16 }
+            },
+            tooltip: {
+                callbacks: {
+                    label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}시간`
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: '근무시간 (h)', font: { size: 12 } },
+                ticks: { callback: v => v + 'h' }
+            },
+            x: {
+                grid: { color: '#f3f4f6' }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
