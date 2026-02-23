@@ -1316,3 +1316,68 @@ def student_book_progress_bulk_reset(request, sale_pk):
 
     return redirect('progress:student_book_progress_list', sale_pk=sale_pk)
 
+
+# ──────────────────────────────────────────────
+# 입고 기록 조회
+# ──────────────────────────────────────────────
+@login_required
+def stock_log_list(request):
+    """기간별 입고 기록 목록 및 집계"""
+    from datetime import date
+    from django.db.models import Sum
+
+    # 기본 기간: 이번 달 1일 ~ 오늘
+    today = date.today()
+    default_start = today.replace(day=1)
+    default_end = today
+
+    start_str = request.GET.get('start_date', default_start.strftime('%Y-%m-%d'))
+    end_str = request.GET.get('end_date', default_end.strftime('%Y-%m-%d'))
+
+    try:
+        start_date = date.fromisoformat(start_str)
+        end_date = date.fromisoformat(end_str)
+    except ValueError:
+        start_date = default_start
+        end_date = default_end
+
+    # 기간 내 입고/반품 기록 조회
+    logs = (
+        BookStockLog.objects
+        .filter(created_at__date__gte=start_date, created_at__date__lte=end_date)
+        .select_related('book', 'supplier')
+        .order_by('-created_at')
+    )
+
+    # 전체 집계
+    agg = logs.aggregate(
+        total_payment=Sum('total_payment'),
+        total_quantity=Sum('quantity'),
+    )
+    total_payment = agg['total_payment'] or 0
+
+    # 입고 / 반품 분리 집계
+    inbound_logs = logs.filter(quantity__gt=0)
+    return_logs = logs.filter(quantity__lt=0)
+
+    inbound_agg = inbound_logs.aggregate(
+        inbound_payment=Sum('total_payment'),
+        inbound_quantity=Sum('quantity'),
+    )
+    return_agg = return_logs.aggregate(
+        return_payment=Sum('total_payment'),
+        return_quantity=Sum('quantity'),
+    )
+
+    context = {
+        'logs': logs,
+        'start_date': start_date,
+        'end_date': end_date,
+        'total_payment': total_payment,
+        'inbound_payment': inbound_agg['inbound_payment'] or 0,
+        'inbound_quantity': inbound_agg['inbound_quantity'] or 0,
+        'return_payment': return_agg['return_payment'] or 0,
+        'return_quantity': abs(return_agg['return_quantity'] or 0),
+    }
+    return render(request, 'bookstore/stock_log_list.html', context)
+

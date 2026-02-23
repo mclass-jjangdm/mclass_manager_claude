@@ -69,6 +69,9 @@ urlpatterns = [
     path('<int:pk>/contents/<int:content_pk>/delete/', views.book_content_delete, name='book_content_delete'),
     path('<int:pk>/contents/delete-all/', views.book_content_delete_all, name='book_content_delete_all'),
 
+    # 입고 기록 조회
+    path('stock-logs/', views.stock_log_list, name='stock_log_list'),
+
     # 학생 교재 진도 평가 관련 URL - progress 앱으로 리다이렉트 (하위 호환성)
     path('sale/<int:sale_pk>/progress/', redirect_progress_list, name='student_book_progress_list'),
     path('sale/<int:sale_pk>/progress/<int:progress_pk>/', redirect_progress_update, name='student_book_progress_update'),
