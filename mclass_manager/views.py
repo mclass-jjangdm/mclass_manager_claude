@@ -64,7 +64,11 @@ class IndexView(TemplateView):
             today_progress_records = StudentBookProgress.objects.filter(study_date=today).count()
 
             # 이번 달 입고 금액 / 미정산 금액
-            month_logs = BookStockLog.objects.filter(created_at__date__gte=this_month)
+            # created_at__date__gte 는 이번 달 이후 전체를 포함하므로, year+month 로 이번 달만 정확히 필터
+            month_logs = BookStockLog.objects.filter(
+                created_at__year=today.year,
+                created_at__month=today.month,
+            )
             inbound = month_logs.filter(quantity__gt=0).aggregate(s=Sum('total_payment'))['s'] or 0
             returned = month_logs.filter(quantity__lt=0).aggregate(s=Sum('total_payment'))['s'] or 0
             month_inbound_payment = inbound - returned
