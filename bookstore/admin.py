@@ -11,7 +11,7 @@ class BookSupplierAdmin(admin.ModelAdmin):
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('title', 'isbn', 'publisher', 'supplier', 'original_price', 'price', 'stock', 'created_at')
+    list_display = ('title', 'isbn', 'publisher', 'supplier', 'original_price', 'cost_price', 'price', 'stock', 'created_at')
     search_fields = ('title', 'isbn', 'author', 'publisher')
     list_filter = ('supplier', 'publisher')
     ordering = ('title',)
