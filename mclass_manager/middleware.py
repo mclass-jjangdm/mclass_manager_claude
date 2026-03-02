@@ -1,10 +1,40 @@
 # mclass_manager/middleware.py
-# 교사 접근 권한 제한 미들웨어
+# 교사 접근 권한 제한 미들웨어 + 서브도메인 리다이렉트
 
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.urls import reverse
 import re
+
+
+class SubdomainRedirectMiddleware:
+    """
+    서브도메인을 메인 도메인의 특정 경로로 301 리다이렉트
+
+    teacher.mclass.co.kr → mclass.co.kr/teachers/
+    parents.mclass.co.kr → mclass.co.kr/parent/
+    """
+
+    SUBDOMAIN_MAP = {
+        'teacher': '/teachers/',
+        'parents': '/parent/',
+    }
+    MAIN_DOMAIN = 'mclass.co.kr'
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        host = request.get_host().split(':')[0].lower()
+
+        for subdomain, redirect_path in self.SUBDOMAIN_MAP.items():
+            if host == f'{subdomain}.{self.MAIN_DOMAIN}':
+                return redirect(
+                    f'https://{self.MAIN_DOMAIN}{redirect_path}',
+                    permanent=True,
+                )
+
+        return self.get_response(request)
 
 
 class TeacherAccessRestrictionMiddleware:
