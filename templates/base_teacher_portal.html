@@ -188,6 +188,37 @@
                             <a href="{% url 'teachers:teacher_my_unavailability' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">
                                 출근 불가 일정
                             </a>
+                            <!-- 근무기록 PDF 드롭다운 -->
+                            <div class="relative">
+                                <button onclick="toggleWorkReportMenu(event)"
+                                        class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu flex items-center gap-1">
+                                    근무기록 PDF
+                                    <svg class="w-3.5 h-3.5 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                                <div id="work-report-dropdown"
+                                     class="hidden absolute left-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-gray-100 p-3 z-50">
+                                    <p class="text-xs text-gray-500 mb-2 font-medium">연도 / 월 선택</p>
+                                    <div class="flex items-center gap-2">
+                                        <select id="nav-pdf-year" class="text-sm border border-gray-300 rounded px-2 py-1 text-gray-700"></select>
+                                        <select id="nav-pdf-month" class="text-sm border border-gray-300 rounded px-2 py-1 text-gray-700">
+                                            <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
+                                            <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
+                                            <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
+                                            <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+                                        </select>
+                                        <button onclick="downloadNavWorkReport()"
+                                                class="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm font-medium transition-colors whitespace-nowrap">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            다운로드
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                             <a href="{% url 'teachers:teacher_password_change' %}" class="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">
                                 비밀번호 변경
                             </a>
@@ -244,6 +275,23 @@
                 <a href="{% url 'teachers:teacher_my_unavailability' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
                     출근 불가 일정
                 </a>
+                <!-- 모바일 근무기록 PDF -->
+                <div class="px-3 py-2">
+                    <p class="text-indigo-300 text-xs mb-2">근무기록 PDF</p>
+                    <div class="flex items-center gap-2">
+                        <select id="mobile-pdf-year" class="text-sm border border-indigo-400 bg-indigo-800 text-indigo-100 rounded px-2 py-1"></select>
+                        <select id="mobile-pdf-month" class="text-sm border border-indigo-400 bg-indigo-800 text-indigo-100 rounded px-2 py-1">
+                            <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
+                            <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
+                            <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
+                            <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+                        </select>
+                        <button onclick="downloadMobileWorkReport()"
+                                class="inline-flex items-center gap-1 bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1 rounded text-sm font-medium">
+                            다운로드
+                        </button>
+                    </div>
+                </div>
                 <a href="{% url 'teachers:teacher_password_change' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
                     비밀번호 변경
                 </a>
@@ -354,6 +402,58 @@
                 }
             });
         });
+    </script>
+
+    <!-- 근무기록 PDF 드롭다운 스크립트 -->
+    <script>
+    (function() {
+        const now = new Date();
+        const cy = now.getFullYear();
+        const cm = now.getMonth() + 1;
+
+        function initYearSelect(el) {
+            if (!el) return;
+            el.innerHTML = '';
+            for (let y = cy - 1; y <= cy; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y + '년';
+                if (y === cy) opt.selected = true;
+                el.appendChild(opt);
+            }
+        }
+        function initMonthSelect(el) {
+            if (el) el.value = cm;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initYearSelect(document.getElementById('nav-pdf-year'));
+            initMonthSelect(document.getElementById('nav-pdf-month'));
+            initYearSelect(document.getElementById('mobile-pdf-year'));
+            initMonthSelect(document.getElementById('mobile-pdf-month'));
+        });
+    })();
+
+    function toggleWorkReportMenu(e) {
+        e.stopPropagation();
+        const dd = document.getElementById('work-report-dropdown');
+        dd.classList.toggle('hidden');
+    }
+    document.addEventListener('click', function() {
+        const dd = document.getElementById('work-report-dropdown');
+        if (dd) dd.classList.add('hidden');
+    });
+
+    function downloadNavWorkReport() {
+        const year = document.getElementById('nav-pdf-year').value;
+        const month = document.getElementById('nav-pdf-month').value;
+        window.location.href = '/teachers/my-work-report/' + year + '/' + month + '/';
+    }
+    function downloadMobileWorkReport() {
+        const year = document.getElementById('mobile-pdf-year').value;
+        const month = document.getElementById('mobile-pdf-month').value;
+        window.location.href = '/teachers/my-work-report/' + year + '/' + month + '/';
+    }
     </script>
 
     <!-- 공지 닫기 기능 -->

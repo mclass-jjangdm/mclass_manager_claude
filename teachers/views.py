@@ -2769,7 +2769,6 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
             date=check_date
         ).exclude(record_type='textbook').select_related('student', 'subject')
 
-        current_year = timezone.now().year
         context = {
             'selected_date': check_date,
             'teacher': teacher,
@@ -2778,9 +2777,6 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
             'total_activities': my_activities.count(),
             'students_with_books': sum(1 for sd in student_data if sd['books']),
             'is_my_page': True,  # 자신의 페이지임을 표시
-            'pdf_year_range': range(current_year - 1, current_year + 1),
-            'pdf_current_year': current_year,
-            'pdf_current_month': timezone.now().month,
         }
 
         return render(request, 'teachers/teacher_my_progress.html', context)
