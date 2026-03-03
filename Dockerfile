@@ -26,6 +26,9 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
+# 빌드 캐시 무효화용 인자 (git 커밋 해시로 코드 레이어 강제 재빌드)
+ARG GIT_COMMIT=unknown
+
 # 프로젝트 파일 복사
 COPY . .
 
