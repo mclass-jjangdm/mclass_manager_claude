@@ -439,9 +439,11 @@
         const dd = document.getElementById('work-report-dropdown');
         dd.classList.toggle('hidden');
     }
-    document.addEventListener('click', function() {
+    document.addEventListener('click', function(e) {
         const dd = document.getElementById('work-report-dropdown');
-        if (dd) dd.classList.add('hidden');
+        if (dd && !dd.contains(e.target)) {
+            dd.classList.add('hidden');
+        }
     });
 
     function downloadNavWorkReport() {
