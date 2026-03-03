@@ -77,12 +77,7 @@
             <div class="text-sm text-gray-500">담당 학생</div>
         </div>
         <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-green-600">
-                {% with total_books=0 %}
-                {% for sd in student_data %}{% for b in sd.books %}{% endfor %}{% endfor %}
-                {{ student_data|length }}
-                {% endwith %}
-            </div>
+            <div class="text-3xl font-bold text-green-600">{{ students_with_books }}</div>
             <div class="text-sm text-gray-500">교재 보유 학생</div>
         </div>
     </div>

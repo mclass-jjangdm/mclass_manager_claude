@@ -2025,6 +2025,7 @@ class TeacherProgressView(LoginRequiredMixin, View):
             'available_teachers': available_teachers,
             'assignments': assignments,
             'student_data': student_data,
+            'students_with_books': sum(1 for sd in student_data if sd['books']),
         }
 
         return render(request, 'teachers/teacher_progress.html', context)
@@ -2571,6 +2572,7 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
             'student_data': student_data,
             'my_activities': my_activities,
             'total_activities': my_activities.count(),
+            'students_with_books': sum(1 for sd in student_data if sd['books']),
             'is_my_page': True,  # 자신의 페이지임을 표시
         }
 
