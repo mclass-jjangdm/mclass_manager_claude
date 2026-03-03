@@ -604,20 +604,103 @@
     <!-- 결석/예외 학생 섹션 -->
     {% if absent_assignments or exception_assignments or director_assignments %}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {% if director_assignments %}
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        {% if director_student_list %}
+        <div class="bg-white rounded-lg shadow overflow-hidden md:col-span-3">
             <div class="bg-blue-500 px-4 py-3">
-                <h3 class="text-white font-bold">원장 담당 ({{ director_assignments|length }}명)</h3>
+                <h3 class="text-white font-bold">원장 담당 ({{ director_student_list|length }}명)</h3>
             </div>
-            <div class="p-4">
-                <ul class="space-y-2">
-                    {% for a in director_assignments %}
-                    <li class="flex justify-between items-center">
-                        <a href="{% url 'students:student_detail' a.student.pk %}" class="text-gray-800 hover:text-indigo-600">{{ a.student.name }}</a>
-                        <span class="text-sm text-gray-500">{{ a.student.grade|default:"-" }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-blue-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">학생</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">학교/학년</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">교재</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">진행률</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">오늘 기록</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">액션</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for item in director_student_list %}
+                        <tr class="hover:bg-blue-50">
+                            <td class="px-4 py-3">
+                                <a href="{% url 'students:student_detail' item.student.pk %}" class="font-medium text-gray-900 hover:text-blue-600">
+                                    {{ item.student.name }}
+                                </a>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                {{ item.student.school.name|default:"-" }}
+                                {% if item.student.grade %}
+                                <span class="text-gray-400">/</span>
+                                {{ item.student.grade }}
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                {% if item.books %}
+                                <div class="space-y-1">
+                                    {% for book_info in item.books %}
+                                    <div class="text-sm text-gray-800">{{ book_info.book.title|truncatechars:25 }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <span class="text-gray-400 text-sm">교재 없음</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                {% if item.books %}
+                                <div class="space-y-1">
+                                    {% for book_info in item.books %}
+                                    <div class="flex items-center justify-center gap-2">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-500 h-2 rounded-full" style="width: {{ book_info.stats.progress_percent }}%"></div>
+                                        </div>
+                                        <span class="text-xs text-gray-600 w-10">{{ book_info.stats.progress_percent }}%</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                {% if item.books %}
+                                <div class="space-y-1">
+                                    {% for book_info in item.books %}
+                                    {% if book_info.today_records > 0 %}
+                                    <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                        {{ book_info.today_records }}건
+                                    </span>
+                                    {% else %}
+                                    <span class="text-gray-400 text-xs">-</span>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                {% if item.books %}
+                                <div class="flex flex-col gap-1">
+                                    {% for book_info in item.books %}
+                                    <a href="{% url 'progress:student_book_progress_list' book_info.sale.pk %}"
+                                       class="inline-block bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors">
+                                        진도 평가
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <a href="{% url 'students:student_detail' item.student.pk %}"
+                                   class="text-indigo-600 hover:text-indigo-800 text-xs">
+                                    학생 정보
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
         {% endif %}

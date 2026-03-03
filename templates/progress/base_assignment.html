@@ -19,6 +19,10 @@
                    class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     일별 요약
                 </a>
+                <a href="{% url 'progress:class_dashboard' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'class_dashboard' %}active{% endif %}">
+                    전체 현황
+                </a>
                 <a href="{% url 'progress:teacher_progress' %}"
                    class="nav-link {% if request.resolver_match.url_name == 'teacher_progress' or request.resolver_match.url_name == 'teacher_progress_detail' %}active{% endif %}">
                     진도 현황

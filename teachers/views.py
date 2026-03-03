@@ -2266,6 +2266,29 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
         # 원장 배정 학생
         director_assignments = all_assignments.filter(assignment_type='director')
 
+        # 원장 배정 학생 상세 정보 (교재 진도 포함)
+        director_student_list = []
+        for assignment in director_assignments:
+            student = assignment.student
+            book_sales = BookSale.objects.filter(student=student).select_related('book')
+            books_progress = []
+            for sale in book_sales:
+                if sale.book.contents.exists():
+                    today_records = sale.progress_records.filter(study_date=check_date).count()
+                    stats = sale.get_progress_stats()
+                    books_progress.append({
+                        'sale': sale,
+                        'book': sale.book,
+                        'stats': stats,
+                        'today_records': today_records,
+                    })
+            director_student_list.append({
+                'student': student,
+                'assignment': assignment,
+                'books': books_progress,
+            })
+        director_student_list.sort(key=lambda x: x['student'].name)
+
         # 통계
         total_assigned = all_assignments.filter(assignment_type='normal').count()
         total_absent = absent_assignments.count()
@@ -2326,6 +2349,7 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
             'absent_assignments': absent_assignments,
             'exception_assignments': exception_assignments,
             'director_assignments': director_assignments,
+            'director_student_list': director_student_list,
             'total_assigned': total_assigned,
             'total_absent': total_absent,
             'total_exception': total_exception,
@@ -2343,6 +2367,62 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
         }
 
         return render(request, 'teachers/daily_progress_summary.html', context)
+
+
+class StudentClassDashboardView(LoginRequiredMixin, View):
+    """날짜 무관한 전체 학생 수업 현황 대시보드"""
+
+    def get(self, request):
+        from students.models import Student
+        from bookstore.models import BookSale
+
+        # 모든 활성 학생
+        students = Student.objects.filter(is_active=True).select_related('school').order_by('name')
+
+        student_list = []
+        for student in students:
+            # 가장 최근 교사 배정
+            recent_assignment = TeacherStudentAssignment.objects.filter(
+                student=student
+            ).select_related('teacher').order_by('-date').first()
+
+            # 교재별 진도 (목차가 있는 것만)
+            book_sales = BookSale.objects.filter(student=student).select_related('book')
+            books_progress = []
+            for sale in book_sales:
+                if sale.book.contents.exists():
+                    stats = sale.get_progress_stats()
+                    last_record = sale.progress_records.filter(
+                        study_date__isnull=False
+                    ).order_by('-study_date').first()
+                    books_progress.append({
+                        'sale': sale,
+                        'book': sale.book,
+                        'stats': stats,
+                        'last_study_date': last_record.study_date if last_record else None,
+                    })
+
+            teacher = None
+            assignment_type = None
+            last_assignment_date = None
+            if recent_assignment:
+                teacher = recent_assignment.teacher
+                assignment_type = recent_assignment.assignment_type
+                last_assignment_date = recent_assignment.date
+
+            student_list.append({
+                'student': student,
+                'teacher': teacher,
+                'assignment_type': assignment_type,
+                'last_assignment_date': last_assignment_date,
+                'books': books_progress,
+            })
+
+        context = {
+            'student_list': student_list,
+            'total_students': len(student_list),
+        }
+        return render(request, 'teachers/student_class_dashboard.html', context)
 
 
 # ==================== 교사 계정 관리 ====================

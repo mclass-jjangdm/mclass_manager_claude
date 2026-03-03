@@ -12,6 +12,9 @@ urlpatterns = [
     # 메인 대시보드 (일별 수업 기록)
     path('', teacher_views.DailyProgressSummaryView.as_view(), name='dashboard'),
 
+    # 날짜 무관한 전체 학생 수업 현황 대시보드
+    path('class-dashboard/', teacher_views.StudentClassDashboardView.as_view(), name='class_dashboard'),
+
     # 학생 배정 관리
     path('assignment/', teacher_views.AssignmentListView.as_view(), name='assignment_list'),
     path('assignment/create/', teacher_views.AssignmentCreateView.as_view(), name='assignment_create'),
