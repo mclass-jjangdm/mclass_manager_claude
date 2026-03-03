@@ -7,15 +7,19 @@ from django.urls import reverse
 import re
 
 
-class SubdomainRedirectMiddleware:
+class SubdomainRoutingMiddleware:
     """
-    서브도메인을 메인 도메인의 특정 경로로 301 리다이렉트
+    서브도메인 요청을 URL은 유지한 채 내부적으로 해당 경로로 라우팅
 
-    teacher.mclass.co.kr → mclass.co.kr/teachers/
-    parents.mclass.co.kr → mclass.co.kr/parent/
+    teacher.mclass.co.kr/  →  /teachers/ 내용을 표시 (URL 변경 없음)
+    parents.mclass.co.kr/  →  /parent/   내용을 표시 (URL 변경 없음)
+
+    루트(/) 요청만 재작성하고, 나머지 경로는 그대로 통과.
+    템플릿의 {% url %} 링크가 /teachers/... 형태로 생성되더라도
+    teacher.mclass.co.kr/teachers/... 로 정상 동작함.
     """
 
-    SUBDOMAIN_MAP = {
+    SUBDOMAIN_ROOT_MAP = {
         'teacher': '/teachers/',
         'parents': '/parent/',
     }
@@ -27,12 +31,13 @@ class SubdomainRedirectMiddleware:
     def __call__(self, request):
         host = request.get_host().split(':')[0].lower()
 
-        for subdomain, redirect_path in self.SUBDOMAIN_MAP.items():
+        for subdomain, root_path in self.SUBDOMAIN_ROOT_MAP.items():
             if host == f'{subdomain}.{self.MAIN_DOMAIN}':
-                return redirect(
-                    f'https://{self.MAIN_DOMAIN}{redirect_path}',
-                    permanent=True,
-                )
+                if request.path in ('/', ''):
+                    request.path_info = root_path
+                    request.path = root_path
+                    request.META['PATH_INFO'] = root_path
+                break
 
         return self.get_response(request)
 

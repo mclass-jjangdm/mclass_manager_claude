@@ -88,7 +88,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'mclass_manager.middleware.SubdomainRedirectMiddleware',  # 서브도메인 리다이렉트 (최상단)
+    'mclass_manager.middleware.SubdomainRoutingMiddleware',  # 서브도메인 라우팅 (최상단)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
