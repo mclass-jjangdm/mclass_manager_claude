@@ -6,14 +6,51 @@
 {% block content %}
 <div class="space-y-6">
     <!-- 헤더 -->
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-start flex-wrap gap-4">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">
                 {{ teacher.name }} 선생님의 수업
             </h2>
             <p class="text-gray-600 mt-1">{{ selected_date|date:"Y년 m월 d일" }} ({{ selected_date|date:"l" }})</p>
         </div>
+        <!-- 근무 기록 PDF 다운로드 -->
+        <div class="bg-white rounded-lg shadow p-3 flex items-center gap-2 flex-wrap">
+            <span class="text-sm font-medium text-gray-600 whitespace-nowrap">근무기록 PDF</span>
+            <select id="pdf-year" class="text-sm border border-gray-300 rounded px-2 py-1">
+                {% for y in pdf_year_range %}
+                <option value="{{ y }}">{{ y }}년</option>
+                {% endfor %}
+            </select>
+            <select id="pdf-month" class="text-sm border border-gray-300 rounded px-2 py-1">
+                <option value="1">1월</option><option value="2">2월</option><option value="3">3월</option>
+                <option value="4">4월</option><option value="5">5월</option><option value="6">6월</option>
+                <option value="7">7월</option><option value="8">8월</option><option value="9">9월</option>
+                <option value="10">10월</option><option value="11">11월</option><option value="12">12월</option>
+            </select>
+            <button onclick="downloadWorkReport()"
+                    class="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                다운로드
+            </button>
+        </div>
     </div>
+    <script>
+    // 현재 연도/월 초기 선택
+    (function() {
+        const yearSel = document.getElementById('pdf-year');
+        const monthSel = document.getElementById('pdf-month');
+        if (yearSel) yearSel.value = '{{ pdf_current_year }}';
+        if (monthSel) monthSel.value = '{{ pdf_current_month }}';
+    })();
+    function downloadWorkReport() {
+        const year = document.getElementById('pdf-year').value;
+        const month = document.getElementById('pdf-month').value;
+        window.location.href = `/teachers/my-work-report/${year}/${month}/`;
+    }
+    </script>
 
     <!-- 날짜 선택 -->
     <div class="bg-white rounded-lg shadow p-4">

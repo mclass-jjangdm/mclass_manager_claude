@@ -63,6 +63,7 @@ class TeacherAccessRestrictionMiddleware:
         r'^/bookstore/sale/\d+/progress/',  # 기존 URL 리다이렉트 허용
         r'^/teachers/messages/',  # 메시지 관련 페이지
         r'^/teachers/password/change/$',  # 비밀번호 변경 페이지
+        r'^/teachers/my-work-report/',  # 교사 근무 기록 PDF 다운로드
         r'^/teachers/my-unavailability/',  # 출근 불가 일정 관리
         r'^/teachers/my-activity/',  # 교사용 수업 활동 관리
         r'^/accounts/',  # 로그인/로그아웃 관련 (django-allauth)
@@ -94,12 +95,12 @@ class TeacherAccessRestrictionMiddleware:
 
             # 홈페이지 접근 시 교사 포털로 바로 리다이렉트 (메시지 없이)
             if path == '/' or path == '/index/':
-                return redirect('progress:my_progress')
+                return redirect('teachers:message_list')
 
             # 허용된 경로인지 확인
             if not self._is_allowed_path(path):
-                messages.warning(request, '접근 권한이 없습니다. 교사 포털에서 내 수업 정보만 확인할 수 있습니다.')
-                return redirect('progress:my_progress')
+                messages.warning(request, '접근 권한이 없습니다. 교사 포털에서 허용된 페이지만 확인할 수 있습니다.')
+                return redirect('teachers:message_list')
 
         return self.get_response(request)
 

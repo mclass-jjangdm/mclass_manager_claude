@@ -53,6 +53,7 @@ urlpatterns = [
     path('my-activity/<int:pk>/update/', views.teacher_activity_update, name='teacher_activity_update'),
     path('my-activity/<int:pk>/delete/', views.teacher_activity_delete, name='teacher_activity_delete'),
     # 교사용 출근 불가 일정 관리
+    path('my-work-report/<int:year>/<int:month>/', views.TeacherMyWorkReportPDFView.as_view(), name='my_work_report_pdf'),
     path('my-unavailability/', views.TeacherMyUnavailabilityView.as_view(), name='teacher_my_unavailability'),
     path('my-unavailability/create/', views.teacher_my_unavailability_create, name='teacher_my_unavailability_create'),
     path('my-unavailability/<int:pk>/delete/', views.teacher_my_unavailability_delete, name='teacher_my_unavailability_delete'),

@@ -1275,6 +1275,209 @@ class SalarySlipPDFView(LoginRequiredMixin, View):
         return response
 
 
+class TeacherMyWorkReportPDFView(LoginRequiredMixin, View):
+    """교사 자신의 월별 근무 기록 PDF 다운로드"""
+
+    DAY_NAMES = ['월', '화', '수', '목', '금', '토', '일']
+
+    def get(self, request, year, month):
+        if not hasattr(request.user, 'teacher_profile'):
+            messages.error(request, '교사 계정만 접근 가능합니다.')
+            return redirect('teachers:message_list')
+
+        teacher = request.user.teacher_profile
+
+        # 해당 월 출근 기록
+        attendances = Attendance.objects.filter(
+            teacher=teacher, date__year=year, date__month=month
+        ).order_by('date')
+
+        # 근무 시간 계산
+        salary_view = SalaryCalculationView()
+        work_hours, work_days = salary_view.calculate_work_hours(teacher, year, month)
+        base_amount = int(work_hours * teacher.base_salary)
+
+        # 추가급여
+        try:
+            existing = Salary.objects.get(teacher=teacher, year=year, month=month)
+            additional_amount = existing.additional_amount
+        except Salary.DoesNotExist:
+            additional_amount = 0
+
+        total_amount = base_amount + additional_amount
+
+        # PDF 생성
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer, pagesize=A4,
+            rightMargin=20*mm, leftMargin=20*mm,
+            topMargin=20*mm, bottomMargin=30*mm,
+            title=f"{year}년 {month}월 근무 기록 - {teacher.name}",
+            author="엠클래스수학과학전문학원",
+        )
+
+        def add_footer(c, doc):
+            c.saveState()
+            c.setFont('NanumGothicBold', 9)
+            c.drawCentredString(A4[0] / 2, 12 * mm, "엠클래스수학과학전문학원")
+            c.restoreState()
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='KR', fontName='NanumGothic', fontSize=10, leading=16))
+        styles.add(ParagraphStyle(name='KRTitle', fontName='NanumGothicBold', fontSize=17,
+                                  leading=22, alignment=1))
+        styles.add(ParagraphStyle(name='KRSub', fontName='NanumGothicBold', fontSize=11,
+                                  leading=16, alignment=1, textColor=colors.HexColor('#4338ca')))
+        styles.add(ParagraphStyle(name='KRLabel', fontName='NanumGothicBold', fontSize=11, leading=16))
+
+        elements = []
+
+        # 제목
+        elements.append(Paragraph(f"{year}년 {month}월 근무 기록", styles['KRTitle']))
+        elements.append(Spacer(1, 6*mm))
+        elements.append(Paragraph(teacher.name, styles['KRSub']))
+        elements.append(Spacer(1, 8*mm))
+
+        # 일별 근무 기록 테이블
+        elements.append(Paragraph("일별 근무 기록", styles['KRLabel']))
+        elements.append(Spacer(1, 3*mm))
+
+        att_data = [['날짜', '요일', '출근', '퇴근', '근무시간']]
+        att_style = [
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothic'),
+            ('FONTNAME', (0, 0), (-1, 0), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e0e7ff')),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]
+
+        for i, att in enumerate(attendances, start=1):
+            day_name = self.DAY_NAMES[att.date.weekday()]
+            start_str = att.start_time.strftime('%H:%M') if att.start_time else '-'
+            end_str = att.end_time.strftime('%H:%M') if att.end_time else '-'
+            if att.start_time and att.end_time:
+                start_dt = datetime.combine(att.date, att.start_time)
+                end_dt = datetime.combine(att.date, att.end_time)
+                if end_dt < start_dt:
+                    end_dt += timedelta(days=1)
+                hours = (end_dt - start_dt).total_seconds() / 3600
+                hours_str = f"{hours:.1f}시간"
+            else:
+                hours_str = '-'
+            att_data.append([att.date.strftime('%Y-%m-%d'), day_name, start_str, end_str, hours_str])
+            # 토/일 요일 색상
+            if att.date.weekday() == 5:
+                att_style.append(('TEXTCOLOR', (1, i), (1, i), colors.HexColor('#2563eb')))
+            elif att.date.weekday() == 6:
+                att_style.append(('TEXTCOLOR', (1, i), (1, i), colors.HexColor('#dc2626')))
+            # 짝수 행 배경
+            if i % 2 == 0:
+                att_style.append(('BACKGROUND', (0, i), (-1, i), colors.HexColor('#f9fafb')))
+
+        if len(att_data) == 1:
+            att_data.append(['근무 기록 없음', '', '', '', ''])
+            att_style.append(('SPAN', (0, 1), (-1, 1)))
+
+        att_table = Table(att_data, colWidths=[40*mm, 18*mm, 32*mm, 32*mm, 38*mm])
+        att_table.setStyle(TableStyle(att_style))
+        elements.append(att_table)
+        elements.append(Spacer(1, 8*mm))
+
+        # 근무 요약
+        elements.append(Paragraph("근무 요약", styles['KRLabel']))
+        elements.append(Spacer(1, 3*mm))
+        summary_data = [
+            ['근무일수', f"{work_days}일", '총 근무시간', f"{work_hours:.1f}시간"],
+            ['시급', f"{teacher.base_salary:,}원", '', ''],
+        ]
+        summary_table = Table(summary_data, colWidths=[30*mm, 55*mm, 30*mm, 55*mm])
+        summary_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothic'),
+            ('FONTNAME', (0, 0), (0, -1), 'NanumGothicBold'),
+            ('FONTNAME', (2, 0), (2, -1), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f3f4f6')),
+            ('BACKGROUND', (2, 0), (2, -1), colors.HexColor('#f3f4f6')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(summary_table)
+        elements.append(Spacer(1, 8*mm))
+
+        # 급여 내역
+        elements.append(Paragraph("급여 내역", styles['KRLabel']))
+        elements.append(Spacer(1, 3*mm))
+        pay_data = [
+            ['항목', '금액'],
+            ['기본급 (시급 × 근무시간)', f"{base_amount:,}원"],
+            ['추가급여', f"{additional_amount:,}원"],
+        ]
+        pay_table = Table(pay_data, colWidths=[100*mm, 70*mm])
+        pay_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothic'),
+            ('FONTNAME', (0, 0), (-1, 0), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e0e7ff')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(pay_table)
+        elements.append(Spacer(1, 0))
+
+        total_data = [['지급 합계', f"{total_amount:,}원"]]
+        total_table = Table(total_data, colWidths=[100*mm, 70*mm])
+        total_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#4338ca')),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#eef2ff')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#1e1b4b')),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(total_table)
+
+        # 계좌 정보
+        elements.append(Spacer(1, 10*mm))
+        bank_info = teacher.bank.name if teacher.bank else '-'
+        account_data = [['입금 계좌', f"{bank_info}  {teacher.account_number or '-'}"]]
+        account_table = Table(account_data, colWidths=[30*mm, 140*mm])
+        account_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'NanumGothic'),
+            ('FONTNAME', (0, 0), (0, 0), 'NanumGothicBold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 0), (0, 0), colors.HexColor('#f3f4f6')),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(account_table)
+
+        doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
+        pdf = buffer.getvalue()
+        buffer.close()
+
+        filename = f"{year}년 {month}월 근무기록_{teacher.name}.pdf"
+        encoded_filename = urllib.parse.quote(filename.encode('utf-8'))
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{encoded_filename}'
+        response.write(pdf)
+        return response
+
+
 def teacher_send_email(request, pk):
     """교사에게 이메일 발송"""
     from django.core.mail import EmailMessage
@@ -2436,7 +2639,7 @@ class TeacherLoginView(View):
         if request.user.is_authenticated:
             # 이미 로그인된 경우
             if hasattr(request.user, 'teacher_profile'):
-                return redirect('progress:my_progress')
+                return redirect('teachers:message_list')
             # 관리자 또는 일반 사용자는 메인 대시보드로
             return redirect('index')
         return render(request, 'teachers/teacher_login.html')
@@ -2449,10 +2652,10 @@ class TeacherLoginView(View):
 
         if user is not None:
             login(request, user)
-            # 교사 프로필이 있으면 교사 진도 페이지로
+            # 교사 프로필이 있으면 전체 공지 페이지로
             if hasattr(user, 'teacher_profile'):
                 messages.success(request, f'{user.teacher_profile.name} 선생님, 환영합니다!')
-                return redirect('progress:my_progress')
+                return redirect('teachers:message_list')
             else:
                 # 관리자 또는 일반 사용자는 메인 대시보드로
                 return redirect('index')
@@ -2566,6 +2769,7 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
             date=check_date
         ).exclude(record_type='textbook').select_related('student', 'subject')
 
+        current_year = timezone.now().year
         context = {
             'selected_date': check_date,
             'teacher': teacher,
@@ -2574,6 +2778,9 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
             'total_activities': my_activities.count(),
             'students_with_books': sum(1 for sd in student_data if sd['books']),
             'is_my_page': True,  # 자신의 페이지임을 표시
+            'pdf_year_range': range(current_year - 1, current_year + 1),
+            'pdf_current_year': current_year,
+            'pdf_current_month': timezone.now().month,
         }
 
         return render(request, 'teachers/teacher_my_progress.html', context)
