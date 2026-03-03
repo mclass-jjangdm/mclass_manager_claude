@@ -2377,15 +2377,10 @@ class StudentClassDashboardView(LoginRequiredMixin, View):
         from bookstore.models import BookSale
 
         # 모든 활성 학생
-        students = Student.objects.filter(is_active=True).select_related('school').order_by('name')
+        students = Student.objects.filter(is_active=True).select_related('school')
 
         student_list = []
         for student in students:
-            # 가장 최근 교사 배정
-            recent_assignment = TeacherStudentAssignment.objects.filter(
-                student=student
-            ).select_related('teacher').order_by('-date').first()
-
             # 교재별 진도 (목차가 있는 것만)
             book_sales = BookSale.objects.filter(student=student).select_related('book')
             books_progress = []
@@ -2402,21 +2397,22 @@ class StudentClassDashboardView(LoginRequiredMixin, View):
                         'last_study_date': last_record.study_date if last_record else None,
                     })
 
-            teacher = None
-            assignment_type = None
-            last_assignment_date = None
-            if recent_assignment:
-                teacher = recent_assignment.teacher
-                assignment_type = recent_assignment.assignment_type
-                last_assignment_date = recent_assignment.date
-
             student_list.append({
                 'student': student,
-                'teacher': teacher,
-                'assignment_type': assignment_type,
-                'last_assignment_date': last_assignment_date,
                 'books': books_progress,
             })
+
+        # 학년 순 정렬 (K5→K12), 학년 없는 학생은 맨 뒤, 동일 학년은 이름 순
+        def grade_sort_key(item):
+            grade = item['student'].grade
+            if grade and grade.startswith('K'):
+                try:
+                    return (int(grade[1:]), item['student'].name)
+                except ValueError:
+                    pass
+            return (99, item['student'].name)
+
+        student_list.sort(key=grade_sort_key)
 
         context = {
             'student_list': student_list,
