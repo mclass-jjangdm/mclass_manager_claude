@@ -11,17 +11,20 @@ class SubdomainRoutingMiddleware:
     """
     서브도메인 요청을 URL은 유지한 채 내부적으로 해당 경로로 라우팅
 
-    teacher.mclass.co.kr/  →  /teachers/ 내용을 표시 (URL 변경 없음)
-    parents.mclass.co.kr/  →  /parent/   내용을 표시 (URL 변경 없음)
-
-    루트(/) 요청만 재작성하고, 나머지 경로는 그대로 통과.
-    템플릿의 {% url %} 링크가 /teachers/... 형태로 생성되더라도
-    teacher.mclass.co.kr/teachers/... 로 정상 동작함.
+    teacher.mclass.co.kr/       →  /teachers/       (선생님 포털)
+    teacher.mclass.co.kr/login/ →  /teachers/login/ (선생님 로그인)
+    parents.mclass.co.kr/       →  /parent/          (학부모 포털)
     """
 
-    SUBDOMAIN_ROOT_MAP = {
-        'teacher': '/teachers/',
-        'parents': '/parent/',
+    # 서브도메인별 경로 매핑 테이블
+    SUBDOMAIN_PATH_MAP = {
+        'teacher': {
+            '/': '/teachers/',
+            '/login/': '/teachers/login/',
+        },
+        'parents': {
+            '/': '/parent/',
+        },
     }
     MAIN_DOMAIN = 'mclass.co.kr'
 
@@ -31,12 +34,15 @@ class SubdomainRoutingMiddleware:
     def __call__(self, request):
         host = request.get_host().split(':')[0].lower()
 
-        for subdomain, root_path in self.SUBDOMAIN_ROOT_MAP.items():
+        for subdomain, path_map in self.SUBDOMAIN_PATH_MAP.items():
             if host == f'{subdomain}.{self.MAIN_DOMAIN}':
-                if request.path in ('/', ''):
-                    request.path_info = root_path
-                    request.path = root_path
-                    request.META['PATH_INFO'] = root_path
+                # 슬래시 정규화 후 매핑 테이블 조회
+                path = request.path if request.path.endswith('/') else request.path + '/'
+                if path in path_map:
+                    new_path = path_map[path]
+                    request.path_info = new_path
+                    request.path = new_path
+                    request.META['PATH_INFO'] = new_path
                 break
 
         return self.get_response(request)
