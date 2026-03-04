@@ -7,7 +7,7 @@
 <div class="space-y-6">
     <div class="content-card">
         <div class="card-header">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-wrap justify-between items-center gap-3">
                 <h1 class="text-xl font-semibold text-gray-900">
                     월별 관리비 현황
                 </h1>
@@ -35,6 +35,7 @@
 
         <div class="card-body">
             <!-- Data table for maintenance records -->
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -64,6 +65,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>

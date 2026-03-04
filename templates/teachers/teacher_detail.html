@@ -5,7 +5,7 @@
 
 {% block teacher_content %}
 <!-- 헤더 -->
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
     <h2 class="text-3xl font-bold text-gray-800">교사 상세 정보</h2>
     <div class="flex gap-2">
         <a href="{% url 'teachers:teacher_pdf_report' teacher.id %}"
@@ -113,11 +113,11 @@
 
 <!-- 근무 기록 섹션 -->
 <div class="bg-white rounded-lg shadow p-6 mb-8">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
         <h3 class="text-xl font-bold text-gray-900">근무 기록</h3>
 
         <!-- 월 선택 네비게이션 -->
-        <div class="flex items-center gap-4">
+        <div class="flex flex-wrap items-center gap-4">
             <a href="?year={{ prev_year }}&month={{ prev_month }}"
                class="text-indigo-600 hover:text-indigo-800 font-medium">
                 ← 이전 달
@@ -215,7 +215,7 @@
     {% if teacher.user %}
     <!-- 계정이 있는 경우 -->
     <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mb-2">
                     계정 활성화됨
@@ -245,7 +245,7 @@
     {% else %}
     <!-- 계정이 없는 경우 -->
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mb-2">
                     계정 없음

@@ -1,11 +1,11 @@
-{% extends "progress/base_progress.html" %}
+﻿{% extends "progress/base_progress.html" %}
 
 {% block container_class %}wide-screen{% endblock %}
 
 {% block progress_content %}
 <div class="space-y-6">
     <!-- 헤더 영역 -->
-    <div class="flex justify-between items-center">
+    <div class="flex flex-wrap justify-between items-center gap-3">
         <h2 class="text-2xl font-bold text-gray-800">교재-문제 연결 목록</h2>
         <a href="{% url 'progress:book_problem_create' %}"
            class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">

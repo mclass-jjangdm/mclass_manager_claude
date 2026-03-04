@@ -1,11 +1,11 @@
-{% extends "bookstore/base_bookstore.html" %}
+﻿{% extends "bookstore/base_bookstore.html" %}
 {% load humanize %}
 
 {% block container_class %}wide-screen{% endblock %}
 
 {% block bookstore_content %}
 <!-- 헤더 -->
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
     <h2 class="text-3xl font-bold text-indigo-700">{{ supplier.name }} 상세 정보</h2>
     <a href="{% url 'bookstore:supplier_list' %}"
        class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
@@ -35,7 +35,7 @@
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
     <!-- 지급(입금) 예정 -->
     <div>
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h3 class="text-xl font-bold text-orange-600">지급(입금) 예정 목록</h3>
             <span class="text-sm text-gray-600">총액: <strong class="text-lg">{{ total_to_pay|intcomma }}원</strong></span>
         </div>
@@ -93,7 +93,7 @@
 
     <!-- 환불(차감) 예정 -->
     <div>
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h3 class="text-xl font-bold text-blue-600">환불(차감) 예정 목록</h3>
             <span class="text-sm text-gray-600">총액: <strong class="text-lg">{{ total_to_refund|intcomma }}원</strong></span>
         </div>
@@ -154,7 +154,7 @@
 <hr class="my-10 border-t-2 border-dashed border-gray-300">
 
 <!-- 정산 완료 기록 -->
-<div class="flex justify-between items-center mb-4">
+<div class="flex flex-wrap justify-between items-center gap-3 mb-4">
     <h3 class="text-xl font-bold text-green-600">정산(입금/환불) 완료 기록</h3>
 </div>
 

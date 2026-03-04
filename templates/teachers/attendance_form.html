@@ -1,4 +1,4 @@
-{% extends 'teachers/base_teachers.html' %}
+﻿{% extends 'teachers/base_teachers.html' %}
 {% load custom_filters %}
 
 {% block title %}근무 기록 - MClass Manager{% endblock %}
@@ -48,7 +48,7 @@
     <!-- 근무 입력 폼 -->
     <div class="content-card">
         <div class="card-header">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-wrap justify-between items-center gap-3">
                 <h3 class="text-xl font-semibold text-gray-900">입력</h3>
                 <span class="date-info">{{ selected_date|date:"Y년 n월 j일" }}</span>
             </div>
@@ -172,7 +172,7 @@
                 {% for teacher, data in teacher_records.items %}
                     <div class="content-card">
                         <div class="card-header bg-gray-50">
-                            <div class="flex justify-between items-center">
+                            <div class="flex flex-wrap justify-between items-center gap-3">
                                 <h4 class="text-lg font-medium text-gray-900">{{ teacher.name }}</h4>
                                 <span class="text-sm text-gray-600">
                                     총 근무시간: {{ data.total_hours|floatformat:1 }} 시간

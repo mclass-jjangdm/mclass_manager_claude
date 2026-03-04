@@ -1,11 +1,11 @@
-{% extends "progress/base_progress.html" %}
+﻿{% extends "progress/base_progress.html" %}
 
 {% block container_class %}wide-screen{% endblock %}
 
 {% block progress_content %}
 <div class="space-y-6">
     <!-- 헤더 영역 -->
-    <div class="flex justify-between items-center">
+    <div class="flex flex-wrap justify-between items-center gap-3">
         <h2 class="text-2xl font-bold text-gray-800">문제 유형 목록</h2>
         <div class="flex gap-3">
             <a href="{% url 'progress:problem_type_upload' %}"

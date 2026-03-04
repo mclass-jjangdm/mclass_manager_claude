@@ -1,10 +1,10 @@
-{% extends 'progress/base_assignment.html' %}
+﻿{% extends 'progress/base_assignment.html' %}
 {% load humanize %}
 
 {% block assignment_content %}
 <div class="space-y-6">
     <!-- 헤더 -->
-    <div class="flex justify-between items-center">
+    <div class="flex flex-wrap justify-between items-center gap-3">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">
                 {% if teacher %}
@@ -87,7 +87,7 @@
         {% for sd in student_data %}
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <!-- 학생 헤더 -->
-            <div class="bg-indigo-50 px-6 py-4 flex justify-between items-center">
+            <div class="bg-indigo-50 px-6 py-4 flex flex-wrap justify-between items-center gap-3">
                 <div>
                     <h3 class="text-lg font-bold text-indigo-800">{{ sd.student.name }}</h3>
                     <p class="text-sm text-indigo-600">
@@ -106,7 +106,7 @@
                 <div class="space-y-4">
                     {% for book_data in sd.books %}
                     <div class="border border-gray-200 rounded-lg p-4">
-                        <div class="flex justify-between items-center mb-3">
+                        <div class="flex flex-wrap justify-between items-center gap-3 mb-3">
                             <div>
                                 <h4 class="font-semibold text-gray-800">{{ book_data.book.title }}</h4>
                                 <p class="text-sm text-gray-500">ISBN: {{ book_data.book.isbn }}</p>

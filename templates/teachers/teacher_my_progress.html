@@ -1,4 +1,4 @@
-{% extends 'base_teacher_portal.html' %}
+﻿{% extends 'base_teacher_portal.html' %}
 {% load humanize %}
 
 {% block title %}내 수업 - M'Class 교사 포털{% endblock %}
@@ -164,7 +164,7 @@
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <!-- 학생 헤더 -->
             <div class="bg-indigo-50 px-6 py-4">
-                <div class="flex justify-between items-center">
+                <div class="flex flex-wrap justify-between items-center gap-3">
                     <div>
                         <h3 class="text-lg font-bold text-indigo-800">{{ sd.student.name }}</h3>
                         <p class="text-sm text-indigo-600">
@@ -206,7 +206,7 @@
                             {% for msg in sd.messages %}
                             <a href="{% url 'teachers:message_detail' msg.pk %}"
                                class="block bg-white rounded p-2 hover:bg-blue-100 transition-colors text-sm">
-                                <div class="flex justify-between items-center">
+                                <div class="flex flex-wrap justify-between items-center gap-3">
                                     <span class="font-medium text-blue-900">{{ msg.title }}</span>
                                     <span class="text-xs text-blue-500">{{ msg.created_at|date:"m/d" }}</span>
                                 </div>
