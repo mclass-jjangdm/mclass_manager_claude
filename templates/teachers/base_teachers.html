@@ -14,7 +14,7 @@
     <!-- 서브 네비게이션 -->
     <div class="bg-white shadow-sm">
         <div class="container">
-            <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Teachers">
+            <nav class="flex flex-wrap gap-1 py-2" aria-label="Teachers">
                 <a href="{% url 'teachers:teacher_list' %}" 
                    class="nav-link {% if request.resolver_match.url_name == 'teacher_list' %}active{% endif %}">
                     선생님 목록

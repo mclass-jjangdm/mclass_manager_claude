@@ -20,7 +20,7 @@
     <!-- 서브 네비게이션 -->
     <div class="bg-white shadow-sm overflow-visible">
         <div class="container overflow-visible">
-            <nav class="flex space-x-4 py-3 overflow-visible" aria-label="Students">
+            <nav class="flex flex-wrap gap-1 py-2 overflow-visible" aria-label="Students">
                 <a href="{% url 'students:student_list' %}"
                    class="nav-link {% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">
                     학생 목록
