@@ -12,7 +12,8 @@ CSV 컬럼 (mclass.shop 내보내기 형식):
     학생명, 학생코드, 교재명, 가격, 지급일, 납부여부, 납부일
 
 처리 대상:
-    납부여부 == '납부완료' 인 행만 처리 (미납 자동 무시)
+    납부완료 → is_paid=True, payment_date=납부일
+    미납     → is_paid=False, payment_date=None
 """
 
 import csv
@@ -68,7 +69,8 @@ def read_csv(filepath):
 class Command(BaseCommand):
     help = (
         'mclass.shop의 교재 판매 내역 CSV를 mclass.co.kr로 마이그레이션합니다.\n'
-        '납부완료 행만 처리하며, 학생 고유번호(student_id)를 shop 기준으로 통일합니다.'
+        '납부완료(is_paid=True)와 미납(is_paid=False) 모두 가져옵니다.\n'
+        '학생 고유번호(student_id)를 shop 기준으로 통일합니다.'
     )
 
     def add_arguments(self, parser):
@@ -101,7 +103,7 @@ class Command(BaseCommand):
 
         # CSV 읽기
         rows, encoding = read_csv(csv_path)
-        self.stdout.write(f'파일 읽기 완료: {os.path.basename(csv_path)} (인코딩: {encoding}, 전체 {len(rows)}행)')
+        self.stdout.write(f'파일 읽기 완료: {os.path.basename(csv_path)} (인코딩: {encoding}, 전체 {len(rows)}행)\n')
 
         if not rows:
             self.stdout.write(self.style.WARNING('CSV 파일이 비어있습니다.'))
@@ -116,33 +118,29 @@ class Command(BaseCommand):
                 f'현재 컬럼: {", ".join(sorted(actual_columns))}'
             )
 
-        # 납부완료 행만 필터링
+        # 납부여부 분류
         paid_rows = [r for r in rows if str(r.get('납부여부', '') or '').strip() == '납부완료']
-        skipped_unpaid = len(rows) - len(paid_rows)
+        unpaid_rows = [r for r in rows if str(r.get('납부여부', '') or '').strip() != '납부완료']
         self.stdout.write(
-            f'납부완료: {len(paid_rows)}행 처리 대상 / '
-            f'미납 {skipped_unpaid}행 자동 제외\n'
+            f'납부완료: {len(paid_rows)}행 / 미납: {len(unpaid_rows)}행 / 합계: {len(rows)}행\n'
         )
 
-        if not paid_rows:
-            self.stdout.write(self.style.WARNING('납부완료 내역이 없습니다.'))
-            return
-
         # ── 캐시: 반복 DB 조회 방지 ──────────────────────────────────────────
-        # {학생명: student_object or None or 'skip'}
+        # {학생명: student_object or 'not_found'/'duplicate'/'conflict'}
         student_cache = {}
         # {교재명: book_object}
         book_cache = {}
         # 학생 관련 통계 (고유 학생 기준)
-        unique_student_results = {}  # {학생명: 결과 ('matched'/'not_found'/'duplicate'/'conflict')}
+        unique_student_results = {}  # {학생명: 결과}
         student_id_updated = set()   # student_id가 실제 업데이트된 고유 학생명 집합
 
         # ── 통계 카운터 ───────────────────────────────────────────────────────
         stats = {
-            'total_paid_rows': len(paid_rows),
+            'total_rows': len(rows),
             'book_existing': 0,
             'book_created': 0,
-            'sale_created': 0,
+            'sale_created_paid': 0,
+            'sale_created_unpaid': 0,
             'sale_skipped_duplicate': 0,
             'sale_skipped_no_student': 0,
             'row_error': 0,
@@ -153,7 +151,11 @@ class Command(BaseCommand):
 
         try:
             with transaction.atomic():
-                for row_num, row in enumerate(paid_rows, start=1):
+                for row_num, row in enumerate(rows, start=1):
+
+                    # 납부 여부 판단
+                    is_paid_str = str(row.get('납부여부', '') or '').strip()
+                    is_paid = (is_paid_str == '납부완료')
 
                     # 값 추출
                     student_name = str(row.get('학생명', '') or '').strip()
@@ -179,7 +181,9 @@ class Command(BaseCommand):
                         )
                         stats['row_error'] += 1
                         continue
-                    payment_date = parse_date(payment_date_raw)
+
+                    # 납부일: 납부완료인 경우만 사용, 미납이면 None
+                    payment_date = parse_date(payment_date_raw) if is_paid else None
 
                     # 금액 파싱
                     try:
@@ -252,10 +256,8 @@ class Command(BaseCommand):
                             book_cache[book_title] = book
                             stats['book_existing'] += 1
                         except Book.DoesNotExist:
-                            # 신규 교재: ISBN 없으므로 placeholder 생성
                             placeholder_isbn = make_placeholder_isbn(book_title)
                             if not dry_run:
-                                # 이미 같은 placeholder가 있으면 재사용
                                 book, created = Book.objects.get_or_create(
                                     isbn=placeholder_isbn,
                                     defaults={
@@ -273,13 +275,11 @@ class Command(BaseCommand):
                                 else:
                                     stats['book_existing'] += 1
                             else:
-                                # dry-run: 가상 객체
                                 book = Book(title=book_title, isbn=placeholder_isbn, price=price)
                                 stats['book_created'] += 1
                                 created_books.append(book_title)
                             book_cache[book_title] = book
                         except Book.MultipleObjectsReturned:
-                            # 같은 제목의 교재가 여러 개인 경우 첫 번째 사용
                             book = Book.objects.filter(title=book_title).first()
                             book_cache[book_title] = book
                             stats['book_existing'] += 1
@@ -304,12 +304,15 @@ class Command(BaseCommand):
                             sale_date=sale_date,
                             price=price,
                             quantity=1,
-                            is_paid=True,
+                            is_paid=is_paid,
                             payment_date=payment_date,
                             memo='imported from mclass.shop',
                         )
 
-                    stats['sale_created'] += 1
+                    if is_paid:
+                        stats['sale_created_paid'] += 1
+                    else:
+                        stats['sale_created_unpaid'] += 1
 
                 # dry-run이면 롤백
                 if dry_run:
@@ -326,10 +329,12 @@ class Command(BaseCommand):
         duplicate_count = sum(1 for v in unique_student_results.values() if v == 'duplicate')
         conflict_count = sum(1 for v in unique_student_results.values() if v == 'conflict')
 
+        total_created = stats['sale_created_paid'] + stats['sale_created_unpaid']
+
         self.stdout.write('\n' + '=' * 55)
         self.stdout.write(self.style.SUCCESS('=== 마이그레이션 결과 ==='))
         self.stdout.write('=' * 55)
-        self.stdout.write(f'전체 처리 대상 행: {stats["total_paid_rows"]} (납부완료만)')
+        self.stdout.write(f'전체 처리 행: {stats["total_rows"]}행')
         self.stdout.write('')
         self.stdout.write('[ 학생 ] (고유 학생 기준)')
         self.stdout.write(self.style.SUCCESS(f'  매칭 성공: {matched_count}명'))
@@ -343,7 +348,9 @@ class Command(BaseCommand):
         self.stdout.write(f'  신규 교재 생성 (placeholder ISBN): {stats["book_created"]}종')
         self.stdout.write('')
         self.stdout.write('[ 판매 내역 (BookSale) ]')
-        self.stdout.write(self.style.SUCCESS(f'  생성: {stats["sale_created"]}건'))
+        self.stdout.write(self.style.SUCCESS(f'  생성 합계: {total_created}건'))
+        self.stdout.write(f'    납부완료(is_paid=True):  {stats["sale_created_paid"]}건')
+        self.stdout.write(f'    미납(is_paid=False):     {stats["sale_created_unpaid"]}건')
         self.stdout.write(f'  중복으로 건너뜀: {stats["sale_skipped_duplicate"]}건')
         self.stdout.write(f'  학생 미매칭으로 건너뜀: {stats["sale_skipped_no_student"]}건')
         self.stdout.write(f'  행 오류: {stats["row_error"]}건')
@@ -381,4 +388,4 @@ class Command(BaseCommand):
             ))
         else:
             self.stdout.write('')
-            self.stdout.write(self.style.SUCCESS('✓ 마이그레이션이 완료되었습니다.'))
+            self.stdout.write(self.style.SUCCESS('마이그레이션이 완료되었습니다.'))
