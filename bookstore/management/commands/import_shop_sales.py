@@ -160,10 +160,16 @@ class Command(BaseCommand):
         )
 
         # ── DB 교재 캐시 (제목으로 빠른 조회) ──────────────────────────────
-        # co.kr 제목 → Book 객체
+        # co.kr 제목 → Book 객체 (정식 교재 우선, SHOP- placeholder는 후순위)
         book_by_title: dict = {}
-        for book in Book.objects.all():
-            book_by_title[book.title] = book
+        for book in Book.objects.all().order_by('pk'):
+            title = book.title
+            existing = book_by_title.get(title)
+            if existing is None:
+                book_by_title[title] = book
+            elif str(existing.isbn or '').startswith('SHOP-') and not str(book.isbn or '').startswith('SHOP-'):
+                # 기존 항목이 placeholder인데 새 항목은 정식 교재 → 정식 교재로 교체
+                book_by_title[title] = book
         self.stdout.write(f'교재 DB 캐시 로드: {len(book_by_title)}종\n')
 
         # ── 캐시 & 통계 초기화 ──────────────────────────────────────────────
@@ -373,8 +379,14 @@ class Command(BaseCommand):
                         already_imported = BookSale.objects.filter(
                             student=student, memo=memo_key
                         ).exists()
+                        # 중복 체크 3: 이전 broken run이 placeholder book으로 이미 생성한 경우
+                        # → memo 없던 구버전 실행으로 생긴 BookSale도 감지
+                        placeholder_isbn = make_placeholder_isbn(book_title)
+                        already_placeholder = BookSale.objects.filter(
+                            student=student, book__isbn=placeholder_isbn
+                        ).exists()
 
-                        if already_has_book or already_imported:
+                        if already_has_book or already_imported or already_placeholder:
                             stats['sale_skipped_duplicate'] += 1
                             continue
 
