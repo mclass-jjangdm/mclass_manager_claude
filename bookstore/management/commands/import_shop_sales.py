@@ -351,10 +351,21 @@ class Command(BaseCommand):
                     book = book_result_cache[book_title]
 
                     # ── Phase 4: BookSale 생성 ──────────────────────────────
+                    # memo에 원래 shop 교재명 저장 → 재실행 시에도 정확한 중복 감지
+                    memo_key = f'shop:{book_title}'
+
                     if not dry_run and book.pk:
-                        if BookSale.objects.filter(
+                        # 중복 체크 1: 동일한 (학생, 교재, 날짜) 조합
+                        exact_dup = BookSale.objects.filter(
                             student=student, book=book, sale_date=sale_date
-                        ).exists():
+                        ).exists()
+                        # 중복 체크 2: Book FK가 달라도 같은 shop 교재명+날짜면 동일 구매
+                        # (매핑 파일 수정 후 재실행 시 중복 방지)
+                        title_dup = BookSale.objects.filter(
+                            student=student, sale_date=sale_date, memo=memo_key
+                        ).exists()
+
+                        if exact_dup or title_dup:
                             stats['sale_skipped_duplicate'] += 1
                             continue
 
@@ -366,7 +377,7 @@ class Command(BaseCommand):
                             quantity=1,
                             is_paid=is_paid,
                             payment_date=payment_date,
-                            memo='imported from mclass.shop',
+                            memo=memo_key,
                         )
 
                     if is_paid:
