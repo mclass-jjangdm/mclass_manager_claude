@@ -175,7 +175,8 @@ class Command(BaseCommand):
         stats = {
             'total_rows': len(rows),
             'book_mapped': 0,       # 매핑 파일로 co.kr DB 교재와 연결됨
-            'book_created': 0,      # 매핑 파일 없음 → 신규 placeholder 생성
+            'book_exact': 0,        # 매핑 파일 없음 → DB 동일 제목으로 연결됨
+            'book_created': 0,      # 매핑 파일 없음 → 진짜 신규 → placeholder 생성
             'book_map_not_found': 0,# 매핑 파일에 있으나 DB에서 못 찾음 → placeholder
             'sale_created_paid': 0,
             'sale_created_unpaid': 0,
@@ -321,32 +322,39 @@ class Command(BaseCommand):
                                 book_result_cache[book_title] = db_book
 
                         else:
-                            # 매핑 파일에 없음 → co.kr에 없는 별개 교재 → placeholder
-                            placeholder_isbn = make_placeholder_isbn(book_title)
-                            if not dry_run:
-                                db_book, created = Book.objects.get_or_create(
-                                    isbn=placeholder_isbn,
-                                    defaults={
-                                        'title': book_title,
-                                        'price': price,
-                                        'original_price': 0,
-                                        'cost_price': 0,
-                                        'stock': 0,
-                                        'memo': 'imported from mclass.shop',
-                                    }
-                                )
-                                if created:
+                            # 매핑 파일에 없음 → 먼저 DB에서 동일 제목 교재 검색
+                            db_book = book_by_title.get(book_title)
+                            if db_book:
+                                # DB에 동일 제목 교재 이미 존재 → 기존 교재 사용 (중복 방지)
+                                book_result_cache[book_title] = db_book
+                                stats['book_exact'] += 1
+                            else:
+                                # 진짜 신규 교재 → placeholder 생성
+                                placeholder_isbn = make_placeholder_isbn(book_title)
+                                if not dry_run:
+                                    db_book, created = Book.objects.get_or_create(
+                                        isbn=placeholder_isbn,
+                                        defaults={
+                                            'title': book_title,
+                                            'price': price,
+                                            'original_price': 0,
+                                            'cost_price': 0,
+                                            'stock': 0,
+                                            'memo': 'imported from mclass.shop',
+                                        }
+                                    )
+                                    if created:
+                                        stats['book_created'] += 1
+                                        new_books_log.append(book_title)
+                                else:
+                                    db_book = Book(
+                                        title=book_title,
+                                        isbn=placeholder_isbn,
+                                        price=price,
+                                    )
                                     stats['book_created'] += 1
                                     new_books_log.append(book_title)
-                            else:
-                                db_book = Book(
-                                    title=book_title,
-                                    isbn=placeholder_isbn,
-                                    price=price,
-                                )
-                                stats['book_created'] += 1
-                                new_books_log.append(book_title)
-                            book_result_cache[book_title] = db_book
+                                book_result_cache[book_title] = db_book
 
                     book = book_result_cache[book_title]
 
@@ -417,13 +425,16 @@ class Command(BaseCommand):
 
         self.stdout.write('[ 교재 ] (고유 교재명 기준)')
         self.stdout.write(self.style.SUCCESS(
-            f'  매핑 파일로 co.kr DB 연결:  {stats["book_mapped"]}건'
+            f'  매핑 파일로 co.kr DB 연결:    {stats["book_mapped"]}건'
+        ))
+        self.stdout.write(self.style.SUCCESS(
+            f'  제목 일치로 co.kr DB 연결:    {stats["book_exact"]}건'
         ))
         self.stdout.write(self.style.WARNING(
             f'  매핑 있으나 DB 불일치 (신규): {stats["book_map_not_found"]}건'
         ))
         self.stdout.write(
-            f'  매핑 없음 → 신규 교재 생성:  {stats["book_created"]}건'
+            f'  진짜 신규 교재 생성:          {stats["book_created"]}건'
         )
         self.stdout.write('')
 
