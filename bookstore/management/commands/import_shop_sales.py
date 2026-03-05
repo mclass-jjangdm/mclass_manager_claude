@@ -355,17 +355,18 @@ class Command(BaseCommand):
                     memo_key = f'shop:{book_title}'
 
                     if not dry_run and book.pk:
-                        # 중복 체크 1: 동일한 (학생, 교재, 날짜) 조합
-                        exact_dup = BookSale.objects.filter(
-                            student=student, book=book, sale_date=sale_date
+                        # 중복 체크 1: 학생이 이미 해당 교재를 보유 (날짜 무관)
+                        # → 기존 수동 입력 데이터와 날짜가 달라도 같은 교재 중복 방지
+                        already_has_book = BookSale.objects.filter(
+                            student=student, book=book
                         ).exists()
-                        # 중복 체크 2: Book FK가 달라도 같은 shop 교재명+날짜면 동일 구매
-                        # (매핑 파일 수정 후 재실행 시 중복 방지)
-                        title_dup = BookSale.objects.filter(
-                            student=student, sale_date=sale_date, memo=memo_key
+                        # 중복 체크 2: 이전 실행에서 같은 shop 교재명으로 이미 입력됨
+                        # → 매핑 파일 수정 후 재실행 시 Book FK가 달라도 중복 방지
+                        already_imported = BookSale.objects.filter(
+                            student=student, memo=memo_key
                         ).exists()
 
-                        if exact_dup or title_dup:
+                        if already_has_book or already_imported:
                             stats['sale_skipped_duplicate'] += 1
                             continue
 
