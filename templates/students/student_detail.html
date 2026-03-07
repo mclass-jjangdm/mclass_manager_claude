@@ -198,7 +198,14 @@
 </div>
 
 <!-- 납부 완료 교재 목록 -->
-<h3 class="text-xl font-bold text-green-700 mb-4">납부 완료 교재 목록</h3>
+<button type="button" onclick="togglePaidSales()"
+        class="w-full flex items-center justify-between text-xl font-bold text-green-700 mb-4 hover:text-green-800 transition-colors">
+    <span>납부 완료 교재 목록</span>
+    <svg id="paid-sales-chevron" class="w-5 h-5 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+    </svg>
+</button>
+<div id="paid-sales-section" class="hidden">
 <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
     {% if paid_sales %}
     <div class="overflow-x-auto">
@@ -267,6 +274,16 @@
     </div>
     {% endif %}
 </div>
+</div><!-- /paid-sales-section -->
+
+<script>
+function togglePaidSales() {
+    const section = document.getElementById('paid-sales-section');
+    const chevron = document.getElementById('paid-sales-chevron');
+    section.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+}
+</script>
 
 <!-- 성적 관리 섹션 (요약) -->
 <div class="bg-white rounded-lg shadow p-6 mb-8">

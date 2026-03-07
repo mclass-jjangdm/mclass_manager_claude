@@ -113,13 +113,6 @@
                     </div>
 
                     {% if unpaid_sales %}
-                    <!-- 결제 계좌 안내 -->
-                    <div class="bg-yellow-50 px-5 py-3 border-b border-yellow-100">
-                        <p class="text-sm text-yellow-800">
-                            <strong>결제 계좌:</strong> {{ bank_account }}
-                        </p>
-                    </div>
-
                     <!-- 미결제 카드 목록 -->
                     <div class="divide-y divide-gray-100">
                         {% for sale in unpaid_sales %}
@@ -143,19 +136,26 @@
 
                 <!-- 결제 완료 내역 -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                    <!-- 섹션 헤더 -->
-                    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                    <!-- 섹션 헤더 (클릭 시 토글) -->
+                    <button type="button" onclick="togglePaidSales()"
+                            class="w-full flex items-center justify-between px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <h3 class="font-semibold text-green-600 flex items-center gap-1.5">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             결제 완료 내역
                         </h3>
-                        <span class="text-base font-bold text-green-600">
-                            총 {{ total_paid|intcomma }}원
-                        </span>
-                    </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-base font-bold text-green-600">
+                                총 {{ total_paid|intcomma }}원
+                            </span>
+                            <svg id="paid-sales-chevron" class="w-4 h-4 text-gray-400 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </button>
 
+                    <div id="paid-sales-section" class="hidden">
                     {% if paid_sales %}
                     <!-- 결제완료 카드 목록 -->
                     <div class="divide-y divide-gray-100">
@@ -181,10 +181,29 @@
                         결제 완료 내역이 없습니다.
                     </div>
                     {% endif %}
+                    </div><!-- /paid-sales-section -->
                 </div>
+
+                <script>
+                function togglePaidSales() {
+                    const section = document.getElementById('paid-sales-section');
+                    const chevron = document.getElementById('paid-sales-chevron');
+                    section.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-180');
+                }
+                </script>
 
             </div><!-- /교재 카테고리 -->
 
+        </div>
+        {% endif %}
+
+        <!-- 입금 계좌 안내 -->
+        {% if student and unpaid_sales %}
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl px-5 py-4 mt-4">
+            <p class="text-sm text-yellow-800 text-center">
+                <strong>입금 계좌:</strong> {{ bank_account }}
+            </p>
         </div>
         {% endif %}
 
