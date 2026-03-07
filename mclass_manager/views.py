@@ -22,9 +22,20 @@ class AdminLoginView(LoginView):
 class IndexView(TemplateView):
     template_name = 'index.html'
 
+    # 공개 홈페이지로 서빙할 호스트 목록
+    PUBLIC_HOSTS = ('mclass.co.kr', 'www.mclass.co.kr')
+
     def get(self, request, *args, **kwargs):
+        host = request.get_host().split(':')[0].lower()
+        # 공개 호스트이고 관리자가 아닌 경우 → 홈페이지
+        if host in self.PUBLIC_HOSTS and not (
+            request.user.is_authenticated and request.user.is_staff
+        ):
+            from homepage.views import homepage_index
+            return homepage_index(request)
+
         if request.user.is_authenticated:
-            # 로그인된 사용자는 대시보드를 보여줌
+            # 로그인된 관리자는 대시보드를 보여줌
             self.template_name = 'dashboard.html'
         return super().get(request, *args, **kwargs)
 

@@ -73,6 +73,11 @@ class TeacherAccessRestrictionMiddleware:
         r'^/static/',  # 정적 파일
         r'^/media/',  # 미디어 파일
         r'^/__debug__/',  # 디버그 툴바
+        # 홈페이지 공개 페이지
+        r'^/notice/',
+        r'^/column/',
+        r'^/news/',
+        r'^/about/',
     ]
 
     def __init__(self, get_response):
