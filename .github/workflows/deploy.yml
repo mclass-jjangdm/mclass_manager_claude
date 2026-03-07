@@ -71,8 +71,8 @@ jobs:
             # 새 이미지로 web 컨테이너 강제 재생성
             docker compose -f docker-compose.prod.yml up -d --force-recreate web
 
-            # 마이그레이션 실행
-            docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput
+            # 마이그레이션 실행 (--fake-initial: 테이블 이미 존재 시 충돌 방지)
+            docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput --fake-initial
 
             # 정적 파일 수집
             docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput
