@@ -178,8 +178,12 @@
                     <a href="{% url 'payment:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">💳 납부 현황</a>
                 </div>
 
-                <!-- 데스크탑 우측: DB백업 + 로그아웃 -->
+                <!-- 데스크탑 우측: 홈페이지 + DB백업 + 로그아웃 -->
                 <div class="hidden md:flex items-center gap-2 ml-auto">
+                    <a href="https://mclass.co.kr/"
+                       class="text-gray-300 hover:text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-gray-700 flex items-center gap-1">
+                        🏠 홈페이지
+                    </a>
                     {% if user.is_superuser %}
                     <form method="post" action="{% url 'db_backup' %}" class="inline">
                         {% csrf_token %}
@@ -233,8 +237,12 @@
                         <span class="text-base">💳</span> 납부 현황
                     </a>
                 </div>
-                <!-- 하단 구분선 + 로그아웃/DB백업 -->
+                <!-- 하단 구분선 + 홈페이지/로그아웃/DB백업 -->
                 <div class="border-t border-gray-700 mt-3 pt-3 flex items-center justify-between gap-2">
+                    <a href="https://mclass.co.kr/"
+                       class="flex-1 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium text-center">
+                        🏠 홈페이지
+                    </a>
                     {% if user.is_superuser %}
                     <form method="post" action="{% url 'db_backup' %}" class="flex-1">
                         {% csrf_token %}
