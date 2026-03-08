@@ -109,12 +109,47 @@ def _require_staff(request):
     return False
 
 
+# ── 홈페이지 콘텐츠 관리 목록 (관리자용, base.html 사용) ──
+
+@login_required
+def manage_notices(request):
+    """공지사항 관리 목록"""
+    if _require_staff(request):
+        return redirect('homepage:notice_list')
+    qs = Notice.objects.all()
+    paginator = Paginator(qs, 15)
+    notices = paginator.get_page(request.GET.get('page'))
+    return render(request, 'homepage/manage_notices.html', {'notices': notices})
+
+
+@login_required
+def manage_columns(request):
+    """원장칼럼 관리 목록"""
+    if _require_staff(request):
+        return redirect('homepage:column_list')
+    qs = Column.objects.all()
+    paginator = Paginator(qs, 15)
+    columns = paginator.get_page(request.GET.get('page'))
+    return render(request, 'homepage/manage_columns.html', {'columns': columns})
+
+
+@login_required
+def manage_news(request):
+    """입시뉴스 관리 목록"""
+    if _require_staff(request):
+        return redirect('homepage:news_list')
+    qs = ExamNews.objects.all()
+    paginator = Paginator(qs, 15)
+    news_list = paginator.get_page(request.GET.get('page'))
+    return render(request, 'homepage/manage_news.html', {'news_list': news_list})
+
+
 # ── 공지사항 CRUD ──
 
 @login_required
 def notice_create(request):
     if _require_staff(request):
-        return redirect('homepage:notice_list')
+        return redirect('homepage:manage_notices')
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         content = request.POST.get('content', '').strip()
@@ -123,7 +158,7 @@ def notice_create(request):
             Notice.objects.create(title=title, content=content,
                                   is_published=is_published, author=request.user)
             messages.success(request, '공지사항이 등록되었습니다.')
-            return redirect('homepage:notice_list')
+            return redirect('homepage:manage_notices')
         messages.error(request, '제목과 내용을 입력해 주세요.')
     return render(request, 'homepage/notice_form.html', {'form_title': '공지사항 작성'})
 
@@ -131,7 +166,7 @@ def notice_create(request):
 @login_required
 def notice_update(request, pk):
     if _require_staff(request):
-        return redirect('homepage:notice_list')
+        return redirect('homepage:manage_notices')
     notice = get_object_or_404(Notice, pk=pk)
     if request.method == 'POST':
         notice.title = request.POST.get('title', '').strip()
@@ -140,7 +175,7 @@ def notice_update(request, pk):
         if notice.title and notice.content:
             notice.save()
             messages.success(request, '공지사항이 수정되었습니다.')
-            return redirect('homepage:notice_detail', pk=pk)
+            return redirect('homepage:manage_notices')
         messages.error(request, '제목과 내용을 입력해 주세요.')
     return render(request, 'homepage/notice_form.html', {
         'object': notice, 'form_title': '공지사항 수정'
@@ -150,15 +185,15 @@ def notice_update(request, pk):
 @login_required
 def notice_delete(request, pk):
     if _require_staff(request):
-        return redirect('homepage:notice_list')
+        return redirect('homepage:manage_notices')
     notice = get_object_or_404(Notice, pk=pk)
     if request.method == 'POST':
         notice.delete()
         messages.success(request, '공지사항이 삭제되었습니다.')
-        return redirect('homepage:notice_list')
+        return redirect('homepage:manage_notices')
     return render(request, 'homepage/confirm_delete.html', {
         'object_title': notice.title,
-        'cancel_url': f'/notice/{pk}/',
+        'cancel_url': '/manage/notices/',
     })
 
 
@@ -167,7 +202,7 @@ def notice_delete(request, pk):
 @login_required
 def column_create(request):
     if _require_staff(request):
-        return redirect('homepage:column_list')
+        return redirect('homepage:manage_columns')
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         content = request.POST.get('content', '').strip()
@@ -176,7 +211,7 @@ def column_create(request):
             Column.objects.create(title=title, content=content,
                                   is_published=is_published, author=request.user)
             messages.success(request, '칼럼이 등록되었습니다.')
-            return redirect('homepage:column_list')
+            return redirect('homepage:manage_columns')
         messages.error(request, '제목과 내용을 입력해 주세요.')
     return render(request, 'homepage/column_form.html', {'form_title': '원장칼럼 작성'})
 
@@ -184,7 +219,7 @@ def column_create(request):
 @login_required
 def column_update(request, pk):
     if _require_staff(request):
-        return redirect('homepage:column_list')
+        return redirect('homepage:manage_columns')
     column = get_object_or_404(Column, pk=pk)
     if request.method == 'POST':
         column.title = request.POST.get('title', '').strip()
@@ -193,7 +228,7 @@ def column_update(request, pk):
         if column.title and column.content:
             column.save()
             messages.success(request, '칼럼이 수정되었습니다.')
-            return redirect('homepage:column_detail', pk=pk)
+            return redirect('homepage:manage_columns')
         messages.error(request, '제목과 내용을 입력해 주세요.')
     return render(request, 'homepage/column_form.html', {
         'object': column, 'form_title': '원장칼럼 수정'
@@ -203,15 +238,15 @@ def column_update(request, pk):
 @login_required
 def column_delete(request, pk):
     if _require_staff(request):
-        return redirect('homepage:column_list')
+        return redirect('homepage:manage_columns')
     column = get_object_or_404(Column, pk=pk)
     if request.method == 'POST':
         column.delete()
         messages.success(request, '칼럼이 삭제되었습니다.')
-        return redirect('homepage:column_list')
+        return redirect('homepage:manage_columns')
     return render(request, 'homepage/confirm_delete.html', {
         'object_title': column.title,
-        'cancel_url': f'/column/{pk}/',
+        'cancel_url': '/manage/columns/',
     })
 
 
@@ -220,7 +255,7 @@ def column_delete(request, pk):
 @login_required
 def news_create(request):
     if _require_staff(request):
-        return redirect('homepage:news_list')
+        return redirect('homepage:manage_news')
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         content = request.POST.get('content', '').strip()
@@ -235,7 +270,7 @@ def news_create(request):
                 original_url=original_url, is_published=is_published,
             )
             messages.success(request, '입시뉴스가 등록되었습니다.')
-            return redirect('homepage:news_list')
+            return redirect('homepage:manage_news')
         messages.error(request, '제목과 내용을 입력해 주세요.')
     return render(request, 'homepage/news_form.html', {'form_title': '입시뉴스 추가'})
 
@@ -243,7 +278,7 @@ def news_create(request):
 @login_required
 def news_update(request, pk):
     if _require_staff(request):
-        return redirect('homepage:news_list')
+        return redirect('homepage:manage_news')
     news = get_object_or_404(ExamNews, pk=pk)
     if request.method == 'POST':
         news.title = request.POST.get('title', '').strip()
@@ -255,7 +290,7 @@ def news_update(request, pk):
         if news.title and news.content:
             news.save()
             messages.success(request, '입시뉴스가 수정되었습니다.')
-            return redirect('homepage:news_detail', pk=pk)
+            return redirect('homepage:manage_news')
         messages.error(request, '제목과 내용을 입력해 주세요.')
     return render(request, 'homepage/news_form.html', {
         'object': news, 'form_title': '입시뉴스 수정'
@@ -265,15 +300,15 @@ def news_update(request, pk):
 @login_required
 def news_delete(request, pk):
     if _require_staff(request):
-        return redirect('homepage:news_list')
+        return redirect('homepage:manage_news')
     news = get_object_or_404(ExamNews, pk=pk)
     if request.method == 'POST':
         news.delete()
         messages.success(request, '입시뉴스가 삭제되었습니다.')
-        return redirect('homepage:news_list')
+        return redirect('homepage:manage_news')
     return render(request, 'homepage/confirm_delete.html', {
         'object_title': news.title,
-        'cancel_url': f'/news/{pk}/',
+        'cancel_url': '/manage/news/',
     })
 
 

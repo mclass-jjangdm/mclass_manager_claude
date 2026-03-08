@@ -4,6 +4,11 @@ from . import views
 app_name = 'homepage'
 
 urlpatterns = [
+    # ── 홈페이지 콘텐츠 관리 (관리자 전용, base.html 사용) ──
+    path('manage/notices/', views.manage_notices, name='manage_notices'),
+    path('manage/columns/', views.manage_columns, name='manage_columns'),
+    path('manage/news/', views.manage_news, name='manage_news'),
+
     # 공지사항
     path('notice/', views.notice_list, name='notice_list'),
     path('notice/create/', views.notice_create, name='notice_create'),
