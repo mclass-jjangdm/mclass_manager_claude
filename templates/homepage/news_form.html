@@ -77,8 +77,8 @@
                     내용
                     <span class="text-gray-400 font-normal text-xs ml-1">(URL에서 가져온 내용을 편집하거나 직접 입력)</span>
                 </label>
-                <textarea id="form-content" name="content" rows="14"
-                          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm resize-y"
+                <textarea id="form-content" name="content"
+                          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
                           placeholder="뉴스 내용을 입력하세요">{{ object.content|default:'' }}</textarea>
             </div>
 
@@ -139,7 +139,14 @@ function scrapeUrl() {
         }
 
         if (data.title) document.getElementById('form-title').value = data.title;
-        if (data.content) document.getElementById('form-content').value = data.content;
+        if (data.content) {
+            // CKEditor 인스턴스가 있으면 setData() 사용, 없으면 textarea에 직접 입력
+            if (window._newsEditor) {
+                window._newsEditor.setData(data.content);
+            } else {
+                document.getElementById('form-content').value = data.content;
+            }
+        }
         if (data.source_name) document.getElementById('form-source-name').value = data.source_name;
         if (data.original_url) document.getElementById('form-original-url').value = data.original_url;
 
@@ -166,5 +173,34 @@ document.getElementById('scrape-url').addEventListener('keydown', function(e) {
         scrapeUrl();
     }
 });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/translations/ko.js"></script>
+<script>
+ClassicEditor
+    .create(document.getElementById('form-content'), {
+        language: 'ko',
+        toolbar: {
+            items: [
+                'heading', '|',
+                'bold', 'italic', 'underline', 'strikethrough', '|',
+                'link', '|',
+                'bulletedList', 'numberedList', '|',
+                'outdent', 'indent', '|',
+                'blockQuote', '|',
+                'undo', 'redo'
+            ]
+        }
+    })
+    .then(editor => {
+        window._newsEditor = editor;
+        document.querySelector('form').addEventListener('submit', function () {
+            document.getElementById('form-content').value = editor.getData();
+        });
+    })
+    .catch(console.error);
 </script>
 {% endblock %}

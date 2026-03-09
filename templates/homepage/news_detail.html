@@ -52,7 +52,7 @@
             </div>
         </div>
         <div class="px-8 py-8">
-            <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">{{ news.content }}</div>
+            <div class="rich-text max-w-none text-gray-700 leading-relaxed text-sm">{{ news.content|safe }}</div>
         </div>
     </article>
 

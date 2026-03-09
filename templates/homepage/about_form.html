@@ -39,16 +39,16 @@
             <!-- 학원 소개 -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">학원 소개</label>
-                <textarea name="intro_text" rows="8"
-                          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm resize-y"
+                <textarea name="intro_text" id="id_intro_text"
+                          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
                           placeholder="학원 소개 내용을 입력하세요">{{ object.intro_text|default:'' }}</textarea>
             </div>
 
             <!-- 교육 비전 -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">교육 비전</label>
-                <textarea name="vision_text" rows="6"
-                          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm resize-y"
+                <textarea name="vision_text" id="id_vision_text"
+                          class="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm"
                           placeholder="교육 비전 및 목표를 입력하세요">{{ object.vision_text|default:'' }}</textarea>
             </div>
 
@@ -93,4 +93,56 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/translations/ko.js"></script>
+<script>
+const form = document.querySelector('form');
+let introEditor, visionEditor;
+
+ClassicEditor
+    .create(document.getElementById('id_intro_text'), {
+        language: 'ko',
+        toolbar: {
+            items: [
+                'heading', '|',
+                'bold', 'italic', 'underline', 'strikethrough', '|',
+                'link', '|',
+                'bulletedList', 'numberedList', '|',
+                'outdent', 'indent', '|',
+                'blockQuote', '|',
+                'undo', 'redo'
+            ]
+        }
+    })
+    .then(editor => {
+        introEditor = editor;
+    })
+    .catch(console.error);
+
+ClassicEditor
+    .create(document.getElementById('id_vision_text'), {
+        language: 'ko',
+        toolbar: {
+            items: [
+                'heading', '|',
+                'bold', 'italic', 'underline', '|',
+                'bulletedList', 'numberedList', '|',
+                'blockQuote', '|',
+                'undo', 'redo'
+            ]
+        }
+    })
+    .then(editor => {
+        visionEditor = editor;
+    })
+    .catch(console.error);
+
+form.addEventListener('submit', function () {
+    if (introEditor)  document.getElementById('id_intro_text').value  = introEditor.getData();
+    if (visionEditor) document.getElementById('id_vision_text').value = visionEditor.getData();
+});
+</script>
 {% endblock %}

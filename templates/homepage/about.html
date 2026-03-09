@@ -36,7 +36,7 @@
             <span class="w-1 h-5 bg-indigo-600 rounded-full inline-block"></span>
             학원 소개
         </h3>
-        <div class="text-gray-700 leading-relaxed whitespace-pre-line text-sm">{{ intro.intro_text }}</div>
+        <div class="rich-text text-gray-700 leading-relaxed text-sm">{{ intro.intro_text|safe }}</div>
     </section>
     {% endif %}
 
@@ -47,7 +47,7 @@
             <span class="w-1 h-5 bg-purple-600 rounded-full inline-block"></span>
             교육 비전
         </h3>
-        <div class="text-gray-700 leading-relaxed whitespace-pre-line text-sm">{{ intro.vision_text }}</div>
+        <div class="rich-text text-gray-700 leading-relaxed text-sm">{{ intro.vision_text|safe }}</div>
     </section>
     {% endif %}
 
