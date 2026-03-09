@@ -1,5 +1,5 @@
 {% extends 'homepage/base_public.html' %}
-{% load django_summernote %}
+{% load static %}
 
 {% block title %}학원 소개 수정 - 엠클래스{% endblock %}
 
@@ -97,11 +97,13 @@
 {% endblock %}
 
 {% block extra_head %}
-{% summernote_head %}
+<link href="{% static 'summernote/summernote-lite.min.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block extra_js %}
-{% summernote_body %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="{% static 'summernote/summernote-lite.min.js' %}"></script>
+<script src="{% static 'summernote/lang/summernote-ko-KR.min.js' %}"></script>
 <script>
 $(document).ready(function () {
     var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
