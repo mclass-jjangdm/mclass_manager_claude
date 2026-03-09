@@ -1,10 +1,19 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
+
 from . import views
 
 app_name = 'homepage'
 
 urlpatterns = [
-    # ── 홈페이지 콘텐츠 관리 (관리자 전용, base.html 사용) ──
+    # ── 로그인 / 로그아웃 (mclass.co.kr 자체 인증) ──
+    path('login/', auth_views.LoginView.as_view(
+        template_name='homepage/login.html',
+        redirect_authenticated_user=True,
+    ), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+
+    # ── 홈페이지 콘텐츠 관리 (관리자 전용) ──
     path('manage/notices/', views.manage_notices, name='manage_notices'),
     path('manage/columns/', views.manage_columns, name='manage_columns'),
     path('manage/news/', views.manage_news, name='manage_news'),

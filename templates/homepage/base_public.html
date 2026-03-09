@@ -48,22 +48,29 @@
             </span>
             <div class="flex items-center gap-1">
                 <a href="/manage/notices/"
-                   class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors flex items-center gap-1">
-                    📢 공지사항 관리
+                   class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors">
+                    📢 공지사항
                 </a>
                 <a href="/manage/columns/"
-                   class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors flex items-center gap-1">
-                    ✍️ 원장칼럼 관리
+                   class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors">
+                    ✍️ 원장칼럼
                 </a>
                 <a href="/manage/news/"
-                   class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors flex items-center gap-1">
-                    📰 입시뉴스 관리
+                   class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors">
+                    📰 입시뉴스
                 </a>
-                <span class="text-indigo-400">|</span>
                 <a href="/about/update/"
-                   class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors flex items-center gap-1">
-                    🏫 학원소개 수정
+                   class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors">
+                    🏫 학원소개
                 </a>
+                <span class="text-indigo-400 mx-1">|</span>
+                <form method="post" action="/logout/" class="inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="px-2.5 py-1 rounded hover:bg-indigo-600 transition-colors text-indigo-200">
+                        로그아웃
+                    </button>
+                </form>
             </div>
         </div>
     </div>

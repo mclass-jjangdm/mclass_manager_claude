@@ -303,10 +303,6 @@ if not DEBUG:
     SESSION_COOKIE_AGE = 3600 * 8  # 8시간
     SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-    # 서브도메인 간 세션/CSRF 공유 (mclass.co.kr ↔ manager.mclass.co.kr)
-    SESSION_COOKIE_DOMAIN = '.mclass.co.kr'
-    CSRF_COOKIE_DOMAIN = '.mclass.co.kr'
-
 
 # ============================================
 # 파일 업로드 보안 설정

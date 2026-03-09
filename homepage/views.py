@@ -111,7 +111,7 @@ def _require_staff(request):
 
 # ── 홈페이지 콘텐츠 관리 목록 (관리자용, base.html 사용) ──
 
-@login_required
+@login_required(login_url='/login/')
 def manage_notices(request):
     """공지사항 관리 목록"""
     if _require_staff(request):
@@ -122,7 +122,7 @@ def manage_notices(request):
     return render(request, 'homepage/manage_notices.html', {'notices': notices})
 
 
-@login_required
+@login_required(login_url='/login/')
 def manage_columns(request):
     """원장칼럼 관리 목록"""
     if _require_staff(request):
@@ -133,7 +133,7 @@ def manage_columns(request):
     return render(request, 'homepage/manage_columns.html', {'columns': columns})
 
 
-@login_required
+@login_required(login_url='/login/')
 def manage_news(request):
     """입시뉴스 관리 목록"""
     if _require_staff(request):
@@ -146,7 +146,7 @@ def manage_news(request):
 
 # ── 공지사항 CRUD ──
 
-@login_required
+@login_required(login_url='/login/')
 def notice_create(request):
     if _require_staff(request):
         return redirect('homepage:manage_notices')
@@ -163,7 +163,7 @@ def notice_create(request):
     return render(request, 'homepage/notice_form.html', {'form_title': '공지사항 작성'})
 
 
-@login_required
+@login_required(login_url='/login/')
 def notice_update(request, pk):
     if _require_staff(request):
         return redirect('homepage:manage_notices')
@@ -182,7 +182,7 @@ def notice_update(request, pk):
     })
 
 
-@login_required
+@login_required(login_url='/login/')
 def notice_delete(request, pk):
     if _require_staff(request):
         return redirect('homepage:manage_notices')
@@ -199,7 +199,7 @@ def notice_delete(request, pk):
 
 # ── 원장칼럼 CRUD ──
 
-@login_required
+@login_required(login_url='/login/')
 def column_create(request):
     if _require_staff(request):
         return redirect('homepage:manage_columns')
@@ -216,7 +216,7 @@ def column_create(request):
     return render(request, 'homepage/column_form.html', {'form_title': '원장칼럼 작성'})
 
 
-@login_required
+@login_required(login_url='/login/')
 def column_update(request, pk):
     if _require_staff(request):
         return redirect('homepage:manage_columns')
@@ -235,7 +235,7 @@ def column_update(request, pk):
     })
 
 
-@login_required
+@login_required(login_url='/login/')
 def column_delete(request, pk):
     if _require_staff(request):
         return redirect('homepage:manage_columns')
@@ -252,7 +252,7 @@ def column_delete(request, pk):
 
 # ── 입시뉴스 CRUD + 스크래핑 ──
 
-@login_required
+@login_required(login_url='/login/')
 def news_create(request):
     if _require_staff(request):
         return redirect('homepage:manage_news')
@@ -275,7 +275,7 @@ def news_create(request):
     return render(request, 'homepage/news_form.html', {'form_title': '입시뉴스 추가'})
 
 
-@login_required
+@login_required(login_url='/login/')
 def news_update(request, pk):
     if _require_staff(request):
         return redirect('homepage:manage_news')
@@ -297,7 +297,7 @@ def news_update(request, pk):
     })
 
 
-@login_required
+@login_required(login_url='/login/')
 def news_delete(request, pk):
     if _require_staff(request):
         return redirect('homepage:manage_news')
@@ -312,7 +312,7 @@ def news_delete(request, pk):
     })
 
 
-@login_required
+@login_required(login_url='/login/')
 def news_scrape(request):
     """URL에서 기사 제목/내용 스크래핑 (AJAX)"""
     if not request.user.is_staff:
@@ -387,7 +387,7 @@ def news_scrape(request):
 
 # ── 학원소개 ──
 
-@login_required
+@login_required(login_url='/login/')
 def about_update(request):
     if _require_staff(request):
         return redirect('homepage:about')
