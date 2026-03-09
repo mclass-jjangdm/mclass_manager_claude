@@ -10,6 +10,7 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(
         template_name='homepage/login.html',
         redirect_authenticated_user=True,
+        next_page='/',           # 로그인 성공 후 항상 mclass.co.kr 홈으로
     ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
 

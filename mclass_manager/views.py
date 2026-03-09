@@ -27,15 +27,13 @@ class IndexView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         host = request.get_host().split(':')[0].lower()
-        # 공개 호스트이고 관리자가 아닌 경우 → 홈페이지
-        if host in self.PUBLIC_HOSTS and not (
-            request.user.is_authenticated and request.user.is_staff
-        ):
+        # mclass.co.kr 는 로그인 여부·권한 무관하게 항상 공개 홈페이지
+        if host in self.PUBLIC_HOSTS:
             from homepage.views import homepage_index
             return homepage_index(request)
 
         if request.user.is_authenticated:
-            # 로그인된 관리자는 대시보드를 보여줌
+            # manager.mclass.co.kr 의 로그인된 관리자 → 대시보드
             self.template_name = 'dashboard.html'
         return super().get(request, *args, **kwargs)
 
