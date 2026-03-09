@@ -1,4 +1,5 @@
 {% extends 'homepage/base_public.html' %}
+{% load django_summernote %}
 
 {% block title %}학원 소개 수정 - 엠클래스{% endblock %}
 
@@ -95,54 +96,55 @@
 </div>
 {% endblock %}
 
+{% block extra_head %}
+{% summernote_head %}
+{% endblock %}
+
 {% block extra_js %}
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/translations/ko.js"></script>
+{% summernote_body %}
 <script>
-const form = document.querySelector('form');
-let introEditor, visionEditor;
+$(document).ready(function () {
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-ClassicEditor
-    .create(document.getElementById('id_intro_text'), {
-        language: 'ko',
-        toolbar: {
-            items: [
-                'heading', '|',
-                'bold', 'italic', 'underline', 'strikethrough', '|',
-                'link', '|',
-                'bulletedList', 'numberedList', '|',
-                'outdent', 'indent', '|',
-                'blockQuote', '|',
-                'undo', 'redo'
-            ]
-        }
-    })
-    .then(editor => {
-        introEditor = editor;
-    })
-    .catch(console.error);
+    function makeEditorOptions(selector) {
+        return {
+            lang: 'ko-KR',
+            height: 350,
+            toolbar: [
+                ['style',    ['style']],
+                ['font',     ['bold', 'underline', 'italic', 'strikethrough', 'clear']],
+                ['fontsize', ['fontsize']],
+                ['color',    ['color']],
+                ['para',     ['ul', 'ol', 'paragraph']],
+                ['table',    ['table']],
+                ['insert',   ['link', 'picture', 'hr']],
+                ['view',     ['fullscreen', 'codeview']],
+            ],
+            callbacks: {
+                onImageUpload: function (files) {
+                    var data = new FormData();
+                    data.append('file', files[0]);
+                    $.ajax({
+                        url: '/summernote/upload_attachment/',
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken },
+                        data: data, processData: false, contentType: false,
+                        success: function (res) {
+                            if (res.url) $(selector).summernote('insertImage', res.url);
+                        }
+                    });
+                }
+            }
+        };
+    }
 
-ClassicEditor
-    .create(document.getElementById('id_vision_text'), {
-        language: 'ko',
-        toolbar: {
-            items: [
-                'heading', '|',
-                'bold', 'italic', 'underline', '|',
-                'bulletedList', 'numberedList', '|',
-                'blockQuote', '|',
-                'undo', 'redo'
-            ]
-        }
-    })
-    .then(editor => {
-        visionEditor = editor;
-    })
-    .catch(console.error);
+    $('#id_intro_text').summernote(makeEditorOptions('#id_intro_text'));
+    $('#id_vision_text').summernote(makeEditorOptions('#id_vision_text'));
 
-form.addEventListener('submit', function () {
-    if (introEditor)  document.getElementById('id_intro_text').value  = introEditor.getData();
-    if (visionEditor) document.getElementById('id_vision_text').value = visionEditor.getData();
+    $('form').on('submit', function () {
+        $('#id_intro_text').val($('#id_intro_text').summernote('code'));
+        $('#id_vision_text').val($('#id_vision_text').summernote('code'));
+    });
 });
 </script>
 {% endblock %}

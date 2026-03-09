@@ -44,6 +44,8 @@ urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     # 학원 홈페이지 공개 URL (notice/, column/, news/, about/)
     path('', include('homepage.urls')),
+    # Summernote 이미지 업로드
+    path('summernote/', include('django_summernote.urls')),
     path('parent/', parent_lookup, name='parent_lookup'),
     path('parent/update/<str:student_id>/', parent_student_update, name='parent_student_update'),
     path('parent/exit/', parent_logout, name='parent_logout'),

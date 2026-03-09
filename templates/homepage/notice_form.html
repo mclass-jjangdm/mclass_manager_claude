@@ -1,4 +1,5 @@
 {% extends 'homepage/base_public.html' %}
+{% load django_summernote %}
 
 {% block title %}{{ form_title|default:"공지사항 작성" }} - 엠클래스{% endblock %}
 
@@ -62,30 +63,47 @@
 </div>
 {% endblock %}
 
+{% block extra_head %}
+{% summernote_head %}
+{% endblock %}
+
 {% block extra_js %}
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/translations/ko.js"></script>
+{% summernote_body %}
 <script>
-ClassicEditor
-    .create(document.getElementById('id_content'), {
-        language: 'ko',
-        toolbar: {
-            items: [
-                'heading', '|',
-                'bold', 'italic', 'underline', 'strikethrough', '|',
-                'link', '|',
-                'bulletedList', 'numberedList', '|',
-                'outdent', 'indent', '|',
-                'blockQuote', '|',
-                'undo', 'redo'
-            ]
+$(document).ready(function () {
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    $('#id_content').summernote({
+        lang: 'ko-KR',
+        height: 400,
+        toolbar: [
+            ['style',    ['style']],
+            ['font',     ['bold', 'underline', 'italic', 'strikethrough', 'clear']],
+            ['fontsize', ['fontsize']],
+            ['color',    ['color']],
+            ['para',     ['ul', 'ol', 'paragraph']],
+            ['table',    ['table']],
+            ['insert',   ['link', 'picture', 'hr']],
+            ['view',     ['fullscreen', 'codeview']],
+        ],
+        callbacks: {
+            onImageUpload: function (files) {
+                var data = new FormData();
+                data.append('file', files[0]);
+                $.ajax({
+                    url: '/summernote/upload_attachment/',
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    data: data, processData: false, contentType: false,
+                    success: function (res) {
+                        if (res.url) $('#id_content').summernote('insertImage', res.url);
+                    }
+                });
+            }
         }
-    })
-    .then(editor => {
-        document.querySelector('form').addEventListener('submit', function () {
-            document.getElementById('id_content').value = editor.getData();
-        });
-    })
-    .catch(console.error);
+    });
+    $('form').on('submit', function () {
+        $('#id_content').val($('#id_content').summernote('code'));
+    });
+});
 </script>
 {% endblock %}

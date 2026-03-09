@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'import_export',
+    'django_summernote',
     'common',
     'teachers',
     'students',
@@ -83,6 +84,29 @@ INSTALLED_APPS = [
 # Crispy Forms 설정
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+# Summernote 설정
+SUMMERNOTE_THEME = 'lite'  # Bootstrap 의존성 없는 경량 버전
+SUMMERNOTE_CONFIG = {
+    'iframe': False,
+    'summernote': {
+        'width': '100%',
+        'height': 400,
+        'lang': 'ko-KR',
+        'toolbar': [
+            ['style',  ['style']],
+            ['font',   ['bold', 'underline', 'italic', 'strikethrough', 'clear']],
+            ['fontsize', ['fontsize']],
+            ['color',  ['color']],
+            ['para',   ['ul', 'ol', 'paragraph']],
+            ['table',  ['table']],
+            ['insert', ['link', 'picture', 'hr']],
+            ['view',   ['fullscreen', 'codeview']],
+        ],
+    },
+    'attachment_require_authentication': True,
+    'attachment_filesize_limit': 5 * 1024 * 1024,  # 5MB
+}
 
 
 

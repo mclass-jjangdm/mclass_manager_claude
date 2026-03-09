@@ -1,4 +1,5 @@
 {% extends 'homepage/base_public.html' %}
+{% load django_summernote %}
 
 {% block title %}{{ form_title|default:"입시뉴스 추가" }} - 엠클래스{% endblock %}
 
@@ -140,12 +141,8 @@ function scrapeUrl() {
 
         if (data.title) document.getElementById('form-title').value = data.title;
         if (data.content) {
-            // CKEditor 인스턴스가 있으면 setData() 사용, 없으면 textarea에 직접 입력
-            if (window._newsEditor) {
-                window._newsEditor.setData(data.content);
-            } else {
-                document.getElementById('form-content').value = data.content;
-            }
+            // Summernote API로 내용 설정
+            $('#form-content').summernote('code', data.content);
         }
         if (data.source_name) document.getElementById('form-source-name').value = data.source_name;
         if (data.original_url) document.getElementById('form-original-url').value = data.original_url;
@@ -176,31 +173,47 @@ document.getElementById('scrape-url').addEventListener('keydown', function(e) {
 </script>
 {% endblock %}
 
+{% block extra_head %}
+{% summernote_head %}
+{% endblock %}
+
 {% block extra_js %}
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/translations/ko.js"></script>
+{% summernote_body %}
 <script>
-ClassicEditor
-    .create(document.getElementById('form-content'), {
-        language: 'ko',
-        toolbar: {
-            items: [
-                'heading', '|',
-                'bold', 'italic', 'underline', 'strikethrough', '|',
-                'link', '|',
-                'bulletedList', 'numberedList', '|',
-                'outdent', 'indent', '|',
-                'blockQuote', '|',
-                'undo', 'redo'
-            ]
+$(document).ready(function () {
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    $('#form-content').summernote({
+        lang: 'ko-KR',
+        height: 400,
+        toolbar: [
+            ['style',    ['style']],
+            ['font',     ['bold', 'underline', 'italic', 'strikethrough', 'clear']],
+            ['fontsize', ['fontsize']],
+            ['color',    ['color']],
+            ['para',     ['ul', 'ol', 'paragraph']],
+            ['table',    ['table']],
+            ['insert',   ['link', 'picture', 'hr']],
+            ['view',     ['fullscreen', 'codeview']],
+        ],
+        callbacks: {
+            onImageUpload: function (files) {
+                var data = new FormData();
+                data.append('file', files[0]);
+                $.ajax({
+                    url: '/summernote/upload_attachment/',
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    data: data, processData: false, contentType: false,
+                    success: function (res) {
+                        if (res.url) $('#form-content').summernote('insertImage', res.url);
+                    }
+                });
+            }
         }
-    })
-    .then(editor => {
-        window._newsEditor = editor;
-        document.querySelector('form').addEventListener('submit', function () {
-            document.getElementById('form-content').value = editor.getData();
-        });
-    })
-    .catch(console.error);
+    });
+    $('form').on('submit', function () {
+        $('#form-content').val($('#form-content').summernote('code'));
+    });
+});
 </script>
 {% endblock %}
