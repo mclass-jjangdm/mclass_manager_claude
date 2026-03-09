@@ -39,7 +39,7 @@
                             {{ featured.title }}
                         </h3>
                         <p class="text-emerald-100 text-sm mt-2 line-clamp-2 leading-relaxed">
-                            {{ featured.content|truncatechars:120 }}
+                            {{ featured.content|striptags|truncatechars:120 }}
                         </p>
                         <div class="flex items-center justify-between mt-4">
                             <time class="text-emerald-200 text-xs">{{ featured.created_at|date:"Y년 m월 d일" }}</time>
@@ -103,7 +103,7 @@
                                 <p class="font-semibold text-gray-800 group-hover:text-violet-700 transition-colors text-sm leading-snug mb-1 line-clamp-1">
                                     {{ item.title }}
                                 </p>
-                                <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed">{{ item.content|truncatechars:80 }}</p>
+                                <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed">{{ item.content|striptags|truncatechars:80 }}</p>
                             </div>
                             <time class="text-xs text-gray-400 flex-shrink-0">{{ item.created_at|date:"m.d" }}</time>
                         </div>
