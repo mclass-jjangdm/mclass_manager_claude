@@ -71,14 +71,15 @@ jobs:
             # 새 이미지로 web 컨테이너 강제 재생성
             docker compose -f docker-compose.prod.yml up -d --force-recreate web
 
-            # 마이그레이션 실행 (--fake-initial: 테이블 이미 존재 시 충돌 방지)
-            docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput --fake-initial
+            # entrypoint.sh 초기화 완료 대기 (migrate + collectstatic + gunicorn 시작)
+            # entrypoint.sh가 컨테이너 시작 시 migrate/collectstatic을 자동 실행하므로 별도 실행 불필요
+            echo "컨테이너 초기화 대기 중..."
+            sleep 30
+            echo "최근 컨테이너 로그:"
+            docker logs mclass_web --tail 10
 
-            # 정적 파일 수집
-            docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput
-
-            # 오래된 이미지 정리
-            docker image prune -f
+            # 오래된 이미지 정리 (실패해도 배포는 계속)
+            docker image prune -f || true
 
             echo "배포 완료! 컨테이너 내 URL 확인:"
             docker exec mclass_web grep "class.dashboard" /app/progress/urls.py || echo "경고: class-dashboard URL 없음"
