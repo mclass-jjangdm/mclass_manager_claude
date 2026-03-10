@@ -99,15 +99,47 @@ class StudentCreateView(LoginRequiredMixin, CreateView):
     template_name = 'students/student_form.html'
     success_url = reverse_lazy('students:student_list')
 
+    def get_initial(self):
+        initial = super().get_initial()
+        consultation_pk = self.request.GET.get('consultation_pk')
+        if consultation_pk:
+            try:
+                from homepage.models import ConsultationRequest
+                c = ConsultationRequest.objects.get(pk=consultation_pk)
+                initial['name'] = c.name
+                initial['gender'] = c.gender
+                initial['grade'] = c.grade
+                initial['phone_number'] = c.phone_number
+                initial['email'] = c.email
+                initial['parent_phone'] = c.parent_phone
+                initial['interview_info'] = c.get_interview_info_text()
+            except Exception:
+                pass
+        return initial
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['consultation_pk'] = self.request.GET.get('consultation_pk')
+        return ctx
+
     def form_valid(self, form):
         student = form.save(commit=False)
         student.student_id = self.generate_student_id()
         student.save()
 
-        # Add a success message to inform the user about registration
-        messages.success(self.request, f"학생 '{student.name}' 등록되었습니다.")
+        # 상담 신청이 있으면 처리 상태를 '등록 완료'로 업데이트
+        consultation_pk = self.request.POST.get('consultation_pk') or self.request.GET.get('consultation_pk')
+        if consultation_pk:
+            try:
+                from homepage.models import ConsultationRequest
+                c = ConsultationRequest.objects.get(pk=consultation_pk)
+                c.status = 'registered'
+                c.save()
+            except Exception:
+                pass
 
-        return redirect('students:student_list')  # Redirect to the list view
+        messages.success(self.request, f"학생 '{student.name}' 등록되었습니다.")
+        return redirect('students:student_list')
 
     def generate_student_id(self):
         import random

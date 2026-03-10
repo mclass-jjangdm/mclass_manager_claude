@@ -58,6 +58,68 @@ class ExamNews(models.Model):
         return self.title
 
 
+class ConsultationRequest(models.Model):
+    """상담 신청"""
+    STATUS_CHOICES = [
+        ('new', '신규'),
+        ('contacted', '연락 완료'),
+        ('registered', '등록 완료'),
+    ]
+    GRADE_CHOICES = [
+        ('K5', '초5'), ('K6', '초6'),
+        ('K7', '중1'), ('K8', '중2'), ('K9', '중3'),
+        ('K10', '고1'), ('K11', '고2'), ('K12', '고3'),
+    ]
+    GENDER_CHOICES = [('M', '남'), ('F', '여')]
+
+    # 기본 정보
+    name = models.CharField(max_length=50, verbose_name='이름')
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, verbose_name='성별')
+    school = models.CharField(max_length=100, verbose_name='학교')
+    grade = models.CharField(max_length=3, choices=GRADE_CHOICES, verbose_name='학년')
+    phone_number = models.CharField(max_length=20, verbose_name='학생 전화번호')
+    email = models.EmailField(blank=True, verbose_name='이메일')
+    parent_phone = models.CharField(max_length=20, verbose_name='부모님 전화번호')
+
+    # 상담 추가 정보
+    subjects = models.CharField(max_length=300, blank=True, verbose_name='상담 과목')
+    learning_methods = models.CharField(max_length=200, blank=True, verbose_name='기존 학습 방법')
+    current_status = models.TextField(blank=True, verbose_name='현재 학습 상황')
+    current_textbook = models.CharField(max_length=200, blank=True, verbose_name='학습 중인 교재')
+    last_score = models.IntegerField(null=True, blank=True, verbose_name='직전 학기 점수')
+    expectation = models.TextField(blank=True, verbose_name='학원에 바라는 점')
+
+    # 관리 정보
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name='처리 상태')
+    admin_memo = models.TextField(blank=True, verbose_name='관리자 메모')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='신청일시')
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '상담 신청'
+        verbose_name_plural = '상담 신청'
+
+    def __str__(self):
+        return f"{self.name} ({self.get_grade_display()}) - {self.created_at.strftime('%Y.%m.%d')}"
+
+    def get_interview_info_text(self):
+        """StudentCreateView의 interview_info 필드에 채울 형식화된 텍스트"""
+        lines = ['[상담 신청 정보]', f'학교(입력): {self.school}']
+        if self.subjects:
+            lines.append(f'상담 과목: {self.subjects}')
+        if self.learning_methods:
+            lines.append(f'기존 학습 방법: {self.learning_methods}')
+        if self.current_status:
+            lines.append(f'현재 학습 상황: {self.current_status}')
+        if self.current_textbook:
+            lines.append(f'학습 중인 교재: {self.current_textbook}')
+        if self.last_score is not None:
+            lines.append(f'직전 학기 점수: {self.last_score}점')
+        if self.expectation:
+            lines.append(f'학원에 바라는 점: {self.expectation}')
+        return '\n'.join(lines)
+
+
 class SchoolIntro(models.Model):
     """학원 소개 (singleton, pk=1 고정)"""
     academy_name = models.CharField(max_length=100, default='엠클래스 수학과학전문학원', verbose_name='학원명')

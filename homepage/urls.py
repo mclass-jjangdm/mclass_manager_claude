@@ -44,4 +44,12 @@ urlpatterns = [
     # 학원소개
     path('about/', views.about, name='about'),
     path('about/update/', views.about_update, name='about_update'),
+
+    # 상담 신청 (공개)
+    path('consult/', views.consultation_create, name='consultation_create'),
+    path('consult/success/', views.consultation_success, name='consultation_success'),
+
+    # 상담 신청 관리 (관리자)
+    path('manage/consultations/', views.manage_consultations, name='manage_consultations'),
+    path('manage/consultations/<int:pk>/status/', views.consultation_update_status, name='consultation_update_status'),
 ]

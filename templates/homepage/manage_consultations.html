@@ -1,0 +1,198 @@
+{% extends 'homepage/base_public.html' %}
+
+{% block title %}상담 신청 관리 - 엠클래스{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+
+    <!-- 헤더 -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                📋 상담 신청 관리
+            </h1>
+            <p class="text-sm text-gray-500 mt-0.5">
+                홈페이지를 통해 접수된 상담 신청 목록입니다.
+                {% if new_count %}<span class="text-indigo-600 font-semibold">신규 {{ new_count }}건</span> 대기 중{% endif %}
+            </p>
+        </div>
+        <a href="/consult/" target="_blank"
+           class="inline-flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            상담 신청 페이지
+        </a>
+    </div>
+
+    <!-- 상태 필터 -->
+    <div class="flex gap-2 mb-5 flex-wrap">
+        <a href="/manage/consultations/"
+           class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors {% if not status_filter %}bg-indigo-600 text-white border-indigo-600{% else %}bg-white text-gray-600 border-gray-200 hover:bg-gray-50{% endif %}">
+            전체
+        </a>
+        <a href="?status=new"
+           class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors {% if status_filter == 'new' %}bg-indigo-600 text-white border-indigo-600{% else %}bg-white text-gray-600 border-gray-200 hover:bg-gray-50{% endif %}">
+            신규
+        </a>
+        <a href="?status=contacted"
+           class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors {% if status_filter == 'contacted' %}bg-indigo-600 text-white border-indigo-600{% else %}bg-white text-gray-600 border-gray-200 hover:bg-gray-50{% endif %}">
+            연락 완료
+        </a>
+        <a href="?status=registered"
+           class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors {% if status_filter == 'registered' %}bg-indigo-600 text-white border-indigo-600{% else %}bg-white text-gray-600 border-gray-200 hover:bg-gray-50{% endif %}">
+            등록 완료
+        </a>
+    </div>
+
+    <!-- 목록 -->
+    {% if consultations %}
+    <div class="space-y-3">
+        {% for c in consultations %}
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+
+            <!-- 요약 헤더 (항상 표시) -->
+            <div class="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                 onclick="toggleDetail('detail-{{ c.pk }}', 'chevron-{{ c.pk }}')">
+                <!-- 상태 뱃지 -->
+                <div class="flex-shrink-0">
+                    {% if c.status == 'new' %}
+                    <span class="inline-block text-xs font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full">신규</span>
+                    {% elif c.status == 'contacted' %}
+                    <span class="inline-block text-xs font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full">연락완료</span>
+                    {% else %}
+                    <span class="inline-block text-xs font-bold text-white bg-emerald-500 px-2 py-0.5 rounded-full">등록완료</span>
+                    {% endif %}
+                </div>
+                <!-- 기본 정보 -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-semibold text-gray-800">{{ c.name }}</span>
+                        <span class="text-xs text-gray-400">{{ c.get_gender_display }} · {{ c.get_grade_display }}</span>
+                        <span class="text-xs text-gray-500">{{ c.school }}</span>
+                        <span class="hidden sm:inline text-xs text-gray-400">|</span>
+                        <span class="hidden sm:inline text-xs text-indigo-600 font-medium">{{ c.subjects }}</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5">신청일: {{ c.created_at|date:"Y년 m월 d일 H:i" }}</div>
+                </div>
+                <!-- 학생 등록 버튼 -->
+                <a href="https://manager.mclass.co.kr/students/create/?consultation_pk={{ c.pk }}"
+                   target="_blank"
+                   onclick="event.stopPropagation()"
+                   class="flex-shrink-0 hidden sm:inline-flex items-center gap-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                    학생으로 등록
+                </a>
+                <!-- 펼침 화살표 -->
+                <svg id="chevron-{{ c.pk }}" class="w-4 h-4 text-gray-400 transition-transform duration-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+
+            <!-- 상세 정보 (접힘) -->
+            <div id="detail-{{ c.pk }}" class="hidden border-t border-gray-100">
+                <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50">
+                    <!-- 연락처 -->
+                    <div class="space-y-2 text-sm">
+                        <p class="font-semibold text-gray-600 text-xs uppercase tracking-wide">연락처</p>
+                        <p><span class="text-gray-400">학생:</span> <a href="tel:{{ c.phone_number }}" class="text-indigo-600 hover:underline">{{ c.phone_number }}</a></p>
+                        <p><span class="text-gray-400">부모님:</span> <a href="tel:{{ c.parent_phone }}" class="text-indigo-600 hover:underline">{{ c.parent_phone }}</a></p>
+                        {% if c.email %}<p><span class="text-gray-400">이메일:</span> {{ c.email }}</p>{% endif %}
+                    </div>
+                    <!-- 상담 내용 -->
+                    <div class="space-y-2 text-sm">
+                        <p class="font-semibold text-gray-600 text-xs uppercase tracking-wide">상담 내용</p>
+                        {% if c.subjects %}<p><span class="text-gray-400">상담 과목:</span> {{ c.subjects }}</p>{% endif %}
+                        {% if c.learning_methods %}<p><span class="text-gray-400">기존 학습:</span> {{ c.learning_methods }}</p>{% endif %}
+                        {% if c.current_status %}<p><span class="text-gray-400">학습 상황:</span> {{ c.current_status }}</p>{% endif %}
+                        {% if c.current_textbook %}<p><span class="text-gray-400">교재:</span> {{ c.current_textbook }}</p>{% endif %}
+                        {% if c.last_score is not None %}<p><span class="text-gray-400">직전 점수:</span>
+                            <span class="font-semibold">{{ c.last_score }}점</span>
+                            <span class="inline-block ml-1 w-20 h-2 bg-gray-200 rounded-full align-middle overflow-hidden">
+                                <span class="block h-full rounded-full {% if c.last_score >= 80 %}bg-emerald-500{% elif c.last_score >= 60 %}bg-indigo-500{% elif c.last_score >= 40 %}bg-yellow-500{% else %}bg-red-400{% endif %}" style="width:{{ c.last_score }}%"></span>
+                            </span>
+                        </p>{% endif %}
+                        {% if c.expectation %}<p><span class="text-gray-400">바라는 점:</span> {{ c.expectation }}</p>{% endif %}
+                    </div>
+                </div>
+
+                <!-- 관리자 처리 -->
+                <div class="px-5 py-4 border-t border-gray-100 flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                    <form method="POST" action="{% url 'homepage:consultation_update_status' c.pk %}" class="flex-1">
+                        {% csrf_token %}
+                        <div class="flex flex-wrap gap-3 items-end">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">처리 상태</label>
+                                <select name="status" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                    <option value="new" {% if c.status == 'new' %}selected{% endif %}>신규</option>
+                                    <option value="contacted" {% if c.status == 'contacted' %}selected{% endif %}>연락 완료</option>
+                                    <option value="registered" {% if c.status == 'registered' %}selected{% endif %}>등록 완료</option>
+                                </select>
+                            </div>
+                            <div class="flex-1 min-w-40">
+                                <label class="block text-xs text-gray-500 mb-1">관리자 메모</label>
+                                <input type="text" name="admin_memo" value="{{ c.admin_memo }}"
+                                       placeholder="메모를 입력하세요"
+                                       class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            </div>
+                            <button type="submit"
+                                    class="px-4 py-1.5 bg-gray-700 hover:bg-gray-800 text-white text-sm rounded-lg transition-colors">
+                                저장
+                            </button>
+                        </div>
+                    </form>
+                    <!-- 학생 등록 (모바일에서도 표시) -->
+                    <a href="https://manager.mclass.co.kr/students/create/?consultation_pk={{ c.pk }}"
+                       target="_blank"
+                       class="sm:hidden inline-flex items-center gap-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors">
+                        학생으로 등록 →
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 페이지네이션 -->
+    {% if consultations.has_other_pages %}
+    <div class="flex justify-center gap-1 mt-6">
+        {% if consultations.has_previous %}
+        <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ consultations.previous_page_number }}"
+           class="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">이전</a>
+        {% endif %}
+        {% for num in consultations.paginator.page_range %}
+        {% if consultations.number == num %}
+        <span class="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg">{{ num }}</span>
+        {% elif num > consultations.number|add:'-3' and num < consultations.number|add:'3' %}
+        <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ num }}"
+           class="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">{{ num }}</a>
+        {% endif %}
+        {% endfor %}
+        {% if consultations.has_next %}
+        <a href="?{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ consultations.next_page_number }}"
+           class="px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">다음</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm py-16 text-center text-gray-400">
+        <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p class="text-sm">접수된 상담 신청이 없습니다.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+{% block extra_js %}
+<script>
+function toggleDetail(detailId, chevronId) {
+    const detail = document.getElementById(detailId);
+    const chevron = document.getElementById(chevronId);
+    detail.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+}
+</script>
+{% endblock %}
+{% endblock %}

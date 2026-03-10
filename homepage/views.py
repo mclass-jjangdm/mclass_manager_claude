@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Column, ExamNews, Notice, SchoolIntro
+from .models import Column, ConsultationRequest, ExamNews, Notice, SchoolIntro
 
 
 # ─────────────────────────────────────────────
@@ -95,6 +95,78 @@ def about(request):
     """학원 소개"""
     intro = SchoolIntro.get_instance()
     return render(request, 'homepage/about.html', {'intro': intro})
+
+
+SUBJECTS_CHOICES = ['중등 수학', '고등 수학', '통합 과학', '물리', '화학', '입시 상담']
+METHODS_CHOICES = ['학원', '과외', '자기 주도 학습', '기타']
+
+
+def _consult_context(post=None, errors=None):
+    checked_subjects = post.getlist('subjects') if post else []
+    checked_methods = post.getlist('learning_methods') if post else []
+    return {
+        'post': post,
+        'errors': errors or [],
+        'subjects_choices': SUBJECTS_CHOICES,
+        'methods_choices': METHODS_CHOICES,
+        'checked_subjects': checked_subjects,
+        'checked_methods': checked_methods,
+    }
+
+
+def consultation_create(request):
+    """상담 신청 (공개)"""
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        gender = request.POST.get('gender', '')
+        school = request.POST.get('school', '').strip()
+        grade = request.POST.get('grade', '')
+        phone_number = request.POST.get('phone_number', '').strip()
+        email = request.POST.get('email', '').strip()
+        parent_phone = request.POST.get('parent_phone', '').strip()
+        subjects = ', '.join(request.POST.getlist('subjects'))
+        learning_methods = ', '.join(request.POST.getlist('learning_methods'))
+        current_status = request.POST.get('current_status', '').strip()
+        current_textbook = request.POST.get('current_textbook', '').strip()
+        last_score_raw = request.POST.get('last_score', '')
+        last_score = int(last_score_raw) if last_score_raw.isdigit() else None
+        expectation = request.POST.get('expectation', '').strip()
+
+        errors = []
+        if not name:
+            errors.append('이름을 입력해 주세요.')
+        if not gender:
+            errors.append('성별을 선택해 주세요.')
+        if not school:
+            errors.append('학교를 입력해 주세요.')
+        if not grade:
+            errors.append('학년을 선택해 주세요.')
+        if not phone_number:
+            errors.append('학생 전화번호를 입력해 주세요.')
+        if not parent_phone:
+            errors.append('부모님 전화번호를 입력해 주세요.')
+        if not subjects:
+            errors.append('상담 과목을 하나 이상 선택해 주세요.')
+
+        if errors:
+            return render(request, 'homepage/consultation_form.html',
+                          _consult_context(post=request.POST, errors=errors))
+
+        ConsultationRequest.objects.create(
+            name=name, gender=gender, school=school, grade=grade,
+            phone_number=phone_number, email=email, parent_phone=parent_phone,
+            subjects=subjects, learning_methods=learning_methods,
+            current_status=current_status, current_textbook=current_textbook,
+            last_score=last_score, expectation=expectation,
+        )
+        return redirect('homepage:consultation_success')
+
+    return render(request, 'homepage/consultation_form.html', _consult_context())
+
+
+def consultation_success(request):
+    """상담 신청 완료 페이지"""
+    return render(request, 'homepage/consultation_success.html')
 
 
 # ─────────────────────────────────────────────
@@ -383,6 +455,41 @@ def news_scrape(request):
 
     except Exception as e:
         return JsonResponse({'error': f'스크래핑 실패: {str(e)}'}, status=500)
+
+
+# ── 상담 신청 관리 ──
+
+@login_required(login_url='/login/')
+def manage_consultations(request):
+    """상담 신청 목록 (관리자)"""
+    if _require_staff(request):
+        return redirect('/')
+    status_filter = request.GET.get('status', '')
+    qs = ConsultationRequest.objects.all()
+    if status_filter:
+        qs = qs.filter(status=status_filter)
+    paginator = Paginator(qs, 15)
+    consultations = paginator.get_page(request.GET.get('page'))
+    new_count = ConsultationRequest.objects.filter(status='new').count()
+    return render(request, 'homepage/manage_consultations.html', {
+        'consultations': consultations,
+        'status_filter': status_filter,
+        'new_count': new_count,
+    })
+
+
+@login_required(login_url='/login/')
+def consultation_update_status(request, pk):
+    """상담 신청 처리 상태 업데이트"""
+    if _require_staff(request):
+        return redirect('/')
+    consultation = get_object_or_404(ConsultationRequest, pk=pk)
+    if request.method == 'POST':
+        consultation.status = request.POST.get('status', consultation.status)
+        consultation.admin_memo = request.POST.get('admin_memo', '').strip()
+        consultation.save()
+        messages.success(request, f"'{consultation.name}' 상담 신청 상태가 업데이트되었습니다.")
+    return redirect('homepage:manage_consultations')
 
 
 # ── 학원소개 ──

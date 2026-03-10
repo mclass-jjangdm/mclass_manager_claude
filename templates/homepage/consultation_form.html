@@ -1,0 +1,226 @@
+{% extends 'homepage/base_public.html' %}
+
+{% block title %}상담 신청 - 엠클래스{% endblock %}
+{% block nav_consult %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+
+    <!-- 헤더 -->
+    <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center justify-center gap-2 mb-2">
+            <span class="w-1.5 h-6 bg-indigo-600 rounded-full inline-block"></span>
+            상담 신청
+        </h1>
+        <p class="text-sm text-gray-500">아래 정보를 입력하시면 담당자가 연락드립니다.</p>
+    </div>
+
+    <!-- 에러 메시지 -->
+    {% if errors %}
+    <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+        <ul class="space-y-1">
+            {% for error in errors %}
+            <li class="text-sm text-red-700 flex items-start gap-1.5">
+                <span class="mt-0.5">⚠</span> {{ error }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- ── 기본 정보 ── -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-base font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <span class="w-1 h-4 bg-indigo-600 rounded-full inline-block"></span>
+                기본 정보
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <!-- 이름 -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">이름 <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" value="{{ post.name|default:'' }}"
+                           placeholder="홍길동"
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                </div>
+
+                <!-- 성별 -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">성별 <span class="text-red-500">*</span></label>
+                    <div class="flex gap-3 mt-1">
+                        <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+                            <input type="radio" name="gender" value="M" {% if post.gender == 'M' %}checked{% endif %}
+                                   class="text-indigo-600">
+                            남학생
+                        </label>
+                        <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+                            <input type="radio" name="gender" value="F" {% if post.gender == 'F' %}checked{% endif %}
+                                   class="text-indigo-600">
+                            여학생
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 학교 -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">학교 <span class="text-red-500">*</span></label>
+                    <input type="text" name="school" value="{{ post.school|default:'' }}"
+                           placeholder="엠클래스중학교"
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                </div>
+
+                <!-- 학년 -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">학년 <span class="text-red-500">*</span></label>
+                    <select name="grade"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white">
+                        <option value="">-- 선택 --</option>
+                        <option value="K5" {% if post.grade == 'K5' %}selected{% endif %}>초5</option>
+                        <option value="K6" {% if post.grade == 'K6' %}selected{% endif %}>초6</option>
+                        <option value="K7" {% if post.grade == 'K7' %}selected{% endif %}>중1</option>
+                        <option value="K8" {% if post.grade == 'K8' %}selected{% endif %}>중2</option>
+                        <option value="K9" {% if post.grade == 'K9' %}selected{% endif %}>중3</option>
+                        <option value="K10" {% if post.grade == 'K10' %}selected{% endif %}>고1</option>
+                        <option value="K11" {% if post.grade == 'K11' %}selected{% endif %}>고2</option>
+                        <option value="K12" {% if post.grade == 'K12' %}selected{% endif %}>고3</option>
+                    </select>
+                </div>
+
+                <!-- 학생 전화번호 -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">학생 전화번호 <span class="text-red-500">*</span></label>
+                    <input type="tel" name="phone_number" value="{{ post.phone_number|default:'' }}"
+                           placeholder="010-0000-0000"
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                </div>
+
+                <!-- 이메일 -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">이메일</label>
+                    <input type="email" name="email" value="{{ post.email|default:'' }}"
+                           placeholder="example@email.com"
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                </div>
+
+                <!-- 부모님 전화번호 -->
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">부모님 전화번호 <span class="text-red-500">*</span></label>
+                    <input type="tel" name="parent_phone" value="{{ post.parent_phone|default:'' }}"
+                           placeholder="010-0000-0000"
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── 상담 정보 ── -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
+            <h2 class="text-base font-bold text-gray-700 flex items-center gap-2">
+                <span class="w-1 h-4 bg-purple-600 rounded-full inline-block"></span>
+                상담 정보
+            </h2>
+
+            <!-- 상담 과목 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">상담 과목 <span class="text-red-500">*</span> <span class="text-gray-400 font-normal">(복수 선택 가능)</span></label>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {% for subject in subjects_choices %}
+                    <label class="flex items-center gap-2 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-colors has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-400">
+                        <input type="checkbox" name="subjects" value="{{ subject }}"
+                               {% if subject in checked_subjects %}checked{% endif %}
+                               class="text-indigo-600 rounded">
+                        <span class="text-sm text-gray-700">{{ subject }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 기존 학습 방법 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">기존 학습 방법 <span class="text-gray-400 font-normal">(복수 선택 가능)</span></label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {% for method in methods_choices %}
+                    <label class="flex items-center gap-2 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition-colors has-[:checked]:bg-purple-50 has-[:checked]:border-purple-400">
+                        <input type="checkbox" name="learning_methods" value="{{ method }}"
+                               {% if method in checked_methods %}checked{% endif %}
+                               class="text-purple-600 rounded">
+                        <span class="text-sm text-gray-700">{{ method }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 현재 학습 상황 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">현재 학습 상황</label>
+                <textarea name="current_status" rows="2"
+                          placeholder="예) 전혀 하지 않음 / 공통수학1을 2단원 하는 중 / 수1·수2 개념 완료 후 문제풀이 중"
+                          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none">{{ post.current_status|default:'' }}</textarea>
+            </div>
+
+            <!-- 학습 중인 교재 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">학습 중인 교재</label>
+                <input type="text" name="current_textbook" value="{{ post.current_textbook|default:'' }}"
+                       placeholder="예) 수학의 정석, RPM, 쎈 등"
+                       class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+
+            <!-- 직전 학기 점수 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">직전 학기 점수 <span class="text-gray-400 font-normal">(100점 만점 기준)</span></label>
+                <div class="flex items-center gap-4">
+                    <input type="range" name="last_score" id="last_score" min="0" max="100" value="70"
+                           class="flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                           oninput="updateScore(this.value)">
+                    <div class="flex-shrink-0 w-20 text-center">
+                        <span id="score-display" class="text-2xl font-bold text-indigo-600">70</span>
+                        <span class="text-xs text-gray-400">점</span>
+                    </div>
+                </div>
+                <!-- 프로그레스 바 -->
+                <div class="mt-2 h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div id="score-bar" class="h-full bg-indigo-500 rounded-full transition-all duration-200" style="width:70%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>0점</span><span>25점</span><span>50점</span><span>75점</span><span>100점</span>
+                </div>
+            </div>
+
+            <!-- 학원에 바라는 점 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">학원에 바라는 점</label>
+                <textarea name="expectation" rows="3"
+                          placeholder="예) 개념부터 차근차근 다시 잡아주셨으면 합니다. / 시험 대비 문제풀이 위주로 수업하고 싶습니다."
+                          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none">{{ post.expectation|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- 제출 버튼 -->
+        <button type="submit"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-colors text-base shadow-sm">
+            상담 신청하기
+        </button>
+        <p class="text-center text-xs text-gray-400">입력하신 정보는 상담 목적으로만 사용됩니다.</p>
+
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateScore(val) {
+    document.getElementById('score-display').textContent = val;
+    document.getElementById('score-bar').style.width = val + '%';
+    // 점수에 따라 색상 변경
+    const bar = document.getElementById('score-bar');
+    if (val >= 80) bar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-200';
+    else if (val >= 60) bar.className = 'h-full bg-indigo-500 rounded-full transition-all duration-200';
+    else if (val >= 40) bar.className = 'h-full bg-yellow-500 rounded-full transition-all duration-200';
+    else bar.className = 'h-full bg-red-400 rounded-full transition-all duration-200';
+}
+</script>
+{% endblock %}
