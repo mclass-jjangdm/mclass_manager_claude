@@ -137,6 +137,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'teachers.context_processors.teacher_notices',
+                'homepage.context_processors.consultation_count',
             ],
         },
     },
@@ -287,6 +288,9 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'jjangdm@mclass.co.kr')
+
+# 관리자 알림 수신 번호 (.env에서 설정 — 예: 010-1234-5678)
+ADMIN_PHONE = os.environ.get('ADMIN_PHONE', '')
 
 
 # ============================================

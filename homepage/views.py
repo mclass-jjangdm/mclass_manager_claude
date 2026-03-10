@@ -1,13 +1,19 @@
 import json
+import logging
 from urllib.parse import urlparse
 
+from django.conf import settings as django_settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from common.utils import send_sms
 from .models import Column, ConsultationRequest, ExamNews, Notice, SchoolIntro
+
+logger = logging.getLogger(__name__)
 
 
 # ─────────────────────────────────────────────
@@ -152,13 +158,53 @@ def consultation_create(request):
             return render(request, 'homepage/consultation_form.html',
                           _consult_context(post=request.POST, errors=errors))
 
-        ConsultationRequest.objects.create(
+        obj = ConsultationRequest.objects.create(
             name=name, gender=gender, school=school, grade=grade,
             phone_number=phone_number, email=email, parent_phone=parent_phone,
             subjects=subjects, learning_methods=learning_methods,
             current_status=current_status, current_textbook=current_textbook,
             last_score=last_score, expectation=expectation,
         )
+
+        # ── 관리자 알림 발송 ──
+        grade_display = dict(ConsultationRequest.GRADE_CHOICES).get(grade, grade)
+
+        # SMS 발송 (ADMIN_PHONE 환경변수 설정 시 발송)
+        admin_phone = getattr(django_settings, 'ADMIN_PHONE', '').strip()
+        if admin_phone:
+            sms_text = (
+                f"[엠클래스] 상담 신청 접수\n"
+                f"이름: {name} ({grade_display})\n"
+                f"학교: {school}\n"
+                f"과목: {subjects}\n"
+                f"연락처: {phone_number}\n"
+                f"관리: https://mclass.co.kr/manage/consultations/"
+            )
+            ok, msg = send_sms(admin_phone, sms_text)
+            if not ok:
+                logger.warning("상담 신청 SMS 발송 실패 (pk=%s): %s", obj.pk, msg)
+
+        # 이메일 발송 (EMAIL_BACKEND 설정 시 발송)
+        try:
+            send_mail(
+                subject=f"[엠클래스] 새 상담 신청: {name} ({grade_display})",
+                message=(
+                    f"새 상담 신청이 접수되었습니다.\n\n"
+                    f"이름: {name}\n"
+                    f"학교/학년: {school} {grade_display}\n"
+                    f"학생 연락처: {phone_number}\n"
+                    f"부모님 연락처: {parent_phone}\n"
+                    f"상담 과목: {subjects}\n\n"
+                    f"관리자 페이지에서 확인하세요:\n"
+                    f"https://mclass.co.kr/manage/consultations/"
+                ),
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[django_settings.DEFAULT_FROM_EMAIL],
+                fail_silently=True,
+            )
+        except Exception as exc:
+            logger.warning("상담 신청 이메일 발송 실패 (pk=%s): %s", obj.pk, exc)
+
         return redirect('homepage:consultation_success')
 
     return render(request, 'homepage/consultation_form.html', _consult_context())
