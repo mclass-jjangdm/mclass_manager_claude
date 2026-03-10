@@ -184,26 +184,28 @@ def consultation_create(request):
             if not ok:
                 logger.warning("상담 신청 SMS 발송 실패 (pk=%s): %s", obj.pk, msg)
 
-        # 이메일 발송 (EMAIL_BACKEND 설정 시 발송)
-        try:
-            send_mail(
-                subject=f"[엠클래스] 새 상담 신청: {name} ({grade_display})",
-                message=(
-                    f"새 상담 신청이 접수되었습니다.\n\n"
-                    f"이름: {name}\n"
-                    f"학교/학년: {school} {grade_display}\n"
-                    f"학생 연락처: {phone_number}\n"
-                    f"부모님 연락처: {parent_phone}\n"
-                    f"상담 과목: {subjects}\n\n"
-                    f"관리자 페이지에서 확인하세요:\n"
-                    f"https://mclass.co.kr/manage/consultations/"
-                ),
-                from_email=django_settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[django_settings.DEFAULT_FROM_EMAIL],
-                fail_silently=True,
-            )
-        except Exception as exc:
-            logger.warning("상담 신청 이메일 발송 실패 (pk=%s): %s", obj.pk, exc)
+        # 이메일 발송 (EMAIL_HOST 환경변수가 설정된 경우에만 시도)
+        # EMAIL_HOST 미설정 시 SMTP 연결 시도로 인한 응답 지연 방지
+        if getattr(django_settings, 'EMAIL_HOST', '').strip():
+            try:
+                send_mail(
+                    subject=f"[엠클래스] 새 상담 신청: {name} ({grade_display})",
+                    message=(
+                        f"새 상담 신청이 접수되었습니다.\n\n"
+                        f"이름: {name}\n"
+                        f"학교/학년: {school} {grade_display}\n"
+                        f"학생 연락처: {phone_number}\n"
+                        f"부모님 연락처: {parent_phone}\n"
+                        f"상담 과목: {subjects}\n\n"
+                        f"관리자 페이지에서 확인하세요:\n"
+                        f"https://mclass.co.kr/manage/consultations/"
+                    ),
+                    from_email=django_settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[django_settings.DEFAULT_FROM_EMAIL],
+                    fail_silently=True,
+                )
+            except Exception as exc:
+                logger.warning("상담 신청 이메일 발송 실패 (pk=%s): %s", obj.pk, exc)
 
         return redirect('homepage:consultation_success')
 
