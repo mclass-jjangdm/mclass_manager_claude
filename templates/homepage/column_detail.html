@@ -38,7 +38,7 @@
                 <time>{{ column.created_at|date:"Y년 m월 d일" }}</time>
                 {% if column.author %}
                 <span class="text-gray-300">|</span>
-                <span>{{ column.author.get_full_name|default:column.author.username }}</span>
+                <span>원장</span>
                 {% endif %}
             </div>
         </div>
