@@ -147,8 +147,6 @@ def consultation_create(request):
             errors.append('학교를 입력해 주세요.')
         if not grade:
             errors.append('학년을 선택해 주세요.')
-        if not phone_number:
-            errors.append('학생 전화번호를 입력해 주세요.')
         if not parent_phone:
             errors.append('부모님 전화번호를 입력해 주세요.')
         if not subjects:

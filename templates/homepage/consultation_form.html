@@ -8,12 +8,21 @@
 <div class="max-w-2xl mx-auto px-4 py-10">
 
     <!-- 헤더 -->
-    <div class="text-center mb-8">
+    <div class="text-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800 flex items-center justify-center gap-2 mb-2">
             <span class="w-1.5 h-6 bg-indigo-600 rounded-full inline-block"></span>
             상담 신청
         </h1>
         <p class="text-sm text-gray-500">아래 정보를 입력하시면 담당자가 연락드립니다.</p>
+    </div>
+
+    <!-- 개인정보 안내 (최상단, 강조) -->
+    <div class="mb-6 bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-3.5 flex items-center gap-3">
+        <svg class="w-5 h-5 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <p class="text-sm text-indigo-700 font-medium">입력하신 정보는 <span class="font-bold">상담 목적으로만</span> 사용됩니다.</p>
     </div>
 
     <!-- 에러 메시지 -->
@@ -92,7 +101,7 @@
 
                 <!-- 학생 전화번호 -->
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">학생 전화번호 <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">학생 전화번호</label>
                     <input type="tel" name="phone_number" value="{{ post.phone_number|default:'' }}"
                            placeholder="010-0000-0000"
                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
@@ -117,11 +126,11 @@
             </div>
         </div>
 
-        <!-- ── 상담 정보 ── -->
+        <!-- ── 추가 정보 ── -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
             <h2 class="text-base font-bold text-gray-700 flex items-center gap-2">
                 <span class="w-1 h-4 bg-purple-600 rounded-full inline-block"></span>
-                상담 정보
+                추가 정보
             </h2>
 
             <!-- 상담 과목 -->
@@ -172,7 +181,7 @@
 
             <!-- 직전 학기 점수 -->
             <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-2">직전 학기 점수 <span class="text-gray-400 font-normal">(100점 만점 기준)</span></label>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">직전 학기 점수 <span class="text-gray-400 font-normal">(대략, 100점 만점 기준)</span></label>
                 <div class="flex items-center gap-4">
                     <input type="range" name="last_score" id="last_score" min="0" max="100" value="70"
                            class="flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-indigo-600"
@@ -193,35 +202,143 @@
 
             <!-- 학원에 바라는 점 -->
             <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">학원에 바라는 점</label>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">
+                    학원에 바라는 점
+                    <span class="text-purple-500 font-normal ml-1">진로 계획이 있으면 기록해 주세요.</span>
+                </label>
                 <textarea name="expectation" rows="3"
                           placeholder="예) 개념부터 차근차근 다시 잡아주셨으면 합니다. / 시험 대비 문제풀이 위주로 수업하고 싶습니다."
                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none">{{ post.expectation|default:'' }}</textarea>
             </div>
         </div>
 
-        <!-- 제출 버튼 -->
-        <button type="submit"
+        <!-- 제출 버튼 (클릭 시 확인 모달 표시) -->
+        <button type="button" onclick="openConfirmModal()"
                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-colors text-base shadow-sm">
             상담 신청하기
         </button>
-        <p class="text-center text-xs text-gray-400">입력하신 정보는 상담 목적으로만 사용됩니다.</p>
 
     </form>
+</div>
+
+<!-- ── 확인 모달 ── -->
+<div id="confirm-modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+     onclick="if(event.target===this) closeConfirmModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5">
+
+        <!-- 모달 헤더 -->
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="text-base font-bold text-gray-800">신청 정보 확인</h3>
+        </div>
+
+        <!-- 입력 내용 요약 -->
+        <div class="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-500">이름</span>
+                <span class="font-semibold text-gray-800" id="confirm-name">—</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">성별</span>
+                <span class="font-semibold text-gray-800" id="confirm-gender">—</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">학교 / 학년</span>
+                <span class="font-semibold text-gray-800" id="confirm-school-grade">—</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">부모님 연락처</span>
+                <span class="font-semibold text-gray-800" id="confirm-parent-phone">—</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-500">상담 과목</span>
+                <span class="font-semibold text-gray-800 text-right max-w-[60%] leading-snug" id="confirm-subjects">—</span>
+            </div>
+        </div>
+
+        <p class="text-xs text-gray-400 text-center">위 정보가 맞으면 신청을 완료해 주세요.</p>
+
+        <!-- 버튼 -->
+        <div class="flex gap-3">
+            <button type="button" onclick="closeConfirmModal()"
+                    class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors">
+                수정하기
+            </button>
+            <button type="button" onclick="submitForm()"
+                    class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-colors">
+                신청 완료
+            </button>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// ── 점수 슬라이더 ──
 function updateScore(val) {
     document.getElementById('score-display').textContent = val;
     document.getElementById('score-bar').style.width = val + '%';
-    // 점수에 따라 색상 변경
     const bar = document.getElementById('score-bar');
-    if (val >= 80) bar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-200';
+    if (val >= 80)      bar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-200';
     else if (val >= 60) bar.className = 'h-full bg-indigo-500 rounded-full transition-all duration-200';
     else if (val >= 40) bar.className = 'h-full bg-yellow-500 rounded-full transition-all duration-200';
-    else bar.className = 'h-full bg-red-400 rounded-full transition-all duration-200';
+    else                bar.className = 'h-full bg-red-400 rounded-full transition-all duration-200';
+}
+
+// ── 확인 모달 ──
+const GRADE_MAP = {K5:'초5', K6:'초6', K7:'중1', K8:'중2', K9:'중3', K10:'고1', K11:'고2', K12:'고3'};
+const GENDER_MAP = {M:'남학생', F:'여학생'};
+
+function openConfirmModal() {
+    const form = document.querySelector('form');
+    const get  = (name) => (form.elements[name] ? form.elements[name].value.trim() : '');
+
+    // 필수 항목 재검증 (서버 검증과 동일 기준)
+    const name     = get('name');
+    const gender   = get('gender');
+    const school   = get('school');
+    const grade    = get('grade');
+    const parentPhone = get('parent_phone');
+    const subjects = [...form.querySelectorAll('input[name="subjects"]:checked')]
+                         .map(el => el.value).join(', ');
+
+    const missing = [];
+    if (!name)        missing.push('이름');
+    if (!gender)      missing.push('성별');
+    if (!school)      missing.push('학교');
+    if (!grade)       missing.push('학년');
+    if (!parentPhone) missing.push('부모님 전화번호');
+    if (!subjects)    missing.push('상담 과목');
+
+    if (missing.length > 0) {
+        alert('다음 항목을 입력해 주세요:\n• ' + missing.join('\n• '));
+        return;
+    }
+
+    // 모달에 요약 정보 채우기
+    document.getElementById('confirm-name').textContent         = name;
+    document.getElementById('confirm-gender').textContent       = GENDER_MAP[gender] || gender;
+    document.getElementById('confirm-school-grade').textContent = school + ' ' + (GRADE_MAP[grade] || grade);
+    document.getElementById('confirm-parent-phone').textContent = parentPhone;
+    document.getElementById('confirm-subjects').textContent     = subjects;
+
+    document.getElementById('confirm-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirm-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function submitForm() {
+    closeConfirmModal();
+    document.querySelector('form').submit();
 }
 </script>
 {% endblock %}
