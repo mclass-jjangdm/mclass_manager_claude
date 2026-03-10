@@ -52,7 +52,7 @@
                         </a>
                     </td>
                     <td class="px-4 py-3.5 hidden sm:table-cell">
-                        <p class="text-xs text-gray-400 line-clamp-1">{{ item.content|truncatechars:60 }}</p>
+                        <p class="text-xs text-gray-400 line-clamp-1">{{ item.content|striptags|truncatechars:60|safe }}</p>
                     </td>
                     <td class="px-4 py-3.5 text-center">
                         {% if item.is_published %}
