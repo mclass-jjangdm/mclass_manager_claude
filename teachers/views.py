@@ -2199,8 +2199,8 @@ class TeacherProgressView(LoginRequiredMixin, View):
             # 각 학생별 교재 진도 정보 수집
             for assignment in assignments:
                 student = assignment.student
-                # 학생에게 지급된 교재들
-                book_sales = BookSale.objects.filter(student=student).select_related('book')
+                # 학생에게 지급된 교재들 (학습 완료 제외)
+                book_sales = BookSale.objects.filter(student=student, is_learning_completed=False).select_related('book')
 
                 books_data = []
                 for sale in book_sales:
@@ -2470,11 +2470,11 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
         # 원장 배정 학생
         director_assignments = all_assignments.filter(assignment_type='director')
 
-        # 원장 배정 학생 상세 정보 (교재 진도 포함)
+        # 원장 배정 학생 상세 정보 (교재 진도 포함, 학습 완료 제외)
         director_student_list = []
         for assignment in director_assignments:
             student = assignment.student
-            book_sales = BookSale.objects.filter(student=student).select_related('book')
+            book_sales = BookSale.objects.filter(student=student, is_learning_completed=False).select_related('book')
             books_progress = []
             for sale in book_sales:
                 if sale.book.contents.exists():
@@ -2518,8 +2518,8 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
             student = assignment.student
             teacher = assignment.teacher
 
-            # 학생의 교재별 진도 정보
-            book_sales = BookSale.objects.filter(student=student).select_related('book')
+            # 학생의 교재별 진도 정보 (학습 완료 제외)
+            book_sales = BookSale.objects.filter(student=student, is_learning_completed=False).select_related('book')
             books_progress = []
 
             for sale in book_sales:
@@ -2727,11 +2727,11 @@ class TeacherMyProgressView(LoginRequiredMixin, View):
             assignment_type='normal'
         ).select_related('student')
 
-        # 각 학생별 교재 진도 정보 수집
+        # 각 학생별 교재 진도 정보 수집 (학습 완료 제외)
         student_data = []
         for assignment in assignments:
             student = assignment.student
-            book_sales = BookSale.objects.filter(student=student).select_related('book')
+            book_sales = BookSale.objects.filter(student=student, is_learning_completed=False).select_related('book')
 
             books_data = []
             for sale in book_sales:

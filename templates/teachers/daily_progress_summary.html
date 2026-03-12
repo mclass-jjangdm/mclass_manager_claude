@@ -533,7 +533,7 @@
                                 <div class="space-y-1">
                                     {% for book_info in student_info.books %}
                                     <div class="text-sm">
-                                        <span class="text-gray-800">{{ book_info.book.title|truncatechars:30 }}</span>
+                                        <span class="text-gray-800 break-keep">{{ book_info.book.title }}</span>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -640,7 +640,7 @@
                                 {% if item.books %}
                                 <div class="space-y-1">
                                     {% for book_info in item.books %}
-                                    <div class="text-sm text-gray-800">{{ book_info.book.title|truncatechars:25 }}</div>
+                                    <div class="text-sm text-gray-800 break-keep">{{ book_info.book.title }}</div>
                                     {% endfor %}
                                 </div>
                                 {% else %}
