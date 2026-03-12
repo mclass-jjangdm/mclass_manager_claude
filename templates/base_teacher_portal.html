@@ -327,15 +327,15 @@
                         {% for notice in global_notices %}
                         <div class="notice-item flex items-center gap-2 rounded p-2 border transition-colors {% if notice.is_read_by_user %}bg-gray-50 border-gray-200{% else %}bg-white border-amber-300{% endif %}" data-notice-id="{{ notice.pk }}">
                             <a href="{% url 'teachers:message_detail' notice.pk %}"
-                               class="flex-grow hover:opacity-80">
-                                <div class="flex justify-between items-center">
-                                    <span class="{% if notice.is_read_by_user %}text-gray-600{% else %}font-medium text-amber-900{% endif %} text-sm flex items-center gap-2">
+                               class="flex-grow min-w-0 hover:opacity-80">
+                                <div class="flex justify-between items-center gap-2">
+                                    <span class="{% if notice.is_read_by_user %}text-gray-600{% else %}font-medium text-amber-900{% endif %} text-sm flex items-center gap-1 min-w-0 flex-1">
                                         {% if not notice.is_read_by_user %}
-                                        <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                                        <span class="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></span>
                                         {% endif %}
-                                        {{ notice.title }}
+                                        <span class="truncate">{{ notice.title }}</span>
                                     </span>
-                                    <span class="text-xs {% if notice.is_read_by_user %}text-gray-400{% else %}text-amber-600{% endif %}">{{ notice.created_at|date:"m/d" }}</span>
+                                    <span class="text-xs {% if notice.is_read_by_user %}text-gray-400{% else %}text-amber-600{% endif %} flex-shrink-0 whitespace-nowrap">{{ notice.created_at|date:"m/d" }}</span>
                                 </div>
                                 <p class="text-xs {% if notice.is_read_by_user %}text-gray-500{% else %}text-amber-700{% endif %} truncate mt-1">{{ notice.content|truncatewords:20 }}</p>
                             </a>

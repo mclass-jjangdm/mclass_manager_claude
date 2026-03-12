@@ -52,19 +52,9 @@
     </div>
     {% else %}
     <!-- 통계 카드 -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-indigo-600">{{ student_data|length }}</div>
-            <div class="text-sm text-gray-500">오늘 담당 학생</div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-green-600">{{ students_with_books }}</div>
-            <div class="text-sm text-gray-500">교재 보유 학생</div>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-purple-600">{{ total_activities }}</div>
-            <div class="text-sm text-gray-500">수업 활동</div>
-        </div>
+    <div class="bg-white rounded-lg shadow p-4 text-center inline-block min-w-[8rem]">
+        <div class="text-3xl font-bold text-indigo-600">{{ student_data|length }}</div>
+        <div class="text-sm text-gray-500">오늘 담당 학생</div>
     </div>
 
     <!-- 오늘 내 수업 활동 목록 -->
