@@ -33,8 +33,8 @@ def book_list(request):
     """교재 목록 조회 (검색 실패 시 자동 이동 플래그 처리)"""
     query = request.GET.get('q', '')
 
-    # 기본 정렬: 재고 오름차순 (재고 적은 것 먼저)
-    books = Book.objects.all().order_by('stock', 'title')
+    # 기본 정렬: 재고 내림차순 (재고 많은 것 먼저)
+    books = Book.objects.all().order_by('-stock', 'title')
 
     is_search_empty = False  # 검색 결과 없음 플래그
 
