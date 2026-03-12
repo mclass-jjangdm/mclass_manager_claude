@@ -1,6 +1,17 @@
 {% extends "progress/base_assignment.html" %}
 {% load humanize %}
 
+{% block extra_css %}
+<style>
+@media (max-width: 1023px) {
+    .desktop-inputs { display: none !important; }
+}
+@media (min-width: 1024px) {
+    .mobile-inputs { display: none !important; }
+}
+</style>
+{% endblock %}
+
 {% block assignment_content %}
 <div class="space-y-6">
     <!-- 헤더 영역 -->
@@ -557,7 +568,7 @@ document.getElementById('select-all-completed')?.addEventListener('change', func
 
 // 폼 제출 시 화면에 숨겨진 입력값 disabled 처리 (데스크탑/모바일 이중 렌더링 방지)
 document.getElementById('bulk-update-form')?.addEventListener('submit', function() {
-    const isMobile = window.innerWidth < 768;
+    const isMobile = window.innerWidth < 1024;
     if (isMobile) {
         this.querySelectorAll('.desktop-inputs input, .desktop-inputs select').forEach(function(el) {
             el.disabled = true;
