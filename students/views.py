@@ -155,8 +155,8 @@ def student_detail(request, pk):
     student = get_object_or_404(Student, pk=pk)
 
     # 교재 구매 내역 조회
-    unpaid_sales = BookSale.objects.filter(student=student, is_paid=False).select_related('book').order_by('-sale_date')
-    paid_sales = BookSale.objects.filter(student=student, is_paid=True).select_related('book').order_by('-payment_date')
+    unpaid_sales = BookSale.objects.filter(student=student, is_paid=False).select_related('book').order_by('-sale_date', '-pk')
+    paid_sales = BookSale.objects.filter(student=student, is_paid=True).select_related('book').order_by('-sale_date', '-pk')
 
     # 총 납부 금액 계산
     total_paid = sum(sale.get_total_price() for sale in paid_sales)

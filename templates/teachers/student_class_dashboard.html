@@ -77,16 +77,12 @@
                             {% if item.books %}
                             <div class="space-y-1">
                                 {% for book_info in item.books %}
-                                {% if book_info.is_learning_completed %}
-                                <span class="text-xs text-green-600 font-medium">학습 완료</span>
-                                {% else %}
                                 <div class="flex items-center justify-center gap-2">
                                     <div class="w-16 bg-gray-200 rounded-full h-2">
                                         <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ book_info.stats.progress_percent }}%"></div>
                                     </div>
                                     <span class="text-xs text-gray-600 w-10">{{ book_info.stats.progress_percent }}%</span>
                                 </div>
-                                {% endif %}
                                 {% endfor %}
                             </div>
                             {% else %}
@@ -112,14 +108,6 @@
                             {% if item.books %}
                             <div class="flex flex-col gap-1">
                                 {% for book_info in item.books %}
-                                {% if book_info.is_learning_completed %}
-                                <div class="flex items-center justify-center gap-1">
-                                    <span class="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">완료</span>
-                                    <button type="button"
-                                            onclick="submitLearningIncomplete({{ book_info.sale.pk }})"
-                                            class="text-gray-400 hover:text-red-500 text-xs underline">취소</button>
-                                </div>
-                                {% else %}
                                 <div class="flex items-center justify-center gap-1">
                                     <a href="{% url 'progress:student_book_progress_list' book_info.sale.pk %}"
                                        class="inline-block bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors">
@@ -129,7 +117,6 @@
                                             onclick="submitLearningComplete({{ book_info.sale.pk }})"
                                             class="inline-block bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors">완료</button>
                                 </div>
-                                {% endif %}
                                 {% endfor %}
                             </div>
                             {% else %}
@@ -159,11 +146,6 @@
 function submitLearningComplete(salePk) {
     const form = document.getElementById('learning-complete-form');
     form.action = `/bookstore/sale/${salePk}/complete/`;
-    form.submit();
-}
-function submitLearningIncomplete(salePk) {
-    const form = document.getElementById('learning-complete-form');
-    form.action = `/bookstore/sale/${salePk}/incomplete/`;
     form.submit();
 }
 </script>
