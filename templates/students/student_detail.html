@@ -154,11 +154,19 @@
                 <td class="px-4 py-3 text-sm text-right text-gray-700">{{ sale.price|intcomma }}원</td>
                 <td class="px-4 py-3 text-sm text-right font-semibold text-red-600">{{ sale.get_total_price|intcomma }}원</td>
                 <td class="px-4 py-3 text-center">
-                    {% if sale.book.contents.exists %}
+                    {% if sale.is_learning_completed %}
+                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">완료</span>
+                    <button type="button"
+                            onclick="submitLearningIncomplete({{ sale.pk }})"
+                            class="text-gray-400 hover:text-red-500 text-xs ml-1 underline">취소</button>
+                    {% elif sale.book.contents.exists %}
                     <a href="{% url 'progress:student_book_progress_list' sale.pk %}"
                        class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors inline-block">
                         진도 평가
                     </a>
+                    <button type="button"
+                            onclick="submitLearningComplete({{ sale.pk }})"
+                            class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs ml-1 transition-colors">완료</button>
                     {% else %}
                     <span class="text-gray-400 text-xs">목차 없음</span>
                     {% endif %}
@@ -232,11 +240,19 @@
                 <td class="px-4 py-3 text-sm text-right text-gray-700">{{ sale.price|intcomma }}원</td>
                 <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">{{ sale.get_total_price|intcomma }}원</td>
                 <td class="px-4 py-3 text-center">
-                    {% if sale.book.contents.exists %}
+                    {% if sale.is_learning_completed %}
+                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">완료</span>
+                    <button type="button"
+                            onclick="submitLearningIncomplete({{ sale.pk }})"
+                            class="text-gray-400 hover:text-red-500 text-xs ml-1 underline">취소</button>
+                    {% elif sale.book.contents.exists %}
                     <a href="{% url 'progress:student_book_progress_list' sale.pk %}"
                        class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors inline-block">
                         진도 평가
                     </a>
+                    <button type="button"
+                            onclick="submitLearningComplete({{ sale.pk }})"
+                            class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs ml-1 transition-colors">완료</button>
                     {% else %}
                     <span class="text-gray-400 text-xs">목차 없음</span>
                     {% endif %}
@@ -276,12 +292,25 @@
 </div>
 </div><!-- /paid-sales-section -->
 
+<form id="learning-complete-form" method="POST" style="display:none;">
+    {% csrf_token %}
+</form>
 <script>
 function togglePaidSales() {
     const section = document.getElementById('paid-sales-section');
     const chevron = document.getElementById('paid-sales-chevron');
     section.classList.toggle('hidden');
     chevron.classList.toggle('rotate-180');
+}
+function submitLearningComplete(salePk) {
+    const form = document.getElementById('learning-complete-form');
+    form.action = `/bookstore/sale/${salePk}/complete/`;
+    form.submit();
+}
+function submitLearningIncomplete(salePk) {
+    const form = document.getElementById('learning-complete-form');
+    form.action = `/bookstore/sale/${salePk}/incomplete/`;
+    form.submit();
 }
 </script>
 

@@ -78,4 +78,8 @@ urlpatterns = [
     path('sale/<int:sale_pk>/progress/', redirect_progress_list, name='student_book_progress_list'),
     path('sale/<int:sale_pk>/progress/<int:progress_pk>/', redirect_progress_update, name='student_book_progress_update'),
     path('sale/<int:sale_pk>/progress/bulk/', redirect_progress_bulk, name='student_book_progress_bulk_update'),
+
+    # 교재 학습 완료/취소
+    path('sale/<int:sale_pk>/complete/', views.book_sale_learning_complete, name='book_sale_learning_complete'),
+    path('sale/<int:sale_pk>/incomplete/', views.book_sale_learning_incomplete, name='book_sale_learning_incomplete'),
 ]

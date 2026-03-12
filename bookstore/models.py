@@ -127,6 +127,8 @@ class BookSale(models.Model):
     is_paid = models.BooleanField(default=False, verbose_name="결제 완료 여부")
     payment_date = models.DateField(blank=True, null=True, verbose_name="결제일")
 
+    is_learning_completed = models.BooleanField(default=False, verbose_name="학습 완료")
+
     memo = models.CharField(max_length=255, blank=True, null=True, verbose_name="비고")
 
     def get_total_price(self):

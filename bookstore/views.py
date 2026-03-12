@@ -1001,6 +1001,11 @@ def student_book_progress_list(request, sale_pk):
     sale = get_object_or_404(BookSale, pk=sale_pk)
     student = sale.student
 
+    # 학습 완료 처리된 교재는 진도 페이지 진입 차단
+    if sale.is_learning_completed:
+        messages.warning(request, '학습 완료 처리된 교재입니다.')
+        return redirect('students:student_detail', pk=student.pk)
+
     # 교사 포털에서 접근했는지 확인
     from_teacher_portal = request.GET.get('from') == 'teacher_portal'
 
@@ -1435,3 +1440,25 @@ def stock_log_settle_cancel(request):
 
     return redirect('bookstore:stock_log_list')
 
+
+
+@login_required
+def book_sale_learning_complete(request, sale_pk):
+    """교재 학습 완료 처리"""
+    sale = get_object_or_404(BookSale, pk=sale_pk)
+    if request.method == 'POST':
+        sale.is_learning_completed = True
+        sale.save()
+        messages.success(request, f'"{sale.book.title}" 학습 완료 처리됐습니다.')
+    return redirect('students:student_detail', pk=sale.student.pk)
+
+
+@login_required
+def book_sale_learning_incomplete(request, sale_pk):
+    """교재 학습 완료 취소"""
+    sale = get_object_or_404(BookSale, pk=sale_pk)
+    if request.method == 'POST':
+        sale.is_learning_completed = False
+        sale.save()
+        messages.success(request, f'"{sale.book.title}" 학습 완료가 취소됐습니다.')
+    return redirect('students:student_detail', pk=sale.student.pk)
