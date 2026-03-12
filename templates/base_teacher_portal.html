@@ -182,9 +182,12 @@
                     </a>
                     <div class="hidden lg:block ml-4 lg:ml-10">
                         <div class="flex items-baseline space-x-1 lg:space-x-4">
-                            <a href="{% url 'progress:my_progress' %}" class="text-indigo-100 hover:text-white px-2 lg:px-3 py-2 rounded-md text-sm font-medium font-ubuntu whitespace-nowrap">
-                                내 수업
-                            </a>
+                            <form method="post" action="{% url 'logout' %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-indigo-100 hover:text-white px-2 lg:px-3 py-2 rounded-md text-sm font-medium font-ubuntu whitespace-nowrap">
+                                    로그아웃
+                                </button>
+                            </form>
                             <a href="{% url 'teachers:teacher_my_unavailability' %}" class="text-indigo-100 hover:text-white px-2 lg:px-3 py-2 rounded-md text-sm font-medium font-ubuntu whitespace-nowrap">
                                 출근 불가 일정
                             </a>
@@ -238,12 +241,9 @@
                     </span>
                     {% endif %}
 
-                    <form method="post" action="{% url 'logout' %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" class="text-indigo-200 hover:text-white text-sm font-medium font-ubuntu">
-                            로그아웃
-                        </button>
-                    </form>
+                    <a href="{% url 'progress:my_progress' %}" class="text-indigo-200 hover:text-white text-sm font-medium font-ubuntu">
+                        오늘 수업
+                    </a>
                 </div>
 
                 <div class="-mr-2 flex lg:hidden ml-4">
@@ -270,7 +270,7 @@
                 </div>
                 {% else %}
                 <a href="{% url 'progress:my_progress' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
-                    내 수업
+                    오늘 수업
                 </a>
                 <a href="{% url 'teachers:teacher_my_unavailability' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
                     출근 불가 일정
@@ -295,6 +295,12 @@
                 <a href="{% url 'teachers:teacher_password_change' %}" class="text-indigo-100 hover:text-white block px-3 py-2 rounded-md text-base font-medium font-ubuntu">
                     비밀번호 변경
                 </a>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-indigo-100 hover:text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium font-ubuntu">
+                        로그아웃
+                    </button>
+                </form>
                 {% if user.teacher_profile %}
                 <div class="text-indigo-300 px-3 py-2 text-sm border-t border-indigo-600 mt-2 pt-2">
                     {{ user.teacher_profile.name }} 선생님

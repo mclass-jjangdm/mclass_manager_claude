@@ -566,6 +566,19 @@ document.getElementById('select-all-completed')?.addEventListener('change', func
     });
 });
 
+// 데스크탑/모바일 레이아웃 전환 (인라인 스타일로 강제 적용)
+function applyResponsiveLayout() {
+    const isDesktop = window.innerWidth >= 1024;
+    document.querySelectorAll('.desktop-inputs').forEach(function(el) {
+        el.style.display = isDesktop ? '' : 'none';
+    });
+    document.querySelectorAll('.mobile-inputs').forEach(function(el) {
+        el.style.display = isDesktop ? 'none' : '';
+    });
+}
+applyResponsiveLayout();
+window.addEventListener('resize', applyResponsiveLayout);
+
 // 폼 제출 시 화면에 숨겨진 입력값 disabled 처리 (데스크탑/모바일 이중 렌더링 방지)
 document.getElementById('bulk-update-form')?.addEventListener('submit', function() {
     const isMobile = window.innerWidth < 1024;
