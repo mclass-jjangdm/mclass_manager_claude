@@ -417,11 +417,11 @@
                                 {{ item.teacher.name }}
                             </span>
                         </td>
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-3 min-w-[10rem]">
                             {% if item.books %}
                             <div class="space-y-1">
                                 {% for book_info in item.books %}
-                                <div class="text-sm text-gray-800">{{ book_info.book.title|truncatechars:25 }}</div>
+                                <div class="text-sm text-gray-800 break-keep">{{ book_info.book.title }}</div>
                                 {% endfor %}
                             </div>
                             {% else %}

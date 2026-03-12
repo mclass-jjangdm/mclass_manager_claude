@@ -2377,8 +2377,8 @@ class DailyProgressSummaryView(LoginRequiredMixin, View):
 
             student = assignment.student
 
-            # 학생의 교재별 진도 정보
-            book_sales = BookSale.objects.filter(student=student).select_related('book')
+            # 학생의 교재별 진도 정보 (학습 완료 처리된 교재 제외)
+            book_sales = BookSale.objects.filter(student=student, is_learning_completed=False).select_related('book')
             books_progress = []
 
             for sale in book_sales:
@@ -2585,7 +2585,7 @@ class StudentClassDashboardView(LoginRequiredMixin, View):
 
         student_list = []
         for student in students:
-            # 교재별 진도 (목차가 있는 것만)
+            # 교재별 진도 (목차가 있는 것만, 완료 여부 포함)
             book_sales = BookSale.objects.filter(student=student).select_related('book')
             books_progress = []
             for sale in book_sales:
@@ -2599,6 +2599,7 @@ class StudentClassDashboardView(LoginRequiredMixin, View):
                         'book': sale.book,
                         'stats': stats,
                         'last_study_date': last_record.study_date if last_record else None,
+                        'is_learning_completed': sale.is_learning_completed,
                     })
 
             student_list.append({

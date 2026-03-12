@@ -1001,13 +1001,15 @@ def student_book_progress_list(request, sale_pk):
     sale = get_object_or_404(BookSale, pk=sale_pk)
     student = sale.student
 
+    # 교사 포털에서 접근했는지 확인
+    from_teacher_portal = request.GET.get('from') == 'teacher_portal'
+
     # 학습 완료 처리된 교재는 진도 페이지 진입 차단
     if sale.is_learning_completed:
         messages.warning(request, '학습 완료 처리된 교재입니다.')
+        if from_teacher_portal:
+            return redirect('progress:my_progress')
         return redirect('students:student_detail', pk=student.pk)
-
-    # 교사 포털에서 접근했는지 확인
-    from_teacher_portal = request.GET.get('from') == 'teacher_portal'
 
     # 교사가 접근한 경우, 배정된 학생인지 확인
     if hasattr(request.user, 'teacher_profile') and not request.user.is_staff:
