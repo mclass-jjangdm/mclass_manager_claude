@@ -133,7 +133,7 @@
                 {% endif %}
 
                 <!-- 완료 항목 테이블 (데스크탑) -->
-                <div class="hidden md:block overflow-x-auto desktop-inputs">
+                <div class="hidden lg:block overflow-x-auto desktop-inputs">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -208,7 +208,7 @@
                 </div>
 
                 <!-- 완료 항목 모바일 카드 (md 미만) -->
-                <div class="block md:hidden divide-y divide-gray-200">
+                <div class="block lg:hidden divide-y divide-gray-200">
                     {% for record in progress_records %}
                     {% if record.is_completed %}
                     <div class="p-3 bg-green-50/50 completed-row flex items-start gap-2">
@@ -310,7 +310,7 @@
                     <div class="hidden chapter-content-{{ chapter_id }}">
 
                         <!-- 미완료 항목 테이블 (데스크탑) -->
-                        <div class="hidden md:block overflow-x-auto desktop-inputs">
+                        <div class="hidden lg:block overflow-x-auto desktop-inputs">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -383,7 +383,7 @@
                         </div>
 
                         <!-- 미완료 항목 모바일 카드 (md 미만) -->
-                        <div class="block md:hidden space-y-2 p-2 mobile-inputs">
+                        <div class="block lg:hidden space-y-2 p-2 mobile-inputs">
                             <!-- 대단원 전체 선택 -->
                             <div class="flex items-center gap-2 px-1 py-1">
                                 <input type="checkbox" class="rounded select-all-chapter" data-chapter="{{ chapter_id }}">
