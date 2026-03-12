@@ -33,8 +33,8 @@ def book_list(request):
     """교재 목록 조회 (검색 실패 시 자동 이동 플래그 처리)"""
     query = request.GET.get('q', '')
 
-    # 기본 정렬: 최신순
-    books = Book.objects.all().order_by('-created_at')
+    # 기본 정렬: 재고 오름차순 (재고 적은 것 먼저)
+    books = Book.objects.all().order_by('stock', 'title')
 
     is_search_empty = False  # 검색 결과 없음 플래그
 
@@ -52,16 +52,10 @@ def book_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # 재고 부족 알림 (재고 3권 이하, 검색 중이 아닐 때만)
-    low_stock_books = []
-    if not query:
-        low_stock_books = Book.objects.filter(stock__lte=3).order_by('stock', 'title')
-
     return render(request, 'bookstore/book_list.html', {
         'page_obj': page_obj,
         'query': query,
         'is_search_empty': is_search_empty,
-        'low_stock_books': low_stock_books,
     })
 
 

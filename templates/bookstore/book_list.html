@@ -5,29 +5,6 @@
 
 {% block bookstore_content %}
 <div class="space-y-6">
-    <!-- 재고 부족 알림 배너 -->
-    {% if low_stock_books %}
-    <div class="bg-amber-50 border border-amber-300 rounded-xl p-4">
-        <div class="flex items-start gap-3">
-            <span class="text-amber-500 text-xl mt-0.5">⚠️</span>
-            <div class="flex-1">
-                <p class="font-semibold text-amber-800 mb-2">재고 부족 교재 (3권 이하)</p>
-                <div class="flex flex-wrap gap-2">
-                    {% for book in low_stock_books %}
-                    <a href="{% url 'bookstore:book_detail' book.pk %}"
-                       class="inline-flex items-center gap-1.5 bg-white border border-amber-300 hover:border-amber-500 text-amber-900 text-xs font-medium px-3 py-1.5 rounded-full transition-colors">
-                        <span>{{ book.title }}</span>
-                        <span class="bg-{% if book.stock == 0 %}red{% else %}amber{% endif %}-100 text-{% if book.stock == 0 %}red{% else %}amber{% endif %}-700 px-1.5 py-0.5 rounded-full font-bold">
-                            {{ book.stock }}권
-                        </span>
-                    </a>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
     <!-- 검색 폼 -->
     <div class="flex justify-center">
         <form method="GET" action="{% url 'bookstore:book_list' %}" class="flex gap-3 w-full max-w-2xl">
