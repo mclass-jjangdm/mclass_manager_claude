@@ -182,12 +182,9 @@
                     </a>
                     <div class="hidden lg:block ml-4 lg:ml-10">
                         <div class="flex items-baseline space-x-1 lg:space-x-4">
-                            <form method="post" action="{% url 'logout' %}" class="inline">
-                                {% csrf_token %}
-                                <button type="submit" class="text-indigo-100 hover:text-white px-2 lg:px-3 py-2 rounded-md text-sm font-medium font-ubuntu whitespace-nowrap">
-                                    로그아웃
-                                </button>
-                            </form>
+                            <a href="{% url 'progress:my_progress' %}" class="text-indigo-100 hover:text-white px-2 lg:px-3 py-2 rounded-md text-sm font-medium font-ubuntu whitespace-nowrap">
+                                오늘 수업
+                            </a>
                             <a href="{% url 'teachers:teacher_my_unavailability' %}" class="text-indigo-100 hover:text-white px-2 lg:px-3 py-2 rounded-md text-sm font-medium font-ubuntu whitespace-nowrap">
                                 출근 불가 일정
                             </a>
@@ -241,9 +238,12 @@
                     </span>
                     {% endif %}
 
-                    <a href="{% url 'progress:my_progress' %}" class="text-indigo-200 hover:text-white text-sm font-medium font-ubuntu">
-                        오늘 수업
-                    </a>
+                    <form method="post" action="{% url 'logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="text-indigo-200 hover:text-white text-sm font-medium font-ubuntu">
+                            로그아웃
+                        </button>
+                    </form>
                 </div>
 
                 <div class="-mr-2 flex lg:hidden ml-4">
