@@ -239,7 +239,14 @@
             </div>
             <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-600">
                 <span>© 2025 엠클래스 수학과학전문학원. All rights reserved.</span>
-                <span>경기도 안산시 단원구</span>
+                <div class="flex items-center gap-4">
+                    <span>경기도 안산시 단원구</span>
+                    <span class="flex items-center gap-3 text-gray-500">
+                        <span>👁 오늘 <strong class="text-gray-400">{{ visitor_today }}</strong>명</span>
+                        <span class="text-gray-700">|</span>
+                        <span>전체 <strong class="text-gray-400">{{ visitor_total }}</strong>명</span>
+                    </span>
+                </div>
             </div>
         </div>
     </footer>

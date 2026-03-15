@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Notice, Column, ExamNews, SchoolIntro
+from .models import Notice, Column, ExamNews, SchoolIntro, VisitorStat
 
 
 @admin.register(Notice)
@@ -26,3 +26,10 @@ class ExamNewsAdmin(admin.ModelAdmin):
 @admin.register(SchoolIntro)
 class SchoolIntroAdmin(admin.ModelAdmin):
     list_display = ['academy_name', 'phone', 'email', 'updated_at']
+
+
+@admin.register(VisitorStat)
+class VisitorStatAdmin(admin.ModelAdmin):
+    list_display = ['date', 'count']
+    ordering = ['-date']
+    readonly_fields = ['date', 'count']

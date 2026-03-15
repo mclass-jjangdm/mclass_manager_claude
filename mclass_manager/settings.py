@@ -138,6 +138,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'teachers.context_processors.teacher_notices',
                 'homepage.context_processors.consultation_count',
+                'homepage.context_processors.visitor_counter',
             ],
         },
     },

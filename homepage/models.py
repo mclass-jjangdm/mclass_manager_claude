@@ -1,4 +1,7 @@
+from datetime import date as date_cls
+
 from django.db import models
+from django.db.models import F, Sum
 from django.contrib.auth.models import User
 
 
@@ -146,3 +149,40 @@ class SchoolIntro(models.Model):
     def get_instance(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+
+class VisitorStat(models.Model):
+    """일별 방문자 통계"""
+    date = models.DateField(unique=True, verbose_name='날짜')
+    count = models.PositiveIntegerField(default=0, verbose_name='일일 방문자 수')
+
+    class Meta:
+        verbose_name = '방문자 통계'
+        verbose_name_plural = '방문자 통계'
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.date}: {self.count}명"
+
+    @classmethod
+    def record_visit(cls, session, today=None):
+        """세션 기반 중복 방지 - 하루 1회만 카운트"""
+        if today is None:
+            today = date_cls.today()
+        today_str = today.isoformat()
+        if session.get('visitor_counted_date') == today_str:
+            return  # 이미 오늘 카운트됨
+        obj, created = cls.objects.get_or_create(date=today, defaults={'count': 1})
+        if not created:
+            cls.objects.filter(date=today).update(count=F('count') + 1)
+        session['visitor_counted_date'] = today_str
+
+    @classmethod
+    def get_stats(cls, today=None):
+        """오늘 방문자 수, 전체 방문자 수 반환"""
+        if today is None:
+            today = date_cls.today()
+        today_stat = cls.objects.filter(date=today).first()
+        today_count = today_stat.count if today_stat else 0
+        total_count = cls.objects.aggregate(t=Sum('count'))['t'] or 0
+        return today_count, total_count
