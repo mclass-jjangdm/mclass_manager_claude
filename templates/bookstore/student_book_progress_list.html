@@ -2,59 +2,59 @@
 {% load humanize %}
 
 {% block assignment_content %}
-<div class="space-y-6">
+<div class="space-y-3 sm:space-y-6">
     <!-- 헤더 영역 -->
-    <div class="flex flex-wrap justify-between items-center gap-3">
+    <div class="flex flex-wrap justify-between items-center gap-2">
         <div>
-            <nav class="text-sm text-gray-500 mb-2">
+            <nav class="text-xs text-gray-500 mb-1 hidden sm:block">
                 <a href="{% url 'students:student_list' %}" class="hover:text-indigo-600">학생 목록</a>
-                <span class="mx-2">/</span>
+                <span class="mx-1">/</span>
                 <a href="{% url 'students:student_detail' student.pk %}" class="hover:text-indigo-600">{{ student.name }}</a>
-                <span class="mx-2">/</span>
+                <span class="mx-1">/</span>
                 <span class="text-gray-700">{{ book.title }} 진도</span>
             </nav>
-            <h2 class="text-2xl font-bold text-gray-800">{{ student.name }} - {{ book.title }}</h2>
-            <p class="text-gray-600 mt-1">교재 진도 평가</p>
+            <h2 class="text-lg sm:text-2xl font-bold text-gray-800">{{ student.name }} - {{ book.title }}</h2>
+            <p class="text-gray-500 text-xs sm:text-sm mt-0.5">교재 진도 평가</p>
         </div>
 
         <a href="{% url 'students:student_detail' student.pk %}"
-           class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+           class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors">
             돌아가기
         </a>
     </div>
 
     <!-- 진도 통계 카드 -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-indigo-600">{{ stats.total }}</div>
-            <div class="text-sm text-gray-500">전체 항목</div>
+    <div class="grid grid-cols-5 gap-2">
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-indigo-600">{{ stats.total }}</div>
+            <div class="text-xs text-gray-500">전체</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-green-600">{{ stats.completed }}</div>
-            <div class="text-sm text-gray-500">완료</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-green-600">{{ stats.completed }}</div>
+            <div class="text-xs text-gray-500">완료</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-gray-600">{{ stats.remaining }}</div>
-            <div class="text-sm text-gray-500">미완료</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-gray-600">{{ stats.remaining }}</div>
+            <div class="text-xs text-gray-500">미완료</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-orange-600">{{ stats.needs_review }}</div>
-            <div class="text-sm text-gray-500">보완 추천</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-orange-600">{{ stats.needs_review }}</div>
+            <div class="text-xs text-gray-500">보완</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-blue-600">{{ stats.progress_percent }}%</div>
-            <div class="text-sm text-gray-500">진행률</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-blue-600">{{ stats.progress_percent }}%</div>
+            <div class="text-xs text-gray-500">진행률</div>
         </div>
     </div>
 
     <!-- 진행률 바 -->
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex justify-between text-sm mb-2">
+    <div class="bg-white rounded-lg shadow px-3 py-2">
+        <div class="flex justify-between text-xs sm:text-sm mb-1">
             <span class="text-gray-600">학습 진행률</span>
             <span class="font-medium">{{ stats.completed }}/{{ stats.total }}</span>
         </div>
-        <div class="w-full bg-gray-200 rounded-full h-4">
-            <div class="bg-indigo-600 h-4 rounded-full transition-all duration-300"
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+            <div class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300"
                  style="width: {{ stats.progress_percent }}%"></div>
         </div>
     </div>
@@ -185,22 +185,22 @@
 
         <!-- 미완료 항목 섹션 (대단원별 폴딩) -->
         <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
-            <div class="p-4 border-b border-gray-200 bg-amber-50 flex flex-wrap justify-between items-center gap-3">
+            <div class="px-3 py-2.5 border-b border-gray-200 bg-amber-50 flex flex-wrap justify-between items-center gap-2">
                 <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-500 text-white font-bold text-sm">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white font-bold text-sm">
                         {{ stats.remaining }}
                     </span>
-                    <h3 class="text-lg font-semibold text-amber-800">미완료 항목</h3>
-                    <span class="text-sm text-amber-600">(대단원 클릭하여 펼치기)</span>
+                    <h3 class="text-base sm:text-lg font-semibold text-amber-800">미완료 항목</h3>
+                    <span class="text-xs text-amber-600 hidden sm:inline">(대단원 클릭하여 펼치기)</span>
                 </div>
                 <button type="submit"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
                     선택 항목 저장
                 </button>
             </div>
 
             {% if stats.remaining > 0 %}
-            <div class="p-4 space-y-3">
+            <div class="p-2 sm:p-4 space-y-2">
                 {% for chapter_key, chapter_data in chapters.items %}
                 {% with chapter_id=forloop.counter %}
                 {% with has_incomplete=False incomplete_count=0 %}
@@ -215,18 +215,18 @@
 
                 <div class="border border-gray-200 rounded-lg overflow-hidden chapter-card" data-chapter="{{ chapter_id }}">
                     <!-- 대단원 헤더 -->
-                    <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 px-4 py-3 cursor-pointer flex items-center justify-between hover:from-indigo-100 hover:to-indigo-200 transition-colors"
+                    <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 px-3 py-2 cursor-pointer flex items-center justify-between hover:from-indigo-100 hover:to-indigo-200 transition-colors"
                          onclick="toggleChapter({{ chapter_id }})">
-                        <div class="flex items-center gap-3">
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm flex-shrink-0">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex-shrink-0">
                                 {{ chapter_key.0 }}
                             </span>
                             <div class="min-w-0">
-                                <h4 class="font-semibold text-indigo-900">{{ chapter_key.1 }}</h4>
-                                <span class="text-xs text-indigo-600 incomplete-count-{{ chapter_id }}"></span>
+                                <h4 class="font-semibold text-indigo-900 text-sm">{{ chapter_key.1 }}</h4>
+                                <span class="text-xs text-indigo-500 incomplete-count-{{ chapter_id }}"></span>
                             </div>
                         </div>
-                        <svg class="w-5 h-5 text-indigo-600 transform transition-transform duration-200 chapter-chevron-{{ chapter_id }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-indigo-600 transform transition-transform duration-200 chapter-chevron-{{ chapter_id }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </div>
@@ -234,53 +234,54 @@
                     <!-- 대단원 내용 (기본 접힘) -->
                     <div class="hidden chapter-content-{{ chapter_id }}">
 
-                        <!-- 미완료 항목 카드 (모바일/데스크탑 공통) -->
-                        <div class="space-y-2 p-2">
+                        <!-- 미완료 항목 카드 -->
+                        <div class="space-y-1.5 p-2">
                             <!-- 대단원 전체 선택 -->
-                            <div class="flex items-center gap-2 px-1 py-1">
+                            <div class="flex items-center gap-2 px-1 py-0.5">
                                 <input type="checkbox" class="rounded select-all-chapter" data-chapter="{{ chapter_id }}">
                                 <span class="text-xs text-gray-500">전체 선택</span>
                             </div>
                             {% for section_key, records in chapter_data.sections.items %}
                             {% for record in records %}
                             {% if not record.is_completed %}
-                            <div class="border border-gray-200 rounded-lg p-3 bg-white incomplete-row chapter-{{ chapter_id }}-row">
+                            <div class="border border-gray-200 rounded-lg p-2 bg-white incomplete-row chapter-{{ chapter_id }}-row">
                                 <!-- 1줄: 체크박스 + 페이지 + 소단원 제목 + 상세 -->
-                                <div class="flex items-center gap-2 mb-2">
+                                <div class="flex items-center gap-1.5 mb-1.5">
                                     <input type="checkbox" name="progress_ids" value="{{ record.pk }}"
                                            class="progress-checkbox incomplete-checkbox chapter-{{ chapter_id }}-checkbox rounded flex-shrink-0">
-                                    <span class="font-semibold text-gray-700 text-sm flex-shrink-0">p.{{ record.book_content.page }}</span>
+                                    <span class="font-semibold text-gray-700 text-xs flex-shrink-0">p.{{ record.book_content.page }}</span>
                                     <span class="text-sm font-medium text-gray-800 truncate flex-1">{{ record.book_content.subsection_title }}</span>
                                     <a href="{% url 'progress:student_book_progress_update' sale.pk record.pk %}"
                                        class="text-indigo-600 hover:text-indigo-800 text-xs flex-shrink-0">상세</a>
                                 </div>
-                                <!-- 2줄: 학습일 -->
-                                <div class="flex items-center gap-2 mb-1.5 pl-6">
-                                    <span class="text-xs text-gray-500 w-10 flex-shrink-0">학습일</span>
-                                    <input type="text"
-                                           name="study_date_{{ record.pk }}"
-                                           value="{% if record.date %}{{ record.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
-                                           class="text-sm border border-gray-300 rounded px-2 py-1 mclass-datepicker"
-                                           style="width: 120px;"
-                                           readonly>
-                                </div>
-                                <!-- 3줄: 성취도 + 보완 + 과제 -->
-                                <div class="flex items-center gap-3 pl-6">
-                                    <span class="text-xs text-gray-500 w-10 flex-shrink-0">성취도</span>
-                                    <select name="achievement_{{ record.pk }}"
-                                            class="text-sm border border-gray-300 rounded px-1 py-1 focus:ring-1 focus:ring-indigo-500"
-                                            style="width: 80px;">
-                                        {% for value, label in achievement_choices %}
-                                        <option value="{{ value }}" {% if record.achievement == value %}selected{% endif %}>{{ label }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <label class="flex items-center gap-1 text-xs text-orange-600 cursor-pointer">
+                                <!-- 2줄: 학습일 + 성취도 + 보완 + 과제 (flex-wrap으로 줄바꿈) -->
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1 pl-5">
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-xs text-gray-400">학습일</span>
+                                        <input type="text"
+                                               name="study_date_{{ record.pk }}"
+                                               value="{% if record.date %}{{ record.date|date:'Y-m-d' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
+                                               class="text-xs border border-gray-300 rounded px-1.5 py-0.5 mclass-datepicker"
+                                               style="width: 96px;"
+                                               readonly>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-xs text-gray-400">성취도</span>
+                                        <select name="achievement_{{ record.pk }}"
+                                                class="text-xs border border-gray-300 rounded px-1 py-0.5 focus:ring-1 focus:ring-indigo-500"
+                                                style="width: 68px;">
+                                            {% for value, label in achievement_choices %}
+                                            <option value="{{ value }}" {% if record.achievement == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <label class="flex items-center gap-0.5 text-xs text-orange-600 cursor-pointer">
                                         <input type="checkbox" name="needs_review_{{ record.pk }}"
                                                {% if record.needs_review %}checked{% endif %}
                                                class="rounded text-orange-600">
                                         보완
                                     </label>
-                                    <label class="flex items-center gap-1 text-xs text-green-600 cursor-pointer">
+                                    <label class="flex items-center gap-0.5 text-xs text-green-600 cursor-pointer">
                                         <input type="checkbox" name="homework_done_{{ record.pk }}"
                                                {% if record.homework_checked %}checked{% endif %}
                                                class="rounded text-green-600">
