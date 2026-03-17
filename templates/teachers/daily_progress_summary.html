@@ -2,35 +2,34 @@
 {% load humanize %}
 
 {% block assignment_content %}
-<div class="space-y-6">
+<div class="space-y-3 sm:space-y-6">
     <!-- 헤더 -->
-    <div class="flex flex-wrap justify-between items-center gap-3">
+    <div class="flex flex-wrap justify-between items-center gap-2">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800">일별 수업 기록 요약</h2>
-            <p class="text-gray-600 mt-1">{{ selected_date|date:"Y년 m월 d일" }} ({{ selected_date|date:"l" }})</p>
+            <h2 class="text-lg sm:text-2xl font-bold text-gray-800">일별 수업 기록 요약</h2>
+            <p class="text-gray-500 text-xs sm:text-sm mt-0.5">{{ selected_date|date:"Y년 m월 d일" }} ({{ selected_date|date:"l" }})</p>
         </div>
         <div class="flex gap-2">
             <a href="{% url 'progress:assignment_list' %}?date={{ selected_date|date:'Y-m-d' }}"
-               class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+               class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors">
                 배정 관리
             </a>
         </div>
     </div>
 
     <!-- 날짜 선택 및 뷰 모드 -->
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <form method="GET" class="flex items-center gap-4">
-                <label class="text-sm font-medium text-gray-700">날짜 선택:</label>
+    <div class="bg-white rounded-lg shadow px-3 py-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <form method="GET" class="flex items-center gap-2">
                 <input type="text"
                        name="date"
                        id="date-picker"
                        value="{{ selected_date|date:'Y-m-d' }}"
-                       class="px-4 py-2 border border-gray-300 rounded-lg mclass-datepicker"
+                       class="text-sm px-2 py-1.5 border border-gray-300 rounded-lg mclass-datepicker"
                        readonly>
                 <input type="hidden" name="view" value="{{ view_mode }}">
                 <a href="?date={% now 'Y-m-d' %}&view={{ view_mode }}"
-                   class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">
+                   class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs transition-colors">
                     오늘
                 </a>
             </form>
@@ -38,11 +37,11 @@
             <!-- 뷰 모드 토글 -->
             <div class="flex rounded-lg border border-gray-300 overflow-hidden">
                 <a href="?date={{ selected_date|date:'Y-m-d' }}&view=student"
-                   class="px-4 py-2 text-sm font-medium transition-colors {% if view_mode == 'student' %}bg-indigo-600 text-white{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                   class="px-3 py-1.5 text-xs font-medium transition-colors {% if view_mode == 'student' %}bg-indigo-600 text-white{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
                     학생별
                 </a>
                 <a href="?date={{ selected_date|date:'Y-m-d' }}&view=teacher"
-                   class="px-4 py-2 text-sm font-medium transition-colors {% if view_mode == 'teacher' %}bg-indigo-600 text-white{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                   class="px-3 py-1.5 text-xs font-medium transition-colors {% if view_mode == 'teacher' %}bg-indigo-600 text-white{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
                     교사별
                 </a>
             </div>
@@ -50,38 +49,38 @@
     </div>
 
     <!-- 통계 카드 -->
-    <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-indigo-600">{{ total_assigned }}</div>
-            <div class="text-sm text-gray-500">배정 학생</div>
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-indigo-600">{{ total_assigned }}</div>
+            <div class="text-xs text-gray-500">배정</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-blue-600">{{ total_director }}</div>
-            <div class="text-sm text-gray-500">원장 담당</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-blue-600">{{ total_director }}</div>
+            <div class="text-xs text-gray-500">원장</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-red-600">{{ total_absent }}</div>
-            <div class="text-sm text-gray-500">결석</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-red-600">{{ total_absent }}</div>
+            <div class="text-xs text-gray-500">결석</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-orange-600">{{ total_exception }}</div>
-            <div class="text-sm text-gray-500">예외</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-orange-600">{{ total_exception }}</div>
+            <div class="text-xs text-gray-500">예외</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-green-600">{{ total_progress_today }}</div>
-            <div class="text-sm text-gray-500">오늘 평가 기록</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-green-600">{{ total_progress_today }}</div>
+            <div class="text-xs text-gray-500">평가기록</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-3xl font-bold text-purple-600">{{ total_activities }}</div>
-            <div class="text-sm text-gray-500">수업 활동</div>
+        <div class="bg-white rounded-lg shadow px-2 py-2 text-center">
+            <div class="text-xl sm:text-3xl font-bold text-purple-600">{{ total_activities }}</div>
+            <div class="text-xs text-gray-500">수업활동</div>
         </div>
     </div>
 
     <!-- 수업 활동 버튼 -->
     <div class="flex gap-3">
         <a href="{% url 'progress:student_activity_create' %}?date={{ selected_date|date:'Y-m-d' }}"
-           class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           class="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
             수업 활동 추가

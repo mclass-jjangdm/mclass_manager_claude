@@ -227,18 +227,27 @@
                     {% endif %}
                 </div>
 
-                <div class="flex items-center">
+                <div class="flex items-center gap-3">
                     {% if user.teacher_profile %}
-                    <span class="text-indigo-200 text-sm mr-4 hidden lg:inline">
+                    <span class="text-indigo-200 text-sm hidden lg:inline">
                         {{ user.teacher_profile.name }} 선생님
                     </span>
                     {% elif user.is_staff %}
-                    <span class="text-indigo-200 text-sm mr-4 hidden lg:inline">
+                    <span class="text-indigo-200 text-sm hidden lg:inline">
                         관리자
                     </span>
                     {% endif %}
 
-                    <form method="post" action="{% url 'logout' %}" class="inline">
+                    {% if not user.is_staff or user.teacher_profile %}
+                    <!-- 모바일 전용: 오늘 수업 바로가기 -->
+                    <a href="{% url 'progress:my_progress' %}"
+                       class="lg:hidden text-indigo-200 hover:text-white text-sm font-medium font-ubuntu">
+                        오늘 수업
+                    </a>
+                    {% endif %}
+
+                    <!-- 로그아웃: 데스크탑에서만 표시 (모바일은 햄버거 메뉴에 있음) -->
+                    <form method="post" action="{% url 'logout' %}" class="hidden lg:inline">
                         {% csrf_token %}
                         <button type="submit" class="text-indigo-200 hover:text-white text-sm font-medium font-ubuntu">
                             로그아웃
