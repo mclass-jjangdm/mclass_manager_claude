@@ -72,7 +72,7 @@
                                     진도 평가
                                 </a>
                                 <button type="button"
-                                        onclick="submitLearningComplete({{ book_info.sale.pk }})"
+                                        onclick="submitLearningComplete({{ book_info.sale.pk }}, '{{ item.student.name|escapejs }}', '{{ book_info.book.title|escapejs }}')"
                                         class="bg-green-500 hover:bg-green-600 text-white px-2.5 py-1 rounded text-xs transition-colors">
                                     완료
                                 </button>
@@ -99,7 +99,8 @@
     {% csrf_token %}
 </form>
 <script>
-function submitLearningComplete(salePk) {
+function submitLearningComplete(salePk, studentName, bookTitle) {
+    if (!confirm(`[${studentName}] ${bookTitle}\n\n교재 학습을 완료 처리하시겠습니까?\n(완료 후 되돌리려면 관리자 페이지에서만 복구 가능합니다)`)) return;
     const form = document.getElementById('learning-complete-form');
     form.action = `/bookstore/sale/${salePk}/complete/`;
     form.submit();
