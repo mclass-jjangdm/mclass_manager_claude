@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
 from django.db import transaction
+from django.db.models import Case, When, Value, IntegerField
 from students.models import Student
 from subjects.models import Subject
 from .models import Grade
@@ -900,7 +901,13 @@ def student_grades(request, student_pk):
         'test_total_evaluated': test_total_evaluated,
         'test_segments_json': test_segments_json,
         'test_type_choices': TEST_TYPE_CHOICES,
-        'subjects': Subject.objects.filter(is_active=True).order_by('subject_code') if hasattr(Subject, 'is_active') else Subject.objects.all().order_by('subject_code'),
+        'subjects': Subject.objects.filter(is_active=True).annotate(
+            _math_first=Case(
+                When(subject_code__startswith='2', then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField()
+            )
+        ).order_by('_math_first', 'subject_code'),
     }
     return render(request, 'grades/student_grades.html', context)
 
@@ -974,6 +981,51 @@ def test_record_delete(request, pk):
     if request.method == 'POST':
         record.delete()
         messages.success(request, '기록이 삭제되었습니다.')
+    return redirect('grades:student_grades', student_pk=student_pk)
+
+
+@login_required
+def test_record_update(request, pk):
+    """퀴즈/테스트 기록 수정"""
+    from progress.models import LearningRecord
+    record = get_object_or_404(LearningRecord, pk=pk)
+    student_pk = record.student.pk
+    if request.method == 'POST':
+        record_type = request.POST.get('record_type', record.record_type)
+        title = request.POST.get('title', '').strip()
+        date = request.POST.get('date') or None
+        achievement = request.POST.get('achievement', '')
+        score_str = request.POST.get('score', '').strip()
+        total_score_str = request.POST.get('total_score', '').strip()
+        memo = request.POST.get('memo', '').strip()
+        subject_pk = request.POST.get('subject', '')
+
+        if not title:
+            messages.error(request, '제목을 입력해 주세요.')
+            return redirect('grades:student_grades', student_pk=student_pk)
+
+        quiz_total_str = request.POST.get('quiz_total', '').strip()
+        quiz_wrong_str = request.POST.get('quiz_wrong', '').strip()
+        quiz_results_data = None
+        if quiz_total_str and quiz_total_str.isdigit():
+            q_total = int(quiz_total_str)
+            wrong_list = sorted([int(x) for x in quiz_wrong_str.split(',') if x.strip().isdigit()]) if quiz_wrong_str else []
+            quiz_results_data = {'total': q_total, 'wrong': wrong_list}
+            if not score_str:
+                score_str = str(q_total - len(wrong_list))
+                total_score_str = str(q_total)
+
+        record.record_type = record_type
+        record.title = title
+        record.date = date
+        record.achievement = achievement
+        record.score = Decimal(score_str) if score_str else None
+        record.total_score = Decimal(total_score_str) if total_score_str else None
+        record.memo = memo
+        record.subject = Subject.objects.filter(pk=subject_pk).first() if subject_pk else None
+        record.quiz_results = quiz_results_data
+        record.save()
+        messages.success(request, '기록이 수정되었습니다.')
     return redirect('grades:student_grades', student_pk=student_pk)
 
 

@@ -156,8 +156,9 @@
 
     <!-- 기록 추가 폼 (기본 숨김) -->
     <div id="test-form-panel" class="hidden bg-purple-50 border border-purple-200 rounded-xl p-5 mb-4">
-        <h4 class="text-sm font-semibold text-purple-800 mb-4">새 기록 추가</h4>
-        <form method="POST" action="{% url 'grades:test_record_create' student.pk %}" id="test-record-form">
+        <h4 id="test-form-title" class="text-sm font-semibold text-purple-800 mb-4">새 기록 추가</h4>
+        <form method="POST" action="{% url 'grades:test_record_create' student.pk %}" id="test-record-form"
+              data-create-url="{% url 'grades:test_record_create' student.pk %}">
             {% csrf_token %}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <!-- 종류 -->
@@ -241,8 +242,8 @@
                 </div>
             </div>
             <div class="flex gap-2 justify-end">
-                <button type="button" onclick="toggleTestForm()" class="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">취소</button>
-                <button type="submit" class="px-4 py-2 text-sm text-white bg-purple-500 hover:bg-purple-600 rounded-lg font-medium transition-colors">저장</button>
+                <button type="button" id="test-form-cancel-btn" onclick="closeTestForm()" class="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">취소</button>
+                <button type="submit" id="test-form-submit-btn" class="px-4 py-2 text-sm text-white bg-purple-500 hover:bg-purple-600 rounded-lg font-medium transition-colors">저장</button>
             </div>
         </form>
     </div>
@@ -285,7 +286,18 @@
     <div class="space-y-2">
         {% for item in test_records %}
         {% with rec=item.rec qd=item.quiz_detail %}
-        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden"
+             data-pk="{{ rec.pk }}"
+             data-update-url="{% url 'grades:test_record_update' rec.pk %}"
+             data-record-type="{{ rec.record_type }}"
+             data-title="{{ rec.title|escapejs }}"
+             data-date="{{ rec.date|default:'' }}"
+             data-score="{{ rec.score|default:'' }}"
+             data-total-score="{{ rec.total_score|default:'' }}"
+             data-achievement="{{ rec.achievement }}"
+             data-subject="{{ rec.subject.pk|default:'' }}"
+             data-memo="{{ rec.memo|escapejs }}"
+             {% if qd %}data-quiz-total="{{ qd.total }}" data-quiz-wrong="{{ qd.wrong_nums|join:',' }}"{% endif %}>
             <!-- 헤더 -->
             <div class="flex items-center px-4 py-3 gap-3">
                 <!-- 펼치기 버튼 (quiz_detail 있을 때만) -->
@@ -343,6 +355,13 @@
                         {% endif %}">{{ rec.achievement }}</span>
                     {% endif %}
 
+                    <!-- 수정 버튼 -->
+                    <button type="button" onclick="editTestRecord(this.closest('[data-pk]'))"
+                            class="text-blue-300 hover:text-blue-600 transition-colors" title="수정">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </button>
                     <!-- 삭제 버튼 -->
                     {% if user.is_staff %}
                     <form method="POST" action="{% url 'grades:test_record_delete' rec.pk %}" onsubmit="return confirm('이 기록을 삭제하시겠습니까?')">
@@ -905,8 +924,90 @@ function toggleBookProgress(id) {
     chevron.classList.toggle('rotate-180');
 }
 
+let _formMode = 'add';
+
 function toggleTestForm() {
-    document.getElementById('test-form-panel').classList.toggle('hidden');
+    const panel = document.getElementById('test-form-panel');
+    if (!panel.classList.contains('hidden')) {
+        closeTestForm();
+    } else {
+        panel.classList.remove('hidden');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function closeTestForm() {
+    document.getElementById('test-form-panel').classList.add('hidden');
+    if (_formMode === 'edit') _resetFormToAddMode();
+}
+
+function _resetFormToAddMode() {
+    const form = document.getElementById('test-record-form');
+    form.action = form.dataset.createUrl;
+    form.reset();
+    clearQuizQuestions();
+    document.getElementById('test-form-title').textContent = '새 기록 추가';
+    document.getElementById('test-form-submit-btn').textContent = '저장';
+    document.getElementById('test-form-panel').classList.remove('bg-blue-50', 'border-blue-200');
+    document.getElementById('test-form-panel').classList.add('bg-purple-50', 'border-purple-200');
+    _formMode = 'add';
+}
+
+function editTestRecord(card) {
+    // 폼 필드 채우기
+    const form = document.getElementById('test-record-form');
+    form.action = card.dataset.updateUrl;
+    form.querySelector('[name=record_type]').value = card.dataset.recordType || '';
+    form.querySelector('[name=title]').value = card.dataset.title || '';
+    form.querySelector('[name=score]').value = card.dataset.score || '';
+    form.querySelector('[name=total_score]').value = card.dataset.totalScore || '';
+    form.querySelector('[name=achievement]').value = card.dataset.achievement || '';
+    form.querySelector('[name=subject]').value = card.dataset.subject || '';
+    form.querySelector('[name=memo]').value = card.dataset.memo || '';
+
+    // 날짜 (flatpickr 인스턴스 있으면 setDate, 없으면 직접)
+    const dateInput = form.querySelector('[name=date]');
+    if (card.dataset.date) {
+        if (dateInput._flatpickr) {
+            dateInput._flatpickr.setDate(card.dataset.date);
+        } else {
+            dateInput.value = card.dataset.date;
+        }
+    } else {
+        if (dateInput._flatpickr) dateInput._flatpickr.clear();
+        else dateInput.value = '';
+    }
+
+    // 문제별 결과 복원
+    clearQuizQuestions();
+    if (card.dataset.quizTotal) {
+        document.getElementById('quiz-count-input').value = card.dataset.quizTotal;
+        generateQuizQuestions();
+        const wrongNums = card.dataset.quizWrong
+            ? card.dataset.quizWrong.split(',').map(Number).filter(n => n > 0)
+            : [];
+        wrongNums.forEach(q => {
+            const btn = document.querySelector(`#quiz-questions-grid button[data-q="${q}"]`);
+            if (btn) {
+                _quizWrongSet.add(q);
+                btn.className = 'w-9 h-9 rounded-full text-xs font-bold bg-red-100 text-red-600 border-2 border-red-400 hover:scale-110 transition-all';
+            }
+        });
+        if (wrongNums.length > 0) {
+            document.getElementById('quiz_wrong_val').value = wrongNums.sort((a,b)=>a-b).join(',');
+        }
+        _updateQuizSummary(parseInt(card.dataset.quizTotal, 10));
+    }
+
+    // 폼 UI 수정 모드로 전환
+    document.getElementById('test-form-title').textContent = '기록 수정';
+    document.getElementById('test-form-submit-btn').textContent = '수정 저장';
+    const panel = document.getElementById('test-form-panel');
+    panel.classList.remove('bg-purple-50', 'border-purple-200');
+    panel.classList.add('bg-blue-50', 'border-blue-200');
+    panel.classList.remove('hidden');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    _formMode = 'edit';
 }
 
 function toggleTestRecord(id) {

@@ -15,5 +15,6 @@ urlpatterns = [
     path('api/subjects-by-category/', views.get_subjects_by_category, name='get_subjects_by_category'),
     path('template/<str:template_type>/download/', views.download_grade_template, name='download_grade_template'),
     path('student/<int:student_pk>/test-record/create/', views.test_record_create, name='test_record_create'),
+    path('test-record/<int:pk>/update/', views.test_record_update, name='test_record_update'),
     path('test-record/<int:pk>/delete/', views.test_record_delete, name='test_record_delete'),
 ]
