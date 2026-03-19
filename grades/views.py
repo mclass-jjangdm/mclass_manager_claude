@@ -820,6 +820,38 @@ def student_grades(request, student_pk):
         {'p': l['percent'], 'c': l['color']}
         for l in overall_levels if l['percent'] > 0
     ])
+
+    # ── 퀴즈/테스트 기록 분석 ────────────────────────────────────
+    TEST_TYPE_CHOICES = [
+        ('quiz', '퀴즈'),
+        ('practice', '연습 문제'),
+        ('booklet', '제본 교재'),
+        ('other', '기타'),
+    ]
+    test_records = LearningRecord.objects.filter(
+        student=student,
+        record_type__in=['quiz', 'practice', 'booklet', 'other']
+    ).select_related('subject', 'teacher').order_by('-date', '-created_at')
+
+    test_counts = {m['code']: 0 for m in ACHIEVEMENT_META}
+    for rec in test_records:
+        if rec.achievement in test_counts:
+            test_counts[rec.achievement] += 1
+    test_total_evaluated = sum(test_counts.values())
+    test_levels = []
+    for m in ACHIEVEMENT_META:
+        cnt = test_counts[m['code']]
+        test_levels.append({
+            'code': m['code'],
+            'label': m['label'],
+            'color': m['color'],
+            'count': cnt,
+            'percent': round(cnt / test_total_evaluated * 100, 1) if test_total_evaluated else 0,
+        })
+    test_segments_json = json.dumps([
+        {'p': l['percent'], 'c': l['color']}
+        for l in test_levels if l['percent'] > 0
+    ])
     # ────────────────────────────────────────────────────────────
 
     context = {
@@ -838,8 +870,74 @@ def student_grades(request, student_pk):
         'overall_total': overall_total,
         'overall_segments_json': overall_segments_json if overall_total > 0 else '[]',
         'achievement_meta': ACHIEVEMENT_META,
+        # 퀴즈/테스트 기록
+        'test_records': test_records,
+        'test_levels': test_levels,
+        'test_total_evaluated': test_total_evaluated,
+        'test_segments_json': test_segments_json,
+        'test_type_choices': TEST_TYPE_CHOICES,
+        'subjects': Subject.objects.filter(is_active=True).order_by('subject_code') if hasattr(Subject, 'is_active') else Subject.objects.all().order_by('subject_code'),
     }
     return render(request, 'grades/student_grades.html', context)
+
+
+@login_required
+def test_record_create(request, student_pk):
+    """퀴즈/테스트 기록 생성"""
+    from progress.models import LearningRecord
+    from teachers.models import Teacher
+
+    student = get_object_or_404(Student, pk=student_pk)
+    if request.method == 'POST':
+        record_type = request.POST.get('record_type', 'quiz')
+        title = request.POST.get('title', '').strip()
+        date = request.POST.get('date') or None
+        achievement = request.POST.get('achievement', '')
+        score_str = request.POST.get('score', '').strip()
+        total_score_str = request.POST.get('total_score', '').strip()
+        needs_review = request.POST.get('needs_review') == 'on'
+        memo = request.POST.get('memo', '').strip()
+        subject_pk = request.POST.get('subject', '')
+
+        if not title:
+            messages.error(request, '제목을 입력해 주세요.')
+            return redirect('grades:student_grades', student_pk=student_pk)
+
+        score = Decimal(score_str) if score_str else None
+        total_score = Decimal(total_score_str) if total_score_str else None
+        subject = Subject.objects.filter(pk=subject_pk).first() if subject_pk else None
+
+        teacher = None
+        if hasattr(request.user, 'teacher_profile'):
+            teacher = request.user.teacher_profile
+
+        LearningRecord.objects.create(
+            student=student,
+            record_type=record_type,
+            title=title,
+            date=date,
+            achievement=achievement,
+            score=score,
+            total_score=total_score,
+            needs_review=needs_review,
+            memo=memo,
+            subject=subject,
+            teacher=teacher,
+        )
+        messages.success(request, f'기록이 추가되었습니다.')
+    return redirect('grades:student_grades', student_pk=student_pk)
+
+
+@login_required
+def test_record_delete(request, pk):
+    """퀴즈/테스트 기록 삭제"""
+    from progress.models import LearningRecord
+    record = get_object_or_404(LearningRecord, pk=pk)
+    student_pk = record.student.pk
+    if request.method == 'POST':
+        record.delete()
+        messages.success(request, '기록이 삭제되었습니다.')
+    return redirect('grades:student_grades', student_pk=student_pk)
 
 
 @login_required

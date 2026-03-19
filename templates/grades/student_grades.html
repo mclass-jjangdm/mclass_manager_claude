@@ -136,6 +136,208 @@
 </div>
 {% endif %}
 
+<!-- ═══════════════════════════════════════════════════
+     퀴즈 / 테스트 기록
+════════════════════════════════════════════════════ -->
+<div class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <span class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xs font-bold">📝</span>
+            퀴즈 / 테스트 기록
+        </h3>
+        <button type="button" onclick="toggleTestForm()"
+                class="flex items-center gap-1.5 text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 px-3 py-1.5 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            기록 추가
+        </button>
+    </div>
+
+    <!-- 기록 추가 폼 (기본 숨김) -->
+    <div id="test-form-panel" class="hidden bg-purple-50 border border-purple-200 rounded-xl p-5 mb-4">
+        <h4 class="text-sm font-semibold text-purple-800 mb-4">새 기록 추가</h4>
+        <form method="POST" action="{% url 'grades:test_record_create' student.pk %}">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                <!-- 종류 -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">종류 <span class="text-red-500">*</span></label>
+                    <select name="record_type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        {% for val, label in test_type_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- 날짜 -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">날짜</label>
+                    <input type="date" name="date" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                </div>
+                <!-- 제목 -->
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">제목 <span class="text-red-500">*</span></label>
+                    <input type="text" name="title" placeholder="예: 1단원 단원평가, 중간 모의테스트" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                </div>
+                <!-- 점수 -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">점수</label>
+                    <div class="flex items-center gap-2">
+                        <input type="number" name="score" placeholder="득점" step="0.1" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        <span class="text-gray-400 text-sm flex-shrink-0">/</span>
+                        <input type="number" name="total_score" placeholder="만점" step="0.1" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    </div>
+                </div>
+                <!-- 성취도 -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">성취도</label>
+                    <select name="achievement" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        <option value="">-- 선택 --</option>
+                        {% for m in achievement_meta %}
+                        <option value="{{ m.code }}">{{ m.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- 과목 -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">과목</label>
+                    <select name="subject" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        <option value="">-- 선택 --</option>
+                        {% for s in subjects %}
+                        <option value="{{ s.pk }}">{{ s.subject_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- 복습 필요 -->
+                <div class="flex items-center gap-2 pt-5">
+                    <input type="checkbox" name="needs_review" id="needs_review_check" class="w-4 h-4 rounded text-purple-600">
+                    <label for="needs_review_check" class="text-sm text-gray-700">복습 필요</label>
+                </div>
+                <!-- 메모 -->
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">메모</label>
+                    <textarea name="memo" rows="2" placeholder="특이사항, 오답 노트 등" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button type="button" onclick="toggleTestForm()" class="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">취소</button>
+                <button type="submit" class="px-4 py-2 text-sm text-white bg-purple-500 hover:bg-purple-600 rounded-lg font-medium transition-colors">저장</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 기록 분석 요약 (기록이 있는 경우) -->
+    {% if test_total_evaluated > 0 %}
+    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+        <div class="flex items-center gap-5 flex-wrap">
+            <div class="relative flex-shrink-0">
+                <svg class="donut-chart" width="90" height="90" viewBox="0 0 100 100"
+                     data-segments="{{ test_segments_json }}"
+                     data-total="{{ test_total_evaluated }}">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#f3f4f6" stroke-width="18"/>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-2">성취도 분석 ({{ test_total_evaluated }}개 평가됨)</p>
+                <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+                    {% for level in test_levels %}{% if level.count > 0 %}
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0
+                            {% if level.color == 'indigo' %}bg-indigo-500
+                            {% elif level.color == 'green' %}bg-green-500
+                            {% elif level.color == 'yellow' %}bg-yellow-400
+                            {% elif level.color == 'orange' %}bg-orange-400
+                            {% else %}bg-red-400{% endif %}"></span>
+                        <span class="text-xs text-gray-600">{{ level.label }}</span>
+                        <span class="text-xs font-bold text-gray-800">{{ level.count }}</span>
+                        <span class="text-xs text-gray-400">{{ level.percent }}%</span>
+                    </div>
+                    {% endif %}{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 기록 목록 테이블 -->
+    {% if test_records %}
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600">날짜</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600">종류</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600">제목</th>
+                    <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600">점수</th>
+                    <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600">성취도</th>
+                    <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600">복습</th>
+                    <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for rec in test_records %}
+                <tr class="hover:bg-gray-50 transition-colors{% if rec.needs_review %} bg-yellow-50{% endif %}">
+                    <td class="px-3 py-2.5 text-xs text-gray-500 whitespace-nowrap">{{ rec.date|default:"-" }}</td>
+                    <td class="px-3 py-2.5 whitespace-nowrap">
+                        <span class="text-xs px-1.5 py-0.5 rounded
+                            {% if rec.record_type == 'quiz' %}bg-blue-100 text-blue-700
+                            {% elif rec.record_type == 'practice' %}bg-teal-100 text-teal-700
+                            {% elif rec.record_type == 'booklet' %}bg-orange-100 text-orange-700
+                            {% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {% for val, label in test_type_choices %}{% if rec.record_type == val %}{{ label }}{% endif %}{% endfor %}
+                        </span>
+                    </td>
+                    <td class="px-3 py-2.5">
+                        <p class="text-sm font-medium text-gray-800">{{ rec.title }}</p>
+                        {% if rec.memo %}<p class="text-xs text-gray-400 mt-0.5 truncate max-w-xs" title="{{ rec.memo }}">{{ rec.memo }}</p>{% endif %}
+                        {% if rec.subject %}<p class="text-xs text-indigo-500 mt-0.5">{{ rec.subject.subject_name }}</p>{% endif %}
+                    </td>
+                    <td class="px-3 py-2.5 text-center text-sm font-medium text-gray-700 whitespace-nowrap">
+                        {% if rec.score is not None %}
+                            {{ rec.score }}{% if rec.total_score %}/{{ rec.total_score }}{% endif %}
+                        {% else %}-{% endif %}
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        {% if rec.achievement %}
+                        <span class="text-xs font-bold px-1.5 py-0.5 rounded
+                            {% if rec.achievement == 'A' %}bg-indigo-100 text-indigo-700
+                            {% elif rec.achievement == 'B' %}bg-green-100 text-green-700
+                            {% elif rec.achievement == 'C' %}bg-yellow-100 text-yellow-700
+                            {% elif rec.achievement == 'D' %}bg-orange-100 text-orange-700
+                            {% elif rec.achievement == 'F' %}bg-red-100 text-red-700
+                            {% endif %}">{{ rec.achievement }}</span>
+                        {% else %}<span class="text-gray-300 text-xs">-</span>{% endif %}
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        {% if rec.needs_review %}
+                        <span class="text-yellow-500 text-base" title="복습 필요">⚑</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        {% if user.is_staff %}
+                        <form method="POST" action="{% url 'grades:test_record_delete' rec.pk %}" onsubmit="return confirm('이 기록을 삭제하시겠습니까?')">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-400 hover:text-red-600 transition-colors" title="삭제">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border border-gray-200 py-10 text-center">
+        <p class="text-gray-400 text-sm">아직 등록된 퀴즈/테스트 기록이 없습니다.</p>
+        <p class="text-gray-300 text-xs mt-1">위의 '기록 추가' 버튼으로 추가하세요.</p>
+    </div>
+    {% endif %}
+</div>
+
 <!-- 성적 입력 버튼 -->
 <div class="bg-white rounded-lg shadow p-4 mb-6">
     <div class="flex gap-2 flex-wrap">
@@ -635,6 +837,10 @@ function toggleBookProgress(id) {
     const chevron = document.getElementById('chevron-book-' + num);
     el.classList.toggle('hidden');
     chevron.classList.toggle('rotate-180');
+}
+
+function toggleTestForm() {
+    document.getElementById('test-form-panel').classList.toggle('hidden');
 }
 </script>
 {% endblock %}
