@@ -66,6 +66,7 @@ class TeacherAccessRestrictionMiddleware:
         r'^/teachers/my-work-report/',  # 교사 근무 기록 PDF 다운로드
         r'^/teachers/my-unavailability/',  # 출근 불가 일정 관리
         r'^/teachers/my-activity/',  # 교사용 수업 활동 관리
+        r'^/teachers/shared-drive/',  # 공유자료 Google Drive
         r'^/accounts/',  # 로그인/로그아웃 관련 (django-allauth)
         r'^/login/$',  # 로그인
         r'^/logout/$',  # 로그아웃 (POST)
