@@ -186,6 +186,13 @@
                 <span class="text-2xl mb-1">🏢</span>
                 <span class="text-xs font-medium text-gray-700">관리비</span>
             </a>
+            {% if user.is_staff %}
+            <a href="{% url 'google_drive_dashboard' %}"
+               class="flex flex-col items-center bg-white rounded-xl border border-gray-100 py-4 px-2 hover:shadow-md transition-shadow text-center">
+                <span class="text-2xl mb-1">☁️</span>
+                <span class="text-xs font-medium text-gray-700">구글 드라이브</span>
+            </a>
+            {% endif %}
         </div>
     </div>
 

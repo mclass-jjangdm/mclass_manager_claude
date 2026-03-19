@@ -176,6 +176,9 @@
                     <a href="{% url 'progress:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">📖 학습 진도</a>
                     <a href="{% url 'maintenance:create' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">🏢 관리비</a>
                     <a href="{% url 'payment:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">💳 납부 현황</a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'google_drive_dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">☁️ 구글 드라이브</a>
+                    {% endif %}
                 </div>
 
                 <!-- 데스크탑 우측: 홈페이지 + DB백업 + 로그아웃 -->
@@ -236,6 +239,11 @@
                     <a href="{% url 'payment:dashboard' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
                         <span class="text-base">💳</span> 납부 현황
                     </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'google_drive_dashboard' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">☁️</span> 구글 드라이브
+                    </a>
+                    {% endif %}
                 </div>
                 <!-- 하단 구분선 + 홈페이지/로그아웃/DB백업 -->
                 <div class="border-t border-gray-700 mt-3 pt-3 flex items-center justify-between gap-2">
