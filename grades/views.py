@@ -248,10 +248,29 @@ def internal_grade_bulk_create(request, student_pk):
             messages.error(request, f'성적 저장 중 오류가 발생했습니다: {str(e)}')
             return redirect('grades:internal_grade_bulk_create', student_pk=student_pk)
 
-    context = {
-        'student': student,
-        'is_2022': is_2022,
-    }
+    if is_2022:
+        import json
+        TYPE_MAP = {'0': 'common', '1': 'general', '2': 'elective', '3': 'fusion'}
+        subjects_2022 = Subject.objects.filter(is_active=True, curriculum_year=2022).order_by('subject_code')
+        subjects_list = []
+        for s in subjects_2022:
+            sc = TYPE_MAP.get(s.subject_code[2], '') if len(s.subject_code) == 6 else ''
+            subjects_list.append({
+                'id': s.pk,
+                'name': f'[{s.subject_code}] {s.name}',
+                'category': s.category,
+                'classification': sc,
+            })
+        context = {
+            'student': student,
+            'is_2022': True,
+            'subjects_json': json.dumps(subjects_list, ensure_ascii=False),
+        }
+    else:
+        context = {
+            'student': student,
+            'is_2022': False,
+        }
     template = 'grades/grade_bulk_form_2022.html' if is_2022 else 'grades/grade_bulk_form.html'
     return render(request, template, context)
 
