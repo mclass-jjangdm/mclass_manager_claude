@@ -84,7 +84,7 @@
                             <!-- 점수: 직접 입력값 우선 표시 -->
                             {% if rec.score is not None %}
                             <span class="text-sm font-bold text-gray-700">
-                                {{ rec.score }}{% if rec.total_score %}<span class="font-normal text-gray-500">/{{ rec.total_score }}</span>{% endif %}
+                                {{ rec.score|floatformat:"-1" }}{% if rec.total_score %}<span class="font-normal text-gray-500">/{{ rec.total_score|floatformat:"-1" }}</span>{% endif %}
                                 {% if rec.total_score %}
                                 <span class="text-xs font-normal text-gray-400">({% widthratio rec.score rec.total_score 100 %}%)</span>
                                 {% endif %}
