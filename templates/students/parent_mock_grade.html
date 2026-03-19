@@ -137,8 +137,9 @@ function buildCategoryOptions() {
            CATEGORIES.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
 }
 
-function buildSubjectOptions(subjects) {
-    return '<option value="">-- 과목 선택 --</option>' +
+function buildSubjectOptions(subjects, placeholder) {
+    var ph = placeholder || '-- 과목 선택 --';
+    return '<option value="">' + ph + '</option>' +
            subjects.map(function(s) { return '<option value="' + s.id + '">' + s.name + '</option>'; }).join('');
 }
 
@@ -154,7 +155,7 @@ function addRow() {
         '</td>' +
         '<td class="px-2 py-2">' +
             '<select name="subject" required class="subject-select w-full px-1.5 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm">' +
-                buildSubjectOptions(ALL_SUBJECTS) +
+                buildSubjectOptions([], '← 교과 먼저 선택') +
             '</select>' +
         '</td>' +
         '<td class="px-2 py-2"><input type="number" name="credits" min="1" step="1" required class="w-full px-1.5 py-1.5 border border-gray-300 rounded text-sm text-center" placeholder="3"></td>' +
@@ -183,8 +184,12 @@ function addRow() {
     var subSel = tr.querySelector('.subject-select');
     catSel.addEventListener('change', function() {
         var cat = this.value;
-        var filtered = cat ? ALL_SUBJECTS.filter(function(s) { return s.category === cat; }) : ALL_SUBJECTS;
-        subSel.innerHTML = buildSubjectOptions(filtered);
+        if (!cat) {
+            subSel.innerHTML = buildSubjectOptions([], '← 교과 먼저 선택');
+        } else {
+            var filtered = ALL_SUBJECTS.filter(function(s) { return s.category === cat; });
+            subSel.innerHTML = buildSubjectOptions(filtered);
+        }
     });
 }
 
