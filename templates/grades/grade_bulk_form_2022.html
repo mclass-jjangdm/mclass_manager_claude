@@ -90,9 +90,10 @@
     </div>
 </div>
 
+{{ subjects_list|json_script:"subjects-data" }}
 <script>
 // 서버에서 전달된 2022 과목 목록
-const ALL_SUBJECTS = JSON.parse('{{ subjects_json|escapejs }}');
+const ALL_SUBJECTS = JSON.parse(document.getElementById('subjects-data').textContent);
 
 // 교과 목록 추출 (중복 제거, 순서 유지)
 const CATEGORIES = [];

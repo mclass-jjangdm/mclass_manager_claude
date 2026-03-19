@@ -264,7 +264,7 @@ def internal_grade_bulk_create(request, student_pk):
         context = {
             'student': student,
             'is_2022': True,
-            'subjects_json': json.dumps(subjects_list, ensure_ascii=False),
+            'subjects_list': subjects_list,
         }
     else:
         context = {

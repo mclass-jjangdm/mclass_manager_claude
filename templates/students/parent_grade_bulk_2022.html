@@ -94,9 +94,10 @@
     </div>
 </div>
 
+{{ subjects_list|json_script:"subjects-data" }}
 <script>
 // 2022 과목 목록 (서버에서 JSON으로 전달)
-const SUBJECTS = JSON.parse('{{ subjects_json|escapejs }}');
+const SUBJECTS = JSON.parse(document.getElementById('subjects-data').textContent);
 
 let rowCount = 0;
 

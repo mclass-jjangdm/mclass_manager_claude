@@ -1288,11 +1288,10 @@ def parent_grade_bulk_create(request, student_pk):
             sc = TYPE_MAP.get(s.subject_code[2], '')
         subjects_with_class.append({'id': s.pk, 'name': s.name, 'code': s.subject_code, 'classification': sc})
 
-    import json
     context = {
         'student': student,
         'subjects': subjects,
-        'subjects_json': json.dumps(subjects_with_class, ensure_ascii=False),
+        'subjects_list': subjects_with_class,
         'current_year': datetime.date.today().year,
         'error_message': error_message,
         'is_2022': is_2022,
