@@ -58,6 +58,8 @@ class Grade(models.Model):
     subject_average = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(0)],
         verbose_name='과목 평균'
     )
@@ -89,16 +91,51 @@ class Grade(models.Model):
         validators=[MinValueValidator(1)],
         verbose_name='단위'
     )
+    SUBJECT_CLASSIFICATION_CHOICES = [
+        ('common', '공통과목'),
+        ('general', '일반선택'),
+        ('elective', '진로선택'),
+        ('fusion', '융합선택'),
+    ]
+    subject_classification = models.CharField(
+        max_length=10,
+        choices=SUBJECT_CLASSIFICATION_CHOICES,
+        default='general',
+        verbose_name='과목 분류',
+        help_text='공통과목 / 일반선택 / 진로선택 / 융합선택'
+    )
+    # is_elective는 하위 호환을 위해 유지 (deprecated: subject_classification 사용 권장)
     is_elective = models.BooleanField(
         default=False,
-        verbose_name='진로선택 과목 여부'
+        verbose_name='진로선택 과목 여부 (deprecated)'
     )
 
-    # 진로선택 과목 전용 필드
+    enrolled_count = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        verbose_name='수강자 수',
+        help_text='과목 수강 인원 (2022 교육과정에서 필요)'
+    )
+    subject_rank = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        verbose_name='석차',
+        help_text='과목 석차 (2022 교육과정)'
+    )
+    same_rank_count = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        verbose_name='동석차 수',
+        help_text='동석차 인원 수 (2022 교육과정)'
+    )
+
+    # 진로선택/융합선택 과목 전용 필드
+    # A/B/C: 2015·2022 진로/융합선택 공통, D/E: 2022 일반선택 추가
     ACHIEVEMENT_CHOICES = [
-        ('A', 'A'),
-        ('B', 'B'),
-        ('C', 'C'),
+        ('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D'), ('E', 'E'),
     ]
     achievement_level = models.CharField(
         max_length=1,
@@ -196,23 +233,27 @@ class Grade(models.Model):
             if not self.credits:
                 raise ValidationError({'credits': '내신 성적은 단위가 필수입니다.'})
 
-            # 진로선택 과목 여부에 따른 필수 필드 검사
-            if self.is_elective:
-                # 진로선택 과목: 성취도, 분포비율 필수
-                if not self.achievement_level:
-                    raise ValidationError({'achievement_level': '진로선택 과목은 성취도가 필수입니다.'})
-                if self.distribution_a is None:
-                    raise ValidationError({'distribution_a': '진로선택 과목은 성취도 A 비율이 필수입니다.'})
-                if self.distribution_b is None:
-                    raise ValidationError({'distribution_b': '진로선택 과목은 성취도 B 비율이 필수입니다.'})
-                if self.distribution_c is None:
-                    raise ValidationError({'distribution_c': '진로선택 과목은 성취도 C 비율이 필수입니다.'})
-            else:
-                # 일반 과목: 등급, 표준편차 필수
-                if self.grade_rank is None:
-                    raise ValidationError({'grade_rank': '일반 과목은 등급이 필수입니다.'})
-                if self.subject_stddev is None:
-                    raise ValidationError({'subject_stddev': '일반 과목은 표준편차가 필수입니다.'})
+            # 2022 교육과정 (enrolled_count로 판별): 학기/단위 외 추가 검증 생략
+            is_2022_grade = self.enrolled_count is not None
+            if not is_2022_grade:
+                # 2015 교육과정: 과목 분류에 따른 필수 필드 검사
+                is_achievement_type = self.subject_classification in ('elective', 'fusion')
+                if is_achievement_type:
+                    # 진로선택/융합선택: 성취도, 분포비율 필수
+                    if not self.achievement_level:
+                        raise ValidationError({'achievement_level': '진로선택/융합선택 과목은 성취도가 필수입니다.'})
+                    if self.distribution_a is None:
+                        raise ValidationError({'distribution_a': '진로선택/융합선택 과목은 성취도 A 비율이 필수입니다.'})
+                    if self.distribution_b is None:
+                        raise ValidationError({'distribution_b': '진로선택/융합선택 과목은 성취도 B 비율이 필수입니다.'})
+                    if self.distribution_c is None:
+                        raise ValidationError({'distribution_c': '진로선택/융합선택 과목은 성취도 C 비율이 필수입니다.'})
+                else:
+                    # 공통과목/일반선택: 등급, 표준편차 필수
+                    if self.grade_rank is None:
+                        raise ValidationError({'grade_rank': '공통과목/일반선택 과목은 등급이 필수입니다.'})
+                    if self.subject_stddev is None:
+                        raise ValidationError({'subject_stddev': '공통과목/일반선택 과목은 표준편차가 필수입니다.'})
 
         elif self.grade_type == 'mock':
             # 모의고사 성적은 시험 연도, 월, 이름, 백분위 필수

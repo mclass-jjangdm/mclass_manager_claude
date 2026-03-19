@@ -1,9 +1,38 @@
 from django.db import models
 
 
+CURRICULUM_CHOICES = [(2015, '2015 개정'), (2022, '2022 개정')]
+
+SUBJECT_GROUP_CHOICES = [
+    ('01', '국어'),
+    ('02', '수학'),
+    ('03', '영어'),
+    ('04', '사회(역사/도덕 포함)'),
+    ('05', '과학'),
+    ('06', '기술가정/정보'),
+    ('07', '체육'),
+    ('08', '예술'),
+    ('09', '제2외국어/한문'),
+    ('10', '교양'),
+]
+
+SUBJECT_TYPE_CHOICES = [
+    ('0', '공통과목'),
+    ('1', '일반선택'),
+    ('2', '진로선택'),
+    ('3', '융합선택'),
+]
+
+
 class Subject(models.Model):
     """교과 과목 모델"""
 
+    curriculum_year = models.IntegerField(
+        choices=CURRICULUM_CHOICES,
+        default=2015,
+        verbose_name='교육과정',
+        help_text='2015 개정 또는 2022 개정 교육과정'
+    )
     category_code = models.CharField(
         max_length=2,
         blank=True,
@@ -40,6 +69,15 @@ class Subject(models.Model):
         verbose_name='여분',
         help_text='추가 정보'
     )
+    prerequisite = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='next_subjects',
+        verbose_name='선수과목',
+        help_text='이 과목의 선수과목 (공통과목이 선택과목의 선수과목이 되는 경우)'
+    )
     is_active = models.BooleanField(
         default=True,
         verbose_name='사용 여부',
@@ -66,9 +104,18 @@ class Subject(models.Model):
     @property
     def category(self):
         """과목 카테고리 반환 (교과코드 기준)"""
+        if not self.subject_code:
+            return '기타'
+
+        # 2022 개정 교육과정: 6자리 코드 GG-T-S-NN
+        if self.curriculum_year == 2022 and len(self.subject_code) == 6:
+            group_code = self.subject_code[:2]
+            group_map = dict(SUBJECT_GROUP_CHOICES)
+            return group_map.get(group_code, '기타')
+
+        # 2015 교육과정: 기존 코드 처리
         # category_code가 있으면 그것 사용
         if self.category_code:
-            # 2자리 교과코드 매핑 (91, 92, 93 등 특수 코드용)
             categories_2digit = {
                 '91': '체육',
                 '92': '음악/미술',
@@ -77,16 +124,10 @@ class Subject(models.Model):
             if self.category_code in categories_2digit:
                 return categories_2digit[self.category_code]
 
-        # 과목코드 앞 1자리로 교과 구분
-        if not self.subject_code:
-            return '기타'
-
         first_digit = self.subject_code[0] if len(self.subject_code) >= 1 else None
-
         if not first_digit:
             return '기타'
 
-        # 앞 1자리 교과코드 매핑
         categories = {
             '1': '국어',
             '2': '수학',
@@ -96,10 +137,8 @@ class Subject(models.Model):
             '6': '한국사',
             '7': '기술/가정',
             '8': '제2외국어',
-            '9': '기타(9xxx)',  # 9로 시작하는 건 별도 처리 필요
         }
 
-        # 9로 시작하는 경우 앞 2자리로 세분화
         if first_digit == '9' and len(self.subject_code) >= 2:
             two_digits = self.subject_code[:2]
             categories_9xxx = {
@@ -108,6 +147,22 @@ class Subject(models.Model):
                 '92': '음악/미술',
                 '93': '교양',
             }
-            return categories_9xxx.get(two_digits, '기타(9xxx)')
+            return categories_9xxx.get(two_digits, '기타')
 
         return categories.get(first_digit, '기타')
+
+    @property
+    def subject_type_display(self):
+        """2022 과목 코드에서 과목 유형 반환"""
+        if self.curriculum_year == 2022 and len(self.subject_code) == 6:
+            type_code = self.subject_code[2]
+            type_map = dict(SUBJECT_TYPE_CHOICES)
+            return type_map.get(type_code, '')
+        return ''
+
+    @property
+    def is_csat(self):
+        """수능 출제 여부 반환 (2022 과목 코드 기준)"""
+        if self.curriculum_year == 2022 and len(self.subject_code) == 6:
+            return self.subject_code[3] == '1'
+        return False

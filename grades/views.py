@@ -142,6 +142,7 @@ def grade_delete(request, pk):
 def internal_grade_bulk_create(request, student_pk):
     """한 학기 내신 성적 일괄 입력"""
     student = get_object_or_404(Student, pk=student_pk)
+    is_2022 = (student.curriculum_year == 2022)
 
     if request.method == 'POST':
         try:
@@ -156,15 +157,67 @@ def internal_grade_bulk_create(request, student_pk):
             created_count = 0
             for i in range(grade_count):
                 subject_id = request.POST.get(f'grades[{i}][subject]')
+                if not subject_id:
+                    continue
+
                 credits = request.POST.get(f'grades[{i}][credits]')
                 score = request.POST.get(f'grades[{i}][score]')
                 subject_average = request.POST.get(f'grades[{i}][subject_average]')
-                subject_stddev = request.POST.get(f'grades[{i}][subject_stddev]')
-                grade_rank = request.POST.get(f'grades[{i}][grade_rank]')
-                is_elective = request.POST.get(f'grades[{i}][is_elective]') == '1'
+                classification_raw = request.POST.get(f'grades[{i}][subject_classification]', 'general')
+                subject_classification = classification_raw if classification_raw in ('common', 'general', 'elective', 'fusion') else 'general'
+                is_achievement = subject_classification in ('elective', 'fusion')
 
-                if subject_id:
-                    subject = Subject.objects.get(pk=subject_id)
+                if is_2022:
+                    # 2022 교육과정 전용 필드
+                    def _int(key):
+                        v = request.POST.get(f'grades[{i}][{key}]', '').strip()
+                        return int(v) if v else None
+
+                    def _dec(key):
+                        v = request.POST.get(f'grades[{i}][{key}]', '').strip()
+                        return v if v else None
+
+                    enrolled_count = _int('enrolled_count')
+                    subject_rank = _int('subject_rank')
+                    same_rank_count = _int('same_rank_count')
+                    grade_rank_raw = request.POST.get(f'grades[{i}][grade_rank]', '').strip()
+                    grade_rank = int(grade_rank_raw) if grade_rank_raw else None
+                    achievement_level = request.POST.get(f'grades[{i}][achievement_level]', '').strip() or None
+                    percentile_raw = _dec('percentile')
+                else:
+                    # 2015 교육과정 기존 필드
+                    subject_stddev = request.POST.get(f'grades[{i}][subject_stddev]')
+                    grade_rank_raw = request.POST.get(f'grades[{i}][grade_rank]')
+                    grade_rank = int(grade_rank_raw) if grade_rank_raw and not is_achievement else None
+                    enrolled_count = None
+                    subject_rank = None
+                    same_rank_count = None
+                    achievement_level = None
+                    distribution_a = distribution_b = distribution_c = None
+                    percentile_raw = None
+
+                subject = Subject.objects.get(pk=subject_id)
+                if is_2022:
+                    grade = Grade(
+                        student=student,
+                        grade_type='internal',
+                        subject=subject,
+                        year=year,
+                        semester=semester,
+                        credits=credits,
+                        score=score,
+                        subject_average=subject_average if subject_average else None,
+                        subject_stddev=None,
+                        grade_rank=grade_rank,
+                        subject_classification=subject_classification,
+                        is_elective=(subject_classification in ('elective', 'fusion')),
+                        enrolled_count=enrolled_count,
+                        subject_rank=subject_rank,
+                        same_rank_count=same_rank_count,
+                        achievement_level=achievement_level,
+                        percentile=percentile_raw,
+                    )
+                else:
                     grade = Grade(
                         student=student,
                         grade_type='internal',
@@ -176,11 +229,17 @@ def internal_grade_bulk_create(request, student_pk):
                         subject_average=subject_average,
                         subject_stddev=subject_stddev,
                         grade_rank=grade_rank,
-                        is_elective=is_elective
+                        subject_classification=subject_classification,
+                        is_elective=is_achievement,
+                        enrolled_count=None,
+                        achievement_level=achievement_level if is_achievement else None,
+                        distribution_a=distribution_a if is_achievement else None,
+                        distribution_b=distribution_b if is_achievement else None,
+                        distribution_c=distribution_c if is_achievement else None,
                     )
-                    grade.full_clean()
-                    grade.save()
-                    created_count += 1
+                grade.full_clean()
+                grade.save()
+                created_count += 1
 
             messages.success(request, f'{created_count}개의 내신 성적이 등록되었습니다.')
             return redirect('students:student_detail', pk=student_pk)
@@ -191,31 +250,36 @@ def internal_grade_bulk_create(request, student_pk):
 
     context = {
         'student': student,
+        'is_2022': is_2022,
     }
-    return render(request, 'grades/grade_bulk_form.html', context)
+    template = 'grades/grade_bulk_form_2022.html' if is_2022 else 'grades/grade_bulk_form.html'
+    return render(request, template, context)
 
 
 @login_required
 def get_subjects_by_category(request):
     """교과별 과목 목록 반환 (AJAX)"""
     category = request.GET.get('category', '')
+    curriculum_year = request.GET.get('curriculum_year')
+
+    qs = Subject.objects.filter(is_active=True).order_by('subject_code')
+    if curriculum_year and curriculum_year.isdigit():
+        qs = qs.filter(curriculum_year=int(curriculum_year))
+
+    TYPE_MAP = {'0': 'common', '1': 'general', '2': 'elective', '3': 'fusion'}
+
+    def to_dict(s):
+        # 2022 과목(6자리 코드)은 subject_classification을 코드에서 자동 추출
+        sc = ''
+        if s.curriculum_year == 2022 and len(s.subject_code) == 6:
+            sc = TYPE_MAP.get(s.subject_code[2], '')
+        return {'id': s.id, 'name': f'[{s.subject_code}] {s.name}', 'classification': sc}
 
     if category:
-        # Subject 모델의 category property를 사용하여 필터링
-        all_subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
-        filtered_subjects = [s for s in all_subjects if s.category == category]
-
-        data = [
-            {'id': s.id, 'name': f'[{s.subject_code}] {s.name}'}
-            for s in filtered_subjects
-        ]
+        filtered_subjects = [s for s in qs if s.category == category]
+        data = [to_dict(s) for s in filtered_subjects]
     else:
-        # 교과를 선택하지 않은 경우 모든 활성 과목 반환
-        subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
-        data = [
-            {'id': s.id, 'name': f'[{s.subject_code}] {s.name}'}
-            for s in subjects
-        ]
+        data = [to_dict(s) for s in qs]
 
     return JsonResponse({'subjects': data})
 
@@ -437,9 +501,23 @@ def create_grade_from_row(row, student, grade_type, row_num):
     # 공통 필드 파싱 (다양한 헤더명 지원)
     year = parse_int(get_value(row, '학년', 'year', 'grade'), '학년')
 
-    # 진로선택 여부 먼저 확인
-    is_elective_raw = get_value(row, '진로선택', '진로_선택', '선택과목', 'elective')
-    is_elective = str(is_elective_raw).strip().lower() in ['1', 'true', 'yes', 'y', 'o', '예', '진로선택', '○', 'v', '선택']
+    # 과목 분류 파싱 (진로선택/융합선택/공통/일반선택)
+    classification_raw = str(get_value(row, '과목분류', '과목_분류', 'subject_classification') or '').strip()
+    classification_map = {
+        '공통': 'common', '공통과목': 'common',
+        '일반': 'general', '일반선택': 'general',
+        '진로': 'elective', '진로선택': 'elective',
+        '융합': 'fusion', '융합선택': 'fusion',
+    }
+    subject_classification = classification_map.get(classification_raw, '')
+
+    # 하위 호환: 기존 진로선택 여부 컬럼도 지원
+    if not subject_classification:
+        is_elective_raw = get_value(row, '진로선택', '진로_선택', '선택과목', 'elective')
+        is_elective_legacy = str(is_elective_raw).strip().lower() in ['1', 'true', 'yes', 'y', 'o', '예', '진로선택', '○', 'v', '선택']
+        subject_classification = 'elective' if is_elective_legacy else 'general'
+
+    is_elective = subject_classification in ('elective', 'fusion')
 
     # 중복 체크 (grade_type에 따라 다른 조건)
     if grade_type == 'internal':
@@ -504,9 +582,10 @@ def create_grade_from_row(row, student, grade_type, row_num):
 
         grade_obj.semester = semester
         grade_obj.credits = credits
+        grade_obj.subject_classification = subject_classification
         grade_obj.is_elective = is_elective
 
-        # 진로선택 과목일 경우 성취도와 분포비율 파싱
+        # 진로선택/융합선택 과목일 경우 성취도와 분포비율 파싱
         if is_elective:
             achievement_level = str(get_value(row, '성취도', 'achievement', 'achievement_level') or '').strip().upper()
             if achievement_level not in ['A', 'B', 'C']:
@@ -620,8 +699,9 @@ def student_grades(request, student_pk):
     category_stats = defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
 
     for grade in internal_grades:
-        # 차트용 데이터 수집 (진로선택 과목 제외)
-        if not grade.is_elective:
+        is_achievement = grade.subject_classification in ('elective', 'fusion')
+        # 차트용 데이터 수집 (진로선택/융합선택 제외)
+        if not is_achievement:
             key = f"{grade.year}-{grade.semester}"
             category = grade.curriculum or '기타'
             semester_category_grades[key][category]['total_weighted'] += grade.grade_rank * grade.credits
@@ -631,7 +711,7 @@ def student_grades(request, student_pk):
             category_stats[category]['total_weighted'] += grade.grade_rank * grade.credits
             category_stats[category]['total_credits'] += grade.credits
 
-        if grade.is_elective:  # 진로선택 과목은 평균 계산에서 제외
+        if is_achievement:  # 진로선택/융합선택 과목은 평균 계산에서 제외
             continue
 
         semester_key = (grade.year, grade.semester)
@@ -734,9 +814,9 @@ def student_grades(request, student_pk):
                 'missing': missing_categories,
             })
 
-    # 일반 내신 성적과 진로선택 성적 분리
-    regular_internal_grades = [g for g in internal_grades if not g.is_elective]
-    elective_grades = [g for g in internal_grades if g.is_elective]
+    # 일반 내신 성적과 진로선택/융합선택 성적 분리
+    regular_internal_grades = [g for g in internal_grades if g.subject_classification not in ('elective', 'fusion')]
+    elective_grades = [g for g in internal_grades if g.subject_classification in ('elective', 'fusion')]
 
     # ── 진도 평가 분석 ──────────────────────────────────────────
     from bookstore.models import BookSale

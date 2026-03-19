@@ -42,10 +42,25 @@ class Student(models.Model):
     extra3 = models.CharField(max_length=100, null=True, blank=True, verbose_name='예비3')
     extra4 = models.CharField(max_length=100, null=True, blank=True, verbose_name='예비4')
     extra5 = models.CharField(max_length=100, null=True, blank=True, verbose_name='예비5')
+    hs_admission_year = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='고등학교 입학년도',
+        help_text='2025년 이후 입학 → 2022 개정교육과정. 2024년 이전 → 2015 교육과정'
+    )
     is_active = models.BooleanField(default=True, verbose_name='활동 여부')
     unpaid_amount = models.IntegerField(default=0, verbose_name='미납 수업료')
     director_memo = models.TextField(null=True, blank=True, verbose_name='원장 메모',
                                      help_text='학생 특징 및 요구사항 (선생님에게 표시됨)')
+
+    @property
+    def curriculum_year(self):
+        """적용 교육과정 연도 반환 (고등학교 입학년도 기준)"""
+        if self.hs_admission_year and self.hs_admission_year >= 2025:
+            return 2022
+        if self.hs_admission_year:
+            return 2015
+        return None
 
     def generate_student_id(self):
         import random

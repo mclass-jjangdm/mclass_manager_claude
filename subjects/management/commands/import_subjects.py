@@ -35,12 +35,25 @@ class Command(BaseCommand):
         with open(csv_file, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                category_code = row['교과코드'].strip() if '교과코드' in row and row['교과코드'].strip() else None
-                subject_code = row['과목코드'].strip()
-                name = row['과목명'].strip()
-                special_code = row['특수코드'].strip() if row['특수코드'].strip() else None
-                memo = row['메모'].strip() if row['메모'].strip() else None
-                extra = row['여분'].strip() if row['여분'].strip() else None
+                def get(key, *aliases):
+                    for k in [key] + list(aliases):
+                        if k in row and row[k].strip():
+                            return row[k].strip()
+                    return None
+
+                category_code = get('교과코드')
+                subject_code = get('과목코드')
+                name = get('과목명')
+                special_code = get('특수코드')
+                memo = get('메모')
+                extra = get('여분')
+
+                # 교육과정 연도 (컬럼 없으면 기본 2015)
+                curriculum_raw = get('교육과정', '교육과정연도', 'curriculum_year')
+                if curriculum_raw and curriculum_raw.isdigit():
+                    curriculum_year = int(curriculum_raw)
+                else:
+                    curriculum_year = 2015
 
                 if not subject_code or not name:
                     skipped_count += 1
@@ -55,6 +68,7 @@ class Command(BaseCommand):
                         'special_code': special_code,
                         'memo': memo,
                         'extra': extra,
+                        'curriculum_year': curriculum_year,
                         'is_active': True,
                     }
                 )
