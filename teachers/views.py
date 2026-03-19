@@ -3512,3 +3512,48 @@ def message_dismiss(request, pk):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False}, status=400)
+
+
+@login_required
+def teacher_shared_drive(request):
+    """교사용 공유자료 Google Drive 뷰"""
+    from common.services import GoogleDriveService
+
+    teacher = getattr(request.user, 'teacher_profile', None)
+    teacher_email = teacher.email if teacher else None
+
+    drive_service = GoogleDriveService()
+
+    context = {
+        'teacher': teacher,
+        'teacher_email': teacher_email,
+        'is_available': drive_service.is_available(),
+        'shared_folder_link': None,
+        'folders': [],
+        'files': [],
+        'error': None,
+    }
+
+    if not drive_service.is_available():
+        context['error'] = 'Google Drive 서비스를 현재 사용할 수 없습니다. 관리자에게 문의하세요.'
+        return render(request, 'teachers/teacher_shared_drive.html', context)
+
+    # '공유자료' 폴더 찾기
+    shared_folder_id = drive_service.find_folder('공유자료')
+    if not shared_folder_id:
+        context['error'] = '공유자료 폴더를 찾을 수 없습니다. 관리자가 먼저 구글 드라이브 폴더 구조를 생성해야 합니다.'
+        return render(request, 'teachers/teacher_shared_drive.html', context)
+
+    # Google Drive webViewLink 가져오기
+    folder_info = drive_service.get_file_info(shared_folder_id)
+    if folder_info:
+        context['shared_folder_link'] = folder_info.get('webViewLink')
+
+    # 교사 이메일로 공유자료 폴더 자동 공유 (reader 권한, 알림 이메일 없음)
+    if teacher_email:
+        drive_service.share_with_user(shared_folder_id, teacher_email, role='reader', send_notification=False)
+
+    context['folders'] = drive_service.list_folders(parent_folder_id=shared_folder_id)
+    context['files'] = drive_service.list_files(folder_id=shared_folder_id)
+
+    return render(request, 'teachers/teacher_shared_drive.html', context)

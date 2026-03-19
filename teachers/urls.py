@@ -65,4 +65,6 @@ urlpatterns = [
     path('messages/<int:pk>/delete/', views.message_delete, name='message_delete'),
     path('messages/<int:pk>/dismiss/', views.message_dismiss, name='message_dismiss'),
     path('messages/mark-read/', views.message_mark_read, name='message_mark_read'),
+    # 공유자료 (Google Drive)
+    path('shared-drive/', views.teacher_shared_drive, name='teacher_shared_drive'),
 ]
