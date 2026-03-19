@@ -1286,7 +1286,7 @@ def parent_grade_bulk_create(request, student_pk):
         sc = ''
         if is_2022 and len(s.subject_code) == 6:
             sc = TYPE_MAP.get(s.subject_code[2], '')
-        subjects_with_class.append({'id': s.pk, 'name': s.name, 'code': s.subject_code, 'classification': sc})
+        subjects_with_class.append({'id': s.pk, 'name': s.name, 'code': s.subject_code, 'category': s.category, 'classification': sc})
 
     context = {
         'student': student,
