@@ -853,6 +853,29 @@ def student_grades(request, student_pk):
         {'p': l['percent'], 'c': l['color']}
         for l in test_levels if l['percent'] > 0
     ])
+
+    # 각 기록에 quiz_detail 첨부
+    processed_test_records = []
+    for rec in test_records:
+        quiz_detail = None
+        if rec.quiz_results:
+            total = rec.quiz_results.get('total', 0)
+            wrong_nums = sorted(rec.quiz_results.get('wrong', []))
+            correct_count = total - len(wrong_nums)
+            correct_pct = round(correct_count / total * 100, 1) if total else 0
+            wrong_pct = round(100 - correct_pct, 1) if total else 0
+            quiz_detail = {
+                'total': total,
+                'wrong_nums': wrong_nums,  # sorted list for display
+                'q_range': list(range(1, total + 1)),
+                'correct_count': correct_count,
+                'wrong_count': len(wrong_nums),
+                'segments_json': json.dumps([
+                    {'p': correct_pct, 'c': '#22c55e'},
+                    {'p': wrong_pct, 'c': '#f87171'},
+                ]) if total > 0 else '[]',
+            }
+        processed_test_records.append({'rec': rec, 'quiz_detail': quiz_detail})
     # ────────────────────────────────────────────────────────────
 
     context = {
@@ -872,7 +895,7 @@ def student_grades(request, student_pk):
         'overall_segments_json': overall_segments_json if overall_total > 0 else '[]',
         'achievement_meta': ACHIEVEMENT_META,
         # 퀴즈/테스트 기록
-        'test_records': test_records,
+        'test_records': processed_test_records,
         'test_levels': test_levels,
         'test_total_evaluated': test_total_evaluated,
         'test_segments_json': test_segments_json,
@@ -904,6 +927,18 @@ def test_record_create(request, student_pk):
             messages.error(request, '제목을 입력해 주세요.')
             return redirect('grades:student_grades', student_pk=student_pk)
 
+        # 문제별 정답/오답 상세 처리
+        quiz_total_str = request.POST.get('quiz_total', '').strip()
+        quiz_wrong_str = request.POST.get('quiz_wrong', '').strip()
+        quiz_results_data = None
+        if quiz_total_str and quiz_total_str.isdigit():
+            q_total = int(quiz_total_str)
+            wrong_list = sorted([int(x) for x in quiz_wrong_str.split(',') if x.strip().isdigit()]) if quiz_wrong_str else []
+            quiz_results_data = {'total': q_total, 'wrong': wrong_list}
+            if not score_str:
+                score_str = str(q_total - len(wrong_list))
+                total_score_str = str(q_total)
+
         score = Decimal(score_str) if score_str else None
         total_score = Decimal(total_score_str) if total_score_str else None
         subject = Subject.objects.filter(pk=subject_pk).first() if subject_pk else None
@@ -924,6 +959,7 @@ def test_record_create(request, student_pk):
             memo=memo,
             subject=subject,
             teacher=teacher,
+            quiz_results=quiz_results_data,
         )
         messages.success(request, f'기록이 추가되었습니다.')
     return redirect('grades:student_grades', student_pk=student_pk)

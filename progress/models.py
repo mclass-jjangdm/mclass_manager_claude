@@ -400,6 +400,12 @@ class LearningRecord(models.Model):
     # 체크 항목 (공통)
     homework_checked = models.BooleanField(default=False, verbose_name="과제 확인")
     needs_review = models.BooleanField(default=False, verbose_name="보완 필요")
+    quiz_results = models.JSONField(
+        null=True,
+        blank=True,
+        verbose_name="문제별 결과",
+        help_text='{"total": 10, "wrong": [2, 5, 7]}'
+    )
 
     # 메모 및 메타 정보
     memo = models.TextField(blank=True, verbose_name="메모")
