@@ -1160,3 +1160,183 @@ def parent_grades(request, student_pk):
         'grade_rank_colors': GRADE_RANK_COLORS,
     }
     return render(request, 'students/parent_grades.html', context)
+
+
+def _parent_auth(request, student_pk):
+    """학부모 세션 인증 헬퍼. 인증된 Student 반환, 실패 시 None 반환."""
+    session_id = request.session.get('parent_student_id', '')
+    session_name = request.session.get('parent_student_name', '')
+    if not session_id or not session_name:
+        return None
+    try:
+        student = Student.objects.get(pk=student_pk)
+        if student.student_id != session_id or student.name != session_name:
+            return None
+        return student
+    except Student.DoesNotExist:
+        return None
+
+
+def parent_grade_bulk_create(request, student_pk):
+    """학부모용 한 학기 내신 성적 일괄 입력 (세션 인증)"""
+    from grades.models import Grade
+    from subjects.models import Subject
+    from decimal import Decimal, InvalidOperation
+
+    student = _parent_auth(request, student_pk)
+    if not student:
+        return redirect('parent_lookup')
+
+    subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
+    error_message = None
+
+    if request.method == 'POST':
+        year = request.POST.get('year', '').strip()
+        semester = request.POST.get('semester', '').strip()
+        grade_count = int(request.POST.get('grade_count', 0))
+
+        if not year or not semester:
+            error_message = '학년과 학기를 선택해 주세요.'
+        else:
+            created_count = 0
+            for i in range(grade_count):
+                subject_id = request.POST.get(f'grades[{i}][subject]', '').strip()
+                score_str = request.POST.get(f'grades[{i}][score]', '').strip()
+                avg_str = request.POST.get(f'grades[{i}][subject_average]', '0').strip() or '0'
+                grade_rank_str = request.POST.get(f'grades[{i}][grade_rank]', '').strip()
+                is_elective = request.POST.get(f'grades[{i}][is_elective]') == '1'
+                achievement_level = request.POST.get(f'grades[{i}][achievement_level]', '').strip() or None
+
+                if not subject_id or not score_str:
+                    continue
+                try:
+                    subject = Subject.objects.get(pk=subject_id)
+                    score = Decimal(score_str)
+                    subject_average = Decimal(avg_str)
+                    grade_rank = int(grade_rank_str) if grade_rank_str and not is_elective else None
+                    Grade.objects.create(
+                        student=student,
+                        grade_type='internal',
+                        subject=subject,
+                        year=int(year),
+                        semester=int(semester),
+                        score=score,
+                        subject_average=subject_average,
+                        grade_rank=grade_rank,
+                        is_elective=is_elective,
+                        achievement_level=achievement_level if is_elective else None,
+                    )
+                    created_count += 1
+                except Exception:
+                    continue
+            if created_count > 0:
+                return redirect('parent_grades', student_pk=student_pk)
+            error_message = '과목과 원점수를 입력해 주세요.'
+
+    import datetime
+    context = {
+        'student': student,
+        'subjects': subjects,
+        'current_year': datetime.date.today().year,
+        'error_message': error_message,
+    }
+    return render(request, 'students/parent_grade_bulk.html', context)
+
+
+def parent_mock_grade_create(request, student_pk):
+    """학부모용 모의고사 성적 입력 (세션 인증)"""
+    from grades.models import Grade
+    from subjects.models import Subject
+    from decimal import Decimal
+
+    student = _parent_auth(request, student_pk)
+    if not student:
+        return redirect('parent_lookup')
+
+    subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
+    error_message = None
+
+    if request.method == 'POST':
+        subject_id = request.POST.get('subject', '').strip()
+        year_str = request.POST.get('year', '').strip()
+        exam_year_str = request.POST.get('exam_year', '').strip()
+        exam_month_str = request.POST.get('exam_month', '').strip()
+        exam_name = request.POST.get('exam_name', '').strip()
+        score_str = request.POST.get('score', '').strip()
+        avg_str = request.POST.get('subject_average', '0').strip() or '0'
+        grade_rank_str = request.POST.get('grade_rank', '').strip()
+
+        if not subject_id or not year_str or not exam_year_str or not exam_month_str or not score_str:
+            error_message = '필수 항목을 모두 입력해 주세요.'
+        else:
+            try:
+                subject = Subject.objects.get(pk=subject_id)
+                Grade.objects.create(
+                    student=student,
+                    grade_type='mock',
+                    subject=subject,
+                    year=int(year_str),
+                    exam_year=int(exam_year_str),
+                    exam_month=int(exam_month_str),
+                    exam_name=exam_name or None,
+                    score=Decimal(score_str),
+                    subject_average=Decimal(avg_str),
+                    grade_rank=int(grade_rank_str) if grade_rank_str else None,
+                )
+                return redirect('parent_grades', student_pk=student_pk)
+            except Exception as e:
+                error_message = f'저장 중 오류가 발생했습니다: {str(e)}'
+
+    import datetime
+    context = {
+        'student': student,
+        'subjects': subjects,
+        'current_year': datetime.date.today().year,
+        'exam_years': list(range(datetime.date.today().year, datetime.date.today().year - 5, -1)),
+        'exam_months': [3, 4, 5, 6, 7, 9, 10, 11],
+        'grade_ranks': list(range(1, 10)),
+        'error_message': error_message,
+    }
+    return render(request, 'students/parent_mock_grade.html', context)
+
+
+def parent_grade_import(request, student_pk):
+    """학부모용 성적 파일 업로드 (세션 인증)"""
+    from grades.views import process_csv_file, process_excel_file
+
+    student = _parent_auth(request, student_pk)
+    if not student:
+        return redirect('parent_lookup')
+
+    error_message = None
+    success_message = None
+
+    if request.method == 'POST':
+        grade_type = request.POST.get('grade_type', 'internal')
+        uploaded_file = request.FILES.get('file')
+        if not uploaded_file:
+            error_message = '파일을 선택해 주세요.'
+        else:
+            file_name = uploaded_file.name.lower()
+            try:
+                if file_name.endswith('.csv'):
+                    result = process_csv_file(uploaded_file, student, grade_type)
+                elif file_name.endswith(('.xlsx', '.xls')):
+                    result = process_excel_file(uploaded_file, student, grade_type)
+                else:
+                    error_message = 'CSV 또는 Excel 파일만 업로드 가능합니다.'
+                    result = None
+                if result:
+                    if result.get('success_count', 0) > 0:
+                        success_message = f"{result['success_count']}개의 성적이 등록되었습니다."
+                    if result.get('error_count', 0) > 0:
+                        error_message = f"{result['error_count']}개 행에서 오류가 발생했습니다: {', '.join(result.get('errors', [])[:3])}"
+            except Exception as e:
+                error_message = f'파일 처리 중 오류: {str(e)}'
+
+    context = {
+        'student': student,
+        'error_message': error_message,
+        'success_message': success_message,
+    }
+    return render(request, 'students/parent_grade_import.html', context)

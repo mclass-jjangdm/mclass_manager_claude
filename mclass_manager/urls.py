@@ -32,7 +32,7 @@ from common.views import (
     google_drive_share_folder,
     google_drive_delete,
 )
-from students.views import parent_lookup, parent_student_update, parent_logout, parent_grades
+from students.views import parent_lookup, parent_student_update, parent_logout, parent_grades, parent_grade_bulk_create, parent_mock_grade_create, parent_grade_import
 
 
 admin.site.site_header = "엠클래스수학과학전문학원"  # 로그인 페이지와 관리자 페이지 상단의 타이틀
@@ -49,6 +49,9 @@ urlpatterns = [
     path('parent/', parent_lookup, name='parent_lookup'),
     path('parent/update/<str:student_id>/', parent_student_update, name='parent_student_update'),
     path('parent/grades/<int:student_pk>/', parent_grades, name='parent_grades'),
+    path('parent/grades/<int:student_pk>/school/bulk/', parent_grade_bulk_create, name='parent_grade_bulk_create'),
+    path('parent/grades/<int:student_pk>/school/mock/', parent_mock_grade_create, name='parent_mock_grade_create'),
+    path('parent/grades/<int:student_pk>/school/import/', parent_grade_import, name='parent_grade_import'),
     path('parent/exit/', parent_logout, name='parent_logout'),
     path('admin/db-backup/', db_backup, name='db_backup'),
     # Google Drive 관리

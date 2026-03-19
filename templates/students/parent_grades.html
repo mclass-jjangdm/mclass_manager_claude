@@ -249,6 +249,22 @@
                 <div class="flex-1 border-t-2 border-indigo-100"></div>
             </div>
 
+            <!-- 성적 입력 버튼 (반응형) -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <a href="{% url 'parent_grade_bulk_create' student.pk %}"
+                   class="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-4 py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
+                    📋 한 학기 일괄 입력
+                </a>
+                <a href="{% url 'parent_mock_grade_create' student.pk %}"
+                   class="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
+                    📄 모의고사 성적 입력
+                </a>
+                <a href="{% url 'parent_grade_import' student.pk %}"
+                   class="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
+                    ⬆ 파일로 일괄 업로드
+                </a>
+            </div>
+
             {% if grade_groups %}
             <div class="space-y-3">
                 {% for group in grade_groups %}

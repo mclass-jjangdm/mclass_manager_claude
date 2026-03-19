@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한 학기 내신 성적 입력 - {{ student.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="max-w-2xl mx-auto py-6 px-4">
+
+    <!-- 헤더 -->
+    <div class="text-center mb-6">
+        <a href="https://mclass.co.kr/" class="hover:opacity-75 transition-opacity">
+            <h1 class="text-2xl font-bold text-gray-800">엠클래스 수학과학전문학원</h1>
+        </a>
+    </div>
+
+    <!-- 학생 정보 -->
+    <div class="bg-white rounded-xl shadow-md p-4 mb-5 flex items-center justify-between">
+        <div>
+            <p class="text-xs text-gray-400">학생</p>
+            <p class="text-lg font-bold text-gray-900">{{ student.name }}</p>
+        </div>
+        <a href="{% url 'parent_grades' student.pk %}"
+           class="px-3 py-1.5 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 text-sm font-medium">
+            ← 돌아가기
+        </a>
+    </div>
+
+    <h2 class="text-base font-bold text-gray-800 mb-4">📋 한 학기 내신 성적 일괄 입력</h2>
+
+    {% if error_message %}
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">{{ error_message }}</div>
+    {% endif %}
+
+    <form method="POST" id="bulk-form">
+        {% csrf_token %}
+        <input type="hidden" name="grade_count" id="grade_count" value="0">
+
+        <!-- 학년 / 학기 선택 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">학년 <span class="text-red-500">*</span></label>
+                    <select name="year" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                        <option value="">선택</option>
+                        <option value="1">1학년</option>
+                        <option value="2">2학년</option>
+                        <option value="3">3학년</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">학기 <span class="text-red-500">*</span></label>
+                    <select name="semester" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                        <option value="">선택</option>
+                        <option value="1">1학기</option>
+                        <option value="2">2학기</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 과목 행 목록 -->
+        <div id="grade-rows" class="space-y-3 mb-4"></div>
+
+        <!-- 과목 추가 버튼 -->
+        <button type="button" onclick="addRow()"
+                class="w-full py-2.5 border-2 border-dashed border-indigo-300 text-indigo-600 rounded-xl text-sm font-medium hover:bg-indigo-50 transition-colors mb-5">
+            + 과목 추가
+        </button>
+
+        <!-- 저장 / 취소 -->
+        <div class="flex gap-3">
+            <a href="{% url 'parent_grades' student.pk %}"
+               class="flex-1 py-3 bg-white border border-gray-300 text-gray-600 rounded-xl text-sm font-medium text-center hover:bg-gray-50 transition-colors">
+                취소
+            </a>
+            <button type="submit" onclick="prepareSubmit()"
+                    class="flex-2 flex-grow-[2] py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">
+                저장하기
+            </button>
+        </div>
+    </form>
+
+    <!-- 푸터 -->
+    <div class="text-center mt-8 text-xs text-gray-400 pb-4">
+        <p>엠클래스 수학과학전문학원 · 031-439-1222</p>
+    </div>
+</div>
+
+<script>
+// 과목 목록 (서버에서 JSON으로 전달)
+const SUBJECTS = [
+    {% for s in subjects %}
+    {"id": {{ s.pk }}, "name": "{{ s.name }}", "code": "{{ s.subject_code }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+let rowCount = 0;
+
+function addRow() {
+    const idx = rowCount++;
+    document.getElementById('grade_count').value = rowCount;
+
+    const optionsHtml = '<option value="">-- 과목 선택 --</option>' +
+        SUBJECTS.map(s => `<option value="${s.id}">[${s.code}] ${s.name}</option>`).join('');
+
+    const row = document.createElement('div');
+    row.id = `row-${idx}`;
+    row.className = 'bg-white rounded-xl shadow-sm border border-gray-100 p-4';
+    row.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-gray-500">과목 ${idx + 1}</span>
+            <button type="button" onclick="removeRow('row-${idx}', ${idx})"
+                    class="text-red-300 hover:text-red-500 text-xs">✕ 삭제</button>
+        </div>
+        <!-- 과목 선택 (전체 너비) -->
+        <select name="grades[${idx}][subject]"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none mb-2">
+            ${optionsHtml}
+        </select>
+        <!-- 점수 / 등급 (모바일: 2열, 데스크탑: 3열) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">원점수 <span class="text-red-500">*</span></label>
+                <input type="number" name="grades[${idx}][score]" placeholder="0~100"
+                       min="0" max="100" step="0.01"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">과목평균</label>
+                <input type="number" name="grades[${idx}][subject_average]" placeholder="(선택)"
+                       min="0" max="100" step="0.01"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+            </div>
+            <div id="rank-div-${idx}">
+                <label class="block text-xs text-gray-500 mb-1">등급</label>
+                <select name="grades[${idx}][grade_rank]"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                    <option value="">-</option>
+                    ${[1,2,3,4,5,6,7,8,9].map(n=>`<option value="${n}">${n}등급</option>`).join('')}
+                </select>
+            </div>
+        </div>
+        <!-- 진로선택 토글 -->
+        <label class="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
+            <input type="checkbox" name="grades[${idx}][is_elective]" value="1"
+                   class="w-4 h-4 rounded"
+                   onchange="toggleElective(${idx}, this.checked)">
+            진로선택 과목
+        </label>
+        <!-- 진로선택 성취도 (숨김) -->
+        <div id="elective-div-${idx}" class="hidden mt-2">
+            <label class="block text-xs text-gray-500 mb-1">성취도</label>
+            <select name="grades[${idx}][achievement_level]"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                <option value="">선택</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+            </select>
+        </div>
+    `;
+    document.getElementById('grade-rows').appendChild(row);
+}
+
+function removeRow(id, idx) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
+
+function toggleElective(idx, isElective) {
+    const rankDiv = document.getElementById(`rank-div-${idx}`);
+    const electiveDiv = document.getElementById(`elective-div-${idx}`);
+    if (isElective) {
+        rankDiv.classList.add('hidden');
+        electiveDiv.classList.remove('hidden');
+    } else {
+        rankDiv.classList.remove('hidden');
+        electiveDiv.classList.add('hidden');
+    }
+}
+
+function prepareSubmit() {
+    // grade_count 갱신 (삭제된 행이 있어도 정확히 카운트)
+    const rows = document.getElementById('grade-rows').querySelectorAll('[id^="row-"]');
+    // idx는 연속하지 않을 수 있으므로 그냥 rowCount 사용
+    document.getElementById('grade_count').value = rowCount;
+}
+
+// 페이지 로드 시 기본 1행 추가
+addRow();
+</script>
+</body>
+</html>
