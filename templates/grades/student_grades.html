@@ -331,17 +331,18 @@
 
                 <!-- 오른쪽 정보 -->
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    {% if rec.date %}<span class="text-xs text-gray-400">{{ rec.date }}</span>{% endif %}
+                    {% if rec.date %}<span class="text-xs text-gray-400">{{ rec.date|date:"Y.m.d" }}</span>{% endif %}
 
-                    <!-- 점수 (문제별 입력 기반) -->
-                    {% if qd %}
-                    <span class="text-sm font-bold text-gray-700">{{ qd.correct_count }}/{{ qd.total }}
-                        <span class="text-xs font-normal text-gray-400 ml-0.5">
-                            ({% widthratio qd.correct_count qd.total 100 %}%)
-                        </span>
+                    <!-- 점수: 직접 입력값 우선 표시 -->
+                    {% if rec.score is not None %}
+                    <span class="text-sm font-bold text-gray-700">
+                        {{ rec.score }}{% if rec.total_score %}<span class="text-gray-500 font-normal">/{{ rec.total_score }}</span>{% endif %}
+                        {% if rec.total_score %}
+                        <span class="text-xs font-normal text-gray-400 ml-0.5">({% widthratio rec.score rec.total_score 100 %}%)</span>
+                        {% endif %}
                     </span>
-                    {% elif rec.score is not None %}
-                    <span class="text-sm font-bold text-gray-700">{{ rec.score }}{% if rec.total_score %}/{{ rec.total_score }}{% endif %}</span>
+                    {% elif qd %}
+                    <span class="text-sm font-bold text-gray-700">{{ qd.correct_count }}/{{ qd.total }}</span>
                     {% endif %}
 
                     <!-- 성취도 배지 -->
