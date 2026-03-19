@@ -55,11 +55,21 @@ class Student(models.Model):
 
     @property
     def curriculum_year(self):
-        """적용 교육과정 연도 반환 (고등학교 입학년도 기준)"""
-        if self.hs_admission_year and self.hs_admission_year >= 2025:
-            return 2022
+        """적용 교육과정 연도 반환 (고등학교 입학년도 기준)
+        hs_admission_year 미설정 시 현재 학년으로 자동 추정:
+          K12 → current-2, K11 → current-1, K10 → current, K9 → current+1
+        """
+        import datetime
+        # 명시적 입학년도 우선
         if self.hs_admission_year:
-            return 2015
+            return 2022 if self.hs_admission_year >= 2025 else 2015
+        # 학년으로 자동 추정
+        current_year = datetime.date.today().year
+        grade_offset = {'K9': 1, 'K10': 0, 'K11': -1, 'K12': -2}
+        offset = grade_offset.get(self.grade)
+        if offset is not None:
+            entry_year = current_year + offset
+            return 2022 if entry_year >= 2025 else 2015
         return None
 
     def generate_student_id(self):
