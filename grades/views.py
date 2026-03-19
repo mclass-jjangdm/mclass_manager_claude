@@ -773,7 +773,7 @@ def student_grades(request, student_pk):
             overall_counts[rec.achievement] += 1
             if rec.book_content:
                 pages_by_level[rec.achievement].append({
-                    'page': rec.book_content.page_number,
+                    'page': rec.book_content.page,
                     'title': rec.book_content.subsection_title,
                     'section': rec.book_content.section_title or '',
                     'study_date': rec.date,
