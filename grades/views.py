@@ -737,6 +737,78 @@ def student_grades(request, student_pk):
     regular_internal_grades = [g for g in internal_grades if not g.is_elective]
     elective_grades = [g for g in internal_grades if g.is_elective]
 
+    # ── 진도 평가 분석 ──────────────────────────────────────────
+    from bookstore.models import BookSale, StudentBookProgress
+
+    ACHIEVEMENT_META = [
+        {'code': 'A', 'label': 'A (우수)', 'color': 'indigo'},
+        {'code': 'B', 'label': 'B (양호)', 'color': 'green'},
+        {'code': 'C', 'label': 'C (보통)', 'color': 'yellow'},
+        {'code': 'D', 'label': 'D (미흡)', 'color': 'orange'},
+        {'code': 'F', 'label': 'F (재학습)', 'color': 'red'},
+    ]
+
+    all_sales = BookSale.objects.filter(student=student).select_related('book').order_by('-sale_date', '-pk')
+
+    book_progress_data = []
+    overall_counts = {m['code']: 0 for m in ACHIEVEMENT_META}
+
+    for sale in all_sales:
+        records = StudentBookProgress.objects.filter(
+            book_sale=sale,
+            achievement__in=['A', 'B', 'C', 'D', 'F']
+        ).select_related('book_content').order_by('book_content__chapter_number', 'book_content__subsection_number')
+
+        if not records.exists():
+            continue
+
+        counts = {m['code']: 0 for m in ACHIEVEMENT_META}
+        pages_by_level = {m['code']: [] for m in ACHIEVEMENT_META}
+
+        for rec in records:
+            counts[rec.achievement] += 1
+            overall_counts[rec.achievement] += 1
+            pages_by_level[rec.achievement].append({
+                'page': rec.book_content.page_number,
+                'title': rec.book_content.subsection_title,
+                'section': rec.book_content.section_title or '',
+                'study_date': rec.study_date,
+            })
+
+        total = sum(counts.values())
+        levels = []
+        for m in ACHIEVEMENT_META:
+            cnt = counts[m['code']]
+            levels.append({
+                'code': m['code'],
+                'label': m['label'],
+                'color': m['color'],
+                'count': cnt,
+                'percent': round(cnt / total * 100, 1) if total else 0,
+                'pages': pages_by_level[m['code']],
+            })
+
+        book_progress_data.append({
+            'sale': sale,
+            'book': sale.book,
+            'total': total,
+            'levels': levels,
+            'is_completed': sale.is_learning_completed,
+        })
+
+    overall_total = sum(overall_counts.values())
+    overall_levels = []
+    for m in ACHIEVEMENT_META:
+        cnt = overall_counts[m['code']]
+        overall_levels.append({
+            'code': m['code'],
+            'label': m['label'],
+            'color': m['color'],
+            'count': cnt,
+            'percent': round(cnt / overall_total * 100, 1) if overall_total else 0,
+        })
+    # ────────────────────────────────────────────────────────────
+
     context = {
         'student': student,
         'internal_grades': regular_internal_grades,
@@ -747,6 +819,11 @@ def student_grades(request, student_pk):
         'weighted_averages': weighted_averages,
         'combination_averages': combination_averages,
         'chart_data': json.dumps(chart_data, ensure_ascii=False),
+        # 진도 평가 분석
+        'book_progress_data': book_progress_data,
+        'overall_levels': overall_levels,
+        'overall_total': overall_total,
+        'achievement_meta': ACHIEVEMENT_META,
     }
     return render(request, 'grades/student_grades.html', context)
 
