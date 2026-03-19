@@ -826,11 +826,12 @@ def student_grades(request, student_pk):
         ('quiz', '퀴즈'),
         ('practice', '연습 문제'),
         ('booklet', '제본 교재'),
+        ('entrance_exam', '입학 시험'),
         ('other', '기타'),
     ]
     test_records = LearningRecord.objects.filter(
         student=student,
-        record_type__in=['quiz', 'practice', 'booklet', 'other']
+        record_type__in=['quiz', 'practice', 'booklet', 'entrance_exam', 'other']
     ).select_related('subject', 'teacher').order_by('-date', '-created_at')
 
     test_counts = {m['code']: 0 for m in ACHIEVEMENT_META}

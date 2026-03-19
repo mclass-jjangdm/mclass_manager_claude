@@ -306,11 +306,12 @@ class LearningRecord(models.Model):
     통계 및 관리를 단순화하기 위한 구조
     """
     RECORD_TYPE_CHOICES = [
-        ('textbook', '교재 진도'),      # 기존 StudentBookProgress
-        ('quiz', '퀴즈'),               # 수업 활동
-        ('practice', '추가 연습 문제'),  # 수업 활동
-        ('booklet', '제본 교재'),        # 수업 활동
-        ('other', '기타'),              # 수업 활동
+        ('textbook', '교재 진도'),          # 기존 StudentBookProgress
+        ('quiz', '퀴즈'),                   # 수업 활동
+        ('practice', '추가 연습 문제'),      # 수업 활동
+        ('booklet', '제본 교재'),            # 수업 활동
+        ('entrance_exam', '입학 시험'),      # 입학 시험
+        ('other', '기타'),                  # 수업 활동
     ]
 
     ACHIEVEMENT_CHOICES = [

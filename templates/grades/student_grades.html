@@ -172,7 +172,7 @@
                 <!-- 날짜 -->
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">날짜</label>
-                    <input type="date" name="date" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                    <input type="text" name="date" placeholder="날짜 선택" readonly class="mclass-datepicker w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <!-- 제목 -->
                 <div class="sm:col-span-2">
@@ -204,14 +204,9 @@
                     <select name="subject" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
                         <option value="">-- 선택 --</option>
                         {% for s in subjects %}
-                        <option value="{{ s.pk }}">{{ s.subject_name }}</option>
+                        <option value="{{ s.pk }}">{{ s.name }}</option>
                         {% endfor %}
                     </select>
-                </div>
-                <!-- 복습 필요 -->
-                <div class="flex items-center gap-2 pt-5">
-                    <input type="checkbox" name="needs_review" id="needs_review_check" class="w-4 h-4 rounded text-purple-600">
-                    <label for="needs_review_check" class="text-sm text-gray-700">복습 필요</label>
                 </div>
                 <!-- 메모 -->
                 <div class="sm:col-span-2">
@@ -270,19 +265,19 @@
                     <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600">제목</th>
                     <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600">점수</th>
                     <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600">성취도</th>
-                    <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600">복습</th>
                     <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 {% for rec in test_records %}
-                <tr class="hover:bg-gray-50 transition-colors{% if rec.needs_review %} bg-yellow-50{% endif %}">
+                <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-3 py-2.5 text-xs text-gray-500 whitespace-nowrap">{{ rec.date|default:"-" }}</td>
                     <td class="px-3 py-2.5 whitespace-nowrap">
                         <span class="text-xs px-1.5 py-0.5 rounded
                             {% if rec.record_type == 'quiz' %}bg-blue-100 text-blue-700
                             {% elif rec.record_type == 'practice' %}bg-teal-100 text-teal-700
                             {% elif rec.record_type == 'booklet' %}bg-orange-100 text-orange-700
+                            {% elif rec.record_type == 'entrance_exam' %}bg-purple-100 text-purple-700
                             {% else %}bg-gray-100 text-gray-600{% endif %}">
                             {% for val, label in test_type_choices %}{% if rec.record_type == val %}{{ label }}{% endif %}{% endfor %}
                         </span>
@@ -290,7 +285,7 @@
                     <td class="px-3 py-2.5">
                         <p class="text-sm font-medium text-gray-800">{{ rec.title }}</p>
                         {% if rec.memo %}<p class="text-xs text-gray-400 mt-0.5 truncate max-w-xs" title="{{ rec.memo }}">{{ rec.memo }}</p>{% endif %}
-                        {% if rec.subject %}<p class="text-xs text-indigo-500 mt-0.5">{{ rec.subject.subject_name }}</p>{% endif %}
+                        {% if rec.subject %}<p class="text-xs text-indigo-500 mt-0.5">{{ rec.subject.name }}</p>{% endif %}
                     </td>
                     <td class="px-3 py-2.5 text-center text-sm font-medium text-gray-700 whitespace-nowrap">
                         {% if rec.score is not None %}
@@ -307,11 +302,6 @@
                             {% elif rec.achievement == 'F' %}bg-red-100 text-red-700
                             {% endif %}">{{ rec.achievement }}</span>
                         {% else %}<span class="text-gray-300 text-xs">-</span>{% endif %}
-                    </td>
-                    <td class="px-3 py-2.5 text-center">
-                        {% if rec.needs_review %}
-                        <span class="text-yellow-500 text-base" title="복습 필요">⚑</span>
-                        {% endif %}
                     </td>
                     <td class="px-3 py-2.5 text-center">
                         {% if user.is_staff %}
