@@ -760,7 +760,7 @@ def student_grades(request, student_pk):
             book_sale=sale,
             record_type='textbook',
             achievement__in=['A', 'B', 'C', 'D', 'F']
-        ).select_related('book_content').order_by('book_content__chapter_number', 'book_content__subsection_number')
+        ).select_related('book_content').order_by('book_content__chapter_num', 'book_content__subsection_num')
 
         if not records.exists():
             continue
