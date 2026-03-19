@@ -80,7 +80,11 @@
                             {{ student.school.name|default:"-" }} &middot; {{ student.grade|default:"-" }}
                         </p>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap justify-end">
+                        <a href="{% url 'parent_grades' student.pk %}"
+                           class="px-3 py-1.5 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors text-sm font-medium flex items-center gap-1">
+                            📊 성적 확인
+                        </a>
                         <a href="{% url 'parent_student_update' student.student_id %}"
                            class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
                             정보 수정

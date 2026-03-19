@@ -1022,3 +1022,141 @@ def parent_student_update(request, student_id):
         'student': student,
         'form': form,
     })
+
+
+def parent_grades(request, student_pk):
+    """학부모용 성적 조회 (세션 기반 인증, 로그인 불필요)"""
+    import json
+    from collections import defaultdict
+    from grades.models import Grade
+    from progress.models import LearningRecord
+
+    # 세션 인증
+    session_student_id = request.session.get('parent_student_id', '')
+    session_student_name = request.session.get('parent_student_name', '')
+    if not session_student_id or not session_student_name:
+        return redirect('parent_lookup')
+
+    student = get_object_or_404(Student, pk=student_pk)
+    if student.student_id != session_student_id or student.name != session_student_name:
+        return redirect('parent_lookup')
+
+    # ── 퀴즈/테스트 기록 ─────────────────────────────
+    TEST_TYPE_LABELS = {
+        'quiz': '퀴즈', 'practice': '연습 문제',
+        'booklet': '제본 교재', 'entrance_exam': '입학 시험', 'other': '기타',
+    }
+    raw_test_records = LearningRecord.objects.filter(
+        student=student,
+        record_type__in=['quiz', 'practice', 'booklet', 'entrance_exam', 'other']
+    ).select_related('subject').order_by('-date', '-created_at')
+
+    processed_test_records = []
+    for rec in raw_test_records:
+        quiz_detail = None
+        if rec.quiz_results:
+            total = rec.quiz_results.get('total', 0)
+            wrong_nums = sorted(rec.quiz_results.get('wrong', []))
+            correct_count = total - len(wrong_nums)
+            correct_pct = round(correct_count / total * 100, 1) if total else 0
+            wrong_pct = round(100 - correct_pct, 1) if total else 0
+            quiz_detail = {
+                'total': total,
+                'wrong_nums': wrong_nums,
+                'q_range': list(range(1, total + 1)),
+                'correct_count': correct_count,
+                'wrong_count': len(wrong_nums),
+                'correct_pct': correct_pct,
+                'segments_json': json.dumps([
+                    {'p': correct_pct, 'c': '#22c55e'},
+                    {'p': wrong_pct, 'c': '#f87171'},
+                ]) if total > 0 else '[]',
+            }
+        processed_test_records.append({
+            'rec': rec,
+            'quiz_detail': quiz_detail,
+            'type_label': TEST_TYPE_LABELS.get(rec.record_type, rec.record_type),
+        })
+
+    # ── 학교 시험 성적 (내신) ─────────────────────────
+    GRADE_RANK_COLORS = {
+        1: 'indigo', 2: 'blue', 3: 'cyan', 4: 'green',
+        5: 'yellow', 6: 'orange', 7: 'red', 8: 'red', 9: 'red',
+    }
+    internal_grades = Grade.objects.filter(
+        student=student, grade_type='internal'
+    ).select_related('subject').order_by('year', 'semester', 'subject__subject_code')
+
+    grade_groups = defaultdict(list)
+    for g in internal_grades:
+        grade_groups[(g.year, g.semester)].append(g)
+    sorted_grade_groups = [
+        {'year': k[0], 'semester': k[1], 'grades': v}
+        for k, v in sorted(grade_groups.items(), reverse=True)
+    ]
+
+    # ── 진도 평가 분석 ────────────────────────────────
+    ACHIEVEMENT_META = [
+        {'code': 'A', 'label': '우수',   'color': 'indigo', 'hex': '#6366f1'},
+        {'code': 'B', 'label': '양호',   'color': 'green',  'hex': '#22c55e'},
+        {'code': 'C', 'label': '보통',   'color': 'yellow', 'hex': '#facc15'},
+        {'code': 'D', 'label': '미흡',   'color': 'orange', 'hex': '#fb923c'},
+        {'code': 'F', 'label': '재학습', 'color': 'red',    'hex': '#f87171'},
+    ]
+    textbook_records = LearningRecord.objects.filter(
+        student=student,
+        record_type='textbook',
+        achievement__in=['A', 'B', 'C', 'D', 'F'],
+    ).select_related('book_sale__book')
+
+    book_map = {}
+    for rec in textbook_records:
+        if rec.book_sale_id not in book_map:
+            book_map[rec.book_sale_id] = {'book_sale': rec.book_sale, 'records': []}
+        book_map[rec.book_sale_id]['records'].append(rec)
+
+    book_progress_data = []
+    overall_counts = {m['code']: 0 for m in ACHIEVEMENT_META}
+    for bs_id, data in book_map.items():
+        counts = {m['code']: 0 for m in ACHIEVEMENT_META}
+        for rec in data['records']:
+            if rec.achievement in counts:
+                counts[rec.achievement] += 1
+                overall_counts[rec.achievement] += 1
+        total = sum(counts.values())
+        levels = [
+            {**m, 'count': counts[m['code']],
+             'percent': round(counts[m['code']] / total * 100, 1) if total else 0}
+            for m in ACHIEVEMENT_META
+        ]
+        book_progress_data.append({
+            'book_sale': data['book_sale'],
+            'levels': levels,
+            'total': total,
+            'segments_json': json.dumps([
+                {'p': l['percent'], 'c': l['hex']} for l in levels if l['percent'] > 0
+            ]),
+        })
+
+    overall_total = sum(overall_counts.values())
+    overall_levels = [
+        {**m, 'count': overall_counts[m['code']],
+         'percent': round(overall_counts[m['code']] / overall_total * 100, 1) if overall_total else 0}
+        for m in ACHIEVEMENT_META
+    ]
+    overall_segments_json = json.dumps([
+        {'p': l['percent'], 'c': l['hex']} for l in overall_levels if l['percent'] > 0
+    ]) if overall_total > 0 else '[]'
+
+    context = {
+        'student': student,
+        'test_records': processed_test_records,
+        'grade_groups': sorted_grade_groups,
+        'book_progress_data': book_progress_data,
+        'overall_levels': overall_levels,
+        'overall_total': overall_total,
+        'overall_segments_json': overall_segments_json,
+        'achievement_meta': ACHIEVEMENT_META,
+        'grade_rank_colors': GRADE_RANK_COLORS,
+    }
+    return render(request, 'students/parent_grades.html', context)

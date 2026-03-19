@@ -32,7 +32,7 @@ from common.views import (
     google_drive_share_folder,
     google_drive_delete,
 )
-from students.views import parent_lookup, parent_student_update, parent_logout
+from students.views import parent_lookup, parent_student_update, parent_logout, parent_grades
 
 
 admin.site.site_header = "엠클래스수학과학전문학원"  # 로그인 페이지와 관리자 페이지 상단의 타이틀
@@ -48,6 +48,7 @@ urlpatterns = [
     path('summernote/', include('django_summernote.urls')),
     path('parent/', parent_lookup, name='parent_lookup'),
     path('parent/update/<str:student_id>/', parent_student_update, name='parent_student_update'),
+    path('parent/grades/<int:student_pk>/', parent_grades, name='parent_grades'),
     path('parent/exit/', parent_logout, name='parent_logout'),
     path('admin/db-backup/', db_backup, name='db_backup'),
     # Google Drive 관리
