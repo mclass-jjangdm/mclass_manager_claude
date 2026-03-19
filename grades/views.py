@@ -738,7 +738,8 @@ def student_grades(request, student_pk):
     elective_grades = [g for g in internal_grades if g.is_elective]
 
     # ── 진도 평가 분석 ──────────────────────────────────────────
-    from bookstore.models import BookSale, StudentBookProgress
+    from bookstore.models import BookSale
+    from progress.models import LearningRecord
 
     ACHIEVEMENT_META = [
         {'code': 'A', 'label': 'A (우수)', 'color': 'indigo'},
@@ -754,8 +755,10 @@ def student_grades(request, student_pk):
     overall_counts = {m['code']: 0 for m in ACHIEVEMENT_META}
 
     for sale in all_sales:
-        records = StudentBookProgress.objects.filter(
+        records = LearningRecord.objects.filter(
+            student=student,
             book_sale=sale,
+            record_type='textbook',
             achievement__in=['A', 'B', 'C', 'D', 'F']
         ).select_related('book_content').order_by('book_content__chapter_number', 'book_content__subsection_number')
 
@@ -768,12 +771,13 @@ def student_grades(request, student_pk):
         for rec in records:
             counts[rec.achievement] += 1
             overall_counts[rec.achievement] += 1
-            pages_by_level[rec.achievement].append({
-                'page': rec.book_content.page_number,
-                'title': rec.book_content.subsection_title,
-                'section': rec.book_content.section_title or '',
-                'study_date': rec.study_date,
-            })
+            if rec.book_content:
+                pages_by_level[rec.achievement].append({
+                    'page': rec.book_content.page_number,
+                    'title': rec.book_content.subsection_title,
+                    'section': rec.book_content.section_title or '',
+                    'study_date': rec.date,
+                })
 
         total = sum(counts.values())
         levels = []
