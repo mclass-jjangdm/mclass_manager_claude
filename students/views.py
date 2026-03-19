@@ -1301,7 +1301,7 @@ def parent_grade_bulk_create(request, student_pk):
 
 
 def parent_mock_grade_create(request, student_pk):
-    """학부모용 모의고사 성적 입력 (세션 인증)"""
+    """학부모용 모의고사 성적 일괄 입력 (세션 인증)"""
     from grades.models import Grade
     from subjects.models import Subject
     from decimal import Decimal
@@ -1310,22 +1310,31 @@ def parent_mock_grade_create(request, student_pk):
     if not student:
         return redirect('parent_lookup')
 
-    subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
+    subjects = Subject.objects.filter(is_active=True, curriculum_year=2015).order_by('subject_code')
+    subjects_list = [{'id': s.pk, 'name': f'[{s.subject_code}] {s.name}'} for s in subjects]
     error_message = None
 
     if request.method == 'POST':
-        subject_id = request.POST.get('subject', '').strip()
-        year_str = request.POST.get('year', '').strip()
-        exam_year_str = request.POST.get('exam_year', '').strip()
-        exam_month_str = request.POST.get('exam_month', '').strip()
-        exam_name = request.POST.get('exam_name', '').strip()
-        score_str = request.POST.get('score', '').strip()
-        avg_str = request.POST.get('subject_average', '0').strip() or '0'
-        grade_rank_str = request.POST.get('grade_rank', '').strip()
+        grade_count_str = request.POST.get('grade_count', '0').strip()
+        try:
+            grade_count = int(grade_count_str)
+        except ValueError:
+            grade_count = 0
 
-        if not subject_id or not year_str or not exam_year_str or not exam_month_str or not score_str:
-            error_message = '필수 항목을 모두 입력해 주세요.'
-        else:
+        saved = 0
+        errors = []
+        for i in range(grade_count):
+            subject_id = request.POST.get(f'grades[{i}][subject]', '').strip()
+            year_str = request.POST.get(f'grades[{i}][year]', '').strip()
+            exam_year_str = request.POST.get(f'grades[{i}][exam_year]', '').strip()
+            exam_month_str = request.POST.get(f'grades[{i}][exam_month]', '').strip()
+            exam_name = request.POST.get(f'grades[{i}][exam_name]', '').strip()
+            score_str = request.POST.get(f'grades[{i}][score]', '').strip()
+            avg_str = request.POST.get(f'grades[{i}][subject_average]', '').strip() or '0'
+            grade_rank_str = request.POST.get(f'grades[{i}][grade_rank]', '').strip()
+
+            if not subject_id or not year_str or not exam_year_str or not exam_month_str or not score_str:
+                continue
             try:
                 subject = Subject.objects.get(pk=subject_id)
                 Grade.objects.create(
@@ -1340,14 +1349,18 @@ def parent_mock_grade_create(request, student_pk):
                     subject_average=Decimal(avg_str),
                     grade_rank=int(grade_rank_str) if grade_rank_str else None,
                 )
-                return redirect('parent_grades', student_pk=student_pk)
+                saved += 1
             except Exception as e:
-                error_message = f'저장 중 오류가 발생했습니다: {str(e)}'
+                errors.append(str(e))
+
+        if saved > 0:
+            return redirect('parent_grades', student_pk=student_pk)
+        error_message = errors[0] if errors else '저장할 성적이 없습니다. 필수 항목을 확인해 주세요.'
 
     import datetime
     context = {
         'student': student,
-        'subjects': subjects,
+        'subjects_list': subjects_list,
         'current_year': datetime.date.today().year,
         'exam_years': list(range(datetime.date.today().year, datetime.date.today().year - 5, -1)),
         'exam_months': [3, 4, 5, 6, 7, 9, 10, 11],
