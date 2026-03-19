@@ -41,7 +41,7 @@
             <!-- 도넛 차트 -->
             <div class="relative flex-shrink-0">
                 <svg class="donut-chart" width="120" height="120" viewBox="0 0 100 100"
-                     data-segments="[{% for l in overall_levels %}{% if l.percent > 0 %}{'p':{{ l.percent }},'c':'{{ l.color }}'}{% if not forloop.last %},{% endif %}{% endif %}{% endfor %}]"
+                     data-segments="{{ overall_segments_json }}"
                      data-total="{{ overall_total }}">
                     <circle cx="50" cy="50" r="40" fill="none" stroke="#f3f4f6" stroke-width="18"/>
                 </svg>
@@ -92,7 +92,7 @@
                     <!-- 도넛 차트 -->
                     <div class="flex-shrink-0">
                         <svg class="donut-chart" width="90" height="90" viewBox="0 0 100 100"
-                             data-segments="[{% for l in book_data.levels %}{% if l.percent > 0 %}{'p':{{ l.percent }},'c':'{{ l.color }}'}{% if not forloop.last %},{% endif %}{% endif %}{% endfor %}]"
+                             data-segments="{{ book_data.segments_json }}"
                              data-total="{{ book_data.total }}">
                             <circle cx="50" cy="50" r="40" fill="none" stroke="#f3f4f6" stroke-width="18"/>
                         </svg>
@@ -590,9 +590,8 @@ function renderDonut(svg) {
     const total = parseInt(svg.dataset.total, 10);
     const C = 2 * Math.PI * 40; // circumference r=40
 
-    // parse single-quote JSON
     let segments;
-    try { segments = JSON.parse(raw.replace(/'/g, '"')); } catch(e) { return; }
+    try { segments = JSON.parse(raw); } catch(e) { return; }
 
     let offset = 0;
     segments.forEach(seg => {

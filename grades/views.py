@@ -792,12 +792,17 @@ def student_grades(request, student_pk):
                 'pages': pages_by_level[m['code']],
             })
 
+        segments_json = json.dumps([
+            {'p': l['percent'], 'c': l['color']}
+            for l in levels if l['percent'] > 0
+        ])
         book_progress_data.append({
             'sale': sale,
             'book': sale.book,
             'total': total,
             'levels': levels,
             'is_completed': sale.is_learning_completed,
+            'segments_json': segments_json,
         })
 
     overall_total = sum(overall_counts.values())
@@ -811,6 +816,10 @@ def student_grades(request, student_pk):
             'count': cnt,
             'percent': round(cnt / overall_total * 100, 1) if overall_total else 0,
         })
+    overall_segments_json = json.dumps([
+        {'p': l['percent'], 'c': l['color']}
+        for l in overall_levels if l['percent'] > 0
+    ])
     # ────────────────────────────────────────────────────────────
 
     context = {
@@ -827,6 +836,7 @@ def student_grades(request, student_pk):
         'book_progress_data': book_progress_data,
         'overall_levels': overall_levels,
         'overall_total': overall_total,
+        'overall_segments_json': overall_segments_json if overall_total > 0 else '[]',
         'achievement_meta': ACHIEVEMENT_META,
     }
     return render(request, 'grades/student_grades.html', context)
