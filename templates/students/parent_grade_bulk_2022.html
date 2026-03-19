@@ -99,11 +99,22 @@
 // 2022 과목 목록 (서버에서 JSON으로 전달)
 const SUBJECTS = JSON.parse(document.getElementById('subjects-data').textContent);
 
+const CATEGORIES = [
+    '국어', '수학', '영어', '사회(역사/도덕 포함)', '과학',
+    '기술가정/정보', '체육', '예술', '제2외국어/한문', '교양'
+];
+
 let rowCount = 0;
 
-function subjectOptions() {
-    return '<option value="">-- 과목 선택 --</option>' +
-        SUBJECTS.map(s => `<option value="${s.id}">[${s.code}] ${s.name}</option>`).join('');
+function categoryOptions() {
+    return '<option value="">-- 교과 선택 --</option>' +
+        CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function subjectOptions(subjects, placeholder) {
+    const ph = placeholder || '-- 과목 선택 --';
+    return `<option value="">${ph}</option>` +
+        subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 }
 
 function addRow() {
@@ -120,11 +131,22 @@ function addRow() {
                     class="text-red-300 hover:text-red-500 text-xs">✕ 삭제</button>
         </div>
 
+        <!-- 교과 선택 -->
+        <div class="mb-3">
+            <label class="block text-xs text-gray-500 mb-1">교과 <span class="text-red-500">*</span></label>
+            <select class="category-sel w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                ${categoryOptions()}
+            </select>
+        </div>
+
         <!-- 과목 선택 -->
-        <select name="grades[${idx}][subject]" required
-                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none mb-3">
-            ${subjectOptions()}
-        </select>
+        <div class="mb-3">
+            <label class="block text-xs text-gray-500 mb-1">과목 <span class="text-red-500">*</span></label>
+            <select name="grades[${idx}][subject]" required
+                    class="subject-sel w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                ${subjectOptions([], '← 교과를 먼저 선택하세요')}
+            </select>
+        </div>
 
         <!-- 단위수 / 점수 / 수강자수 -->
         <div class="grid grid-cols-3 gap-2 mb-3">
@@ -197,6 +219,18 @@ function addRow() {
         </div>
     `;
     document.getElementById('grade-rows').appendChild(row);
+
+    const catSel = row.querySelector('.category-sel');
+    const subSel = row.querySelector('.subject-sel');
+    catSel.addEventListener('change', function() {
+        const cat = this.value;
+        if (!cat) {
+            subSel.innerHTML = subjectOptions([], '← 교과를 먼저 선택하세요');
+        } else {
+            const filtered = SUBJECTS.filter(s => s.category === cat);
+            subSel.innerHTML = subjectOptions(filtered);
+        }
+    });
 }
 
 function removeRow(id) {
