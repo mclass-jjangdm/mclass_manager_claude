@@ -95,14 +95,11 @@
 // 서버에서 전달된 2022 과목 목록
 const ALL_SUBJECTS = JSON.parse(document.getElementById('subjects-data').textContent);
 
-// 교과 목록 추출 (중복 제거, 순서 유지)
-const CATEGORIES = [];
-ALL_SUBJECTS.forEach(function(s) {
-    if (s.category && !CATEGORIES.includes(s.category)) {
-        CATEGORIES.push(s.category);
-    }
-});
-CATEGORIES.sort();
+// 교과 목록 (고정값 — 2022 교육과정 교과군)
+const CATEGORIES = [
+    '국어', '수학', '영어', '사회(역사/도덕 포함)', '과학',
+    '기술가정/정보', '체육', '예술', '제2외국어/한문', '교양'
+];
 
 function buildCategoryOptions() {
     return '<option value="">-- 교과 선택 --</option>' +

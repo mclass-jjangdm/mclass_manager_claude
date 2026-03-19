@@ -1,0 +1,4932 @@
+[
+{
+  "model": "subjects.subject",
+  "pk": 190,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "010001",
+    "name": "공통국어1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.394",
+    "updated_at": "2026-03-20T01:02:24.394"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 191,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "010002",
+    "name": "공통국어2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.398",
+    "updated_at": "2026-03-20T01:02:24.398"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 192,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "011103",
+    "name": "화법과 언어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.403",
+    "updated_at": "2026-03-20T01:02:24.403"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 193,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "011104",
+    "name": "독서와 작문",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.409",
+    "updated_at": "2026-03-20T01:02:24.409"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 194,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "011105",
+    "name": "문학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.414",
+    "updated_at": "2026-03-20T01:02:24.414"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 195,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "012006",
+    "name": "주제 탐구 독서",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.419",
+    "updated_at": "2026-03-20T01:02:24.419"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 196,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "012007",
+    "name": "문학과 영상",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.424",
+    "updated_at": "2026-03-20T01:02:24.424"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 197,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "012008",
+    "name": "직무 의사소통",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.430",
+    "updated_at": "2026-03-20T01:02:24.430"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 198,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "013009",
+    "name": "독서 토론과 글쓰기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.435",
+    "updated_at": "2026-03-20T01:02:24.435"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 199,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "013010",
+    "name": "매체 의사소통",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.440",
+    "updated_at": "2026-03-20T01:02:24.440"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 200,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "013011",
+    "name": "언어생활 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.445",
+    "updated_at": "2026-03-20T01:02:24.445"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 203,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "020003",
+    "name": "기본수학1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.461",
+    "updated_at": "2026-03-20T01:02:24.461"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 204,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "020004",
+    "name": "기본수학2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.466",
+    "updated_at": "2026-03-20T01:02:24.466"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 201,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "020101",
+    "name": "공통수학1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.450",
+    "updated_at": "2026-03-20T01:02:24.451"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 202,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "020102",
+    "name": "공통수학2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.455",
+    "updated_at": "2026-03-20T01:02:24.455"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 205,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "021105",
+    "name": "대수",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.471",
+    "updated_at": "2026-03-20T01:02:24.471"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 206,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "021106",
+    "name": "미적분1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.476",
+    "updated_at": "2026-03-20T01:02:24.476"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 207,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "021107",
+    "name": "확률과 통계",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.481",
+    "updated_at": "2026-03-20T01:02:24.481"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 208,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022008",
+    "name": "기하",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.486",
+    "updated_at": "2026-03-20T01:02:24.486"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 209,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022009",
+    "name": "미적분2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.492",
+    "updated_at": "2026-03-20T01:02:24.492"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 210,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022010",
+    "name": "경제 수학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.497",
+    "updated_at": "2026-03-20T01:02:24.497"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 211,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022011",
+    "name": "인공지능 수학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.501",
+    "updated_at": "2026-03-20T01:02:24.501"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 212,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022012",
+    "name": "직무 수학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.506",
+    "updated_at": "2026-03-20T01:02:24.506"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 216,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022016",
+    "name": "고급 기하",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.528",
+    "updated_at": "2026-03-20T01:02:24.528"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 217,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022017",
+    "name": "전문 수학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.533",
+    "updated_at": "2026-03-20T01:02:24.533"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 218,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022018",
+    "name": "이산 수학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.538",
+    "updated_at": "2026-03-20T01:02:24.538"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 219,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022019",
+    "name": "고급 미적분",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.543",
+    "updated_at": "2026-03-20T01:02:24.543"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 220,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "022020",
+    "name": "고급 대수",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.548",
+    "updated_at": "2026-03-20T01:02:24.548"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 213,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "023013",
+    "name": "수학과 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.512",
+    "updated_at": "2026-03-20T01:02:24.512"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 214,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "023014",
+    "name": "실용 통계",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.517",
+    "updated_at": "2026-03-20T01:02:24.517"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 215,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "023015",
+    "name": "수학과제 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.522",
+    "updated_at": "2026-03-20T01:02:24.522"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 221,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "030001",
+    "name": "공통영어1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.554",
+    "updated_at": "2026-03-20T01:02:24.554"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 222,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "030002",
+    "name": "공통영어2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.559",
+    "updated_at": "2026-03-20T01:02:24.559"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 223,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "030003",
+    "name": "기본영어1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.568",
+    "updated_at": "2026-03-20T01:02:24.568"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 224,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "030004",
+    "name": "기본영어2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.574",
+    "updated_at": "2026-03-20T01:02:24.574"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 227,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "031007",
+    "name": "영어 독해와 작문",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.590",
+    "updated_at": "2026-03-20T01:02:24.590"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 225,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "031105",
+    "name": "영어1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.579",
+    "updated_at": "2026-03-20T01:02:24.579"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 226,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "031106",
+    "name": "영어2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.585",
+    "updated_at": "2026-03-20T01:02:24.585"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 228,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032008",
+    "name": "영미 문학 읽기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.595",
+    "updated_at": "2026-03-20T01:02:24.595"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 229,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032009",
+    "name": "영어 발표와 토론",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.600",
+    "updated_at": "2026-03-20T01:02:24.600"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 230,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032010",
+    "name": "심화 영어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.606",
+    "updated_at": "2026-03-20T01:02:24.606"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 231,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032011",
+    "name": "심화 영어 독해와 작문",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.611",
+    "updated_at": "2026-03-20T01:02:24.611"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 232,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032012",
+    "name": "직무 영어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.617",
+    "updated_at": "2026-03-20T01:02:24.617"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 236,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032016",
+    "name": "심화 영어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.641",
+    "updated_at": "2026-03-20T01:02:24.641"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 237,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032017",
+    "name": "심화 영어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.646",
+    "updated_at": "2026-03-20T01:02:24.646"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 238,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032018",
+    "name": "심화 영어1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.652",
+    "updated_at": "2026-03-20T01:02:24.652"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 239,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032019",
+    "name": "심화 영어2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.657",
+    "updated_at": "2026-03-20T01:02:24.657"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 240,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032020",
+    "name": "심화 영어 독해1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.662",
+    "updated_at": "2026-03-20T01:02:24.662"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 241,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032021",
+    "name": "심화 영어 독해2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.667",
+    "updated_at": "2026-03-20T01:02:24.667"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 242,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032022",
+    "name": "심화 영어 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.673",
+    "updated_at": "2026-03-20T01:02:24.673"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 243,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "032023",
+    "name": "심화 영어 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.678",
+    "updated_at": "2026-03-20T01:02:24.678"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 233,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "033013",
+    "name": "실생활 영어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.623",
+    "updated_at": "2026-03-20T01:02:24.623"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 234,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "033014",
+    "name": "미디어 영어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.630",
+    "updated_at": "2026-03-20T01:02:24.630"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 235,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "033015",
+    "name": "세계 문화와 영어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.635",
+    "updated_at": "2026-03-20T01:02:24.635"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 246,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "040003",
+    "name": "통합사회1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.695",
+    "updated_at": "2026-03-20T01:02:24.695"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 247,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "040004",
+    "name": "통합사회2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.701",
+    "updated_at": "2026-03-20T01:02:24.701"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 244,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "040101",
+    "name": "한국사1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.684",
+    "updated_at": "2026-03-20T01:02:24.684"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 245,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "040102",
+    "name": "한국사2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.690",
+    "updated_at": "2026-03-20T01:02:24.690"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 248,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "041105",
+    "name": "세계 시민과 지리",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.707",
+    "updated_at": "2026-03-20T01:02:24.708"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 249,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "041106",
+    "name": "세계사",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.714",
+    "updated_at": "2026-03-20T01:02:24.714"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 250,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "041107",
+    "name": "사회와 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.719",
+    "updated_at": "2026-03-20T01:02:24.719"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 251,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "041108",
+    "name": "현대사회와 윤리",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.725",
+    "updated_at": "2026-03-20T01:02:24.725"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 253,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042010",
+    "name": "도시의 미래 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.735",
+    "updated_at": "2026-03-20T01:02:24.735"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 267,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042024",
+    "name": "국제 정치",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.811",
+    "updated_at": "2026-03-20T01:02:24.811"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 268,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042025",
+    "name": "국제 경제",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.815",
+    "updated_at": "2026-03-20T01:02:24.815"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 269,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042026",
+    "name": "국제법",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.821",
+    "updated_at": "2026-03-20T01:02:24.821"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 270,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042027",
+    "name": "지역 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.827",
+    "updated_at": "2026-03-20T01:02:24.827"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 271,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042028",
+    "name": "한국 사회의 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.833",
+    "updated_at": "2026-03-20T01:02:24.833"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 272,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042029",
+    "name": "비교 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.839",
+    "updated_at": "2026-03-20T01:02:24.839"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 273,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042030",
+    "name": "세계 문제와 미래 사회",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.844",
+    "updated_at": "2026-03-20T01:02:24.844"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 274,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042031",
+    "name": "국제 관계와 국제기구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.850",
+    "updated_at": "2026-03-20T01:02:24.850"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 275,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042032",
+    "name": "현대 세계의 변화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.855",
+    "updated_at": "2026-03-20T01:02:24.855"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 276,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042033",
+    "name": "사회 탐구 방법",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.860",
+    "updated_at": "2026-03-20T01:02:24.860"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 277,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042034",
+    "name": "사회과제 연구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.867",
+    "updated_at": "2026-03-20T01:02:24.867"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 252,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042109",
+    "name": "한국지리 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.730",
+    "updated_at": "2026-03-20T01:02:24.730"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 254,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042111",
+    "name": "동아시아 역사 기행",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.740",
+    "updated_at": "2026-03-20T01:02:24.740"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 255,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042112",
+    "name": "정치",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.746",
+    "updated_at": "2026-03-20T01:02:24.746"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 256,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042113",
+    "name": "법과 사회",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.752",
+    "updated_at": "2026-03-20T01:02:24.752"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 257,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042114",
+    "name": "경제",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.757",
+    "updated_at": "2026-03-20T01:02:24.757"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 258,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042115",
+    "name": "윤리와 사상",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.763",
+    "updated_at": "2026-03-20T01:02:24.763"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 259,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042116",
+    "name": "인문학과 윤리",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.768",
+    "updated_at": "2026-03-20T01:02:24.768"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 260,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "042117",
+    "name": "국제 관계의 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.774",
+    "updated_at": "2026-03-20T01:02:24.774"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 261,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "043018",
+    "name": "여행지리",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.779",
+    "updated_at": "2026-03-20T01:02:24.779"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 262,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "043019",
+    "name": "역사로 탐구하는 현대 세계",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.784",
+    "updated_at": "2026-03-20T01:02:24.784"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 263,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "043020",
+    "name": "사회문제 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.790",
+    "updated_at": "2026-03-20T01:02:24.790"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 264,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "043021",
+    "name": "금융과 경제생활",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.796",
+    "updated_at": "2026-03-20T01:02:24.796"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 265,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "043022",
+    "name": "윤리문제 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.801",
+    "updated_at": "2026-03-20T01:02:24.801"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 266,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "043023",
+    "name": "기후변화와 지속가능한 세계",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.806",
+    "updated_at": "2026-03-20T01:02:24.806"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 278,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "050001",
+    "name": "통합과학1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.872",
+    "updated_at": "2026-03-20T01:02:24.872"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 279,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "050002",
+    "name": "통합과학2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.877",
+    "updated_at": "2026-03-20T01:02:24.877"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 280,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "050003",
+    "name": "과학탐구실험1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.883",
+    "updated_at": "2026-03-20T01:02:24.883"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 281,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "050004",
+    "name": "과학탐구실험2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.888",
+    "updated_at": "2026-03-20T01:02:24.888"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 282,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "051105",
+    "name": "물리학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.894",
+    "updated_at": "2026-03-20T01:02:24.894"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 283,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "051106",
+    "name": "화학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.900",
+    "updated_at": "2026-03-20T01:02:24.901"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 284,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "051107",
+    "name": "생명과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.906",
+    "updated_at": "2026-03-20T01:02:24.906"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 285,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "051108",
+    "name": "지구과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.911",
+    "updated_at": "2026-03-20T01:02:24.911"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 297,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052020",
+    "name": "고급 물리학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.977",
+    "updated_at": "2026-03-20T01:02:24.977"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 298,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052021",
+    "name": "고급 화학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.981",
+    "updated_at": "2026-03-20T01:02:24.981"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 299,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052022",
+    "name": "고급 생명과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.987",
+    "updated_at": "2026-03-20T01:02:24.987"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 300,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052023",
+    "name": "고급 지구과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.992",
+    "updated_at": "2026-03-20T01:02:24.992"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 301,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052024",
+    "name": "과학과제 연구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.997",
+    "updated_at": "2026-03-20T01:02:24.997"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 286,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052109",
+    "name": "역학과 에너지",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.917",
+    "updated_at": "2026-03-20T01:02:24.917"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 287,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052110",
+    "name": "전자기와 양자",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.922",
+    "updated_at": "2026-03-20T01:02:24.922"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 288,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052111",
+    "name": "물질과 에너지",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.927",
+    "updated_at": "2026-03-20T01:02:24.927"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 289,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052112",
+    "name": "화학 반응의 세계",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.933",
+    "updated_at": "2026-03-20T01:02:24.933"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 290,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052113",
+    "name": "세포와 물질대사",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.938",
+    "updated_at": "2026-03-20T01:02:24.938"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 291,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052114",
+    "name": "생물의 유전",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.944",
+    "updated_at": "2026-03-20T01:02:24.944"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 292,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052115",
+    "name": "지구시스템과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.950",
+    "updated_at": "2026-03-20T01:02:24.950"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 293,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "052116",
+    "name": "행성우주과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.955",
+    "updated_at": "2026-03-20T01:02:24.955"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 294,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "053017",
+    "name": "과학의 역사와 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.960",
+    "updated_at": "2026-03-20T01:02:24.960"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 295,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "053018",
+    "name": "기후변화와 환경생태",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.966",
+    "updated_at": "2026-03-20T01:02:24.966"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 296,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "053019",
+    "name": "융합과학 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:24.972",
+    "updated_at": "2026-03-20T01:02:24.972"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 302,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "053025",
+    "name": "물리학 실험",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.002",
+    "updated_at": "2026-03-20T01:02:25.002"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 303,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "053026",
+    "name": "화학 실험",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.008",
+    "updated_at": "2026-03-20T01:02:25.008"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 304,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "053027",
+    "name": "생명과학 실험",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.013",
+    "updated_at": "2026-03-20T01:02:25.013"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 305,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "053028",
+    "name": "지구과학 실험",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.018",
+    "updated_at": "2026-03-20T01:02:25.018"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 306,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "061001",
+    "name": "기술가정",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.023",
+    "updated_at": "2026-03-20T01:02:25.023"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 307,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "061002",
+    "name": "정보",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.029",
+    "updated_at": "2026-03-20T01:02:25.029"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 308,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "062003",
+    "name": "로봇과 공학세계",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.035",
+    "updated_at": "2026-03-20T01:02:25.035"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 309,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "062004",
+    "name": "생활과학 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.041",
+    "updated_at": "2026-03-20T01:02:25.041"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 310,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "062005",
+    "name": "인공지능 기초",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.047",
+    "updated_at": "2026-03-20T01:02:25.047"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 311,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "062006",
+    "name": "데이터 과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.052",
+    "updated_at": "2026-03-20T01:02:25.052"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 317,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "062012",
+    "name": "정보과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.085",
+    "updated_at": "2026-03-20T01:02:25.085"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 312,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "063007",
+    "name": "창의 공학 설계",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.058",
+    "updated_at": "2026-03-20T01:02:25.058"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 313,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "063008",
+    "name": "지식 재산 일반",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.063",
+    "updated_at": "2026-03-20T01:02:25.063"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 314,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "063009",
+    "name": "생애 설계와 자립",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.068",
+    "updated_at": "2026-03-20T01:02:25.068"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 315,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "063010",
+    "name": "아동발달과 부모",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.074",
+    "updated_at": "2026-03-20T01:02:25.074"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 316,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "063011",
+    "name": "소프트웨어와 생활",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.080",
+    "updated_at": "2026-03-20T01:02:25.080"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 318,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "071001",
+    "name": "체육1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.090",
+    "updated_at": "2026-03-20T01:02:25.090"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 319,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "071002",
+    "name": "체육2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.096",
+    "updated_at": "2026-03-20T01:02:25.096"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 320,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072003",
+    "name": "운동과 건강",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.101",
+    "updated_at": "2026-03-20T01:02:25.101"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 321,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072004",
+    "name": "스포츠 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.107",
+    "updated_at": "2026-03-20T01:02:25.107"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 322,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072005",
+    "name": "스포츠 과학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.112",
+    "updated_at": "2026-03-20T01:02:25.112"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 325,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072008",
+    "name": "스포츠 개론",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.131",
+    "updated_at": "2026-03-20T01:02:25.131"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 326,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072009",
+    "name": "육상",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.137",
+    "updated_at": "2026-03-20T01:02:25.137"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 327,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072010",
+    "name": "수상 스포츠",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.142",
+    "updated_at": "2026-03-20T01:02:25.142"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 328,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072011",
+    "name": "체조",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.148",
+    "updated_at": "2026-03-20T01:02:25.148"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 329,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072012",
+    "name": "기초 체육 전공 실기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.153",
+    "updated_at": "2026-03-20T01:02:25.153"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 330,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072013",
+    "name": "심화 체육 전공 실기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.159",
+    "updated_at": "2026-03-20T01:02:25.159"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 331,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072014",
+    "name": "고급 체육 전공 실기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.164",
+    "updated_at": "2026-03-20T01:02:25.164"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 332,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072015",
+    "name": "스포츠 경기 체력",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.169",
+    "updated_at": "2026-03-20T01:02:25.169"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 333,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072016",
+    "name": "스포츠 경기 기술",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.174",
+    "updated_at": "2026-03-20T01:02:25.174"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 334,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "072017",
+    "name": "스포츠 경기 분석",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.180",
+    "updated_at": "2026-03-20T01:02:25.180"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 323,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "073006",
+    "name": "스포츠 생활1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.117",
+    "updated_at": "2026-03-20T01:02:25.117"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 324,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "073007",
+    "name": "스포츠 생활2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.122",
+    "updated_at": "2026-03-20T01:02:25.122"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 335,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "073018",
+    "name": "스포츠 교육",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.185",
+    "updated_at": "2026-03-20T01:02:25.185"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 336,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "073019",
+    "name": "스포츠 생리의학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.190",
+    "updated_at": "2026-03-20T01:02:25.190"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 337,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "073020",
+    "name": "스포츠 행정 및 경영",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.195",
+    "updated_at": "2026-03-20T01:02:25.195"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 338,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "081001",
+    "name": "음악",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.201",
+    "updated_at": "2026-03-20T01:02:25.201"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 339,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "081002",
+    "name": "미술",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.206",
+    "updated_at": "2026-03-20T01:02:25.206"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 340,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "081003",
+    "name": "연극",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.211",
+    "updated_at": "2026-03-20T01:02:25.211"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 341,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082004",
+    "name": "음악 연주와 창작",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.217",
+    "updated_at": "2026-03-20T01:02:25.217"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 342,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082005",
+    "name": "음악 감상과 비평",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.222",
+    "updated_at": "2026-03-20T01:02:25.222"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 343,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082006",
+    "name": "미술 창작",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.228",
+    "updated_at": "2026-03-20T01:02:25.228"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 344,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082007",
+    "name": "미술 감상과 비평",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.233",
+    "updated_at": "2026-03-20T01:02:25.233"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 347,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082010",
+    "name": "음악 이론",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.250",
+    "updated_at": "2026-03-20T01:02:25.250"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 348,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082011",
+    "name": "음악사",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.255",
+    "updated_at": "2026-03-20T01:02:25.255"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 349,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082012",
+    "name": "시창청음",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.261",
+    "updated_at": "2026-03-20T01:02:25.261"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 350,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082013",
+    "name": "음악 전공 실기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.267",
+    "updated_at": "2026-03-20T01:02:25.267"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 351,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082014",
+    "name": "합창합주",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.273",
+    "updated_at": "2026-03-20T01:02:25.273"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 352,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082015",
+    "name": "음악 공연 실습",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.278",
+    "updated_at": "2026-03-20T01:02:25.278"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 353,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082016",
+    "name": "미술 이론",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.283",
+    "updated_at": "2026-03-20T01:02:25.284"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 354,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082017",
+    "name": "드로잉",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.289",
+    "updated_at": "2026-03-20T01:02:25.289"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 355,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082018",
+    "name": "미술사",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.296",
+    "updated_at": "2026-03-20T01:02:25.296"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 356,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082019",
+    "name": "미술 전공 실기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.301",
+    "updated_at": "2026-03-20T01:02:25.301"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 357,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082020",
+    "name": "조형 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.306",
+    "updated_at": "2026-03-20T01:02:25.306"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 358,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082021",
+    "name": "무용의 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.312",
+    "updated_at": "2026-03-20T01:02:25.312"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 359,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082022",
+    "name": "무용과 몸",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.317",
+    "updated_at": "2026-03-20T01:02:25.317"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 360,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082023",
+    "name": "무용 기초 실기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.322",
+    "updated_at": "2026-03-20T01:02:25.322"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 361,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082024",
+    "name": "무용 전공 실기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.327",
+    "updated_at": "2026-03-20T01:02:25.327"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 362,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082025",
+    "name": "안무",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.332",
+    "updated_at": "2026-03-20T01:02:25.332"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 363,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082026",
+    "name": "무용 제작 실습",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.338",
+    "updated_at": "2026-03-20T01:02:25.338"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 364,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082027",
+    "name": "무용 감상과 비평",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.344",
+    "updated_at": "2026-03-20T01:02:25.344"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 365,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082028",
+    "name": "문예 창작의 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.348",
+    "updated_at": "2026-03-20T01:02:25.348"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 366,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082029",
+    "name": "문장론",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.355",
+    "updated_at": "2026-03-20T01:02:25.355"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 367,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082030",
+    "name": "문학 감상과 비평",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.361",
+    "updated_at": "2026-03-20T01:02:25.361"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 368,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082031",
+    "name": "시 창작",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.366",
+    "updated_at": "2026-03-20T01:02:25.366"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 369,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082032",
+    "name": "소설 창작",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.371",
+    "updated_at": "2026-03-20T01:02:25.371"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 370,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082033",
+    "name": "극 창작",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.378",
+    "updated_at": "2026-03-20T01:02:25.378"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 371,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082034",
+    "name": "연극과 몸",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.384",
+    "updated_at": "2026-03-20T01:02:25.384"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 372,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082035",
+    "name": "연극과 말",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.389",
+    "updated_at": "2026-03-20T01:02:25.389"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 373,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082036",
+    "name": "연기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.394",
+    "updated_at": "2026-03-20T01:02:25.394"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 374,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082037",
+    "name": "무대 미술과 기술",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.400",
+    "updated_at": "2026-03-20T01:02:25.400"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 375,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082038",
+    "name": "연극 제작과 실습",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.406",
+    "updated_at": "2026-03-20T01:02:25.406"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 376,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082039",
+    "name": "연극 감상과 비평",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.410",
+    "updated_at": "2026-03-20T01:02:25.410"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 377,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082040",
+    "name": "영화의 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.416",
+    "updated_at": "2026-03-20T01:02:25.416"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 378,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082041",
+    "name": "촬영조명",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.421",
+    "updated_at": "2026-03-20T01:02:25.421"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 379,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082042",
+    "name": "편집사운드",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.427",
+    "updated_at": "2026-03-20T01:02:25.427"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 380,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082043",
+    "name": "영화 제작 실습",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.432",
+    "updated_at": "2026-03-20T01:02:25.432"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 381,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082044",
+    "name": "영화 감상과 비평",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.437",
+    "updated_at": "2026-03-20T01:02:25.437"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 382,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082045",
+    "name": "사진의 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.443",
+    "updated_at": "2026-03-20T01:02:25.443"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 383,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082046",
+    "name": "사진 촬영",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.448",
+    "updated_at": "2026-03-20T01:02:25.448"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 384,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082047",
+    "name": "사진 표현 기법",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.454",
+    "updated_at": "2026-03-20T01:02:25.454"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 385,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082048",
+    "name": "영상 제작의 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.459",
+    "updated_at": "2026-03-20T01:02:25.459"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 386,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "082049",
+    "name": "사진 감상과 비평",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.464",
+    "updated_at": "2026-03-20T01:02:25.464"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 345,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083008",
+    "name": "음악과 미디어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.238",
+    "updated_at": "2026-03-20T01:02:25.238"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 346,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083009",
+    "name": "미술과 매체",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.244",
+    "updated_at": "2026-03-20T01:02:25.244"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 387,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083050",
+    "name": "음악과 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.469",
+    "updated_at": "2026-03-20T01:02:25.469"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 388,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083051",
+    "name": "미술 매체 탐구",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.475",
+    "updated_at": "2026-03-20T01:02:25.475"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 389,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083052",
+    "name": "미술과 사회",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.480",
+    "updated_at": "2026-03-20T01:02:25.480"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 390,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083053",
+    "name": "무용과 매체",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.485",
+    "updated_at": "2026-03-20T01:02:25.485"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 391,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083054",
+    "name": "문학과 매체",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.490",
+    "updated_at": "2026-03-20T01:02:25.490"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 392,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083055",
+    "name": "연극과 삶",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.495",
+    "updated_at": "2026-03-20T01:02:25.495"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 393,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083056",
+    "name": "영화와 삶",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.500",
+    "updated_at": "2026-03-20T01:02:25.500"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 394,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "083057",
+    "name": "사진과 삶",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.505",
+    "updated_at": "2026-03-20T01:02:25.505"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 395,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091101",
+    "name": "독일어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.511",
+    "updated_at": "2026-03-20T01:02:25.511"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 396,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091102",
+    "name": "프랑스어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.516",
+    "updated_at": "2026-03-20T01:02:25.516"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 397,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091103",
+    "name": "스페인어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.521",
+    "updated_at": "2026-03-20T01:02:25.521"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 398,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091104",
+    "name": "중국어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.526",
+    "updated_at": "2026-03-20T01:02:25.526"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 399,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091105",
+    "name": "일본어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.531",
+    "updated_at": "2026-03-20T01:02:25.531"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 400,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091106",
+    "name": "러시아어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.537",
+    "updated_at": "2026-03-20T01:02:25.537"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 401,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091107",
+    "name": "아랍어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.542",
+    "updated_at": "2026-03-20T01:02:25.542"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 402,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091108",
+    "name": "베트남어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.547",
+    "updated_at": "2026-03-20T01:02:25.547"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 403,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "091109",
+    "name": "한문",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.553",
+    "updated_at": "2026-03-20T01:02:25.553"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 404,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092010",
+    "name": "독일어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.557",
+    "updated_at": "2026-03-20T01:02:25.557"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 405,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092011",
+    "name": "프랑스어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.563",
+    "updated_at": "2026-03-20T01:02:25.563"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 406,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092012",
+    "name": "스페인어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.568",
+    "updated_at": "2026-03-20T01:02:25.568"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 407,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092013",
+    "name": "중국어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.573",
+    "updated_at": "2026-03-20T01:02:25.573"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 408,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092014",
+    "name": "일본어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.578",
+    "updated_at": "2026-03-20T01:02:25.578"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 409,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092015",
+    "name": "러시아어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.583",
+    "updated_at": "2026-03-20T01:02:25.583"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 410,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092016",
+    "name": "아랍어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.588",
+    "updated_at": "2026-03-20T01:02:25.588"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 411,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092017",
+    "name": "베트남어 회화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.593",
+    "updated_at": "2026-03-20T01:02:25.593"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 412,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092018",
+    "name": "심화 독일어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.600",
+    "updated_at": "2026-03-20T01:02:25.600"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 413,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092019",
+    "name": "심화 프랑스어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.605",
+    "updated_at": "2026-03-20T01:02:25.605"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 414,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092020",
+    "name": "심화 스페인어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.611",
+    "updated_at": "2026-03-20T01:02:25.611"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 415,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092021",
+    "name": "심화 중국어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.616",
+    "updated_at": "2026-03-20T01:02:25.616"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 416,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092022",
+    "name": "심화 일본어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.622",
+    "updated_at": "2026-03-20T01:02:25.622"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 417,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092023",
+    "name": "심화 러시아어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.628",
+    "updated_at": "2026-03-20T01:02:25.628"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 418,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092024",
+    "name": "심화 아랍어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.633",
+    "updated_at": "2026-03-20T01:02:25.633"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 419,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092025",
+    "name": "심화 베트남어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.639",
+    "updated_at": "2026-03-20T01:02:25.639"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 420,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092026",
+    "name": "한문 고전 읽기",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.644",
+    "updated_at": "2026-03-20T01:02:25.644"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 430,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092036",
+    "name": "전공 기초 독일어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.700",
+    "updated_at": "2026-03-20T01:02:25.700"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 431,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092037",
+    "name": "독일어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.705",
+    "updated_at": "2026-03-20T01:02:25.705"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 432,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092038",
+    "name": "독일어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.710",
+    "updated_at": "2026-03-20T01:02:25.710"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 433,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092039",
+    "name": "독일어 독해와 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.716",
+    "updated_at": "2026-03-20T01:02:25.716"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 434,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092040",
+    "name": "독일어 독해와 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.721",
+    "updated_at": "2026-03-20T01:02:25.721"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 435,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092041",
+    "name": "전공 기초 프랑스어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.727",
+    "updated_at": "2026-03-20T01:02:25.727"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 436,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092042",
+    "name": "프랑스어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.733",
+    "updated_at": "2026-03-20T01:02:25.733"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 437,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092043",
+    "name": "프랑스어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.739",
+    "updated_at": "2026-03-20T01:02:25.739"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 438,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092044",
+    "name": "프랑스어 독해와 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.744",
+    "updated_at": "2026-03-20T01:02:25.744"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 439,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092045",
+    "name": "프랑스어 독해와 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.751",
+    "updated_at": "2026-03-20T01:02:25.751"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 440,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092046",
+    "name": "전공 기초 스페인어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.756",
+    "updated_at": "2026-03-20T01:02:25.756"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 441,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092047",
+    "name": "스페인어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.761",
+    "updated_at": "2026-03-20T01:02:25.761"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 442,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092048",
+    "name": "스페인어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.766",
+    "updated_at": "2026-03-20T01:02:25.766"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 443,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092049",
+    "name": "스페인어 독해와 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.771",
+    "updated_at": "2026-03-20T01:02:25.772"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 444,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092050",
+    "name": "스페인어 독해와 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.777",
+    "updated_at": "2026-03-20T01:02:25.777"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 445,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092051",
+    "name": "전공 기초 중국어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.782",
+    "updated_at": "2026-03-20T01:02:25.782"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 446,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092052",
+    "name": "중국어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.787",
+    "updated_at": "2026-03-20T01:02:25.787"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 447,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092053",
+    "name": "중국어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.792",
+    "updated_at": "2026-03-20T01:02:25.792"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 448,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092054",
+    "name": "중국어 독해와 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.797",
+    "updated_at": "2026-03-20T01:02:25.797"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 449,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092055",
+    "name": "중국어 독해와 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.803",
+    "updated_at": "2026-03-20T01:02:25.803"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 450,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092056",
+    "name": "전공 기초 일본어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.808",
+    "updated_at": "2026-03-20T01:02:25.808"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 451,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092057",
+    "name": "일본어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.813",
+    "updated_at": "2026-03-20T01:02:25.813"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 452,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092058",
+    "name": "일본어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.819",
+    "updated_at": "2026-03-20T01:02:25.819"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 453,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092059",
+    "name": "일본어 독해와 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.824",
+    "updated_at": "2026-03-20T01:02:25.824"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 454,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092060",
+    "name": "일본어 독해와 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.830",
+    "updated_at": "2026-03-20T01:02:25.830"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 455,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092061",
+    "name": "전공 기초 러시아어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.835",
+    "updated_at": "2026-03-20T01:02:25.835"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 456,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092062",
+    "name": "러시아어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.841",
+    "updated_at": "2026-03-20T01:02:25.841"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 457,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092063",
+    "name": "러시아어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.847",
+    "updated_at": "2026-03-20T01:02:25.847"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 458,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092064",
+    "name": "러시아어 독해와 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.852",
+    "updated_at": "2026-03-20T01:02:25.852"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 459,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092065",
+    "name": "러시아어 독해와 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.858",
+    "updated_at": "2026-03-20T01:02:25.858"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 460,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092066",
+    "name": "전공 기초 아랍어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.864",
+    "updated_at": "2026-03-20T01:02:25.864"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 461,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092067",
+    "name": "아랍어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.868",
+    "updated_at": "2026-03-20T01:02:25.868"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 462,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092068",
+    "name": "아랍어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.874",
+    "updated_at": "2026-03-20T01:02:25.874"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 463,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092069",
+    "name": "아랍어 독해와 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.879",
+    "updated_at": "2026-03-20T01:02:25.879"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 464,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092070",
+    "name": "아랍어 독해와 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.884",
+    "updated_at": "2026-03-20T01:02:25.884"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 465,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092071",
+    "name": "전공 기초 베트남어",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.889",
+    "updated_at": "2026-03-20T01:02:25.889"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 466,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092072",
+    "name": "베트남어 회화1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.895",
+    "updated_at": "2026-03-20T01:02:25.895"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 467,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092073",
+    "name": "베트남어 회화2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.901",
+    "updated_at": "2026-03-20T01:02:25.901"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 468,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092074",
+    "name": "베트남어 독해와 작문1",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.907",
+    "updated_at": "2026-03-20T01:02:25.907"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 469,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "092075",
+    "name": "베트남어 독해와 작문2",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.912",
+    "updated_at": "2026-03-20T01:02:25.912"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 421,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093027",
+    "name": "독일어권 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.650",
+    "updated_at": "2026-03-20T01:02:25.650"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 422,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093028",
+    "name": "프랑스어권 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.655",
+    "updated_at": "2026-03-20T01:02:25.655"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 423,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093029",
+    "name": "스페인어권 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.660",
+    "updated_at": "2026-03-20T01:02:25.660"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 424,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093030",
+    "name": "중국 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.667",
+    "updated_at": "2026-03-20T01:02:25.667"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 425,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093031",
+    "name": "일본 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.673",
+    "updated_at": "2026-03-20T01:02:25.673"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 426,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093032",
+    "name": "러시아 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.678",
+    "updated_at": "2026-03-20T01:02:25.678"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 427,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093033",
+    "name": "아랍 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.685",
+    "updated_at": "2026-03-20T01:02:25.685"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 428,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093034",
+    "name": "베트남 문화",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.690",
+    "updated_at": "2026-03-20T01:02:25.690"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 429,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "093035",
+    "name": "언어생활과 한자",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.695",
+    "updated_at": "2026-03-20T01:02:25.695"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 470,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "101001",
+    "name": "진로와 직업",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.918",
+    "updated_at": "2026-03-20T01:02:25.918"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 471,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "101002",
+    "name": "생태와 환경",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.924",
+    "updated_at": "2026-03-20T01:02:25.924"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 472,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "102003",
+    "name": "인간과 철학",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.928",
+    "updated_at": "2026-03-20T01:02:25.928"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 473,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "102004",
+    "name": "논리와 사고",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.933",
+    "updated_at": "2026-03-20T01:02:25.933"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 474,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "102005",
+    "name": "인간과 심리",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.938",
+    "updated_at": "2026-03-20T01:02:25.939"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 475,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "102006",
+    "name": "교육의 이해",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.944",
+    "updated_at": "2026-03-20T01:02:25.944"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 476,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "102007",
+    "name": "삶과 종교",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.950",
+    "updated_at": "2026-03-20T01:02:25.950"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 477,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "102008",
+    "name": "보건",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.956",
+    "updated_at": "2026-03-20T01:02:25.956"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 478,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "103009",
+    "name": "인간과 경제활동",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.962",
+    "updated_at": "2026-03-20T01:02:25.962"
+  }
+},
+{
+  "model": "subjects.subject",
+  "pk": 479,
+  "fields": {
+    "curriculum_year": 2022,
+    "category_code": null,
+    "subject_code": "103010",
+    "name": "논술",
+    "special_code": null,
+    "memo": null,
+    "extra": null,
+    "prerequisite": null,
+    "is_active": true,
+    "created_at": "2026-03-20T01:02:25.968",
+    "updated_at": "2026-03-20T01:02:25.968"
+  }
+}
+]

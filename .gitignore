@@ -47,6 +47,7 @@ mclass_settings.py
 .env.local
 credentials/
 *.json
+!*/fixtures/*.json
 
 db_backup/
 
