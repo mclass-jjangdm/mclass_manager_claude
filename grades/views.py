@@ -249,7 +249,7 @@ def internal_grade_bulk_create(request, student_pk):
             return redirect('grades:internal_grade_bulk_create', student_pk=student_pk)
 
     if is_middle:
-        subjects_all = Subject.objects.filter(is_active=True).order_by('subject_code')
+        subjects_all = Subject.objects.filter(is_active=True, school_level='M').order_by('subject_code')
         subjects_list = [{'id': s.pk, 'name': s.name, 'category': s.category} for s in subjects_all]
         context = {'student': student, 'is_middle': True, 'subjects_list': subjects_list}
         template = 'grades/grade_bulk_form_middle.html'

@@ -55,6 +55,11 @@ class Command(BaseCommand):
                 else:
                     curriculum_year = 2015
 
+                # 학교급 (컬럼 없으면 기본 'H'=고등학교)
+                school_level = get('학교급', 'school_level') or 'H'
+                if school_level not in ['M', 'H']:
+                    school_level = 'H'
+
                 if not subject_code or not name:
                     skipped_count += 1
                     continue
@@ -63,6 +68,7 @@ class Command(BaseCommand):
                 Subject.objects.update_or_create(
                     subject_code=subject_code,
                     defaults={
+                        'school_level': school_level,
                         'category_code': category_code,
                         'name': name,
                         'special_code': special_code,

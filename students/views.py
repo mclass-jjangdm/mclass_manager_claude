@@ -1219,11 +1219,11 @@ def parent_grade_bulk_create(request, student_pk):
     is_2022 = (not is_middle) and (student.curriculum_year == 2022)
 
     if is_middle:
-        subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
+        subjects = Subject.objects.filter(is_active=True, school_level='M').order_by('subject_code')
     elif is_2022:
-        subjects = Subject.objects.filter(is_active=True, curriculum_year=2022).order_by('subject_code')
+        subjects = Subject.objects.filter(is_active=True, school_level='H', curriculum_year=2022).order_by('subject_code')
     else:
-        subjects = Subject.objects.filter(is_active=True).exclude(curriculum_year=2022).order_by('subject_code')
+        subjects = Subject.objects.filter(is_active=True, school_level='H').exclude(curriculum_year=2022).order_by('subject_code')
 
     error_message = None
 

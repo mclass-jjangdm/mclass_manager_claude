@@ -12,9 +12,14 @@ SUBJECT_GROUP_CHOICES = [
     ('06', '기술가정/정보'),
     ('07', '체육'),
     ('08', '예술'),
-    ('09', '제2외국어/한문'),
+    ('09', '제2외국어'),
     ('10', '교양'),
+    # 중학교 전용 교과(군) — 고등학교 01~10과 충돌 없음
+    ('11', '도덕'),
+    ('12', '한문'),
 ]
+
+SCHOOL_LEVEL_CHOICES = [('M', '중학교'), ('H', '고등학교')]
 
 SUBJECT_TYPE_CHOICES = [
     ('0', '공통과목'),
@@ -27,6 +32,13 @@ SUBJECT_TYPE_CHOICES = [
 class Subject(models.Model):
     """교과 과목 모델"""
 
+    school_level = models.CharField(
+        max_length=1,
+        choices=SCHOOL_LEVEL_CHOICES,
+        default='H',
+        verbose_name='학교급',
+        help_text='M=중학교, H=고등학교',
+    )
     curriculum_year = models.IntegerField(
         choices=CURRICULUM_CHOICES,
         default=2015,
@@ -106,6 +118,11 @@ class Subject(models.Model):
         """과목 카테고리 반환 (교과코드 기준)"""
         if not self.subject_code:
             return '기타'
+
+        # 중학교 과목: 'M' + GG(2자리) + NN(2자리) = 5자리 (예: M0101, M1101)
+        if self.subject_code.startswith('M') and len(self.subject_code) == 5:
+            group_code = self.subject_code[1:3]
+            return dict(SUBJECT_GROUP_CHOICES).get(group_code, '기타')
 
         # 2022 개정 교육과정: 6자리 코드 GG-T-S-NN
         if self.curriculum_year == 2022 and len(self.subject_code) == 6:
