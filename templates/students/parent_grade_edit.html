@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>성적 수정 - {{ student.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="max-w-2xl mx-auto py-6 px-4">
+
+    <!-- 헤더 -->
+    <div class="text-center mb-6">
+        <a href="https://mclass.co.kr/" class="hover:opacity-75 transition-opacity">
+            <h1 class="text-2xl font-bold text-gray-800">엠클래스 수학과학전문학원</h1>
+        </a>
+    </div>
+
+    <!-- 학생 정보 -->
+    <div class="bg-white rounded-xl shadow-md p-4 mb-5 flex items-center justify-between">
+        <div>
+            <p class="text-xs text-gray-400">학생</p>
+            <p class="text-lg font-bold text-gray-900">{{ student.name }}</p>
+        </div>
+        <a href="{% url 'parent_grades' student.pk %}"
+           class="px-3 py-1.5 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 text-sm font-medium">
+            ← 돌아가기
+        </a>
+    </div>
+
+    <div class="flex items-center gap-2 mb-4">
+        <h2 class="text-base font-bold text-gray-800">✏️ 성적 수정</h2>
+        {% if is_middle %}<span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">중학교</span>{% endif %}
+    </div>
+
+    <!-- 과목 정보 (읽기 전용) -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+        <div class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+                <p class="text-xs text-gray-400 mb-0.5">학년/학기</p>
+                <p class="font-semibold text-gray-800">{{ grade.year }}학년 {{ grade.semester }}학기</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-400 mb-0.5">과목</p>
+                <p class="font-semibold text-gray-800">{{ grade.subject.name }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if error_message %}
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">{{ error_message }}</div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-4">
+
+            <!-- 원점수 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">원점수 <span class="text-red-500">*</span></label>
+                <input type="number" name="score" value="{{ grade.score }}"
+                       min="0" max="100" step="0.1" required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-400 focus:outline-none">
+            </div>
+
+            <!-- 과목평균 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">과목평균</label>
+                <input type="number" name="subject_average" value="{{ grade.subject_average|default:'' }}"
+                       min="0" max="100" step="0.1"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-400 focus:outline-none"
+                       placeholder="예: 72.0">
+            </div>
+
+            <!-- 표준편차 -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">표준편차</label>
+                <input type="number" name="subject_stddev" value="{{ grade.subject_stddev|default:'' }}"
+                       min="0" step="0.1"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-400 focus:outline-none"
+                       placeholder="예: 15.0">
+            </div>
+
+            {% if is_middle %}
+            <!-- 수강자수 (중학교) -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">수강자수</label>
+                <input type="number" name="enrolled_count" value="{{ grade.enrolled_count|default:'' }}"
+                       min="1" step="1"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-400 focus:outline-none"
+                       placeholder="예: 150">
+            </div>
+
+            <!-- 성취도 (중학교 A~E) -->
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">성취도</label>
+                <div class="flex gap-2">
+                    {% for level in "ABCDE" %}
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="achievement_level" value="{{ level }}"
+                               class="sr-only peer"
+                               {% if grade.achievement_level == level %}checked{% endif %}>
+                        <span class="block py-2 rounded-lg border-2 text-sm font-bold transition-colors
+                            peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700
+                            border-gray-200 text-gray-500 hover:border-gray-300">
+                            {{ level }}
+                        </span>
+                    </label>
+                    {% endfor %}
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="achievement_level" value=""
+                               class="sr-only peer"
+                               {% if not grade.achievement_level %}checked{% endif %}>
+                        <span class="block py-2 rounded-lg border-2 text-xs font-medium transition-colors
+                            peer-checked:border-gray-400 peer-checked:bg-gray-50 peer-checked:text-gray-600
+                            border-gray-200 text-gray-400 hover:border-gray-300">
+                            없음
+                        </span>
+                    </label>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 저장 / 취소 -->
+        <div class="flex gap-3 mt-5">
+            <a href="{% url 'parent_grades' student.pk %}"
+               class="flex-1 py-3 bg-white border border-gray-300 text-gray-600 rounded-xl text-sm font-medium text-center hover:bg-gray-50 transition-colors">
+                취소
+            </a>
+            <button type="submit"
+                    class="flex-grow-[2] py-3 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-colors">
+                저장하기
+            </button>
+        </div>
+    </form>
+
+    <!-- 푸터 -->
+    <div class="text-center mt-8 text-xs text-gray-400 pb-4">
+        <p>엠클래스 수학과학전문학원 · 031-439-1222</p>
+    </div>
+</div>
+</body>
+</html>

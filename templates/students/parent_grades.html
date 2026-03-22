@@ -281,11 +281,54 @@
                     </button>
                     <div id="gg-{{ forloop.counter }}">
                         <table class="w-full text-sm">
+                            {% if is_middle %}
+                            <!-- 중학교: 모든 필드 표시 -->
+                            <thead class="bg-green-50 border-b border-gray-100">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">과목</th>
+                                    <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500">원점수</th>
+                                    <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500">평균</th>
+                                    <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500">표준편차</th>
+                                    <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500">수강자</th>
+                                    <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500">성취도</th>
+                                    <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                {% for g in group.grades %}
+                                <tr class="hover:bg-green-50 transition-colors">
+                                    <td class="px-3 py-2.5 text-sm font-medium text-gray-800">{{ g.subject.name }}</td>
+                                    <td class="px-2 py-2.5 text-center text-sm font-bold text-gray-800">{{ g.score|default:"-" }}</td>
+                                    <td class="px-2 py-2.5 text-center text-xs text-gray-500">{{ g.subject_average|default:"-" }}</td>
+                                    <td class="px-2 py-2.5 text-center text-xs text-gray-500">{{ g.subject_stddev|default:"-" }}</td>
+                                    <td class="px-2 py-2.5 text-center text-xs text-gray-500">{{ g.enrolled_count|default:"-" }}</td>
+                                    <td class="px-2 py-2.5 text-center">
+                                        {% if g.achievement_level %}
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold
+                                            {% if g.achievement_level == 'A' %}bg-indigo-100 text-indigo-700
+                                            {% elif g.achievement_level == 'B' %}bg-blue-100 text-blue-700
+                                            {% elif g.achievement_level == 'C' %}bg-green-100 text-green-700
+                                            {% elif g.achievement_level == 'D' %}bg-yellow-100 text-yellow-700
+                                            {% else %}bg-red-100 text-red-700{% endif %}">
+                                            {{ g.achievement_level }}
+                                        </span>
+                                        {% else %}<span class="text-gray-300 text-xs">-</span>{% endif %}
+                                    </td>
+                                    <td class="px-2 py-2.5 text-center">
+                                        <a href="{% url 'parent_grade_edit' student.pk g.pk %}"
+                                           class="text-xs text-indigo-500 hover:text-indigo-700 font-medium">수정</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            {% else %}
+                            <!-- 고등학교: 원점수 + 등급 -->
                             <thead class="bg-gray-50 border-b border-gray-100">
                                 <tr>
                                     <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">과목</th>
                                     <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500">원점수</th>
-                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500">{% if is_middle %}성취도{% else %}등급{% endif %}</th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500">등급</th>
+                                    <th class="px-2 py-2 text-center text-xs font-semibold text-gray-500"></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -296,7 +339,7 @@
                                         {% if g.is_elective %}<span class="ml-1 text-xs text-purple-500 font-medium">진로</span>{% endif %}
                                     </td>
                                     <td class="px-3 py-2.5 text-center text-sm font-medium text-gray-700">
-                                        {% if g.score %}{{ g.score }}{% else %}-{% endif %}
+                                        {{ g.score|default:"-" }}
                                     </td>
                                     <td class="px-3 py-2.5 text-center">
                                         {% if g.grade_rank %}
@@ -315,15 +358,19 @@
                                             {% if g.achievement_level == 'A' %}bg-indigo-100 text-indigo-700
                                             {% elif g.achievement_level == 'B' %}bg-blue-100 text-blue-700
                                             {% elif g.achievement_level == 'C' %}bg-green-100 text-green-700
-                                            {% elif g.achievement_level == 'D' %}bg-yellow-100 text-yellow-700
-                                            {% else %}bg-red-100 text-red-700{% endif %}">
+                                            {% else %}bg-yellow-100 text-yellow-700{% endif %}">
                                             {{ g.achievement_level }}
                                         </span>
                                         {% else %}<span class="text-gray-300 text-xs">-</span>{% endif %}
                                     </td>
+                                    <td class="px-2 py-2.5 text-center">
+                                        <a href="{% url 'parent_grade_edit' student.pk g.pk %}"
+                                           class="text-xs text-indigo-500 hover:text-indigo-700 font-medium">수정</a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
+                            {% endif %}
                         </table>
                     </div>
                 </div>

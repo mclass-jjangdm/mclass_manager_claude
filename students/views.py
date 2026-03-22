@@ -1466,3 +1466,48 @@ def parent_grade_import(request, student_pk):
         'is_middle': is_middle,
     }
     return render(request, 'students/parent_grade_import.html', context)
+
+
+def parent_grade_edit(request, student_pk, grade_pk):
+    """학부모용 성적 수정 (세션 인증)"""
+    from grades.models import Grade
+    from decimal import Decimal, InvalidOperation
+
+    student = _parent_auth(request, student_pk)
+    if not student:
+        return redirect('parent_lookup')
+
+    grade = get_object_or_404(Grade, pk=grade_pk, student=student)
+    is_middle = student.grade in ['K7', 'K8', 'K9']
+    error_message = None
+
+    if request.method == 'POST':
+        try:
+            def _dec(key):
+                v = request.POST.get(key, '').strip()
+                return Decimal(v) if v else None
+
+            def _int(key):
+                v = request.POST.get(key, '').strip()
+                return int(v) if v else None
+
+            grade.score = _dec('score')
+            if grade.score is None:
+                raise ValueError('원점수는 필수입니다.')
+            grade.subject_average = _dec('subject_average')
+            grade.subject_stddev = _dec('subject_stddev')
+            grade.enrolled_count = _int('enrolled_count')
+            achievement = request.POST.get('achievement_level', '').strip().upper()
+            grade.achievement_level = achievement if achievement else None
+            grade.save()
+            return redirect('parent_grades', student_pk=student_pk)
+        except (ValueError, InvalidOperation) as e:
+            error_message = str(e)
+
+    context = {
+        'student': student,
+        'grade': grade,
+        'is_middle': is_middle,
+        'error_message': error_message,
+    }
+    return render(request, 'students/parent_grade_edit.html', context)
