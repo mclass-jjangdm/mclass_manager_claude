@@ -346,6 +346,7 @@ def grade_import(request, student_pk):
     context = {
         'form': form,
         'student': student,
+        'is_middle': student.grade in ['K7', 'K8', 'K9'],
     }
     return render(request, 'grades/grade_import.html', context)
 
@@ -1004,6 +1005,7 @@ def student_grades(request, student_pk):
                 output_field=IntegerField()
             )
         ).order_by('_math_first', 'subject_code'),
+        'is_middle': student.grade in ['K7', 'K8', 'K9'],
     }
     return render(request, 'grades/student_grades.html', context)
 

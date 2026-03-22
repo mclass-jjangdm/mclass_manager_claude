@@ -21,26 +21,54 @@
         </div>
 
         <!-- 템플릿 다운로드 버튼 -->
-        <div class="flex gap-4 mb-6">
-            <a href="{% url 'grades:download_grade_template' 'internal' %}"
+        <div class="flex gap-3 flex-wrap mb-6">
+            {% if is_middle %}
+            <a href="{% url 'grades:download_grade_template' 'middle' %}?format=xlsx"
                class="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                내신 템플릿 다운로드
+                중학교 내신 엑셀 샘플
             </a>
-            <a href="{% url 'grades:download_grade_template' 'mock' %}"
+            <a href="{% url 'grades:download_grade_template' 'middle' %}?format=csv"
+               class="flex items-center px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg text-sm font-medium transition-colors">
+                CSV 샘플
+            </a>
+            {% else %}
+            <a href="{% url 'grades:download_grade_template' 'internal' %}?format=xlsx"
+               class="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                내신 엑셀 샘플
+            </a>
+            <a href="{% url 'grades:download_grade_template' 'mock' %}?format=xlsx"
                class="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                모의고사 템플릿 다운로드
+                모의고사 엑셀 샘플
             </a>
+            {% endif %}
         </div>
 
         <!-- 필드 설명 -->
+        {% if is_middle %}
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h4 class="font-semibold text-gray-700 mb-2">중학교 내신 성적 컬럼</h4>
+            <ul class="text-sm text-gray-600 space-y-1">
+                <li><code class="bg-gray-200 px-1 rounded">학년</code> - 1, 2, 3</li>
+                <li><code class="bg-gray-200 px-1 rounded">학기</code> - 1 또는 2</li>
+                <li><code class="bg-gray-200 px-1 rounded">과목명</code></li>
+                <li><code class="bg-gray-200 px-1 rounded">원점수</code></li>
+                <li><code class="bg-gray-200 px-1 rounded">과목평균</code> (선택)</li>
+                <li><code class="bg-gray-200 px-1 rounded">표준편차</code> (선택)</li>
+                <li><code class="bg-gray-200 px-1 rounded">수강자수</code> (선택)</li>
+                <li><code class="bg-gray-200 px-1 rounded">성취도</code> - A, B, C, D, E (선택)</li>
+            </ul>
+        </div>
+        {% else %}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <!-- 내신 필드 설명 -->
             <div class="bg-gray-50 rounded-lg p-4">
                 <h4 class="font-semibold text-gray-700 mb-2">내신 성적 필수 필드</h4>
                 <ul class="text-sm text-gray-600 space-y-1">
@@ -49,36 +77,38 @@
                     <li><code class="bg-gray-200 px-1 rounded">과목코드</code> 또는 <code class="bg-gray-200 px-1 rounded">과목명</code></li>
                     <li><code class="bg-gray-200 px-1 rounded">단위</code> - 수업 단위수</li>
                     <li><code class="bg-gray-200 px-1 rounded">원점수</code></li>
-                    <li><code class="bg-gray-200 px-1 rounded">과목평균</code> (또는 <code class="bg-gray-200 px-1 rounded">평균</code>)</li>
+                    <li><code class="bg-gray-200 px-1 rounded">과목평균</code></li>
                     <li><code class="bg-gray-200 px-1 rounded">표준편차</code></li>
                     <li><code class="bg-gray-200 px-1 rounded">등급</code> - 1~9</li>
-                    <li><code class="bg-gray-200 px-1 rounded">진로선택</code> - 선택사항 (진로선택, 1, yes, o, ○ 등)</li>
+                    <li><code class="bg-gray-200 px-1 rounded">진로선택</code> - 선택사항</li>
                 </ul>
             </div>
-
-            <!-- 모의고사 필드 설명 -->
             <div class="bg-gray-50 rounded-lg p-4">
                 <h4 class="font-semibold text-gray-700 mb-2">모의고사 성적 필수 필드</h4>
                 <ul class="text-sm text-gray-600 space-y-1">
                     <li><code class="bg-gray-200 px-1 rounded">학년</code> - 1, 2, 3</li>
-                    <li><code class="bg-gray-200 px-1 rounded">시험연도</code> (또는 <code class="bg-gray-200 px-1 rounded">연도</code>)</li>
-                    <li><code class="bg-gray-200 px-1 rounded">시험월</code> (또는 <code class="bg-gray-200 px-1 rounded">월</code>) - 1~12</li>
-                    <li><code class="bg-gray-200 px-1 rounded">시험명</code> (또는 <code class="bg-gray-200 px-1 rounded">모의고사명</code>)</li>
+                    <li><code class="bg-gray-200 px-1 rounded">시험연도</code></li>
+                    <li><code class="bg-gray-200 px-1 rounded">시험월</code> - 1~12</li>
+                    <li><code class="bg-gray-200 px-1 rounded">시험명</code></li>
                     <li><code class="bg-gray-200 px-1 rounded">과목코드</code> 또는 <code class="bg-gray-200 px-1 rounded">과목명</code></li>
                     <li><code class="bg-gray-200 px-1 rounded">원점수</code></li>
-                    <li><code class="bg-gray-200 px-1 rounded">과목평균</code> (또는 <code class="bg-gray-200 px-1 rounded">평균</code>)</li>
+                    <li><code class="bg-gray-200 px-1 rounded">과목평균</code></li>
                     <li><code class="bg-gray-200 px-1 rounded">표준편차</code></li>
                     <li><code class="bg-gray-200 px-1 rounded">등급</code> - 1~9</li>
                     <li><code class="bg-gray-200 px-1 rounded">백분위</code></li>
                 </ul>
             </div>
         </div>
+        {% endif %}
 
         <!-- 업로드 폼 -->
         <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
 
             <!-- 성적 유형 선택 -->
+            {% if is_middle %}
+            <input type="hidden" name="grade_type" value="internal">
+            {% else %}
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-3">성적 유형 *</label>
                 <div class="flex gap-6">
@@ -93,6 +123,7 @@
                     <p class="mt-1 text-sm text-red-600">{{ form.grade_type.errors.0 }}</p>
                 {% endif %}
             </div>
+            {% endif %}
 
             <!-- 파일 선택 -->
             <div>
