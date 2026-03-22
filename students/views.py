@@ -1294,21 +1294,29 @@ def parent_grade_bulk_create(request, student_pk):
                             percentile=_dec('percentile'),
                         )
                     else:
-                        avg_str = request.POST.get(f'grades[{i}][subject_average]', '0').strip() or '0'
+                        # 2015 교육과정
+                        classification_raw = request.POST.get(f'grades[{i}][subject_classification]', 'general').strip()
+                        subject_classification = classification_raw if classification_raw in ('common', 'general', 'elective', 'fusion') else 'general'
+                        is_achievement = subject_classification in ('elective', 'fusion')
                         grade_rank_str = request.POST.get(f'grades[{i}][grade_rank]', '').strip()
-                        is_elective = request.POST.get(f'grades[{i}][is_elective]') == '1'
-                        grade_rank = int(grade_rank_str) if grade_rank_str and not is_elective else None
+                        grade_rank = int(grade_rank_str) if grade_rank_str and not is_achievement else None
                         Grade.objects.create(
                             student=student,
                             grade_type='internal',
                             subject=subject,
                             year=int(year),
                             semester=int(semester),
+                            credits=_int('credits'),
                             score=score,
-                            subject_average=Decimal(avg_str),
+                            subject_average=_dec('subject_average'),
+                            subject_stddev=_dec('subject_stddev') if not is_achievement else None,
                             grade_rank=grade_rank,
-                            is_elective=is_elective,
-                            achievement_level=_str('achievement_level') if is_elective else None,
+                            subject_classification=subject_classification,
+                            is_elective=is_achievement,
+                            achievement_level=_str('achievement_level') if is_achievement else None,
+                            distribution_a=_dec('distribution_a') if is_achievement else None,
+                            distribution_b=_dec('distribution_b') if is_achievement else None,
+                            distribution_c=_dec('distribution_c') if is_achievement else None,
                         )
                     created_count += 1
                 except Exception:

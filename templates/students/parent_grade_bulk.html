@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
-<div class="max-w-2xl mx-auto py-6 px-4">
+<div class="max-w-xl mx-auto py-6 px-4">
 
     <!-- 헤더 -->
     <div class="text-center mb-6">
@@ -28,11 +28,18 @@
         </a>
     </div>
 
-    <h2 class="text-base font-bold text-gray-800 mb-4">📋 한 학기 내신 성적 일괄 입력</h2>
+    <h2 class="text-base font-bold text-gray-800 mb-1">📋 한 학기 내신 성적 일괄 입력</h2>
+    <p class="text-xs text-gray-500 mb-4">2015 교육과정 · 고등학교</p>
 
     {% if error_message %}
     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">{{ error_message }}</div>
     {% endif %}
+
+    <!-- 진로선택 안내 -->
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-xs text-amber-800">
+        <strong>진로선택 과목</strong>은 체크 후 <strong>성취도(A/B/C)</strong>와 <strong>분포비율</strong>을 입력하세요.
+        진로선택은 등급 대신 성취도로 평가합니다.
+    </div>
 
     <form method="POST" id="bulk-form">
         {% csrf_token %}
@@ -76,7 +83,7 @@
                class="flex-1 py-3 bg-white border border-gray-300 text-gray-600 rounded-xl text-sm font-medium text-center hover:bg-gray-50 transition-colors">
                 취소
             </a>
-            <button type="submit" onclick="prepareSubmit()"
+            <button type="submit"
                     class="flex-2 flex-grow-[2] py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors">
                 저장하기
             </button>
@@ -90,104 +97,198 @@
 </div>
 
 <script>
-// 과목 목록 (서버에서 JSON으로 전달)
+// 과목 목록 (서버에서 전달, category별 그룹화)
 const SUBJECTS = [
-    {% for s in subjects %}
-    {"id": {{ s.pk }}, "name": "{{ s.name }}", "code": "{{ s.subject_code }}"}{% if not forloop.last %},{% endif %}
+    {% for s in subjects_list %}
+    {"id": {{ s.id }}, "name": "{{ s.name }}", "code": "{{ s.code }}", "category": "{{ s.category }}"}{% if not forloop.last %},{% endif %}
     {% endfor %}
 ];
 
+// 유니크 카테고리 목록 생성 (순서 유지)
+const CATEGORY_ORDER = ['국어','수학','영어','사회','과학','한국사','기술/가정','체육','음악/미술','제2외국어','한문','교양','기타'];
+const CATEGORIES = CATEGORY_ORDER.filter(c => SUBJECTS.some(s => s.category === c));
+
 let rowCount = 0;
+
+function buildCategoryOptions() {
+    return '<option value="">-- 교과 선택 --</option>' +
+        CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function buildSubjectOptions(category) {
+    const filtered = category
+        ? SUBJECTS.filter(s => s.category === category)
+        : SUBJECTS;
+    return '<option value="">-- 과목 선택 --</option>' +
+        filtered.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function onCategoryChange(selectEl, idx) {
+    const category = selectEl.value;
+    const subjectSel = document.getElementById(`subject-${idx}`);
+    subjectSel.innerHTML = buildSubjectOptions(category);
+}
+
+function toggleElective(idx, isElective) {
+    const regularFields = document.getElementById(`regular-fields-${idx}`);
+    const electiveFields = document.getElementById(`elective-fields-${idx}`);
+    const stddevInput = document.getElementById(`stddev-${idx}`);
+    const gradeRankSel = document.getElementById(`grade-rank-${idx}`);
+    const classificationInput = document.getElementById(`classification-${idx}`);
+
+    if (isElective) {
+        regularFields.classList.add('opacity-40', 'pointer-events-none');
+        stddevInput.disabled = true;
+        gradeRankSel.disabled = true;
+        electiveFields.classList.remove('hidden');
+        classificationInput.value = 'elective';
+    } else {
+        regularFields.classList.remove('opacity-40', 'pointer-events-none');
+        stddevInput.disabled = false;
+        gradeRankSel.disabled = false;
+        electiveFields.classList.add('hidden');
+        classificationInput.value = 'general';
+        // 진로 필드 초기화
+        document.getElementById(`achievement-${idx}`).value = '';
+        document.getElementById(`dist-a-${idx}`).value = '';
+        document.getElementById(`dist-b-${idx}`).value = '';
+        document.getElementById(`dist-c-${idx}`).value = '';
+    }
+}
+
+function removeRow(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
 
 function addRow() {
     const idx = rowCount++;
     document.getElementById('grade_count').value = rowCount;
 
-    const optionsHtml = '<option value="">-- 과목 선택 --</option>' +
-        SUBJECTS.map(s => `<option value="${s.id}">[${s.code}] ${s.name}</option>`).join('');
-
     const row = document.createElement('div');
     row.id = `row-${idx}`;
     row.className = 'bg-white rounded-xl shadow-sm border border-gray-100 p-4';
     row.innerHTML = `
-        <div class="flex items-center justify-between mb-2">
+        <!-- 행 헤더 -->
+        <div class="flex items-center justify-between mb-3">
             <span class="text-xs font-semibold text-gray-500">과목 ${idx + 1}</span>
-            <button type="button" onclick="removeRow('row-${idx}', ${idx})"
+            <button type="button" onclick="removeRow('row-${idx}')"
                     class="text-red-300 hover:text-red-500 text-xs">✕ 삭제</button>
         </div>
-        <!-- 과목 선택 (전체 너비) -->
-        <select name="grades[${idx}][subject]"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none mb-2">
-            ${optionsHtml}
-        </select>
-        <!-- 점수 / 등급 (모바일: 2열, 데스크탑: 3열) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">원점수 <span class="text-red-500">*</span></label>
-                <input type="number" name="grades[${idx}][score]" placeholder="0~100"
-                       min="0" max="100" step="0.01"
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+
+        <!-- subject_classification 숨김 필드 -->
+        <input type="hidden" id="classification-${idx}" name="grades[${idx}][subject_classification]" value="general">
+
+        <!-- 교과 선택 -->
+        <div class="mb-2">
+            <label class="block text-xs text-gray-500 mb-1">교과</label>
+            <select onchange="onCategoryChange(this, ${idx})"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                ${buildCategoryOptions()}
+            </select>
+        </div>
+
+        <!-- 과목 선택 -->
+        <div class="mb-3">
+            <label class="block text-xs text-gray-500 mb-1">과목 <span class="text-red-500">*</span></label>
+            <select id="subject-${idx}" name="grades[${idx}][subject]"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                ${buildSubjectOptions('')}
+            </select>
+        </div>
+
+        <!-- 일반 과목 필드 -->
+        <div id="regular-fields-${idx}">
+            <!-- 단위수 / 원점수 / 평균 / 표준편차 (2x2 그리드) -->
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">단위수</label>
+                    <input type="number" name="grades[${idx}][credits]" placeholder="3"
+                           min="1" max="10" step="1"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">원점수 <span class="text-red-500">*</span></label>
+                    <input type="number" name="grades[${idx}][score]" placeholder="0~100"
+                           min="0" max="100" step="0.01"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">과목평균</label>
+                    <input type="number" name="grades[${idx}][subject_average]" placeholder="(선택)"
+                           min="0" max="100" step="0.01"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">표준편차</label>
+                    <input id="stddev-${idx}" type="number" name="grades[${idx}][subject_stddev]" placeholder="(선택)"
+                           min="0" step="0.01"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+                </div>
             </div>
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">과목평균</label>
-                <input type="number" name="grades[${idx}][subject_average]" placeholder="(선택)"
-                       min="0" max="100" step="0.01"
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
-            </div>
-            <div id="rank-div-${idx}">
-                <label class="block text-xs text-gray-500 mb-1">등급</label>
-                <select name="grades[${idx}][grade_rank]"
+            <!-- 등급 -->
+            <div class="mb-3">
+                <label class="block text-xs text-gray-500 mb-1">등급 (1~9)</label>
+                <select id="grade-rank-${idx}" name="grades[${idx}][grade_rank]"
                         class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
                     <option value="">-</option>
                     ${[1,2,3,4,5,6,7,8,9].map(n=>`<option value="${n}">${n}등급</option>`).join('')}
                 </select>
             </div>
         </div>
-        <!-- 진로선택 토글 -->
-        <label class="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
-            <input type="checkbox" name="grades[${idx}][is_elective]" value="1"
-                   class="w-4 h-4 rounded"
+
+        <!-- 진로선택 체크박스 -->
+        <label class="flex items-center gap-2 text-sm text-amber-700 cursor-pointer font-medium">
+            <input type="checkbox" value="1"
+                   class="w-4 h-4 rounded text-amber-500"
                    onchange="toggleElective(${idx}, this.checked)">
             진로선택 과목
         </label>
-        <!-- 진로선택 성취도 (숨김) -->
-        <div id="elective-div-${idx}" class="hidden mt-2">
-            <label class="block text-xs text-gray-500 mb-1">성취도</label>
-            <select name="grades[${idx}][achievement_level]"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none">
-                <option value="">선택</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-            </select>
+
+        <!-- 진로선택 상세 필드 (숨김) -->
+        <div id="elective-fields-${idx}" class="hidden mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p class="text-xs font-semibold text-amber-700 mb-2">📌 진로선택 추가 정보</p>
+            <!-- 성취도 -->
+            <div class="mb-2">
+                <label class="block text-xs text-gray-600 mb-1">성취도 <span class="text-red-500">*</span></label>
+                <select id="achievement-${idx}" name="grades[${idx}][achievement_level]"
+                        class="w-full border border-amber-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    <option value="">선택</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                </select>
+            </div>
+            <!-- 분포비율 A/B/C -->
+            <div class="grid grid-cols-3 gap-2">
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">분포비율 A % <span class="text-red-500">*</span></label>
+                    <input id="dist-a-${idx}" type="number" name="grades[${idx}][distribution_a]"
+                           placeholder="25.5" min="0" max="100" step="0.1"
+                           class="w-full border border-amber-300 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">분포비율 B % <span class="text-red-500">*</span></label>
+                    <input id="dist-b-${idx}" type="number" name="grades[${idx}][distribution_b]"
+                           placeholder="45.2" min="0" max="100" step="0.1"
+                           class="w-full border border-amber-300 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">분포비율 C % <span class="text-red-500">*</span></label>
+                    <input id="dist-c-${idx}" type="number" name="grades[${idx}][distribution_c]"
+                           placeholder="29.3" min="0" max="100" step="0.1"
+                           class="w-full border border-amber-300 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                </div>
+            </div>
         </div>
     `;
     document.getElementById('grade-rows').appendChild(row);
 }
 
-function removeRow(id, idx) {
-    const el = document.getElementById(id);
-    if (el) el.remove();
-}
-
-function toggleElective(idx, isElective) {
-    const rankDiv = document.getElementById(`rank-div-${idx}`);
-    const electiveDiv = document.getElementById(`elective-div-${idx}`);
-    if (isElective) {
-        rankDiv.classList.add('hidden');
-        electiveDiv.classList.remove('hidden');
-    } else {
-        rankDiv.classList.remove('hidden');
-        electiveDiv.classList.add('hidden');
-    }
-}
-
-function prepareSubmit() {
-    // grade_count 갱신 (삭제된 행이 있어도 정확히 카운트)
-    const rows = document.getElementById('grade-rows').querySelectorAll('[id^="row-"]');
-    // idx는 연속하지 않을 수 있으므로 그냥 rowCount 사용
+// 폼 제출 전 grade_count 갱신
+document.getElementById('bulk-form').addEventListener('submit', function() {
     document.getElementById('grade_count').value = rowCount;
-}
+});
 
 // 페이지 로드 시 기본 1행 추가
 addRow();
