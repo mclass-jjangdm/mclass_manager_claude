@@ -1125,8 +1125,11 @@ def test_record_update(request, pk):
     return redirect('grades:student_grades', student_pk=student_pk)
 
 
-@login_required
 def download_grade_template(request, template_type):
+    # 관리자 로그인 또는 학부모 세션 중 하나면 허용
+    if not request.user.is_authenticated and not request.session.get('parent_student_id'):
+        from django.shortcuts import redirect
+        return redirect('login')
     """성적 입력 템플릿 다운로드"""
 
     if template_type == 'middle':
