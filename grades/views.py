@@ -142,7 +142,8 @@ def grade_delete(request, pk):
 def internal_grade_bulk_create(request, student_pk):
     """한 학기 내신 성적 일괄 입력"""
     student = get_object_or_404(Student, pk=student_pk)
-    is_2022 = (student.curriculum_year == 2022)
+    is_middle = student.grade in ['K7', 'K8', 'K9']
+    is_2022 = (not is_middle) and (student.curriculum_year == 2022)
 
     if request.method == 'POST':
         try:
@@ -162,42 +163,18 @@ def internal_grade_bulk_create(request, student_pk):
 
                 credits = request.POST.get(f'grades[{i}][credits]')
                 score = request.POST.get(f'grades[{i}][score]')
-                subject_average = request.POST.get(f'grades[{i}][subject_average]')
-                classification_raw = request.POST.get(f'grades[{i}][subject_classification]', 'general')
-                subject_classification = classification_raw if classification_raw in ('common', 'general', 'elective', 'fusion') else 'general'
-                is_achievement = subject_classification in ('elective', 'fusion')
 
-                if is_2022:
-                    # 2022 교육과정 전용 필드
-                    def _int(key):
-                        v = request.POST.get(f'grades[{i}][{key}]', '').strip()
-                        return int(v) if v else None
+                def _get(key):
+                    v = request.POST.get(f'grades[{i}][{key}]', '').strip()
+                    return v if v else None
 
-                    def _dec(key):
-                        v = request.POST.get(f'grades[{i}][{key}]', '').strip()
-                        return v if v else None
-
-                    enrolled_count = _int('enrolled_count')
-                    subject_rank = _int('subject_rank')
-                    same_rank_count = _int('same_rank_count')
-                    grade_rank_raw = request.POST.get(f'grades[{i}][grade_rank]', '').strip()
-                    grade_rank = int(grade_rank_raw) if grade_rank_raw else None
-                    achievement_level = request.POST.get(f'grades[{i}][achievement_level]', '').strip() or None
-                    percentile_raw = _dec('percentile')
-                else:
-                    # 2015 교육과정 기존 필드
-                    subject_stddev = request.POST.get(f'grades[{i}][subject_stddev]')
-                    grade_rank_raw = request.POST.get(f'grades[{i}][grade_rank]')
-                    grade_rank = int(grade_rank_raw) if grade_rank_raw and not is_achievement else None
-                    enrolled_count = None
-                    subject_rank = None
-                    same_rank_count = None
-                    achievement_level = None
-                    distribution_a = distribution_b = distribution_c = None
-                    percentile_raw = None
+                def _int(key):
+                    v = request.POST.get(f'grades[{i}][{key}]', '').strip()
+                    return int(v) if v else None
 
                 subject = Subject.objects.get(pk=subject_id)
-                if is_2022:
+
+                if is_middle:
                     grade = Grade(
                         student=student,
                         grade_type='internal',
@@ -206,18 +183,40 @@ def internal_grade_bulk_create(request, student_pk):
                         semester=semester,
                         credits=credits,
                         score=score,
-                        subject_average=subject_average if subject_average else None,
+                        subject_average=_get('subject_average'),
+                        subject_stddev=_get('subject_stddev'),
+                        enrolled_count=_int('enrolled_count'),
+                        achievement_level=_get('achievement_level'),
+                        subject_classification='general',
+                        is_elective=False,
+                    )
+                elif is_2022:
+                    classification_raw = request.POST.get(f'grades[{i}][subject_classification]', 'general')
+                    subject_classification = classification_raw if classification_raw in ('common', 'general', 'elective', 'fusion') else 'general'
+                    grade = Grade(
+                        student=student,
+                        grade_type='internal',
+                        subject=subject,
+                        year=year,
+                        semester=semester,
+                        credits=credits,
+                        score=score,
+                        subject_average=_get('subject_average'),
                         subject_stddev=None,
-                        grade_rank=grade_rank,
+                        grade_rank=_int('grade_rank'),
                         subject_classification=subject_classification,
                         is_elective=(subject_classification in ('elective', 'fusion')),
-                        enrolled_count=enrolled_count,
-                        subject_rank=subject_rank,
-                        same_rank_count=same_rank_count,
-                        achievement_level=achievement_level,
-                        percentile=percentile_raw,
+                        enrolled_count=_int('enrolled_count'),
+                        subject_rank=_int('subject_rank'),
+                        same_rank_count=_int('same_rank_count'),
+                        achievement_level=_get('achievement_level'),
+                        percentile=_get('percentile'),
                     )
                 else:
+                    classification_raw = request.POST.get(f'grades[{i}][subject_classification]', 'general')
+                    subject_classification = classification_raw if classification_raw in ('common', 'general', 'elective', 'fusion') else 'general'
+                    is_achievement = subject_classification in ('elective', 'fusion')
+                    grade_rank_raw = request.POST.get(f'grades[{i}][grade_rank]')
                     grade = Grade(
                         student=student,
                         grade_type='internal',
@@ -226,16 +225,16 @@ def internal_grade_bulk_create(request, student_pk):
                         semester=semester,
                         credits=credits,
                         score=score,
-                        subject_average=subject_average,
-                        subject_stddev=subject_stddev,
-                        grade_rank=grade_rank,
+                        subject_average=request.POST.get(f'grades[{i}][subject_average]'),
+                        subject_stddev=request.POST.get(f'grades[{i}][subject_stddev]'),
+                        grade_rank=int(grade_rank_raw) if grade_rank_raw and not is_achievement else None,
                         subject_classification=subject_classification,
                         is_elective=is_achievement,
                         enrolled_count=None,
-                        achievement_level=achievement_level if is_achievement else None,
-                        distribution_a=distribution_a if is_achievement else None,
-                        distribution_b=distribution_b if is_achievement else None,
-                        distribution_c=distribution_c if is_achievement else None,
+                        achievement_level=_get('achievement_level') if is_achievement else None,
+                        distribution_a=None,
+                        distribution_b=None,
+                        distribution_c=None,
                     )
                 grade.full_clean()
                 grade.save()
@@ -248,8 +247,12 @@ def internal_grade_bulk_create(request, student_pk):
             messages.error(request, f'성적 저장 중 오류가 발생했습니다: {str(e)}')
             return redirect('grades:internal_grade_bulk_create', student_pk=student_pk)
 
-    if is_2022:
-        import json
+    if is_middle:
+        subjects_all = Subject.objects.filter(is_active=True).order_by('subject_code')
+        subjects_list = [{'id': s.pk, 'name': s.name, 'category': s.category} for s in subjects_all]
+        context = {'student': student, 'is_middle': True, 'subjects_list': subjects_list}
+        template = 'grades/grade_bulk_form_middle.html'
+    elif is_2022:
         TYPE_MAP = {'0': 'common', '1': 'general', '2': 'elective', '3': 'fusion'}
         subjects_2022 = Subject.objects.filter(is_active=True, curriculum_year=2022).order_by('subject_code')
         subjects_list = []
@@ -261,17 +264,11 @@ def internal_grade_bulk_create(request, student_pk):
                 'category': s.category,
                 'classification': sc,
             })
-        context = {
-            'student': student,
-            'is_2022': True,
-            'subjects_list': subjects_list,
-        }
+        context = {'student': student, 'is_2022': True, 'subjects_list': subjects_list}
+        template = 'grades/grade_bulk_form_2022.html'
     else:
-        context = {
-            'student': student,
-            'is_2022': False,
-        }
-    template = 'grades/grade_bulk_form_2022.html' if is_2022 else 'grades/grade_bulk_form.html'
+        context = {'student': student, 'is_2022': False}
+        template = 'grades/grade_bulk_form.html'
     return render(request, template, context)
 
 

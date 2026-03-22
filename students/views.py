@@ -1187,9 +1187,12 @@ def parent_grade_bulk_create(request, student_pk):
     if not student:
         return redirect('parent_lookup')
 
-    is_2022 = (student.curriculum_year == 2022)
+    is_middle = student.grade in ['K7', 'K8', 'K9']
+    is_2022 = (not is_middle) and (student.curriculum_year == 2022)
 
-    if is_2022:
+    if is_middle:
+        subjects = Subject.objects.filter(is_active=True).order_by('subject_code')
+    elif is_2022:
         subjects = Subject.objects.filter(is_active=True, curriculum_year=2022).order_by('subject_code')
     else:
         subjects = Subject.objects.filter(is_active=True).exclude(curriculum_year=2022).order_by('subject_code')
@@ -1208,56 +1211,65 @@ def parent_grade_bulk_create(request, student_pk):
             for i in range(grade_count):
                 subject_id = request.POST.get(f'grades[{i}][subject]', '').strip()
                 score_str = request.POST.get(f'grades[{i}][score]', '').strip()
-                avg_str = request.POST.get(f'grades[{i}][subject_average]', '0').strip() or '0'
 
                 if not subject_id or not score_str:
                     continue
                 try:
                     subject = Subject.objects.get(pk=subject_id)
                     score = Decimal(score_str)
-                    subject_average = Decimal(avg_str)
 
-                    if is_2022:
-                        def _int(key):
-                            v = request.POST.get(f'grades[{i}][{key}]', '').strip()
-                            return int(v) if v else None
+                    def _int(key):
+                        v = request.POST.get(f'grades[{i}][{key}]', '').strip()
+                        return int(v) if v else None
 
-                        def _dec(key):
-                            v = request.POST.get(f'grades[{i}][{key}]', '').strip()
-                            return Decimal(v) if v else None
+                    def _dec(key):
+                        v = request.POST.get(f'grades[{i}][{key}]', '').strip()
+                        return Decimal(v) if v else None
 
-                        credits = _int('credits')
-                        enrolled_count = _int('enrolled_count')
-                        subject_rank = _int('subject_rank')
-                        same_rank_count = _int('same_rank_count')
-                        grade_rank = _int('grade_rank')
-                        achievement_level = request.POST.get(f'grades[{i}][achievement_level]', '').strip() or None
-                        percentile = _dec('percentile')
+                    def _str(key):
+                        return request.POST.get(f'grades[{i}][{key}]', '').strip() or None
 
+                    if is_middle:
                         Grade.objects.create(
                             student=student,
                             grade_type='internal',
                             subject=subject,
                             year=int(year),
                             semester=int(semester),
-                            credits=credits,
+                            credits=_int('credits'),
+                            score=score,
+                            subject_average=_dec('subject_average'),
+                            subject_stddev=_dec('subject_stddev'),
+                            enrolled_count=_int('enrolled_count'),
+                            achievement_level=_str('achievement_level'),
+                            subject_classification='general',
+                            is_elective=False,
+                        )
+                    elif is_2022:
+                        Grade.objects.create(
+                            student=student,
+                            grade_type='internal',
+                            subject=subject,
+                            year=int(year),
+                            semester=int(semester),
+                            credits=_int('credits'),
                             score=score,
                             subject_average=None,
                             subject_stddev=None,
-                            grade_rank=grade_rank,
+                            grade_rank=_int('grade_rank'),
                             subject_classification='general',
                             is_elective=False,
-                            enrolled_count=enrolled_count,
-                            subject_rank=subject_rank,
-                            same_rank_count=same_rank_count,
-                            achievement_level=achievement_level,
-                            percentile=percentile,
+                            enrolled_count=_int('enrolled_count'),
+                            subject_rank=_int('subject_rank'),
+                            same_rank_count=_int('same_rank_count'),
+                            achievement_level=_str('achievement_level'),
+                            percentile=_dec('percentile'),
                         )
                     else:
+                        avg_str = request.POST.get(f'grades[{i}][subject_average]', '0').strip() or '0'
                         grade_rank_str = request.POST.get(f'grades[{i}][grade_rank]', '').strip()
                         is_elective = request.POST.get(f'grades[{i}][is_elective]') == '1'
                         grade_rank = int(grade_rank_str) if grade_rank_str and not is_elective else None
-                        achievement_level = request.POST.get(f'grades[{i}][achievement_level]', '').strip() or None
                         Grade.objects.create(
                             student=student,
                             grade_type='internal',
@@ -1265,10 +1277,10 @@ def parent_grade_bulk_create(request, student_pk):
                             year=int(year),
                             semester=int(semester),
                             score=score,
-                            subject_average=subject_average,
+                            subject_average=Decimal(avg_str),
                             grade_rank=grade_rank,
                             is_elective=is_elective,
-                            achievement_level=achievement_level if is_elective else None,
+                            achievement_level=_str('achievement_level') if is_elective else None,
                         )
                     created_count += 1
                 except Exception:
@@ -1278,25 +1290,26 @@ def parent_grade_bulk_create(request, student_pk):
             error_message = '과목과 원점수를 입력해 주세요.'
 
     import datetime
-
-    # 학부모용 2022 템플릿에 쓸 subject 목록 (classification 포함)
     subjects_with_class = []
     TYPE_MAP = {'0': 'common', '1': 'general', '2': 'elective', '3': 'fusion'}
     for s in subjects:
-        sc = ''
-        if is_2022 and len(s.subject_code) == 6:
-            sc = TYPE_MAP.get(s.subject_code[2], '')
+        sc = TYPE_MAP.get(s.subject_code[2], '') if is_2022 and len(s.subject_code) == 6 else ''
         subjects_with_class.append({'id': s.pk, 'name': s.name, 'code': s.subject_code, 'category': s.category, 'classification': sc})
 
     context = {
         'student': student,
-        'subjects': subjects,
         'subjects_list': subjects_with_class,
         'current_year': datetime.date.today().year,
         'error_message': error_message,
         'is_2022': is_2022,
+        'is_middle': is_middle,
     }
-    template = 'students/parent_grade_bulk_2022.html' if is_2022 else 'students/parent_grade_bulk.html'
+    if is_middle:
+        template = 'students/parent_grade_bulk_middle.html'
+    elif is_2022:
+        template = 'students/parent_grade_bulk_2022.html'
+    else:
+        template = 'students/parent_grade_bulk.html'
     return render(request, template, context)
 
 
