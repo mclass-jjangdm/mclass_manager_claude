@@ -187,6 +187,10 @@ def student_detail(request, pk):
     category_stats = defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
 
     for grade in internal_grades:
+        # 등급/단위수가 없는 경우(중학교 성적 등) 통계 계산에서 제외
+        if grade.grade_rank is None or grade.credits is None:
+            continue
+
         # 차트용 데이터 수집 (진로선택 과목 제외)
         if not grade.is_elective:
             key = f"{grade.year}-{grade.semester}"
