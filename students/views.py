@@ -309,6 +309,27 @@ def student_detail(request, pk):
     regular_internal_grades = [g for g in internal_grades if not g.is_elective]
     elective_grades = [g for g in internal_grades if g.is_elective]
 
+    # 중학생 성적 요약 (원점수·평균·표준편차 기반 상위% 계산)
+    is_middle = student.grade in ['K7', 'K8', 'K9']
+    middle_grade_summary = []
+    if is_middle:
+        import math
+        def _norm_cdf(x):
+            return (1 + math.erf(x / math.sqrt(2))) / 2
+        for g in sorted(internal_grades, key=lambda g: (g.year, g.semester, g.subject.subject_code if g.subject else '')):
+            entry = {
+                'grade': g,
+                'upper_pct': None,
+                'est_rank': None,
+            }
+            if g.score is not None and g.subject_average is not None and g.subject_stddev and float(g.subject_stddev) > 0:
+                z = (float(g.score) - float(g.subject_average)) / float(g.subject_stddev)
+                upper_pct = round((1 - _norm_cdf(z)) * 100, 1)
+                entry['upper_pct'] = upper_pct
+                if g.enrolled_count:
+                    entry['est_rank'] = max(1, round(upper_pct / 100 * g.enrolled_count))
+            middle_grade_summary.append(entry)
+
     context = {
         'student': student,
         'unpaid_sales': unpaid_sales,
@@ -324,6 +345,8 @@ def student_detail(request, pk):
         'combination_averages': combination_averages,
         'chart_data': json.dumps(chart_data, ensure_ascii=False),
         'today': timezone.now().date(),
+        'is_middle': is_middle,
+        'middle_grade_summary': middle_grade_summary,
     }
     return render(request, 'students/student_detail.html', context)
 
