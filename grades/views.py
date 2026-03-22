@@ -255,7 +255,7 @@ def internal_grade_bulk_create(request, student_pk):
         template = 'grades/grade_bulk_form_middle.html'
     elif is_2022:
         TYPE_MAP = {'0': 'common', '1': 'general', '2': 'elective', '3': 'fusion'}
-        subjects_2022 = Subject.objects.filter(is_active=True, curriculum_year=2022).order_by('subject_code')
+        subjects_2022 = Subject.objects.filter(is_active=True, school_level='H', curriculum_year=2022).order_by('subject_code')
         subjects_list = []
         for s in subjects_2022:
             sc = TYPE_MAP.get(s.subject_code[2], '') if len(s.subject_code) == 6 else ''
@@ -279,7 +279,7 @@ def get_subjects_by_category(request):
     category = request.GET.get('category', '')
     curriculum_year = request.GET.get('curriculum_year')
 
-    qs = Subject.objects.filter(is_active=True).order_by('subject_code')
+    qs = Subject.objects.filter(is_active=True, school_level='H').order_by('subject_code')
     if curriculum_year and curriculum_year.isdigit():
         qs = qs.filter(curriculum_year=int(curriculum_year))
 
