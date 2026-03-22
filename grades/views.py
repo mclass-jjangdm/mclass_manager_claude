@@ -344,10 +344,13 @@ def grade_import(request, student_pk):
     else:
         form = GradeImportForm()
 
+    is_middle = student.grade in ['K7', 'K8', 'K9']
+    is_2022 = (not is_middle) and (student.curriculum_year == 2022)
     context = {
         'form': form,
         'student': student,
-        'is_middle': student.grade in ['K7', 'K8', 'K9'],
+        'is_middle': is_middle,
+        'is_2022': is_2022,
     }
     return render(request, 'grades/grade_import.html', context)
 
@@ -1190,6 +1193,19 @@ def download_grade_template(request, template_type):
             [1, 1, '영어', 78.0, 71.0, 13.5, 150, 'B'],
             [1, 1, '과학', 88.0, 74.2, 12.0, 148, 'A'],
             [1, 1, '사회', 75.0, 70.5, 14.0, 150, 'C'],
+        ]
+    elif template_type == 'internal_2022':
+        base_filename = 'internal_grade_template_2022'
+        headers = ['학년', '학기', '과목코드', '과목명', '학점', '원점수', '과목평균', '표준편차', '등급', '진로선택', '성취도', '분포비율A', '분포비율B', '분포비율C']
+        sample_data = [
+            # 공통과목/일반선택: 학점, 원점수, 평균, 표준편차, 등급 입력
+            [1, 1, '010001', '공통국어1', 4, 85, 70.5, 12.3, 2, '', '', '', '', ''],
+            [1, 1, '020001', '공통수학1', 4, 92, 68.2, 15.1, 1, '', '', '', '', ''],
+            [1, 1, '030001', '영어1', 4, 88, 72.1, 11.5, 2, '', '', '', '', ''],
+            [1, 1, '021101', '대수', 4, 90, 65.3, 18.2, 1, '', '', '', '', ''],
+            # 진로선택: 성취도(A/B/C), 분포비율 입력 (등급·표준편차 없음)
+            [1, 1, '052201', '역학과 에너지', 2, 78, 70.0, '', '', '진로선택', 'A', 22.5, 47.3, 30.2],
+            [1, 1, '042201', '한국지리 탐구', 2, 82, 68.5, '', '', '진로선택', 'B', 18.0, 52.0, 30.0],
         ]
     elif template_type == 'internal':
         base_filename = 'internal_grade_template'
