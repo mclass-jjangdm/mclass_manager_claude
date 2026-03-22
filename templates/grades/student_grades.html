@@ -565,6 +565,17 @@
         </div>
     </div>
 </div>
+{% elif is_middle %}
+<!-- ══ 중학생 성적 분포 분석 ══ -->
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="flex items-center gap-2 mb-1">
+        <h3 class="text-lg font-bold text-gray-800">📊 성적 분포 분석</h3>
+        <span class="text-xs text-gray-400 font-normal">(정규분포 가정)</span>
+    </div>
+    <p class="text-xs text-gray-500 mb-5">원점수·평균·표준편차로 학생의 상대적 위치를 추정합니다. 평균·표준편차가 없는 과목은 제외됩니다.</p>
+    <div id="dist-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+    <p id="dist-empty" class="text-gray-400 text-sm text-center py-6 hidden">분석 가능한 성적 데이터가 없습니다. (평균·표준편차 입력 필요)</p>
+</div>
 {% else %}
 <div class="bg-gray-50 rounded-lg p-8 text-center text-gray-500 mb-6">
     <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -787,19 +798,6 @@
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-{% if is_middle %}
-<!-- ══ 중학생 성적 분포 분석 ══ -->
-<div class="bg-white rounded-lg shadow p-6 mb-6">
-    <div class="flex items-center gap-2 mb-1">
-        <h3 class="text-lg font-bold text-gray-800">📊 성적 분포 분석</h3>
-        <span class="text-xs text-gray-400 font-normal">(정규분포 가정)</span>
-    </div>
-    <p class="text-xs text-gray-500 mb-5">원점수·평균·표준편차로 학생의 상대적 위치를 추정합니다. 평균·표준편차가 없는 과목은 제외됩니다.</p>
-
-    <div id="dist-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
-    <p id="dist-empty" class="text-gray-400 text-sm text-center py-6 hidden">분석 가능한 성적 데이터가 없습니다. (평균·표준편차 입력 필요)</p>
-</div>
-
 <script type="application/json" id="middle-grades-data">{{ middle_grades_json|safe }}</script>
 <script>
 (function() {
@@ -986,7 +984,6 @@
     });
 })();
 </script>
-{% endif %}
 
 <script>
 function showGradeTab(type) {
