@@ -1129,7 +1129,18 @@ def test_record_update(request, pk):
 def download_grade_template(request, template_type):
     """성적 입력 템플릿 다운로드"""
 
-    if template_type == 'internal':
+    if template_type == 'middle':
+        # 중학교 내신 성적 템플릿
+        filename = 'middle_grade_template.csv'
+        headers = ['학년', '학기', '과목명', '원점수', '과목평균', '표준편차', '수강자수', '성취도']
+        sample_data = [
+            ['1', '1', '국어', '85.0', '72.0', '15.0', '150', 'B'],
+            ['1', '1', '수학', '92.0', '68.5', '18.0', '150', 'A'],
+            ['1', '1', '영어', '78.0', '71.0', '13.5', '150', 'B'],
+            ['1', '1', '과학', '88.0', '74.2', '12.0', '148', 'A'],
+            ['1', '1', '사회', '75.0', '70.5', '14.0', '150', 'C'],
+        ]
+    elif template_type == 'internal':
         # 내신 성적 템플릿
         filename = 'internal_grade_template.csv'
         headers = ['학년', '학기', '과목명', '단위', '원점수', '과목평균', '표준편차', '등급', '진로선택', '성취도', '분포비율A', '분포비율B', '분포비율C']

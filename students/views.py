@@ -1427,9 +1427,11 @@ def parent_grade_import(request, student_pk):
             except Exception as e:
                 error_message = f'파일 처리 중 오류: {str(e)}'
 
+    is_middle = student.grade in ['K7', 'K8', 'K9']
     context = {
         'student': student,
         'error_message': error_message,
         'success_message': success_message,
+        'is_middle': is_middle,
     }
     return render(request, 'students/parent_grade_import.html', context)

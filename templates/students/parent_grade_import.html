@@ -42,6 +42,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-5">
 
             <!-- 성적 유형 -->
+            {% if not is_middle %}
             <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-2">성적 유형 <span class="text-red-500">*</span></label>
                 <div class="flex gap-4">
@@ -55,20 +56,39 @@
                     </label>
                 </div>
             </div>
+            {% else %}
+            <input type="hidden" name="grade_type" value="internal">
+            {% endif %}
 
             <!-- 파일 선택 -->
             <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-2">파일 선택 <span class="text-red-500">*</span></label>
                 <input type="file" name="file" accept=".csv,.xlsx,.xls" required
                        class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 transition-colors">
-                <p class="text-xs text-gray-400 mt-1">CSV 또는 Excel 파일 (.csv, .xlsx, .xls)</p>
+                <p class="text-xs text-gray-400 mt-1">CSV 파일 (.csv)</p>
             </div>
 
-            <!-- 안내 -->
-            <div class="bg-orange-50 border border-orange-100 rounded-xl p-4 text-xs text-orange-700 space-y-1">
-                <p class="font-semibold mb-2">📋 파일 형식 안내</p>
-                <p>템플릿 파일은 학원 관리자에게 요청하세요.</p>
-                <p>올바른 형식의 CSV/Excel 파일만 업로드 가능합니다.</p>
+            <!-- 샘플 파일 다운로드 -->
+            <div class="bg-orange-50 border border-orange-100 rounded-xl p-4 text-xs text-orange-700 space-y-2">
+                <p class="font-semibold mb-1">📋 파일 형식 안내</p>
+                {% if is_middle %}
+                <a href="{% url 'grades:download_grade_template' 'middle' %}"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition-colors">
+                    ⬇ 샘플 파일 다운로드 (중학교 내신)
+                </a>
+                <p class="text-gray-500 mt-1">컬럼 순서: 학년, 학기, 과목명, 원점수, 과목평균, 표준편차, 수강자수, 성취도</p>
+                {% else %}
+                <div class="flex flex-wrap gap-2">
+                    <a href="{% url 'grades:download_grade_template' 'internal' %}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition-colors">
+                        ⬇ 내신 샘플
+                    </a>
+                    <a href="{% url 'grades:download_grade_template' 'mock' %}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-medium hover:bg-green-600 transition-colors">
+                        ⬇ 모의고사 샘플
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
 
