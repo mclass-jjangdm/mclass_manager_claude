@@ -532,6 +532,11 @@ def create_grade_from_row(row, student, grade_type, row_num):
     }
     subject_classification = classification_map.get(classification_raw, '')
 
+    # 2022 교육과정 과목: 과목코드 3번째 자리에서 자동 추출 (0=공통, 1=일반선택, 2=진로선택, 3=융합선택)
+    if not subject_classification and subject and len(subject.subject_code) == 6 and subject.curriculum_year == 2022:
+        _type_map = {'0': 'common', '1': 'general', '2': 'elective', '3': 'fusion'}
+        subject_classification = _type_map.get(subject.subject_code[2], 'general')
+
     # 하위 호환: 기존 진로선택 여부 컬럼도 지원
     if not subject_classification:
         is_elective_raw = get_value(row, '진로선택', '진로_선택', '선택과목', 'elective')
@@ -572,8 +577,8 @@ def create_grade_from_row(row, student, grade_type, row_num):
     subject_average_raw = get_value(row, '과목평균', '평균', '과목_평균', 'average', 'avg')
     subject_average = parse_decimal(subject_average_raw, '과목평균') if subject_average_raw and str(subject_average_raw).strip() else None
 
-    # 등급 — 중학교 파일에는 없으므로 선택사항
-    grade_rank_raw = get_value(row, '등급', 'rank', 'grade_rank')
+    # 등급 — 중학교 파일에는 없으므로 선택사항 / 2022 파일은 '상대등급' 컬럼
+    grade_rank_raw = get_value(row, '등급', '상대등급', 'rank', 'grade_rank')
     is_middle_format = not (grade_rank_raw and str(grade_rank_raw).strip())
 
     # 진로선택 과목일 경우 등급/표준편차 대신 성취도/분포비율
@@ -585,7 +590,8 @@ def create_grade_from_row(row, student, grade_type, row_num):
         subject_stddev = parse_decimal_optional(get_value(row, '표준편차', '표준_편차', 'stddev', 'std'))
         grade_rank = None
     else:
-        subject_stddev = parse_decimal(get_value(row, '표준편차', '표준_편차', 'stddev', 'std'), '표준편차')
+        # 표준편차는 선택사항 (2022 과정 파일에는 없을 수 있음)
+        subject_stddev = parse_decimal_optional(get_value(row, '표준편차', '표준_편차', 'stddev', 'std'))
         grade_rank = parse_int(grade_rank_raw, '등급')
         if not (1 <= grade_rank <= 9):
             raise ValueError(f"등급은 1~9 사이여야 합니다: {grade_rank}")
@@ -605,9 +611,9 @@ def create_grade_from_row(row, student, grade_type, row_num):
     if grade_type == 'internal':
         # 내신 전용 필드
         semester = parse_int(get_value(row, '학기', 'semester'), '학기')
-        # 중학교 형식은 단위수 없음
-        credits_raw = get_value(row, '단위', '이수단위', 'credits', 'unit')
-        credits = parse_int(credits_raw, '단위') if (credits_raw and str(credits_raw).strip()) else None
+        # 단위수/학점 (중학교 형식은 없으므로 선택사항)
+        credits_raw = get_value(row, '단위수', '단위', '학점', '이수단위', 'credits', 'unit')
+        credits = parse_int(credits_raw, '단위수') if (credits_raw and str(credits_raw).strip()) else None
 
         if semester not in [1, 2]:
             raise ValueError(f"학기는 1 또는 2여야 합니다: {semester}")
@@ -616,12 +622,26 @@ def create_grade_from_row(row, student, grade_type, row_num):
         enrolled_raw = get_value(row, '수강자수', '수강자_수', 'enrolled', 'enrolled_count')
         enrolled_count = int(float(str(enrolled_raw).strip())) if (enrolled_raw and str(enrolled_raw).strip()) else None
 
+        # 석차, 동석차수, 백분위 (선택사항)
+        subject_rank_raw = get_value(row, '석차', 'subject_rank')
+        subject_rank = int(float(str(subject_rank_raw).strip())) if (subject_rank_raw and str(subject_rank_raw).strip()) else None
+        same_rank_raw = get_value(row, '동석차수', '동석차_수', 'same_rank_count')
+        same_rank_count = int(float(str(same_rank_raw).strip())) if (same_rank_raw and str(same_rank_raw).strip()) else None
+        percentile_raw = get_value(row, '백분위', 'percentile')
+        percentile_val = parse_decimal_optional(percentile_raw)
+
         grade_obj.semester = semester
         grade_obj.credits = credits
         grade_obj.subject_classification = subject_classification
         grade_obj.is_elective = is_elective
         if enrolled_count is not None:
             grade_obj.enrolled_count = enrolled_count
+        if subject_rank is not None:
+            grade_obj.subject_rank = subject_rank
+        if same_rank_count is not None:
+            grade_obj.same_rank_count = same_rank_count
+        if percentile_val is not None:
+            grade_obj.percentile = percentile_val
 
         # 성취도 파싱: 진로/융합선택은 A/B/C, 중학교 형식은 A~E
         if is_elective:
@@ -633,12 +653,15 @@ def create_grade_from_row(row, student, grade_type, row_num):
             distribution_b = parse_decimal_optional(get_value(row, '분포비율B', 'B비율', '성취도B비율', 'distribution_b'))
             distribution_c = parse_decimal_optional(get_value(row, '분포비율C', 'C비율', '성취도C비율', 'distribution_c'))
 
-            if distribution_a is None:
-                raise ValueError("진로선택 과목은 분포비율A가 필수입니다")
-            if distribution_b is None:
-                raise ValueError("진로선택 과목은 분포비율B가 필수입니다")
-            if distribution_c is None:
-                raise ValueError("진로선택 과목은 분포비율C가 필수입니다")
+            # 2022 교육과정 진로선택은 분포비율 선택사항 (2015는 필수)
+            _is_2022_subject = subject and subject.curriculum_year == 2022
+            if not _is_2022_subject:
+                if distribution_a is None:
+                    raise ValueError("진로선택 과목은 분포비율A가 필수입니다")
+                if distribution_b is None:
+                    raise ValueError("진로선택 과목은 분포비율B가 필수입니다")
+                if distribution_c is None:
+                    raise ValueError("진로선택 과목은 분포비율C가 필수입니다")
 
             grade_obj.achievement_level = achievement_level
             grade_obj.distribution_a = distribution_a
@@ -1196,16 +1219,16 @@ def download_grade_template(request, template_type):
         ]
     elif template_type == 'internal_2022':
         base_filename = 'internal_grade_template_2022'
-        headers = ['학년', '학기', '과목코드', '과목명', '학점', '원점수', '과목평균', '표준편차', '등급', '진로선택', '성취도', '분포비율A', '분포비율B', '분포비율C']
+        headers = ['학년', '학기', '과목코드', '과목명', '단위수', '점수', '성취도', '석차', '동석차수', '수강자수', '백분위', '상대등급']
         sample_data = [
-            # 공통과목/일반선택: 학점, 원점수, 평균, 표준편차, 등급 입력
-            [1, 1, '010001', '공통국어1', 4, 85, 70.5, 12.3, 2, '', '', '', '', ''],
-            [1, 1, '020001', '공통수학1', 4, 92, 68.2, 15.1, 1, '', '', '', '', ''],
-            [1, 1, '030001', '영어1', 4, 88, 72.1, 11.5, 2, '', '', '', '', ''],
-            [1, 1, '021101', '대수', 4, 90, 65.3, 18.2, 1, '', '', '', '', ''],
-            # 진로선택: 성취도(A/B/C), 분포비율 입력 (등급·표준편차 없음)
-            [1, 1, '052201', '역학과 에너지', 2, 78, 70.0, '', '', '진로선택', 'A', 22.5, 47.3, 30.2],
-            [1, 1, '042201', '한국지리 탐구', 2, 82, 68.5, '', '', '진로선택', 'B', 18.0, 52.0, 30.0],
+            # 공통과목/일반선택: 상대등급 입력, 성취도 비워둠
+            [1, 1, '010001', '공통국어1', 4, 85, '', 5, 2, 200, 97.5, 2],
+            [1, 1, '020001', '공통수학1', 4, 92, '', 3, 1, 200, 98.5, 1],
+            [1, 1, '030001', '영어1', 4, 88, '', 8, 3, 200, 96.0, 2],
+            [1, 1, '021101', '대수', 4, 90, '', 6, 2, 180, 96.7, 1],
+            # 진로선택: 성취도(A/B/C) 입력, 상대등급 비워둠
+            [1, 1, '052201', '역학과 에너지', 2, 78, 'A', 12, 5, 120, 90.0, ''],
+            [1, 1, '042201', '한국지리 탐구', 2, 82, 'B', 15, 4, 130, 88.5, ''],
         ]
     elif template_type == 'internal':
         base_filename = 'internal_grade_template'
