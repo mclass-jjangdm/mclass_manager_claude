@@ -217,6 +217,11 @@ def internal_grade_bulk_create(request, student_pk):
                     subject_classification = classification_raw if classification_raw in ('common', 'general', 'elective', 'fusion') else 'general'
                     is_achievement = subject_classification in ('elective', 'fusion')
                     grade_rank_raw = request.POST.get(f'grades[{i}][grade_rank]')
+                    def _dec(key):
+                        v = request.POST.get(f'grades[{i}][{key}]', '').strip()
+                        from decimal import Decimal
+                        return Decimal(v) if v else None
+
                     grade = Grade(
                         student=student,
                         grade_type='internal',
@@ -226,15 +231,15 @@ def internal_grade_bulk_create(request, student_pk):
                         credits=credits,
                         score=score,
                         subject_average=request.POST.get(f'grades[{i}][subject_average]'),
-                        subject_stddev=request.POST.get(f'grades[{i}][subject_stddev]'),
+                        subject_stddev=request.POST.get(f'grades[{i}][subject_stddev]') if not is_achievement else None,
                         grade_rank=int(grade_rank_raw) if grade_rank_raw and not is_achievement else None,
                         subject_classification=subject_classification,
                         is_elective=is_achievement,
                         enrolled_count=None,
                         achievement_level=_get('achievement_level') if is_achievement else None,
-                        distribution_a=None,
-                        distribution_b=None,
-                        distribution_c=None,
+                        distribution_a=_dec('distribution_a') if is_achievement else None,
+                        distribution_b=_dec('distribution_b') if is_achievement else None,
+                        distribution_c=_dec('distribution_c') if is_achievement else None,
                     )
                 if not is_middle:
                     grade.full_clean()
