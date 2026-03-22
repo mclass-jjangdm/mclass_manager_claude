@@ -740,6 +740,10 @@ def student_grades(request, student_pk):
     category_stats = defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
 
     for grade in internal_grades:
+        # 등급/단위수가 없는 성적(중학교 등)은 통계 계산에서 제외
+        if grade.grade_rank is None or grade.credits is None:
+            continue
+
         is_achievement = grade.subject_classification in ('elective', 'fusion')
         # 차트용 데이터 수집 (진로선택/융합선택 제외)
         if not is_achievement:
