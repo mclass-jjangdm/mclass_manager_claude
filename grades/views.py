@@ -493,6 +493,7 @@ def create_grade_from_row(row, student, grade_type, row_num):
 
     # 필수 필드 확인
     subject_code = str(get_value(row, '과목코드', '과목_코드', 'subject_code') or '').strip()
+    # '과목' 컬럼(새 형식) 또는 '과목명' 컬럼(구 형식) 모두 지원; '교과'는 카테고리명이므로 과목 찾기에 사용 안 함
     subject_name = str(get_value(row, '과목명', '과목', '과목이름', 'subject_name', 'subject') or '').strip()
 
     if not subject_code and not subject_name:
@@ -592,9 +593,14 @@ def create_grade_from_row(row, student, grade_type, row_num):
     else:
         # 표준편차는 선택사항 (2022 과정 파일에는 없을 수 있음)
         subject_stddev = parse_decimal_optional(get_value(row, '표준편차', '표준_편차', 'stddev', 'std'))
-        grade_rank = parse_int(grade_rank_raw, '등급')
-        if not (1 <= grade_rank <= 9):
-            raise ValueError(f"등급은 1~9 사이여야 합니다: {grade_rank}")
+        grade_rank = parse_int(grade_rank_raw, '상대등급')
+        # 2022 교육과정 고1·고2: 1~5등급 / 2015 교육과정: 1~9등급
+        if subject and subject.curriculum_year == 2022:
+            if not (1 <= grade_rank <= 5):
+                raise ValueError(f"2022 과정 상대등급은 1~5 사이여야 합니다: {grade_rank}")
+        else:
+            if not (1 <= grade_rank <= 9):
+                raise ValueError(f"등급은 1~9 사이여야 합니다: {grade_rank}")
 
     # Grade 객체 생성
     grade_obj = Grade(
@@ -1219,16 +1225,16 @@ def download_grade_template(request, template_type):
         ]
     elif template_type == 'internal_2022':
         base_filename = 'internal_grade_template_2022'
-        headers = ['학년', '학기', '과목코드', '과목명', '단위수', '점수', '성취도', '석차', '동석차수', '수강자수', '백분위', '상대등급']
+        headers = ['학년', '학기', '교과', '과목', '단위수', '점수', '성취도', '석차', '동석차수', '수강자수', '백분위', '상대등급']
         sample_data = [
-            # 공통과목/일반선택: 상대등급 입력, 성취도 비워둠
-            [1, 1, '010001', '공통국어1', 4, 85, '', 5, 2, 200, 97.5, 2],
-            [1, 1, '020001', '공통수학1', 4, 92, '', 3, 1, 200, 98.5, 1],
-            [1, 1, '030001', '영어1', 4, 88, '', 8, 3, 200, 96.0, 2],
-            [1, 1, '021101', '대수', 4, 90, '', 6, 2, 180, 96.7, 1],
+            # 공통과목/일반선택: 상대등급(1~5) 입력, 성취도 비워둠
+            [1, 1, '국어', '공통국어1', 4, 85, '', 5, 2, 200, 97.5, 2],
+            [1, 1, '수학', '공통수학1', 4, 92, '', 3, 1, 200, 98.5, 1],
+            [1, 1, '영어', '영어1', 4, 88, '', 8, 3, 200, 96.0, 2],
+            [1, 1, '수학', '대수', 4, 90, '', 6, 2, 180, 96.7, 1],
             # 진로선택: 성취도(A/B/C) 입력, 상대등급 비워둠
-            [1, 1, '052201', '역학과 에너지', 2, 78, 'A', 12, 5, 120, 90.0, ''],
-            [1, 1, '042201', '한국지리 탐구', 2, 82, 'B', 15, 4, 130, 88.5, ''],
+            [1, 1, '과학', '역학과 에너지', 2, 78, 'A', 12, 5, 120, 90.0, ''],
+            [1, 1, '사회', '한국지리 탐구', 2, 82, 'B', 15, 4, 130, 88.5, ''],
         ]
     elif template_type == 'internal':
         base_filename = 'internal_grade_template'
