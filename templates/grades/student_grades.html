@@ -693,6 +693,207 @@
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+{% if is_middle %}
+<!-- ══ 중학생 성적 분포 분석 ══ -->
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="flex items-center gap-2 mb-1">
+        <h3 class="text-lg font-bold text-gray-800">📊 성적 분포 분석</h3>
+        <span class="text-xs text-gray-400 font-normal">(정규분포 가정)</span>
+    </div>
+    <p class="text-xs text-gray-500 mb-5">원점수·평균·표준편차로 학생의 상대적 위치를 추정합니다. 평균·표준편차가 없는 과목은 제외됩니다.</p>
+
+    <div id="dist-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+    <p id="dist-empty" class="text-gray-400 text-sm text-center py-6 hidden">분석 가능한 성적 데이터가 없습니다. (평균·표준편차 입력 필요)</p>
+</div>
+
+{{ middle_grades_json|json_script:"middle-grades-data" }}
+<script>
+(function() {
+    const grades = JSON.parse(document.getElementById('middle-grades-data').textContent);
+    const container = document.getElementById('dist-cards');
+    const emptyMsg = document.getElementById('dist-empty');
+
+    if (!grades.length) { emptyMsg.classList.remove('hidden'); return; }
+
+    // ── 정규분포 함수 ──────────────────────────────
+    function normalPDF(x, mu, sigma) {
+        return Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2)) / (sigma * Math.sqrt(2 * Math.PI));
+    }
+    function normalCDF(z) {
+        // Abramowitz & Stegun 근사 (오차 < 1.5e-7)
+        const a = [0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429];
+        const p = 0.3275911;
+        const sign = z < 0 ? -1 : 1;
+        const t = 1 / (1 + p * Math.abs(z));
+        let poly = 0;
+        for (let i = 4; i >= 0; i--) poly = a[i] + t * poly;
+        const y = 1 - poly * t * Math.exp(-z * z);
+        return 0.5 * (1 + sign * y);
+    }
+
+    // ── 카드 색상 ──────────────────────────────────
+    function percentileColor(pct) {
+        if (pct <= 10) return { text: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200' };
+        if (pct <= 20) return { text: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-blue-200' };
+        if (pct <= 35) return { text: 'text-cyan-600',   bg: 'bg-cyan-50',   border: 'border-cyan-200' };
+        if (pct <= 50) return { text: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-200' };
+        if (pct <= 65) return { text: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200' };
+        if (pct <= 80) return { text: 'text-orange-500', bg: 'bg-orange-50', border: 'border-orange-200' };
+        return                { text: 'text-red-500',    bg: 'bg-red-50',    border: 'border-red-200' };
+    }
+
+    // ── 차트 생성 ──────────────────────────────────
+    function buildChart(canvasId, g, upperPct) {
+        const mu = g.average, sigma = g.stddev, score = g.score;
+        const xMin = mu - 4 * sigma, xMax = mu + 4 * sigma;
+        const N = 300;
+        const step = (xMax - xMin) / N;
+
+        const fullCurve = [], belowFill = [], aboveFill = [];
+        for (let i = 0; i <= N; i++) {
+            const x = xMin + i * step;
+            const y = normalPDF(x, mu, sigma);
+            fullCurve.push({ x, y });
+            belowFill.push({ x, y: x <= score ? y : 0 });
+            aboveFill.push({ x, y: x >= score ? y : 0 });
+        }
+
+        const verticalPlugin = {
+            id: 'vertLine',
+            afterDraw(chart) {
+                const xScale = chart.scales.x;
+                const yScale = chart.scales.y;
+                const xPx = xScale.getPixelForValue(score);
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(xPx, yScale.top);
+                ctx.lineTo(xPx, yScale.bottom);
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 3]);
+                ctx.stroke();
+                // 점수 라벨
+                ctx.fillStyle = '#ef4444';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.setLineDash([]);
+                ctx.fillText(score, xPx, yScale.top - 4);
+                ctx.restore();
+            }
+        };
+
+        new Chart(document.getElementById(canvasId), {
+            type: 'line',
+            data: {
+                datasets: [
+                    {
+                        data: belowFill,
+                        borderColor: 'transparent',
+                        backgroundColor: 'rgba(148,163,184,0.35)',
+                        fill: 'origin',
+                        pointRadius: 0,
+                        tension: 0.4,
+                    },
+                    {
+                        data: aboveFill,
+                        borderColor: 'transparent',
+                        backgroundColor: 'rgba(99,102,241,0.4)',
+                        fill: 'origin',
+                        pointRadius: 0,
+                        tension: 0.4,
+                    },
+                    {
+                        data: fullCurve,
+                        borderColor: '#6b7280',
+                        borderWidth: 1.5,
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.4,
+                    },
+                ]
+            },
+            options: {
+                parsing: false,
+                animation: false,
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        min: xMin, max: xMax,
+                        ticks: { maxTicksLimit: 5, font: { size: 9 },
+                            callback: v => v.toFixed(0) },
+                        grid: { display: false },
+                    },
+                    y: { display: false, beginAtZero: true }
+                }
+            },
+            plugins: [verticalPlugin]
+        });
+    }
+
+    // ── 카드 렌더링 ────────────────────────────────
+    grades.forEach((g, idx) => {
+        const z = (g.score - g.average) / g.stddev;
+        const upperPct = (1 - normalCDF(z)) * 100;      // 상위 %
+        const lowerPct = normalCDF(z) * 100;             // 하위누적 %
+        const estRank = g.enrolled ? Math.max(1, Math.round(upperPct / 100 * g.enrolled)) : null;
+        const c = percentileColor(upperPct);
+        const canvasId = `dist-chart-${idx}`;
+
+        const rankHtml = estRank && g.enrolled
+            ? `<span class="text-xs text-gray-500">약 <span class="font-semibold text-gray-700">${estRank}등</span> / ${g.enrolled}명 중</span>`
+            : '';
+        const achHtml = g.achievement
+            ? `<span class="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">성취도 ${g.achievement}</span>`
+            : '';
+
+        const card = document.createElement('div');
+        card.className = `rounded-xl border ${c.border} ${c.bg} p-4 flex flex-col gap-3`;
+        card.innerHTML = `
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="font-bold text-gray-800 text-sm">${g.subject}</p>
+                    <p class="text-xs text-gray-400">${g.year}학년 ${g.semester}학기</p>
+                </div>
+                ${achHtml}
+            </div>
+            <div class="flex items-end gap-3">
+                <div>
+                    <p class="text-xs text-gray-500 mb-0.5">상위</p>
+                    <p class="text-3xl font-extrabold leading-none ${c.text}">${upperPct.toFixed(1)}<span class="text-lg font-bold">%</span></p>
+                </div>
+                <div class="mb-1">${rankHtml}</div>
+            </div>
+            <div class="grid grid-cols-4 gap-1 text-center text-xs">
+                <div class="bg-white rounded p-1.5">
+                    <p class="text-gray-400">원점수</p>
+                    <p class="font-semibold text-gray-800">${g.score}</p>
+                </div>
+                <div class="bg-white rounded p-1.5">
+                    <p class="text-gray-400">평균</p>
+                    <p class="font-semibold text-gray-800">${g.average}</p>
+                </div>
+                <div class="bg-white rounded p-1.5">
+                    <p class="text-gray-400">표준편차</p>
+                    <p class="font-semibold text-gray-800">${g.stddev}</p>
+                </div>
+                <div class="bg-white rounded p-1.5">
+                    <p class="text-gray-400">Z점수</p>
+                    <p class="font-semibold ${z >= 0 ? 'text-indigo-600' : 'text-red-500'}">${z.toFixed(2)}</p>
+                </div>
+            </div>
+            <canvas id="${canvasId}" height="90"></canvas>
+        `;
+        container.appendChild(card);
+        buildChart(canvasId, g, upperPct);
+    });
+})();
+</script>
+{% endif %}
+
 <script>
 function showGradeTab(type) {
     // 모든 탭 버튼 비활성화

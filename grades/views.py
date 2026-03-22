@@ -1006,6 +1006,24 @@ def student_grades(request, student_pk):
             )
         ).order_by('_math_first', 'subject_code'),
         'is_middle': student.grade in ['K7', 'K8', 'K9'],
+        'middle_grades_json': json.dumps([
+            {
+                'id': g.pk,
+                'subject': g.subject.name,
+                'year': g.year,
+                'semester': g.semester,
+                'score': float(g.score),
+                'average': float(g.subject_average),
+                'stddev': float(g.subject_stddev),
+                'enrolled': g.enrolled_count,
+                'achievement': g.achievement_level or '',
+            }
+            for g in internal_grades
+            if g.score is not None
+            and g.subject_average is not None
+            and g.subject_stddev is not None
+            and float(g.subject_stddev) > 0
+        ], ensure_ascii=False) if student.grade in ['K7', 'K8', 'K9'] else '[]',
     }
     return render(request, 'grades/student_grades.html', context)
 
