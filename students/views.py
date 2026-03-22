@@ -1420,10 +1420,13 @@ def parent_grade_import(request, student_pk):
                     error_message = 'CSV 또는 Excel 파일만 업로드 가능합니다.'
                     result = None
                 if result:
-                    if result.get('success_count', 0) > 0:
-                        success_message = f"{result['success_count']}개의 성적이 등록되었습니다."
-                    if result.get('error_count', 0) > 0:
-                        error_message = f"{result['error_count']}개 행에서 오류가 발생했습니다: {', '.join(result.get('errors', [])[:3])}"
+                    if result.get('created_count', 0) > 0:
+                        success_message = f"{result['created_count']}개의 성적이 등록되었습니다."
+                    row_errors = result.get('errors', [])
+                    if row_errors:
+                        error_message = f"{len(row_errors)}개 행에서 오류: {', '.join(row_errors[:3])}"
+                    if not result.get('success'):
+                        error_message = result.get('message', '처리 중 오류가 발생했습니다.')
             except Exception as e:
                 error_message = f'파일 처리 중 오류: {str(e)}'
 

@@ -236,7 +236,8 @@ def internal_grade_bulk_create(request, student_pk):
                         distribution_b=None,
                         distribution_c=None,
                     )
-                grade.full_clean()
+                if not is_middle:
+                    grade.full_clean()
                 grade.save()
                 created_count += 1
 
@@ -565,15 +566,24 @@ def create_grade_from_row(row, student, grade_type, row_num):
             raise ValueError(f"이미 등록된 성적입니다: {exam_year_val}년 {exam_month_val}월 {exam_name_val} {subject.name}")
 
     score = parse_decimal(get_value(row, '원점수', '점수', 'score'), '원점수')
-    subject_average = parse_decimal(get_value(row, '과목평균', '평균', '과목_평균', 'average', 'avg'), '과목평균')
+    subject_average_raw = get_value(row, '과목평균', '평균', '과목_평균', 'average', 'avg')
+    subject_average = parse_decimal(subject_average_raw, '과목평균') if subject_average_raw and str(subject_average_raw).strip() else None
+
+    # 등급 — 중학교 파일에는 없으므로 선택사항
+    grade_rank_raw = get_value(row, '등급', 'rank', 'grade_rank')
+    is_middle_format = not (grade_rank_raw and str(grade_rank_raw).strip())
 
     # 진로선택 과목일 경우 등급/표준편차 대신 성취도/분포비율
     if is_elective and grade_type == 'internal':
         subject_stddev = None
         grade_rank = None
+    elif is_middle_format:
+        # 중학교 형식: 등급 없음
+        subject_stddev = parse_decimal_optional(get_value(row, '표준편차', '표준_편차', 'stddev', 'std'))
+        grade_rank = None
     else:
         subject_stddev = parse_decimal(get_value(row, '표준편차', '표준_편차', 'stddev', 'std'), '표준편차')
-        grade_rank = parse_int(get_value(row, '등급', 'rank', 'grade_rank'), '등급')
+        grade_rank = parse_int(grade_rank_raw, '등급')
         if not (1 <= grade_rank <= 9):
             raise ValueError(f"등급은 1~9 사이여야 합니다: {grade_rank}")
 
@@ -592,17 +602,25 @@ def create_grade_from_row(row, student, grade_type, row_num):
     if grade_type == 'internal':
         # 내신 전용 필드
         semester = parse_int(get_value(row, '학기', 'semester'), '학기')
-        credits = parse_int(get_value(row, '단위', '이수단위', 'credits', 'unit'), '단위')
+        # 중학교 형식은 단위수 없음
+        credits_raw = get_value(row, '단위', '이수단위', 'credits', 'unit')
+        credits = parse_int(credits_raw, '단위') if (credits_raw and str(credits_raw).strip()) else None
 
         if semester not in [1, 2]:
             raise ValueError(f"학기는 1 또는 2여야 합니다: {semester}")
+
+        # 수강자수 (중학교 형식)
+        enrolled_raw = get_value(row, '수강자수', '수강자_수', 'enrolled', 'enrolled_count')
+        enrolled_count = int(float(str(enrolled_raw).strip())) if (enrolled_raw and str(enrolled_raw).strip()) else None
 
         grade_obj.semester = semester
         grade_obj.credits = credits
         grade_obj.subject_classification = subject_classification
         grade_obj.is_elective = is_elective
+        if enrolled_count is not None:
+            grade_obj.enrolled_count = enrolled_count
 
-        # 진로선택/융합선택 과목일 경우 성취도와 분포비율 파싱
+        # 성취도 파싱: 진로/융합선택은 A/B/C, 중학교 형식은 A~E
         if is_elective:
             achievement_level = str(get_value(row, '성취도', 'achievement', 'achievement_level') or '').strip().upper()
             if achievement_level not in ['A', 'B', 'C']:
@@ -623,6 +641,11 @@ def create_grade_from_row(row, student, grade_type, row_num):
             grade_obj.distribution_a = distribution_a
             grade_obj.distribution_b = distribution_b
             grade_obj.distribution_c = distribution_c
+        elif is_middle_format:
+            # 중학교 형식: 성취도 A~E (선택)
+            achievement_raw = str(get_value(row, '성취도', 'achievement', 'achievement_level') or '').strip().upper()
+            if achievement_raw and achievement_raw in ['A', 'B', 'C', 'D', 'E']:
+                grade_obj.achievement_level = achievement_raw
 
     else:  # mock
         # 모의고사 전용 필드
@@ -641,7 +664,8 @@ def create_grade_from_row(row, student, grade_type, row_num):
         grade_obj.exam_name = exam_name
         grade_obj.percentile = percentile
 
-    grade_obj.full_clean()
+    if not is_middle_format:
+        grade_obj.full_clean()
     grade_obj.save()
     return grade_obj
 
