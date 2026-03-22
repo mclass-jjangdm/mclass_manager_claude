@@ -72,20 +72,26 @@
             <div class="bg-orange-50 border border-orange-100 rounded-xl p-4 text-xs text-orange-700 space-y-2">
                 <p class="font-semibold mb-1">📋 파일 형식 안내</p>
                 {% if is_middle %}
-                <a href="{% url 'grades:download_grade_template' 'middle' %}"
-                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition-colors">
-                    ⬇ 샘플 파일 다운로드 (중학교 내신)
-                </a>
-                <p class="text-gray-500 mt-1">컬럼 순서: 학년, 학기, 과목명, 원점수, 과목평균, 표준편차, 수강자수, 성취도</p>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{% url 'grades:download_grade_template' 'middle' %}?format=xlsx"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition-colors">
+                        ⬇ 엑셀 샘플 (.xlsx)
+                    </a>
+                    <a href="{% url 'grades:download_grade_template' 'middle' %}?format=csv"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-400 text-white rounded-lg text-xs font-medium hover:bg-gray-500 transition-colors">
+                        ⬇ CSV 샘플
+                    </a>
+                </div>
+                <p class="text-gray-500 mt-1">컬럼: 학년, 학기, 과목명, 원점수, 과목평균, 표준편차, 수강자수, 성취도</p>
                 {% else %}
                 <div class="flex flex-wrap gap-2">
-                    <a href="{% url 'grades:download_grade_template' 'internal' %}"
+                    <a href="{% url 'grades:download_grade_template' 'internal' %}?format=xlsx"
                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition-colors">
-                        ⬇ 내신 샘플
+                        ⬇ 내신 엑셀 (.xlsx)
                     </a>
-                    <a href="{% url 'grades:download_grade_template' 'mock' %}"
+                    <a href="{% url 'grades:download_grade_template' 'mock' %}?format=xlsx"
                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-medium hover:bg-green-600 transition-colors">
-                        ⬇ 모의고사 샘플
+                        ⬇ 모의고사 엑셀 (.xlsx)
                     </a>
                 </div>
                 {% endif %}

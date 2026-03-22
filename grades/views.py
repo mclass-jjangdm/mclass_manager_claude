@@ -1130,47 +1130,74 @@ def download_grade_template(request, template_type):
     if not request.user.is_authenticated and not request.session.get('parent_student_id'):
         from django.shortcuts import redirect
         return redirect('login')
-    """성적 입력 템플릿 다운로드"""
+
+    fmt = request.GET.get('format', 'xlsx')  # 기본값 xlsx
 
     if template_type == 'middle':
-        # 중학교 내신 성적 템플릿
-        filename = 'middle_grade_template.csv'
+        base_filename = 'middle_grade_template'
         headers = ['학년', '학기', '과목명', '원점수', '과목평균', '표준편차', '수강자수', '성취도']
         sample_data = [
-            ['1', '1', '국어', '85.0', '72.0', '15.0', '150', 'B'],
-            ['1', '1', '수학', '92.0', '68.5', '18.0', '150', 'A'],
-            ['1', '1', '영어', '78.0', '71.0', '13.5', '150', 'B'],
-            ['1', '1', '과학', '88.0', '74.2', '12.0', '148', 'A'],
-            ['1', '1', '사회', '75.0', '70.5', '14.0', '150', 'C'],
+            [1, 1, '국어', 85.0, 72.0, 15.0, 150, 'B'],
+            [1, 1, '수학', 92.0, 68.5, 18.0, 150, 'A'],
+            [1, 1, '영어', 78.0, 71.0, 13.5, 150, 'B'],
+            [1, 1, '과학', 88.0, 74.2, 12.0, 148, 'A'],
+            [1, 1, '사회', 75.0, 70.5, 14.0, 150, 'C'],
         ]
     elif template_type == 'internal':
-        # 내신 성적 템플릿
-        filename = 'internal_grade_template.csv'
+        base_filename = 'internal_grade_template'
         headers = ['학년', '학기', '과목명', '단위', '원점수', '과목평균', '표준편차', '등급', '진로선택', '성취도', '분포비율A', '분포비율B', '분포비율C']
         sample_data = [
-            ['1', '1', '국어', '3', '85', '70.5', '12.3', '2', '', '', '', '', ''],
-            ['1', '1', '수학Ⅰ', '4', '92', '68.2', '15.1', '1', '', '', '', '', ''],
-            ['1', '1', '영어', '3', '88', '72.1', '11.5', '2', '', '', '', '', ''],
-            ['2', '1', '물리학Ⅱ', '3', '85', '72.3', '', '', '진로선택', 'A', '25.5', '45.2', '29.3'],
-            ['2', '1', '화학Ⅱ', '3', '78', '68.5', '', '', '진로선택', 'B', '20.1', '50.3', '29.6'],
+            [1, 1, '국어', 3, 85, 70.5, 12.3, 2, '', '', '', '', ''],
+            [1, 1, '수학Ⅰ', 4, 92, 68.2, 15.1, 1, '', '', '', '', ''],
+            [1, 1, '영어', 3, 88, 72.1, 11.5, 2, '', '', '', '', ''],
+            [2, 1, '물리학Ⅱ', 3, 85, 72.3, '', '', '진로선택', 'A', 25.5, 45.2, 29.3],
+            [2, 1, '화학Ⅱ', 3, 78, 68.5, '', '', '진로선택', 'B', 20.1, 50.3, 29.6],
         ]
     else:  # mock
-        # 모의고사 성적 템플릿
-        filename = 'mock_exam_template.csv'
+        base_filename = 'mock_exam_template'
         headers = ['학년', '시험연도', '시험월', '시험명', '과목명', '원점수', '과목평균', '표준편차', '등급', '백분위']
         sample_data = [
-            ['2', '2024', '3', '3월 학력평가', '국어', '85', '70.5', '12.3', '2', '88'],
-            ['2', '2024', '3', '3월 학력평가', '수학', '92', '68.2', '15.1', '1', '95'],
-            ['2', '2024', '6', '6월 모의평가', '국어', '82', '68.1', '11.8', '2', '85'],
+            [2, 2024, 3, '3월 학력평가', '국어', 85, 70.5, 12.3, 2, 88],
+            [2, 2024, 3, '3월 학력평가', '수학', 92, 68.2, 15.1, 1, 95],
+            [2, 2024, 6, '6월 모의평가', '국어', 82, 68.1, 11.8, 2, 85],
         ]
 
-    # CSV 응답 생성
+    if fmt == 'xlsx':
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = '성적 입력'
+
+        # 헤더 행 스타일
+        header_fill = PatternFill(start_color='4F46E5', end_color='4F46E5', fill_type='solid')
+        header_font = Font(color='FFFFFF', bold=True)
+        for col, h in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=h)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal='center')
+            ws.column_dimensions[cell.column_letter].width = max(len(h) * 2.5, 12)
+
+        # 데이터 행
+        for row in sample_data:
+            ws.append(row)
+
+        import io
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{base_filename}.xlsx"'
+        return response
+
+    # CSV 응답
     response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-
-    # UTF-8 BOM 추가 (Excel에서 한글 깨짐 방지)
+    response['Content-Disposition'] = f'attachment; filename="{base_filename}.csv"'
     response.write('\ufeff')
-
     writer = csv.writer(response)
     writer.writerow(headers)
     for row in sample_data:
