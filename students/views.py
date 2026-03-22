@@ -1185,6 +1185,7 @@ def parent_grades(request, student_pk):
         'overall_segments_json': overall_segments_json,
         'achievement_meta': ACHIEVEMENT_META,
         'grade_rank_colors': GRADE_RANK_COLORS,
+        'is_middle': student.grade in ['K7', 'K8', 'K9'],
     }
     return render(request, 'students/parent_grades.html', context)
 
