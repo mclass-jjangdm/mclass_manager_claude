@@ -255,7 +255,7 @@
                    class="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-4 py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
                     📋 한 학기 일괄 입력
                 </a>
-                {% if student.grade not in 'K7,K8,K9'.split(',') %}
+                {% if student.grade != 'K7' and student.grade != 'K8' and student.grade != 'K9' %}
                 <a href="{% url 'parent_mock_grade_create' student.pk %}"
                    class="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
                     📄 모의고사 성적 입력
