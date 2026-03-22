@@ -167,8 +167,8 @@ function addRow() {
             </div>
         </div>
 
-        <!-- 수강자수 / 성취도 / 단위수 -->
-        <div class="grid grid-cols-3 gap-2">
+        <!-- 수강자수 / 성취도 -->
+        <div class="grid grid-cols-2 gap-2">
             <div>
                 <label class="block text-xs text-gray-500 mb-1">수강자수</label>
                 <input type="number" name="grades[${idx}][enrolled_count]" placeholder="150"
@@ -186,12 +186,6 @@ function addRow() {
                     <option value="D">D</option>
                     <option value="E">E</option>
                 </select>
-            </div>
-            <div>
-                <label class="block text-xs text-gray-500 mb-1">단위수</label>
-                <input type="number" name="grades[${idx}][credits]" placeholder="3"
-                       min="1" step="1"
-                       class="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm text-center focus:ring-2 focus:ring-green-400 focus:outline-none">
             </div>
         </div>
     `;
