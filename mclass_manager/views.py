@@ -41,8 +41,9 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             from students.models import Student
-            from teachers.models import Teacher, TeacherStudentAssignment, TeacherUnavailability, Attendance
+            from teachers.models import Teacher, TeacherStudentAssignment, TeacherUnavailability, Attendance, Salary
             from bookstore.models import StudentBookProgress, Book, BookStockLog
+            from maintenance.models import Maintenance
 
             today = timezone.now().date()
             this_month = today.replace(day=1)
@@ -93,6 +94,19 @@ class IndexView(TemplateView):
             # 오늘 출근 교사 수
             today_present = Attendance.objects.filter(date=today, is_present=True).count()
 
+            # 이번 달 정산 - 지출
+            month_maint = Maintenance.objects.filter(
+                date__year=today.year,
+                date__month=today.month,
+            )
+            month_rent = month_maint.aggregate(s=Sum('rent'))['s'] or 0
+            month_charge = month_maint.aggregate(s=Sum('charge'))['s'] or 0
+            month_salary = Salary.objects.filter(
+                year=today.year,
+                month=today.month,
+            ).aggregate(s=Sum('total_amount'))['s'] or 0
+            total_expense = month_rent + month_charge + month_salary + month_inbound_payment
+
             context.update({
                 'grade_stats': grade_stats,
                 'total_students': total_students,
@@ -107,6 +121,10 @@ class IndexView(TemplateView):
                 'low_stock_count': low_stock_count,
                 'unpaid_student_count': unpaid_student_count,
                 'today_present': today_present,
+                'month_rent': month_rent,
+                'month_charge': month_charge,
+                'month_salary': month_salary,
+                'total_expense': total_expense,
             })
 
         return context
