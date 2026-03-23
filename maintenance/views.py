@@ -1,9 +1,9 @@
-from django.views.generic import ListView, FormView
+from django.views.generic import ListView, FormView, CreateView
 from django.views.generic.base import TemplateView
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.urls import reverse_lazy
 from django.contrib.messages import add_message, SUCCESS
-from maintenance.forms import MaintenanceForm, MaintenanceUpdateForm
+from maintenance.forms import MaintenanceForm, MaintenanceUpdateForm, RoomForm
 from .models import Maintenance, Room
 from django.utils import timezone
 import json
@@ -27,8 +27,15 @@ class MaintenanceCreateView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         date = form.cleaned_data['date']
         created_count = 0
-        
-        for room in Room.objects.all().order_by('number'):
+
+        # 선택된 부과년월에 계약이 유효한 호실만 처리
+        valid_rooms = Room.objects.filter(
+            contract_start_date__lte=date
+        ).filter(
+            Q(contract_end_date__isnull=True) | Q(contract_end_date__gte=date)
+        ).order_by('number')
+
+        for room in valid_rooms:
             charge = form.cleaned_data.get(f'charge_{room.id}')
             if charge:  # 금액이 입력된 경우에만 생성
                 Maintenance.objects.create(
@@ -158,4 +165,37 @@ class MaintenanceUpdateView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         messages.add_message(self.request, messages.SUCCESS, '관리비 정보가 수정되었습니다.')
+        return super().form_valid(form)
+
+
+class RoomListView(LoginRequiredMixin, ListView):
+    model = Room
+    template_name = 'maintenance/room_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_rooms'] = Room.objects.filter(is_active=True).order_by('number')
+        context['inactive_rooms'] = Room.objects.filter(is_active=False).order_by('number')
+        return context
+
+
+class RoomCreateView(LoginRequiredMixin, CreateView):
+    model = Room
+    form_class = RoomForm
+    template_name = 'maintenance/room_form.html'
+    success_url = reverse_lazy('maintenance:room_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, f'{form.instance.number}호가 추가되었습니다.')
+        return super().form_valid(form)
+
+
+class RoomUpdateView(LoginRequiredMixin, UpdateView):
+    model = Room
+    form_class = RoomForm
+    template_name = 'maintenance/room_form.html'
+    success_url = reverse_lazy('maintenance:room_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, f'{form.instance.number}호 정보가 수정되었습니다.')
         return super().form_valid(form)

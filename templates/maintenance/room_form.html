@@ -1,0 +1,93 @@
+{% extends "maintenance/base_maintenance.html" %}
+
+{% block title %}{% if object %}호실 수정{% else %}호실 추가{% endif %} - MClass Manager{% endblock %}
+
+{% block maintenance_content %}
+<div class="content-card max-w-lg mx-auto">
+    <div class="card-header">
+        <h1 class="text-xl font-semibold text-gray-900">
+            {% if object %}{{ object.number }}호 수정{% else %}호실 추가{% endif %}
+        </h1>
+    </div>
+
+    <div class="card-body">
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            <!-- 호실 번호 -->
+            <div>
+                <label class="form-label">호실 번호</label>
+                <input type="number"
+                       name="number"
+                       value="{{ form.number.value|default:'' }}"
+                       class="form-input w-full"
+                       min="1"
+                       placeholder="예: 101"
+                       {% if object %}readonly{% endif %}>
+                {% if form.number.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.number.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 계약 시작일 -->
+            <div>
+                <label class="form-label">계약 시작일</label>
+                <input type="text"
+                       name="contract_start_date"
+                       value="{{ form.contract_start_date.value|default:'' }}"
+                       class="form-input w-full mclass-datepicker"
+                       readonly
+                       placeholder="YYYY-MM-DD">
+                {% if form.contract_start_date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.contract_start_date.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 계약 종료일 -->
+            <div>
+                <label class="form-label">
+                    계약 종료일
+                    <span class="text-gray-400 font-normal text-xs ml-1">(계약이 계속되면 비워두세요)</span>
+                </label>
+                <input type="text"
+                       name="contract_end_date"
+                       value="{{ form.contract_end_date.value|default:'' }}"
+                       class="form-input w-full mclass-datepicker"
+                       readonly
+                       placeholder="YYYY-MM-DD">
+                {% if form.contract_end_date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.contract_end_date.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- 계약 활성 상태 -->
+            <div class="flex items-center gap-3">
+                <input type="checkbox"
+                       name="is_active"
+                       id="is_active"
+                       class="w-4 h-4 text-indigo-600 rounded"
+                       {% if form.is_active.value %}checked{% endif %}>
+                <label for="is_active" class="form-label mb-0 cursor-pointer">
+                    계약 활성 상태
+                    <span class="text-gray-400 font-normal text-xs ml-1">(계약이 종료되면 체크 해제)</span>
+                </label>
+            </div>
+            {% if form.is_active.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.is_active.errors.0 }}</p>
+            {% endif %}
+
+            <!-- 버튼 -->
+            <div class="flex gap-3 pt-4">
+                <a href="{% url 'maintenance:room_list' %}"
+                   class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                    취소
+                </a>
+                <button type="submit"
+                        class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    {% if object %}수정하기{% else %}추가하기{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

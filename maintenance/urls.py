@@ -9,4 +9,7 @@ urlpatterns = [
     path('monthly/', views.MonthlyReportView.as_view(), name='monthly_report'),
     path('yearly/', views.YearlyReportView.as_view(), name='yearly_report'),
     path('edit/<int:pk>/', views.MaintenanceUpdateView.as_view(), name='maintenance_edit'),
+    path('rooms/', views.RoomListView.as_view(), name='room_list'),
+    path('rooms/add/', views.RoomCreateView.as_view(), name='room_add'),
+    path('rooms/<int:pk>/edit/', views.RoomUpdateView.as_view(), name='room_edit'),
 ]

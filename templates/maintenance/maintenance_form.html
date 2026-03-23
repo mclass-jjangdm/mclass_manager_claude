@@ -8,11 +8,11 @@
     <div class="card-header">
         <h1 class="text-xl font-semibold text-gray-900">관리비 등록</h1>
     </div>
-    
+
     <div class="card-body">
         <form method="post" class="space-y-6">
             {% csrf_token %}
-            
+
             <!-- 공통 부과년월 -->
             <div class="max-w-sm">
                 <label class="form-label">부과년월</label>
@@ -37,11 +37,13 @@
                     </thead>
                     <tbody>
                         {% for room in rooms %}
-                        <tr class="hover:bg-gray-50">
+                        <tr class="room-row hover:bg-gray-50"
+                            data-start="{{ room.contract_start_date|date:'Y-m-d' }}"
+                            data-end="{{ room.contract_end_date|date:'Y-m-d'|default:'' }}">
                             <td class="text-center font-medium">{{ room.number }}</td>
                             <td class="p-2">
-                                <input type="number" 
-                                       name="charge_{{ room.id }}" 
+                                <input type="number"
+                                       name="charge_{{ room.id }}"
                                        class="form-input w-full text-right"
                                        min="0"
                                        placeholder="금액 입력">
@@ -53,8 +55,8 @@
                                        readonly>
                             </td>
                             <td class="p-2">
-                                <input type="text" 
-                                       name="memo_{{ room.id }}" 
+                                <input type="text"
+                                       name="memo_{{ room.id }}"
                                        class="form-input w-full"
                                        placeholder="메모 입력">
                             </td>
@@ -106,5 +108,41 @@
         }
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterRoomsByMonth(yearMonth) {
+    if (!yearMonth) return;
+    const parts = yearMonth.split('-');
+    if (parts.length < 2) return;
+    const year = parseInt(parts[0]);
+    const month = parseInt(parts[1]);
+    const target = new Date(year, month - 1, 1);
+
+    document.querySelectorAll('tr.room-row').forEach(function(row) {
+        const start = new Date(row.dataset.start);
+        const endStr = row.dataset.end;
+        const end = endStr ? new Date(endStr) : null;
+        const visible = target >= start && (end === null || target <= end);
+        row.style.display = visible ? '' : 'none';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 오늘 날짜 기준으로 초기 필터링
+    const today = new Date();
+    const currentYearMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+    filterRoomsByMonth(currentYearMonth);
+
+    // monthpicker onChange 콜백 연결
+    const monthPickerEl = document.querySelector('.mclass-monthpicker');
+    if (monthPickerEl && monthPickerEl._flatpickr) {
+        monthPickerEl._flatpickr.set('onChange', function(selectedDates, dateStr) {
+            filterRoomsByMonth(dateStr);
+        });
+    }
+});
+</script>
 {% endblock %}
 {% endblock %}

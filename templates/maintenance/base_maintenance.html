@@ -14,9 +14,13 @@
                    class="nav-link {% if request.resolver_match.url_name == 'monthly_report' %}active{% endif %}">
                     월별 내역
                 </a>
-                <a href="{% url 'maintenance:yearly_report' %}" 
+                <a href="{% url 'maintenance:yearly_report' %}"
                    class="nav-link {% if request.resolver_match.url_name == 'yearly_report' %}active{% endif %}">
                     연도별 내역
+                </a>
+                <a href="{% url 'maintenance:room_list' %}"
+                   class="nav-link {% if 'room' in request.resolver_match.url_name %}active{% endif %}">
+                    호실 관리
                 </a>
             </nav>
         </div>

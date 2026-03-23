@@ -1,0 +1,132 @@
+{% extends "maintenance/base_maintenance.html" %}
+
+{% block title %}호실 관리 - MClass Manager{% endblock %}
+
+{% block maintenance_content %}
+<div class="content-card">
+    <div class="card-header flex items-center justify-between">
+        <h1 class="text-xl font-semibold text-gray-900">호실 관리</h1>
+        <a href="{% url 'maintenance:room_add' %}"
+           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+            + 호실 추가
+        </a>
+    </div>
+
+    <div class="card-body space-y-6">
+
+        <!-- 활성 호실 -->
+        <div>
+            <h2 class="text-base font-semibold text-gray-700 mb-3">계약 중인 호실</h2>
+            {% if active_rooms %}
+            <div class="overflow-x-auto">
+                <table class="content-table min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="text-center w-20">호실</th>
+                            <th class="text-center">계약 시작일</th>
+                            <th class="text-center">계약 종료일</th>
+                            <th class="text-center w-20">상태</th>
+                            <th class="text-center w-24"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for room in active_rooms %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="text-center font-medium">{{ room.number }}호</td>
+                            <td class="text-center">{{ room.contract_start_date|date:"Y-m-d" }}</td>
+                            <td class="text-center text-gray-500">
+                                {% if room.contract_end_date %}
+                                    {{ room.contract_end_date|date:"Y-m-d" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    계약 중
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'maintenance:room_edit' room.pk %}"
+                                   class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    수정
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-sm py-4 text-center">계약 중인 호실이 없습니다.</p>
+            {% endif %}
+        </div>
+
+        <!-- 비활성 호실 (기본 접힘) -->
+        {% if inactive_rooms %}
+        <div>
+            <button type="button" onclick="toggleInactive()"
+                    class="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                <span class="text-base font-semibold text-gray-500">
+                    계약 종료된 호실 ({{ inactive_rooms|length }}개)
+                </span>
+                <svg id="inactive-chevron" class="w-5 h-5 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div id="inactive-section" class="hidden mt-2">
+                <div class="overflow-x-auto">
+                    <table class="content-table min-w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="text-center w-20">호실</th>
+                                <th class="text-center">계약 시작일</th>
+                                <th class="text-center">계약 종료일</th>
+                                <th class="text-center w-20">상태</th>
+                                <th class="text-center w-24"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for room in inactive_rooms %}
+                            <tr class="hover:bg-gray-50 opacity-60">
+                                <td class="text-center font-medium">{{ room.number }}호</td>
+                                <td class="text-center">{{ room.contract_start_date|date:"Y-m-d" }}</td>
+                                <td class="text-center">
+                                    {% if room.contract_end_date %}
+                                        {{ room.contract_end_date|date:"Y-m-d" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                                        종료
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'maintenance:room_edit' room.pk %}"
+                                       class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                        수정
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function toggleInactive() {
+    document.getElementById('inactive-section').classList.toggle('hidden');
+    document.getElementById('inactive-chevron').classList.toggle('rotate-180');
+}
+</script>
+{% endblock %}
+{% endblock %}
