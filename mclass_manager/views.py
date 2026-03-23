@@ -101,10 +101,22 @@ class IndexView(TemplateView):
             )
             month_rent = month_maint.aggregate(s=Sum('rent'))['s'] or 0
             month_charge = month_maint.aggregate(s=Sum('charge'))['s'] or 0
-            month_salary = Salary.objects.filter(
-                year=today.year,
-                month=today.month,
-            ).aggregate(s=Sum('total_amount'))['s'] or 0
+
+            # 교사 급여: SalaryCalculationView 실시간 계산 (추가급여 미입력분은 0으로 처리)
+            from teachers.views import SalaryCalculationView
+            salary_view = SalaryCalculationView()
+            active_teachers_month = salary_view.get_active_teachers_for_month(today.year, today.month)
+            month_salary = 0
+            for teacher in active_teachers_month:
+                work_hours, _ = salary_view.calculate_work_hours(teacher, today.year, today.month)
+                base_amount = int(work_hours * teacher.base_salary)
+                try:
+                    existing = Salary.objects.get(teacher=teacher, year=today.year, month=today.month)
+                    additional = existing.additional_amount
+                except Salary.DoesNotExist:
+                    additional = 0
+                month_salary += base_amount + additional
+
             total_expense = month_rent + month_charge + month_salary + month_inbound_payment
 
             context.update({
