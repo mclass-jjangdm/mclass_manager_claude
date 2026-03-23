@@ -28,43 +28,79 @@
 
         <div class="card-body">
             <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">호실</th>
-                        {% for month in months %}
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{{ month }}월</th>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">호실</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase">항목</th>
+                            {% for month in months %}
+                                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">{{ month }}월</th>
+                            {% endfor %}
+                            <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">합계</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        {% for row in yearly_data %}
+                        <!-- 관리비 행 -->
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-2 whitespace-nowrap font-medium" rowspan="2">{{ row.room }}호</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">관리비</td>
+                            {% for charge in row.monthly_charges %}
+                                <td class="px-3 py-2 text-right whitespace-nowrap text-sm">
+                                    {% if charge %}{{ charge|intcomma }}{% else %}-{% endif %}
+                                </td>
+                            {% endfor %}
+                            <td class="px-3 py-2 text-right font-medium bg-gray-50">{{ row.charge_total|intcomma }}</td>
+                        </tr>
+                        <!-- 임차료 행 -->
+                        <tr class="hover:bg-indigo-50 border-b border-gray-200">
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-indigo-600">임차료</td>
+                            {% for rent in row.monthly_rents %}
+                                <td class="px-3 py-2 text-right whitespace-nowrap text-sm text-indigo-700">
+                                    {% if rent %}{{ rent|intcomma }}{% else %}-{% endif %}
+                                </td>
+                            {% endfor %}
+                            <td class="px-3 py-2 text-right font-medium text-indigo-700 bg-indigo-50">{{ row.rent_total|intcomma }}</td>
+                        </tr>
                         {% endfor %}
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">총합</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for row in yearly_data %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">{{ row.room }}</td>
-                        {% for charge in row.monthly_charges %}
-                            <td class="px-6 py-4 text-right whitespace-nowrap">{{ charge|intcomma }}</td>
-                        {% endfor %}
-                        <td class="px-6 py-4 text-right font-medium bg-gray-50">{{ row.total|intcomma }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr class="bg-indigo-50 font-semibold">
-                        <td class="px-6 py-3 text-center">월별</td>
-                        {% for total in monthly_totals %}
-                            <td class="px-6 py-3 text-right">{{ total|intcomma }}</td>
-                        {% endfor %}
-                        <td class="px-6 py-3 text-right bg-indigo-100">{{ grand_total|intcomma }}</td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </tbody>
+                    <tfoot>
+                        <!-- 관리비 합계 행 -->
+                        <tr class="bg-gray-100 font-semibold">
+                            <td class="px-3 py-3 text-center" rowspan="3">합계</td>
+                            <td class="px-3 py-3 text-xs text-gray-500">관리비</td>
+                            {% for t in monthly_totals %}
+                                <td class="px-3 py-3 text-right">{{ t|intcomma }}</td>
+                            {% endfor %}
+                            <td class="px-3 py-3 text-right bg-gray-200">{{ total_charge|intcomma }}</td>
+                        </tr>
+                        <!-- 임차료 합계 행 -->
+                        <tr class="bg-indigo-50 font-semibold">
+                            <td class="px-3 py-3 text-xs text-indigo-600">임차료</td>
+                            {% for t in monthly_rent_totals %}
+                                <td class="px-3 py-3 text-right text-indigo-700">{{ t|intcomma }}</td>
+                            {% endfor %}
+                            <td class="px-3 py-3 text-right text-indigo-700 bg-indigo-100">{{ total_rent|intcomma }}</td>
+                        </tr>
+                        <!-- 총합 행 -->
+                        <tr class="bg-indigo-100 font-bold">
+                            <td class="px-3 py-3 text-xs text-indigo-800">총합</td>
+                            {% for t in monthly_grand_totals %}
+                                <td class="px-3 py-3 text-right text-indigo-900">{{ t|intcomma }}</td>
+                            {% endfor %}
+                            <td class="px-3 py-3 text-right text-indigo-900 bg-indigo-200">{{ grand_total|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- 그래프 -->
+    <!-- 그래프 (관리비 기준) -->
     <div class="content-card">
+        <div class="card-header">
+            <h2 class="text-base font-semibold text-gray-700">월별 관리비 추이</h2>
+        </div>
         <div class="card-body">
             <div style="width: 100%; aspect-ratio: 16 / 9;">
                 <canvas id="monthlyChart"></canvas>
@@ -81,7 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var labels = Array.from({length: 12}, (_, i) => `${i + 1}월`);
 
-    // Predefined colors for better distinction
     var colors = [
         'rgba(75, 192, 192, 1)',
         'rgba(54, 162, 235, 1)',
@@ -105,30 +140,17 @@ document.addEventListener('DOMContentLoaded', function() {
         tension: 0.1
     }));
 
-    var chart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: labels,
-            datasets: datasets
-        },
+        data: { labels: labels, datasets: datasets },
         options: {
             responsive: true,
             plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: '월별 관리비 현황'
-                }
+                legend: { position: 'top' },
+                title: { display: true, text: '월별 관리비 현황' }
             },
             scales: {
-                x: {
-                    ticks: {
-                        maxRotation: 0,
-                        minRotation: 0
-                    }
-                }
+                x: { ticks: { maxRotation: 0, minRotation: 0 } }
             }
         }
     });
@@ -136,9 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-    table th, table td {
-        font-size: 0.75rem; /* 글자 크기를 더 줄임 */
-        padding: 0.5rem; /* 패딩을 줄임 */
-    }
+    table th, table td { font-size: 0.75rem; padding: 0.5rem; }
 </style>
 {% endblock %}

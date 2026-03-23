@@ -37,11 +37,13 @@ class MaintenanceCreateView(LoginRequiredMixin, FormView):
 
         for room in valid_rooms:
             charge = form.cleaned_data.get(f'charge_{room.id}')
-            if charge:  # 금액이 입력된 경우에만 생성
+            rent = form.cleaned_data.get(f'rent_{room.id}')
+            if charge or rent:  # 관리비 또는 임차료가 입력된 경우에만 생성
                 Maintenance.objects.create(
                     room=room,
                     date=date,
-                    charge=charge,
+                    charge=charge or 0,
+                    rent=rent or 0,
                     date_paid=form.cleaned_data.get(f'date_paid_{room.id}'),
                     memo=form.cleaned_data.get(f'memo_{room.id}', '')
                 )
@@ -85,12 +87,17 @@ class MonthlyReportView(LoginRequiredMixin, ListView):
         
         queryset = self.get_queryset()
         
+        totals = queryset.aggregate(
+            total_charge=Sum('charge'),
+            total_rent=Sum('rent')
+        )
         context.update({
-            'available_years': available_years,  # year_range 대신 available_years 사용
+            'available_years': available_years,
             'months': months,
             'selected_year': selected_year,
             'selected_month': selected_month,
-            'total_charge': queryset.aggregate(Sum('charge'))['charge__sum'] or 0
+            'total_charge': totals['total_charge'] or 0,
+            'total_rent': totals['total_rent'] or 0,
         })
         return context
     
@@ -114,32 +121,47 @@ class YearlyReportView(LoginRequiredMixin, TemplateView):
 
         yearly_data = []
         total_charge = 0
+        total_rent = 0
         monthly_totals = [0] * 12
+        monthly_rent_totals = [0] * 12
 
         for room in active_rooms:
             monthly_charges = []
-            room_total = 0
-            
+            monthly_rents = []
+            room_charge_total = 0
+            room_rent_total = 0
+
             for month in range(1, 13):
-                charge = Maintenance.objects.filter(
+                agg = Maintenance.objects.filter(
                     room=room,
                     date__year=selected_year,
                     date__month=month
-                ).aggregate(Sum('charge'))['charge__sum'] or 0
-                
+                ).aggregate(c=Sum('charge'), r=Sum('rent'))
+                charge = agg['c'] or 0
+                rent = agg['r'] or 0
+
                 monthly_charges.append(charge)
-                room_total += charge
+                monthly_rents.append(rent)
+                room_charge_total += charge
+                room_rent_total += rent
                 monthly_totals[month-1] += charge
-            
+                monthly_rent_totals[month-1] += rent
+
             yearly_data.append({
                 'room': room.number,
                 'monthly_charges': monthly_charges,
-                'total': room_total
+                'monthly_rents': monthly_rents,
+                'charge_total': room_charge_total,
+                'rent_total': room_rent_total,
+                'total': room_charge_total + room_rent_total,
             })
-            total_charge += room_total
+            total_charge += room_charge_total
+            total_rent += room_rent_total
 
-        # JSON 직렬화를 위한 데이터 준비
+        # JSON 직렬화를 위한 데이터 준비 (차트용: 관리비만)
         yearly_data_json = json.dumps(yearly_data, cls=DjangoJSONEncoder)
+
+        monthly_grand_totals = [monthly_totals[i] + monthly_rent_totals[i] for i in range(12)]
 
         context.update({
             'year': selected_year,
@@ -147,10 +169,13 @@ class YearlyReportView(LoginRequiredMixin, TemplateView):
             'available_years': available_years,
             'months': range(1, 13),
             'yearly_data': yearly_data,
-            'yearly_data_json': yearly_data_json,  # JSON 형식의 데이터 추가
+            'yearly_data_json': yearly_data_json,
             'monthly_totals': monthly_totals,
+            'monthly_rent_totals': monthly_rent_totals,
+            'monthly_grand_totals': monthly_grand_totals,
             'total_charge': total_charge,
-            'grand_total': total_charge
+            'total_rent': total_rent,
+            'grand_total': total_charge + total_rent,
         })
         return context
 

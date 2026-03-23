@@ -30,7 +30,8 @@
                     <thead>
                         <tr class="bg-gray-50">
                             <th class="text-center w-20">호실</th>
-                            <th class="text-center w-40">금액</th>
+                            <th class="text-center w-36">관리비</th>
+                            <th class="text-center w-36">임차료</th>
                             <th class="text-center w-40">납부일</th>
                             <th class="text-center">메모</th>
                         </tr>
@@ -44,6 +45,13 @@
                             <td class="p-2">
                                 <input type="number"
                                        name="charge_{{ room.id }}"
+                                       class="form-input w-full text-right"
+                                       min="0"
+                                       placeholder="금액 입력">
+                            </td>
+                            <td class="p-2">
+                                <input type="number"
+                                       name="rent_{{ room.id }}"
                                        class="form-input w-full text-right"
                                        min="0"
                                        placeholder="금액 입력">
@@ -77,29 +85,17 @@
 
 {% block extra_css %}
 <style>
-    /* 입력 필드 크기 조정 */
     .form-input {
         padding: 0.5rem;
         height: 2.5rem;
         font-size: 0.875rem;
     }
-
-    /* 테이블 셀 패딩 */
     .content-table td {
         padding: 0.75rem;
     }
-
-    /* 호실 열 고정 너비 */
-    .w-20 {
-        width: 5rem;
-    }
-
-    /* 금액, 납부일 열 고정 너비 */
-    .w-40 {
-        width: 10rem;
-    }
-
-    /* 반응형 조정 */
+    .w-20 { width: 5rem; }
+    .w-36 { width: 9rem; }
+    .w-40 { width: 10rem; }
     @media (max-width: 640px) {
         .form-input {
             font-size: 0.75rem;
@@ -130,12 +126,10 @@ function filterRoomsByMonth(yearMonth) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 오늘 날짜 기준으로 초기 필터링
     const today = new Date();
     const currentYearMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
     filterRoomsByMonth(currentYearMonth);
 
-    // monthpicker onChange 콜백 연결
     const monthPickerEl = document.querySelector('.mclass-monthpicker');
     if (monthPickerEl && monthPickerEl._flatpickr) {
         monthPickerEl._flatpickr.set('onChange', function(selectedDates, dateStr) {

@@ -18,10 +18,18 @@
             
             <div class="grid grid-cols-1 gap-6">
                 <div>
-                    <label class="form-label">부과금액</label>
+                    <label class="form-label">관리비 (부과금액)</label>
                     {{ form.charge }}
                     {% if form.charge.errors %}
                         <p class="mt-2 text-sm text-red-600">{{ form.charge.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="form-label">임차료</label>
+                    {{ form.rent }}
+                    {% if form.rent.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.rent.errors }}</p>
                     {% endif %}
                 </div>
 

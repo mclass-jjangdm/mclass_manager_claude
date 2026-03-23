@@ -76,6 +76,11 @@ class Maintenance(models.Model):
         verbose_name='부과금액',
         help_text='0 이상의 금액을 입력해주세요.'
     )
+    rent = models.IntegerField(
+        validators=[MinValueValidator(0, message='금액은 0 이상이어야 합니다.')],
+        verbose_name='임차료',
+        default=0
+    )
     date_paid = models.DateField(
         null=True,
         blank=True,

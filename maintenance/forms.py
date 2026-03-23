@@ -68,6 +68,15 @@ class MaintenanceForm(forms.Form):
                     'style': 'width: 100%;'
                 })
             )
+            self.fields[f'rent_{room.id}'] = forms.DecimalField(
+                label=f'{room.number}호 임차료',
+                required=False,
+                min_value=0,
+                widget=forms.NumberInput(attrs={
+                    'class': 'form-control rent-input',
+                    'style': 'width: 100%;'
+                })
+            )
             self.fields[f'date_paid_{room.id}'] = forms.DateField(
                 label=f'{room.number}호 납부일자',
                 required=False,
@@ -90,9 +99,13 @@ class MaintenanceForm(forms.Form):
 class MaintenanceUpdateForm(forms.ModelForm):
     class Meta:
         model = Maintenance
-        fields = ['charge', 'date_paid', 'memo']
+        fields = ['charge', 'rent', 'date_paid', 'memo']
         widgets = {
             'charge': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'min': '0'
+            }),
+            'rent': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'min': '0'
             }),
