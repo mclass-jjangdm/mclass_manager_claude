@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Notice, Column, ExamNews, SchoolIntro, VisitorStat
+from .models import Notice, Column, ExamNews, SchoolIntro, VisitorStat, ConsultationRequest
 
 
 @admin.register(Notice)
@@ -33,3 +33,12 @@ class VisitorStatAdmin(admin.ModelAdmin):
     list_display = ['date', 'count']
     ordering = ['-date']
     readonly_fields = ['date', 'count']
+
+
+@admin.register(ConsultationRequest)
+class ConsultationRequestAdmin(admin.ModelAdmin):
+    list_display = ['name', 'school', 'grade', 'phone_number', 'status', 'created_at']
+    list_filter = ['status', 'grade', 'gender']
+    search_fields = ['name', 'phone_number', 'school', 'parent_phone']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at']
