@@ -95,13 +95,42 @@ class IndexView(TemplateView):
             today_present = Attendance.objects.filter(date=today, is_present=True).count()
 
             # 이번 달 수입 - 수강료 / 교재 판매
-            from classes.models import TuitionPayment
+            from classes.models import Enrollment, TuitionPayment
             from bookstore.models import BookSale
             from django.db.models import F
-            month_tuition_income = TuitionPayment.objects.filter(
-                payment_date__year=today.year,
-                payment_date__month=today.month,
+
+            month_start = today.replace(day=1)
+
+            # 이번 달 활성 수강 신청 목록 (청구 대상)
+            enrollments_this_month = list(
+                Enrollment.objects.filter(
+                    is_active=True,
+                    enrollment_date__lte=today,
+                ).filter(
+                    Q(end_date__isnull=True) | Q(end_date__gte=month_start)
+                ).select_related('lesson')
+            )
+
+            # 1) 이번 달 청구 금액
+            month_tuition_billing = sum(e.adjusted_tuition for e in enrollments_this_month)
+
+            # 2) 이번 달 수납 금액 (해당 월 수강료로 납부된 금액)
+            month_tuition_collected = TuitionPayment.objects.filter(
+                year=today.year,
+                month=today.month,
             ).aggregate(s=Sum('amount'))['s'] or 0
+
+            # 3) 이번 달 미납 금액 (청구됐으나 TuitionPayment 없는 enrollment 합산)
+            paid_enrollment_pks = set(
+                TuitionPayment.objects.filter(
+                    year=today.year,
+                    month=today.month,
+                ).values_list('enrollment_id', flat=True)
+            )
+            month_tuition_unpaid = sum(
+                e.adjusted_tuition for e in enrollments_this_month
+                if e.pk not in paid_enrollment_pks
+            )
 
             month_book_income = BookSale.objects.filter(
                 is_paid=True,
@@ -109,7 +138,7 @@ class IndexView(TemplateView):
                 payment_date__month=today.month,
             ).aggregate(s=Sum(F('price') * F('quantity')))['s'] or 0
 
-            total_income = month_tuition_income + month_book_income
+            total_income = month_tuition_collected + month_book_income
 
             # 이번 달 정산 - 지출
             month_maint = Maintenance.objects.filter(
@@ -159,7 +188,9 @@ class IndexView(TemplateView):
                 'month_charge': month_charge,
                 'month_salary': month_salary,
                 'total_expense': total_expense,
-                'month_tuition_income': month_tuition_income,
+                'month_tuition_billing': month_tuition_billing,
+                'month_tuition_collected': month_tuition_collected,
+                'month_tuition_unpaid': month_tuition_unpaid,
                 'month_book_income': month_book_income,
                 'total_income': total_income,
                 'total_unpaid_book': total_unpaid_book,
