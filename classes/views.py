@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.db import models as django_models
+import calendar
 import datetime
 import json
 
@@ -386,4 +388,111 @@ def tuition_payment_delete(request, enroll_pk, pay_pk):
     return render(request, 'classes/tuition_payment_confirm_delete.html', {
         'payment': payment,
         'enrollment': enrollment,
+    })
+
+
+@login_required
+def auto_enroll_next_month(request):
+    """다음 달 수강 신청 자동 생성"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 사용 가능합니다.')
+        return redirect('index')
+
+    today = datetime.date.today()
+    if today.month == 12:
+        next_year, next_month = today.year + 1, 1
+    else:
+        next_year, next_month = today.year, today.month + 1
+
+    first_of_next = datetime.date(next_year, next_month, 1)
+    last_of_next = datetime.date(next_year, next_month,
+                                 calendar.monthrange(next_year, next_month)[1])
+
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('enrollment_ids')
+        created_count = 0
+        skip_count = 0
+
+        for enroll_id in selected_ids:
+            try:
+                enroll = Enrollment.objects.select_related('student', 'lesson').get(pk=enroll_id)
+                # 중복 체크: 같은 학생+수업, 같은 시작일
+                if Enrollment.objects.filter(
+                    student=enroll.student,
+                    lesson=enroll.lesson,
+                    enrollment_date=first_of_next,
+                ).exists():
+                    skip_count += 1
+                    continue
+                Enrollment.objects.create(
+                    student=enroll.student,
+                    lesson=enroll.lesson,
+                    enrollment_date=first_of_next,
+                    end_date=last_of_next,
+                    tuition_adjustment=0,  # 다음 달은 전월 조정 없이 기본 수강료
+                    memo='',
+                    is_active=True,
+                )
+                created_count += 1
+            except Enrollment.DoesNotExist:
+                continue
+
+        msg = f'{next_year}년 {next_month}월 수강 신청 {created_count}건 생성 완료'
+        if skip_count:
+            msg += f' (이미 존재 {skip_count}건 제외)'
+        messages.success(request, msg)
+        return redirect('classes:auto_enroll_next_month')
+
+    # 현재 활성 수강 신청 (만료 안 된 것)
+    active_enrollments = Enrollment.objects.filter(
+        is_active=True,
+    ).filter(
+        django_models.Q(end_date__isnull=True) | django_models.Q(end_date__gte=today)
+    ).select_related(
+        'student', 'lesson', 'lesson__teacher', 'lesson__subject'
+    ).order_by('lesson__name', 'student__name')
+
+    # 다음 달에 이미 등록된 (student_id, lesson_id) 쌍
+    already_set = set(
+        Enrollment.objects.filter(
+            enrollment_date=first_of_next,
+        ).values_list('student_id', 'lesson_id')
+    )
+
+    # 수업별 그룹핑
+    lessons_dict = {}
+    total_new = 0
+    total_exists = 0
+    for enroll in active_enrollments:
+        lid = enroll.lesson_id
+        if lid not in lessons_dict:
+            lessons_dict[lid] = {
+                'lesson': enroll.lesson,
+                'items': [],
+                'new_count': 0,
+                'exists_count': 0,
+            }
+        already = (enroll.student_id, enroll.lesson_id) in already_set
+        lessons_dict[lid]['items'].append({
+            'enrollment': enroll,
+            'already': already,
+        })
+        if already:
+            lessons_dict[lid]['exists_count'] += 1
+            total_exists += 1
+        else:
+            lessons_dict[lid]['new_count'] += 1
+            total_new += 1
+
+    lesson_groups = list(lessons_dict.values())
+
+    return render(request, 'classes/auto_enroll.html', {
+        'next_year': next_year,
+        'next_month': next_month,
+        'first_of_next': first_of_next,
+        'last_of_next': last_of_next,
+        'lesson_groups': lesson_groups,
+        'total_new': total_new,
+        'total_exists': total_exists,
+        'total': total_new + total_exists,
     })
