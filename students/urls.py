@@ -23,4 +23,6 @@ urlpatterns = [
     path('<int:pk>/quit/', views.student_quit, name='student_quit'),
     path('<int:pk>/readmit/', views.student_readmit, name='student_readmit'),
     path('<int:pk>/tuition-pay/<int:enroll_pk>/', views.student_tuition_pay, name='student_tuition_pay'),
+    path('tuition-payment/<int:pk>/edit/', views.tuition_payment_edit, name='tuition_payment_edit'),
+    path('tuition-payment/<int:pk>/delete/', views.tuition_payment_delete, name='tuition_payment_delete'),
 ]

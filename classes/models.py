@@ -2,9 +2,11 @@ from django.db import models
 
 
 PAYMENT_METHOD_CHOICES = [
-    ('cash', '현금'),
-    ('card', '카드'),
+    ('kjt', '결제선생'),
+    ('daon', '다온카드'),
+    ('card', '신용카드'),
     ('transfer', '계좌이체'),
+    ('cash', '현금'),
     ('other', '기타'),
 ]
 

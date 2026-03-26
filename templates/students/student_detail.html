@@ -236,6 +236,67 @@
     {% endif %}
 </div>
 
+<!-- 수강료 납부 내역 -->
+<button type="button" onclick="toggleTuitionHistory()"
+        class="w-full flex items-center justify-between text-xl font-bold text-blue-700 mb-4 hover:text-blue-800 transition-colors">
+    <span>수강료 납부 내역</span>
+    <svg id="tuition-history-chevron" class="w-5 h-5 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+    </svg>
+</button>
+<div id="tuition-history-section" class="hidden">
+<div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+    {% if tuition_payments %}
+    <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-blue-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">납부 연월</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">수업명</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">금액</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">납부 방법</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">납부일</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">액션</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for tp in tuition_payments %}
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 text-sm font-semibold text-blue-700">{{ tp.year }}년 {{ tp.month }}월</td>
+                <td class="px-4 py-3 text-sm text-gray-800">{{ tp.enrollment.lesson.name }}</td>
+                <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">{{ tp.amount|intcomma }}원</td>
+                <td class="px-4 py-3 text-sm text-gray-600">{{ tp.get_payment_method_display }}</td>
+                <td class="px-4 py-3 text-sm text-green-600 font-semibold">{{ tp.payment_date|date:"Y-m-d" }}</td>
+                <td class="px-4 py-3 text-center">
+                    <div class="flex gap-1 justify-center">
+                        {% if user.is_staff %}
+                        <button type="button"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                onclick="openTuitionEditModal({{ tp.pk }}, '{{ tp.enrollment.lesson.name|escapejs }}', {{ tp.year }}, {{ tp.month }}, {{ tp.amount }}, '{{ tp.payment_date|date:'Y-m-d' }}', '{{ tp.payment_method }}', '{% url 'students:tuition_payment_edit' tp.pk %}')">
+                            수정
+                        </button>
+                        <form method="POST" action="{% url 'students:tuition_payment_delete' tp.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                    onclick="return confirm('이 납부 내역을 삭제하시겠습니까?');">
+                                삭제
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="px-4 py-12 text-center text-gray-500">수강료 납부 내역이 없습니다.</div>
+    {% endif %}
+</div>
+</div><!-- /tuition-history-section -->
+
 <!-- 납부 완료 교재 목록 -->
 <button type="button" onclick="togglePaidSales()"
         class="w-full flex items-center justify-between text-xl font-bold text-green-700 mb-4 hover:text-green-800 transition-colors">
@@ -519,6 +580,71 @@ function togglePaidSales() {
     </a>
 </div>
 
+<!-- 수강료 납부 내역 수정 모달 -->
+<div id="tuition-edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">수강료 납부 수정</h3>
+        <p id="tuition-edit-lesson-name" class="text-sm text-blue-600 mb-4"></p>
+        <form id="tuition-edit-form" method="POST">
+            {% csrf_token %}
+            <div class="space-y-3">
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-600 mb-1">연도</label>
+                        <input type="number" name="year" id="tuition-edit-year"
+                               class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-600 mb-1">월</label>
+                        <select name="month" id="tuition-edit-month"
+                                class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                            {% for i in "123456789" %}{% endfor %}
+                            <option value="1">1월</option><option value="2">2월</option>
+                            <option value="3">3월</option><option value="4">4월</option>
+                            <option value="5">5월</option><option value="6">6월</option>
+                            <option value="7">7월</option><option value="8">8월</option>
+                            <option value="9">9월</option><option value="10">10월</option>
+                            <option value="11">11월</option><option value="12">12월</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">금액</label>
+                    <input type="number" name="amount" id="tuition-edit-amount"
+                           class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">납부 방법</label>
+                    <select name="payment_method" id="tuition-edit-method"
+                            class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                        <option value="kjt">결제선생</option>
+                        <option value="daon">다온카드</option>
+                        <option value="card">신용카드</option>
+                        <option value="transfer">계좌이체</option>
+                        <option value="cash">현금</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">납부일</label>
+                    <input type="date" name="payment_date" id="tuition-edit-date"
+                           class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-5">
+                <button type="button" onclick="closeTuitionEditModal()"
+                        class="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                    취소
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors">
+                    저장
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- 수강료 납부 모달 -->
 <div id="tuition-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4">
@@ -726,9 +852,34 @@ function closeTuitionModal() {
     document.getElementById('tuition-modal').classList.add('hidden');
 }
 
+function openTuitionEditModal(pk, lessonName, year, month, amount, paymentDate, paymentMethod, actionUrl) {
+    document.getElementById('tuition-edit-lesson-name').textContent = lessonName;
+    document.getElementById('tuition-edit-year').value = year;
+    document.getElementById('tuition-edit-month').value = month;
+    document.getElementById('tuition-edit-amount').value = amount;
+    document.getElementById('tuition-edit-date').value = paymentDate;
+    if (paymentMethod) document.getElementById('tuition-edit-method').value = paymentMethod;
+    document.getElementById('tuition-edit-form').action = actionUrl;
+    document.getElementById('tuition-edit-modal').classList.remove('hidden');
+}
+
+function closeTuitionEditModal() {
+    document.getElementById('tuition-edit-modal').classList.add('hidden');
+}
+
+document.getElementById('tuition-edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeTuitionEditModal();
+});
+
+function toggleTuitionHistory() {
+    document.getElementById('tuition-history-section').classList.toggle('hidden');
+    document.getElementById('tuition-history-chevron').classList.toggle('rotate-180');
+}
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeTuitionModal();
+        closeTuitionEditModal();
         closeBookModal();
         closeBookEditModal();
     }

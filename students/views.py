@@ -167,9 +167,10 @@ def student_detail(request, pk):
     from django.db.models import Sum
     active_enrollments = Enrollment.objects.filter(student=student, is_active=True).select_related('lesson')
     current_month_tuition = sum(e.adjusted_tuition for e in active_enrollments)
-    total_tuition_paid = TuitionPayment.objects.filter(
+    tuition_payments = TuitionPayment.objects.filter(
         enrollment__student=student
-    ).aggregate(total=Sum('amount'))['total'] or 0
+    ).select_related('enrollment__lesson').order_by('-year', '-month', '-id')
+    total_tuition_paid = tuition_payments.aggregate(total=Sum('amount'))['total'] or 0
 
     # 성적 데이터 조회
     internal_grades = Grade.objects.filter(
@@ -349,6 +350,7 @@ def student_detail(request, pk):
         'active_enrollments': active_enrollments,
         'current_month_tuition': current_month_tuition,
         'total_tuition_paid': total_tuition_paid,
+        'tuition_payments': tuition_payments,
         'internal_grades': regular_internal_grades,
         'elective_grades': elective_grades,
         'mock_grades': mock_grades,
@@ -390,6 +392,42 @@ def student_tuition_pay(request, pk, enroll_pk):
         except (ValueError, TypeError):
             messages.error(request, '입력값이 올바르지 않습니다.')
     return redirect('students:student_detail', pk=pk)
+
+
+@login_required
+def tuition_payment_edit(request, pk):
+    """수강료 납부 내역 수정 (연도/월/금액/납부방법/납부일)"""
+    from classes.models import TuitionPayment
+    payment = get_object_or_404(TuitionPayment, pk=pk)
+    student = payment.enrollment.student
+
+    if request.method == 'POST':
+        try:
+            payment.year = int(request.POST.get('year'))
+            payment.month = int(request.POST.get('month'))
+            payment.amount = int(request.POST.get('amount'))
+            payment.payment_date = request.POST.get('payment_date')
+            payment.payment_method = request.POST.get('payment_method')
+            payment.save()
+            messages.success(request, '수강료 납부 내역이 수정되었습니다.')
+        except (ValueError, TypeError) as e:
+            messages.error(request, f'입력값이 올바르지 않습니다: {e}')
+
+    return redirect('students:student_detail', pk=student.pk)
+
+
+@login_required
+def tuition_payment_delete(request, pk):
+    """수강료 납부 내역 삭제"""
+    from classes.models import TuitionPayment
+    payment = get_object_or_404(TuitionPayment, pk=pk)
+    student = payment.enrollment.student
+
+    if request.method == 'POST':
+        payment.delete()
+        messages.success(request, '수강료 납부 내역이 삭제되었습니다.')
+
+    return redirect('students:student_detail', pk=student.pk)
 
 
 @login_required
