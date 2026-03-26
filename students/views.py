@@ -172,6 +172,16 @@ def student_detail(request, pk):
     ).select_related('enrollment__lesson').order_by('-year', '-month', '-id')
     total_tuition_paid = tuition_payments.aggregate(total=Sum('amount'))['total'] or 0
 
+    # 당월 납부 완료된 enrollment pk 집합
+    today = timezone.now().date()
+    paid_this_month_enroll_pks = set(
+        TuitionPayment.objects.filter(
+            enrollment__student=student,
+            year=today.year,
+            month=today.month,
+        ).values_list('enrollment_id', flat=True)
+    )
+
     # 성적 데이터 조회
     internal_grades = Grade.objects.filter(
         student=student,
@@ -359,7 +369,8 @@ def student_detail(request, pk):
         'weighted_averages': weighted_averages,
         'combination_averages': combination_averages,
         'chart_data': json.dumps(chart_data, ensure_ascii=False),
-        'today': timezone.now().date(),
+        'today': today,
+        'paid_this_month_enroll_pks': paid_this_month_enroll_pks,
         'is_middle': is_middle,
         'middle_grade_summary': middle_grade_summary,
     }

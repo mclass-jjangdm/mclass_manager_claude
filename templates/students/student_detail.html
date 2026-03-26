@@ -133,11 +133,15 @@
                             <span class="text-xs text-blue-700 truncate" style="max-width:100px" title="{{ enrollment.lesson.name }}">{{ enrollment.lesson.name }}</span>
                             <div class="flex items-center gap-1">
                                 <span class="text-xs font-medium text-blue-800">{{ enrollment.adjusted_tuition|intcomma }}원</span>
+                                {% if enrollment.pk in paid_this_month_enroll_pks %}
+                                <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-medium">납부 완료</span>
+                                {% else %}
                                 <button type="button"
                                         class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-0.5 rounded transition-colors"
                                         onclick="openTuitionModal({{ enrollment.pk }}, '{{ enrollment.lesson.name|escapejs }}', {{ enrollment.adjusted_tuition }}, '{% url 'students:student_tuition_pay' student.pk enrollment.pk %}')">
                                     납부
                                 </button>
+                                {% endif %}
                             </div>
                         </div>
                         {% endfor %}
