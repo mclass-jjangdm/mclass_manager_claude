@@ -207,11 +207,13 @@
                     <!-- 수업 블록 -->
                     {% for item in day.items %}
                     <a href="{% url 'classes:lesson_detail' item.lesson.pk %}"
-                       class="absolute inset-x-1 rounded-lg border overflow-hidden
+                       class="absolute rounded-lg border overflow-hidden
                               px-2 py-1 hover:brightness-95 hover:shadow-md
                               transition-all duration-150 cursor-pointer flex flex-col gap-0.5"
                        style="top:{{ item.top }}px;
                               height:{{ item.height }}px;
+                              left:calc({{ item.left_pct|floatformat:'-4' }}% + 2px);
+                              right:calc({{ item.right_pct|floatformat:'-4' }}% + 2px);
                               background-color:{{ item.color.bg }};
                               border-color:{{ item.color.border }};"
                        title="{{ item.lesson.name }}&#10;{{ item.time }}&#10;{{ item.lesson.teacher.name|default:'원장' }}">

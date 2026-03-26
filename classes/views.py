@@ -11,6 +11,44 @@ from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, DAY_CHOI
 from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm
 
 
+def _assign_timetable_columns(items):
+    """같은 요일의 수업 블록에 겹침 처리용 col/total_cols/left_pct/right_pct 할당"""
+    if not items:
+        return items
+
+    items = sorted(items, key=lambda x: x['top'])
+    lanes = []  # 각 lane의 현재 끝 위치(px)
+
+    # 1단계: 그리디 lane 배정
+    for item in items:
+        start = item['top']
+        end   = start + item['height']
+        placed = False
+        for i, lane_end in enumerate(lanes):
+            if lane_end <= start:
+                lanes[i] = end
+                item['col'] = i
+                placed = True
+                break
+        if not placed:
+            item['col'] = len(lanes)
+            lanes.append(end)
+
+    # 2단계: 각 아이템이 겹치는 구간의 최대 col → total_cols 결정
+    for item in items:
+        s, e = item['top'], item['top'] + item['height']
+        max_col = max(
+            (o['col'] for o in items
+             if not (o['top'] + o['height'] <= s or o['top'] >= e)),
+            default=0,
+        )
+        item['total_cols'] = max_col + 1
+        item['left_pct']   = item['col'] * 100 / item['total_cols']
+        item['right_pct']  = (item['total_cols'] - item['col'] - 1) * 100 / item['total_cols']
+
+    return items
+
+
 def _get_lesson_form_context():
     """수업 폼에 필요한 교과/과목/교재 JSON 데이터 반환"""
     from subjects.models import Subject
@@ -155,6 +193,10 @@ def lesson_list(request):
                 'color':    color,
                 'students': students,
             })
+
+    # 요일별 겹침 처리
+    for day_data in day_map.values():
+        day_data['items'] = _assign_timetable_columns(day_data['items'])
 
     timetable_days = [day_map[d] for d, _ in DAY_CHOICES]
 
