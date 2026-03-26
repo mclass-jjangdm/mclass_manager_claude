@@ -10,6 +10,18 @@ PAYMENT_METHOD_CHOICES = [
 
 MONTH_CHOICES = [(i, f'{i}월') for i in range(1, 13)]
 
+DAY_CHOICES = [
+    ('mon', '월'),
+    ('tue', '화'),
+    ('wed', '수'),
+    ('thu', '목'),
+    ('fri', '금'),
+    ('sat', '토'),
+    ('sun', '일'),
+]
+
+DAY_ORDER = {d: i for i, (d, _) in enumerate(DAY_CHOICES)}
+
 
 class Lesson(models.Model):
     name = models.CharField(max_length=100, verbose_name='수업 이름')
@@ -31,19 +43,6 @@ class Lesson(models.Model):
         verbose_name='교재',
     )
 
-    # 수업 요일
-    mon = models.BooleanField(default=False, verbose_name='월')
-    tue = models.BooleanField(default=False, verbose_name='화')
-    wed = models.BooleanField(default=False, verbose_name='수')
-    thu = models.BooleanField(default=False, verbose_name='목')
-    fri = models.BooleanField(default=False, verbose_name='금')
-    sat = models.BooleanField(default=False, verbose_name='토')
-    sun = models.BooleanField(default=False, verbose_name='일')
-
-    # 수업 시간
-    start_time = models.TimeField(verbose_name='시작 시간')
-    end_time = models.TimeField(verbose_name='종료 시간')
-
     # 수강료
     base_tuition = models.PositiveIntegerField(verbose_name='기본 수강료')
 
@@ -61,20 +60,49 @@ class Lesson(models.Model):
 
     @property
     def days_display(self):
-        day_map = [
-            (self.mon, '월'),
-            (self.tue, '화'),
-            (self.wed, '수'),
-            (self.thu, '목'),
-            (self.fri, '금'),
-            (self.sat, '토'),
-            (self.sun, '일'),
+        """'월수금' 형태로 반환"""
+        schedules = sorted(self.schedules.all(), key=lambda s: DAY_ORDER.get(s.day, 99))
+        day_labels = dict(DAY_CHOICES)
+        return ''.join(day_labels[s.day] for s in schedules) or '-'
+
+    @property
+    def schedule_display(self):
+        """'월 20:00~22:00 · 금 20:00~22:00 · 토 14:00~18:00' 형태로 반환"""
+        schedules = sorted(self.schedules.all(), key=lambda s: DAY_ORDER.get(s.day, 99))
+        day_labels = dict(DAY_CHOICES)
+        parts = [
+            f"{day_labels[s.day]} {s.start_time.strftime('%H:%M')}~{s.end_time.strftime('%H:%M')}"
+            for s in schedules
         ]
-        return ''.join(label for flag, label in day_map if flag) or '-'
+        return ' · '.join(parts) or '-'
 
     @property
     def active_enrollment_count(self):
         return self.enrollments.filter(is_active=True).count()
+
+
+class LessonSchedule(models.Model):
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name='schedules',
+        verbose_name='수업',
+    )
+    day = models.CharField(max_length=3, choices=DAY_CHOICES, verbose_name='요일')
+    start_time = models.TimeField(verbose_name='시작 시간')
+    end_time = models.TimeField(verbose_name='종료 시간')
+
+    class Meta:
+        unique_together = ['lesson', 'day']
+        verbose_name = '수업 일정'
+        verbose_name_plural = '수업 일정 목록'
+
+    def __str__(self):
+        day_label = dict(DAY_CHOICES).get(self.day, self.day)
+        return (
+            f"{self.lesson.name} {day_label} "
+            f"{self.start_time.strftime('%H:%M')}~{self.end_time.strftime('%H:%M')}"
+        )
 
 
 class Enrollment(models.Model):

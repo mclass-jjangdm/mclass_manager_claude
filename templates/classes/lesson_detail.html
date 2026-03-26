@@ -33,22 +33,14 @@
             {% endif %}
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
             <div>
                 <p class="text-gray-500 text-xs mb-1">과목</p>
                 <p class="font-medium text-gray-800">{{ lesson.subject.name|default:'-' }}</p>
             </div>
             <div>
-                <p class="text-gray-500 text-xs mb-1">담당 교사</p>
+                <p class="text-gray-500 text-xs mb-1">담당 선생님</p>
                 <p class="font-medium text-gray-800">{{ lesson.teacher.name|default:'-' }}</p>
-            </div>
-            <div>
-                <p class="text-gray-500 text-xs mb-1">수업 요일</p>
-                <p class="font-medium text-gray-800">{{ lesson.days_display }}</p>
-            </div>
-            <div>
-                <p class="text-gray-500 text-xs mb-1">수업 시간</p>
-                <p class="font-medium text-gray-800">{{ lesson.start_time|time:"H:i" }} ~ {{ lesson.end_time|time:"H:i" }}</p>
             </div>
             <div>
                 <p class="text-gray-500 text-xs mb-1">기본 수강료</p>
@@ -61,12 +53,31 @@
                 </p>
             </div>
             {% if lesson.memo %}
-            <div class="col-span-2">
+            <div class="col-span-2 md:col-span-4">
                 <p class="text-gray-500 text-xs mb-1">기타</p>
                 <p class="font-medium text-gray-800">{{ lesson.memo }}</p>
             </div>
             {% endif %}
         </div>
+
+        <!-- 수업 일정 -->
+        {% with schedules=lesson.schedules.all %}
+        {% if schedules %}
+        <div>
+            <p class="text-gray-500 text-xs mb-2">수업 일정</p>
+            <div class="flex flex-wrap gap-2">
+                {% for s in schedules %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-lg text-sm font-medium">
+                    {{ s.get_day_display }}
+                    <span class="text-indigo-500 font-normal">{{ s.start_time|time:"H:i" }}~{{ s.end_time|time:"H:i" }}</span>
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-400">수업 일정이 등록되지 않았습니다.</p>
+        {% endif %}
+        {% endwith %}
     </div>
 
     <!-- 수강생 목록 -->

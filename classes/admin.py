@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import Lesson, Enrollment, TuitionPayment
+from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment
+
+
+class LessonScheduleInline(admin.TabularInline):
+    model = LessonSchedule
+    extra = 0
+    fields = ['day', 'start_time', 'end_time']
 
 
 class EnrollmentInline(admin.TabularInline):
@@ -11,10 +17,16 @@ class EnrollmentInline(admin.TabularInline):
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ['name', 'subject', 'teacher', 'days_display', 'start_time', 'end_time', 'base_tuition', 'is_active']
+    list_display = ['name', 'subject', 'teacher', 'days_display', 'base_tuition', 'is_active']
     list_filter = ['is_active', 'teacher']
     search_fields = ['name']
-    inlines = [EnrollmentInline]
+    inlines = [LessonScheduleInline, EnrollmentInline]
+
+
+@admin.register(LessonSchedule)
+class LessonScheduleAdmin(admin.ModelAdmin):
+    list_display = ['lesson', 'day', 'start_time', 'end_time']
+    list_filter = ['day']
 
 
 class TuitionPaymentInline(admin.TabularInline):

@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q, Case, When, Value, IntegerField
 from teachers.models import Teacher
 from .models import Lesson, Enrollment, TuitionPayment
 
@@ -6,20 +7,22 @@ from .models import Lesson, Enrollment, TuitionPayment
 class LessonForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['teacher'].queryset = Teacher.objects.filter(is_active=True).order_by('name')
+        # 재직 중인 선생님 + 원장은 항상 포함, 원장을 맨 위에 표시
+        self.fields['teacher'].queryset = Teacher.objects.filter(
+            Q(is_active=True) | Q(name='원장')
+        ).annotate(
+            sort_key=Case(
+                When(name='원장', then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        ).order_by('sort_key', 'name')
         self.fields['teacher'].label = '담당 선생님'
 
     class Meta:
         model = Lesson
-        fields = [
-            'name', 'subject', 'teacher', 'books',
-            'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun',
-            'start_time', 'end_time',
-            'base_tuition', 'memo', 'is_active',
-        ]
+        fields = ['name', 'subject', 'teacher', 'books', 'base_tuition', 'memo', 'is_active']
         widgets = {
-            'start_time': forms.TimeInput(attrs={'type': 'time'}),
-            'end_time': forms.TimeInput(attrs={'type': 'time'}),
             'memo': forms.Textarea(attrs={'rows': 3}),
         }
 

@@ -48,7 +48,6 @@
                         {% endif %}
                         {% endfor %}
                     </select>
-                    {% if form.subject.errors %}<p class="text-red-500 text-xs mt-1">{{ form.subject.errors.0 }}</p>{% endif %}
                 </div>
 
                 <!-- 담당 선생님 -->
@@ -78,47 +77,29 @@
                     <p class="text-xs text-gray-400 mt-1">Ctrl(또는 Cmd) + 클릭으로 복수 선택</p>
                 </div>
 
-                <!-- 수업 요일 -->
+                <!-- 수업 일정 (요일별 시간) -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">수업 요일</label>
-                    <div class="flex gap-4 flex-wrap">
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            {{ form.mon }} <span class="text-sm text-gray-700">월</span>
-                        </label>
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            {{ form.tue }} <span class="text-sm text-gray-700">화</span>
-                        </label>
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            {{ form.wed }} <span class="text-sm text-gray-700">수</span>
-                        </label>
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            {{ form.thu }} <span class="text-sm text-gray-700">목</span>
-                        </label>
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            {{ form.fri }} <span class="text-sm text-gray-700">금</span>
-                        </label>
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            {{ form.sat }} <span class="text-sm text-gray-700">토</span>
-                        </label>
-                        <label class="flex items-center gap-1.5 cursor-pointer">
-                            {{ form.sun }} <span class="text-sm text-gray-700">일</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- 수업 시간 -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">시작 시간 <span class="text-red-500">*</span></label>
-                        <input type="time" name="start_time" value="{{ form.start_time.value|default:'' }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        {% if form.start_time.errors %}<p class="text-red-500 text-xs mt-1">{{ form.start_time.errors.0 }}</p>{% endif %}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">종료 시간 <span class="text-red-500">*</span></label>
-                        <input type="time" name="end_time" value="{{ form.end_time.value|default:'' }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        {% if form.end_time.errors %}<p class="text-red-500 text-xs mt-1">{{ form.end_time.errors.0 }}</p>{% endif %}
+                    <label class="block text-sm font-medium text-gray-700 mb-2">수업 일정 <span class="text-xs text-gray-400 font-normal">(수업이 있는 요일을 선택하고 시간을 입력하세요)</span></label>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        {% for day_val, day_label in day_choices %}
+                        <div class="flex items-center gap-4 px-4 py-2.5 {% if not forloop.last %}border-b border-gray-100{% endif %} hover:bg-gray-50">
+                            <label class="flex items-center gap-2 w-12 cursor-pointer flex-shrink-0">
+                                <input type="checkbox" name="sched_{{ day_val }}" id="sched-{{ day_val }}"
+                                       class="w-4 h-4 text-indigo-600 rounded"
+                                       onchange="toggleDayTime('{{ day_val }}')">
+                                <span class="text-sm font-medium text-gray-700">{{ day_label }}</span>
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <input type="time" name="sched_{{ day_val }}_start" id="time-start-{{ day_val }}"
+                                       disabled
+                                       class="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40 disabled:bg-gray-50 disabled:cursor-not-allowed w-28">
+                                <span class="text-gray-400 text-sm">~</span>
+                                <input type="time" name="sched_{{ day_val }}_end" id="time-end-{{ day_val }}"
+                                       disabled
+                                       class="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40 disabled:bg-gray-50 disabled:cursor-not-allowed w-28">
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -169,24 +150,17 @@
 </div>
 
 <script>
-// 서버에서 렌더링된 과목/교재 데이터
+// ── 교과 필터링 ──────────────────────────────
 const SUBJECTS_DATA = {{ subjects_json|safe }};
 const BOOKS_DATA = {{ books_json|safe }};
 
-// 과목 select에 data-category 속성 부여
 (function initCategoryData() {
-    const subjectSelect = document.getElementById('subject-select');
-    const booksSelect = document.getElementById('books-select');
-
-    // 과목 옵션에 category 속성 설정
-    Array.from(subjectSelect.options).forEach(opt => {
+    document.querySelectorAll('#subject-select option[value]').forEach(opt => {
         if (!opt.value) return;
         const s = SUBJECTS_DATA.find(s => s.id == opt.value);
         if (s) opt.dataset.category = s.category;
     });
-
-    // 교재 옵션에 category 속성 설정
-    Array.from(booksSelect.options).forEach(opt => {
+    document.querySelectorAll('#books-select option[value]').forEach(opt => {
         if (!opt.value) return;
         const b = BOOKS_DATA.find(b => b.id == opt.value);
         if (b) opt.dataset.category = b.category;
@@ -194,23 +168,13 @@ const BOOKS_DATA = {{ books_json|safe }};
 })();
 
 function filterByCategory(category) {
-    const subjectSelect = document.getElementById('subject-select');
-    const booksSelect = document.getElementById('books-select');
-
-    // 과목 필터링
-    Array.from(subjectSelect.options).forEach(opt => {
-        if (!opt.value) return;
-        const match = !category || opt.dataset.category === category;
-        opt.hidden = !match;
-        if (!match) opt.selected = false;
-    });
-
-    // 교재 필터링
-    Array.from(booksSelect.options).forEach(opt => {
-        if (!opt.value) return;
-        const match = !category || opt.dataset.category === category;
-        opt.hidden = !match;
-        if (!match) opt.selected = false;
+    ['#subject-select', '#books-select'].forEach(sel => {
+        document.querySelectorAll(sel + ' option').forEach(opt => {
+            if (!opt.value) return;
+            const match = !category || opt.dataset.category === category;
+            opt.hidden = !match;
+            if (!match) opt.selected = false;
+        });
     });
 }
 
@@ -218,10 +182,33 @@ document.getElementById('category-select').addEventListener('change', function()
     filterByCategory(this.value);
 });
 
-// 페이지 로드 시 현재 선택된 교과로 초기 필터링
 (function applyInitialFilter() {
     const cat = document.getElementById('category-select').value;
     if (cat) filterByCategory(cat);
 })();
+
+// ── 요일별 시간 토글 ──────────────────────────
+function toggleDayTime(day) {
+    const checked = document.getElementById('sched-' + day).checked;
+    const startEl = document.getElementById('time-start-' + day);
+    const endEl   = document.getElementById('time-end-'   + day);
+    startEl.disabled = !checked;
+    endEl.disabled   = !checked;
+    if (!checked) { startEl.value = ''; endEl.value = ''; }
+}
+
+// 수정 모드: 기존 일정 복원
+const EXISTING_SCHEDULES = {{ existing_schedules_json|safe }};
+document.addEventListener('DOMContentLoaded', function() {
+    Object.entries(EXISTING_SCHEDULES).forEach(function([day, times]) {
+        const cb = document.getElementById('sched-' + day);
+        if (!cb) return;
+        cb.checked = true;
+        const s = document.getElementById('time-start-' + day);
+        const e = document.getElementById('time-end-'   + day);
+        s.disabled = false; e.disabled = false;
+        s.value = times.start; e.value = times.end;
+    });
+});
 </script>
 {% endblock %}

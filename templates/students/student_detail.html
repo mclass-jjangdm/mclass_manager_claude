@@ -446,8 +446,10 @@ function togglePaidSales() {
                         {% endif %}
                     </td>
                     <td class="px-4 py-3 text-gray-600">
-                        {{ enrollment.lesson.days_display }}
-                        <span class="text-gray-400">{{ enrollment.lesson.start_time|time:"H:i" }}~{{ enrollment.lesson.end_time|time:"H:i" }}</span>
+                        <span class="font-medium">{{ enrollment.lesson.days_display }}</span>
+                        {% if enrollment.lesson.schedule_display != '-' %}
+                        <p class="text-xs text-gray-400 mt-0.5">{{ enrollment.lesson.schedule_display }}</p>
+                        {% endif %}
                     </td>
                     <td class="px-4 py-3 text-gray-700">{{ enrollment.adjusted_tuition|intcomma }}원</td>
                     <td class="px-4 py-3 text-gray-600">{{ enrollment.enrollment_date }}</td>

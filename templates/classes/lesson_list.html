@@ -56,9 +56,8 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">수업 이름</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">과목</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">담당 교사</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">요일</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">시간</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">담당 선생님</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">수업 일정</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">수강료</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">수강생</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">상태</th>
@@ -79,11 +78,11 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {{ lesson.teacher.name|default:'-' }}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {{ lesson.days_display }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {{ lesson.start_time|time:"H:i" }} ~ {{ lesson.end_time|time:"H:i" }}
+                    <td class="px-6 py-4 text-sm text-gray-700">
+                        <span class="font-medium">{{ lesson.days_display }}</span>
+                        {% if lesson.schedule_display != '-' %}
+                        <p class="text-xs text-gray-400 mt-0.5">{{ lesson.schedule_display }}</p>
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {{ lesson.base_tuition|floatformat:0 }}원
