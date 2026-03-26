@@ -88,10 +88,89 @@ def lesson_list(request):
     elif status == 'inactive':
         lessons = lessons.filter(is_active=False)
 
+    # ── 시간표 데이터 (항상 활성 수업만, 검색 조건 무관) ──────────
+    TIMETABLE_COLORS = [
+        {'bg': '#e0e7ff', 'text': '#3730a3', 'border': '#c7d2fe'},  # indigo
+        {'bg': '#ede9fe', 'text': '#6d28d9', 'border': '#ddd6fe'},  # violet
+        {'bg': '#dbeafe', 'text': '#1e40af', 'border': '#bfdbfe'},  # blue
+        {'bg': '#e0f2fe', 'text': '#0369a1', 'border': '#bae6fd'},  # sky
+        {'bg': '#d1fae5', 'text': '#065f46', 'border': '#a7f3d0'},  # emerald
+        {'bg': '#dcfce7', 'text': '#166534', 'border': '#bbf7d0'},  # green
+        {'bg': '#fef9c3', 'text': '#854d0e', 'border': '#fde68a'},  # yellow
+        {'bg': '#ffedd5', 'text': '#9a3412', 'border': '#fed7aa'},  # orange
+        {'bg': '#fee2e2', 'text': '#991b1b', 'border': '#fecaca'},  # rose
+        {'bg': '#fce7f3', 'text': '#9d174d', 'border': '#fbcfe8'},  # pink
+        {'bg': '#f3e8ff', 'text': '#6b21a8', 'border': '#e9d5ff'},  # purple
+        {'bg': '#ccfbf1', 'text': '#134e4a', 'border': '#99f6e4'},  # teal
+    ]
+
+    tt_lessons = list(
+        Lesson.objects.filter(is_active=True)
+        .select_related('subject', 'teacher')
+        .prefetch_related('schedules')
+        .order_by('pk')
+    )
+
+    lesson_color_map = {
+        lesson.pk: TIMETABLE_COLORS[i % len(TIMETABLE_COLORS)]
+        for i, lesson in enumerate(tt_lessons)
+    }
+    tt_legend = [
+        {'lesson': lesson, 'color': lesson_color_map[lesson.pk]}
+        for lesson in tt_lessons
+    ]
+
+    # 시간 범위 계산
+    all_starts, all_ends = [], []
+    for lesson in tt_lessons:
+        for s in lesson.schedules.all():
+            all_starts.append(s.start_time.hour * 60 + s.start_time.minute)
+            all_ends.append(s.end_time.hour * 60 + s.end_time.minute)
+
+    if all_starts:
+        base_min = (min(all_starts) // 60) * 60          # 내림하여 정시
+        top_min  = ((max(all_ends) + 59) // 60) * 60     # 올림하여 정시
+    else:
+        base_min, top_min = 13 * 60, 22 * 60
+
+    PX_PER_MIN = 1.5
+    table_height = max(round((top_min - base_min) * PX_PER_MIN), 120)
+
+    # 요일별 수업 블록 데이터
+    day_map = {d: {'key': d, 'label': lbl, 'items': []} for d, lbl in DAY_CHOICES}
+    for lesson in tt_lessons:
+        color = lesson_color_map[lesson.pk]
+        for s in lesson.schedules.all():
+            start_min = s.start_time.hour * 60 + s.start_time.minute
+            end_min   = s.end_time.hour * 60 + s.end_time.minute
+            day_map[s.day]['items'].append({
+                'lesson':  lesson,
+                'top':     round((start_min - base_min) * PX_PER_MIN),
+                'height':  max(round((end_min - start_min) * PX_PER_MIN), 22),
+                'time':    f"{s.start_time.strftime('%H:%M')}~{s.end_time.strftime('%H:%M')}",
+                'color':   color,
+            })
+
+    timetable_days = [day_map[d] for d, _ in DAY_CHOICES]
+
+    hour_labels = []
+    h = base_min // 60
+    while h * 60 <= top_min:
+        hour_labels.append({
+            'label': f'{h:02d}:00',
+            'top':   round((h * 60 - base_min) * PX_PER_MIN),
+        })
+        h += 1
+
     return render(request, 'classes/lesson_list.html', {
-        'lessons': lessons,
-        'search': search,
-        'status': status,
+        'lessons':        lessons,
+        'search':         search,
+        'status':         status,
+        # timetable
+        'timetable_days': timetable_days,
+        'hour_labels':    hour_labels,
+        'table_height':   table_height,
+        'tt_legend':      tt_legend,
     })
 
 
