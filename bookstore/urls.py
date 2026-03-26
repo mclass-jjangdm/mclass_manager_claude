@@ -52,6 +52,7 @@ urlpatterns = [
 
     # [추가] 개별 납부 처리 URL
     path('sale/<int:pk>/settle/', views.book_sale_settle, name='book_sale_settle'),
+    path('sale/<int:pk>/settle-edit/', views.book_sale_settle_edit, name='book_sale_settle_edit'),
 
     # 판매 기록 수정 URL
     path('sale/<int:pk>/edit/', views.book_sale_update, name='book_sale_update'),

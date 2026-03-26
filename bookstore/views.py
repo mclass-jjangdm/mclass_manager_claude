@@ -650,6 +650,35 @@ def book_sale_create(request, student_pk):
     })
 
 
+def book_sale_settle_edit(request, pk):
+    """납부 완료된 교재의 납부일/납부 방법 수정"""
+    sale = get_object_or_404(BookSale, pk=pk)
+
+    if not sale.is_paid:
+        messages.error(request, "납부 완료된 항목이 아닙니다.")
+        return redirect('students:student_detail', pk=sale.student.pk)
+
+    if request.method == 'POST':
+        payment_date = request.POST.get('payment_date')
+        payment_method = request.POST.get('payment_method')
+
+        if not payment_date:
+            messages.error(request, "납부일이 입력되지 않았습니다.")
+            return redirect('students:student_detail', pk=sale.student.pk)
+
+        try:
+            from datetime import datetime
+            sale.payment_date = datetime.strptime(payment_date, '%Y-%m-%d').date()
+            if payment_method:
+                sale.payment_method = payment_method
+            sale.save()
+            messages.success(request, f"'{sale.book.title}' 납부 정보가 수정되었습니다.")
+        except Exception as e:
+            messages.error(request, f"처리 중 오류 발생: {e}")
+
+    return redirect('students:student_detail', pk=sale.student.pk)
+
+
 def book_sale_settle(request, pk):
     """개별 교재 판매 건 납부(정산) 처리"""
     sale = get_object_or_404(BookSale, pk=pk)
