@@ -1,0 +1,154 @@
+{% extends 'classes/base_classes.html' %}
+
+{% block title %}{% if action == 'create' %}수업 개설{% else %}수업 수정{% endif %} - M'Class Manager{% endblock %}
+
+{% block classes_content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h1 class="text-xl font-bold text-gray-800 mb-6">
+            {% if action == 'create' %}수업 개설{% else %}수업 수정 - {{ lesson.name }}{% endif %}
+        </h1>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="space-y-5">
+
+                <!-- 수업 이름 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">수업 이름 <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" value="{{ form.name.value|default:'' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="예: 고2 수학 심화반">
+                    {% if form.name.errors %}<p class="text-red-500 text-xs mt-1">{{ form.name.errors.0 }}</p>{% endif %}
+                </div>
+
+                <!-- 과목 / 담당 교사 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">과목</label>
+                        <select name="subject"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">-- 선택 없음 --</option>
+                            {% for pk, name in form.fields.subject.choices %}
+                            {% if pk %}
+                            <option value="{{ pk }}" {% if form.subject.value|stringformat:"s" == pk|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">담당 교사</label>
+                        <select name="teacher"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">-- 선택 없음 --</option>
+                            {% for pk, name in form.fields.teacher.choices %}
+                            {% if pk %}
+                            <option value="{{ pk }}" {% if form.teacher.value|stringformat:"s" == pk|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 교재 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">교재 (복수 선택 가능)</label>
+                    <select name="books" multiple
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 h-28">
+                        {% for pk, name in form.fields.books.choices %}
+                        <option value="{{ pk }}" {% if pk in form.books.value %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-gray-400 mt-1">Ctrl(또는 Cmd) + 클릭으로 복수 선택</p>
+                </div>
+
+                <!-- 수업 요일 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">수업 요일</label>
+                    <div class="flex gap-4 flex-wrap">
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ form.mon }} <span class="text-sm text-gray-700">월</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ form.tue }} <span class="text-sm text-gray-700">화</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ form.wed }} <span class="text-sm text-gray-700">수</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ form.thu }} <span class="text-sm text-gray-700">목</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ form.fri }} <span class="text-sm text-gray-700">금</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ form.sat }} <span class="text-sm text-gray-700">토</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            {{ form.sun }} <span class="text-sm text-gray-700">일</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 수업 시간 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">시작 시간 <span class="text-red-500">*</span></label>
+                        <input type="time" name="start_time" value="{{ form.start_time.value|default:'' }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        {% if form.start_time.errors %}<p class="text-red-500 text-xs mt-1">{{ form.start_time.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">종료 시간 <span class="text-red-500">*</span></label>
+                        <input type="time" name="end_time" value="{{ form.end_time.value|default:'' }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        {% if form.end_time.errors %}<p class="text-red-500 text-xs mt-1">{{ form.end_time.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+
+                <!-- 기본 수강료 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">기본 수강료 (월) <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <input type="number" name="base_tuition" value="{{ form.base_tuition.value|default:'' }}"
+                               min="0" step="1000"
+                               class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                               placeholder="예: 300000">
+                        <span class="absolute right-3 top-2 text-gray-400 text-sm">원</span>
+                    </div>
+                    {% if form.base_tuition.errors %}<p class="text-red-500 text-xs mt-1">{{ form.base_tuition.errors.0 }}</p>{% endif %}
+                </div>
+
+                <!-- 기타 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">기타</label>
+                    <textarea name="memo" rows="2"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              placeholder="기타 특이사항...">{{ form.memo.value|default:'' }}</textarea>
+                </div>
+
+                <!-- 활성 여부 -->
+                <div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        {{ form.is_active }}
+                        <span class="text-sm font-medium text-gray-700">활성 수업</span>
+                    </label>
+                </div>
+
+            </div>
+
+            <!-- 버튼 -->
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                <a href="{% if lesson %}{% url 'classes:lesson_detail' lesson.pk %}{% else %}{% url 'classes:lesson_list' %}{% endif %}"
+                   class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+                    취소
+                </a>
+                <button type="submit"
+                        class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    {% if action == 'create' %}수업 개설{% else %}저장{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

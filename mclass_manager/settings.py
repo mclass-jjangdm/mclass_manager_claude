@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'payment',
     'progress',
     'homepage',
+    'classes',
 ]
 
 

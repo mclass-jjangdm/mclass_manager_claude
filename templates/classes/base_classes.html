@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 서브 네비게이션 -->
+    <div class="bg-white shadow-sm">
+        <div class="container mx-auto px-4">
+            <nav class="flex space-x-4 overflow-x-auto py-3" aria-label="Classes">
+                <a href="{% url 'classes:lesson_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'lesson_list' %}active{% endif %}">
+                    수업 목록
+                </a>
+                {% if user.is_staff %}
+                <a href="{% url 'classes:lesson_create' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'lesson_create' %}active{% endif %}">
+                    수업 개설
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+
+    <!-- 컨텐츠 영역 -->
+    <div class="container mx-auto px-4">
+        {% block classes_content %}
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

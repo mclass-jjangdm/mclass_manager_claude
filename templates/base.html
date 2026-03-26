@@ -175,6 +175,7 @@
                     <a href="{% url 'bookstore:book_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">📦 교재 관리</a>
                     <a href="{% url 'progress:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">📖 학습 진도</a>
                     <a href="{% url 'maintenance:create' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">🏢 관리비</a>
+                    <a href="{% url 'classes:lesson_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">🏫 수업 관리</a>
                     <a href="{% url 'payment:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">💳 납부 현황</a>
                     {% if user.is_staff %}
                     <a href="{% url 'google_drive_dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium font-ubuntu">☁️ 구글 드라이브</a>
@@ -235,6 +236,9 @@
                     </a>
                     <a href="{% url 'maintenance:create' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
                         <span class="text-base">🏢</span> 관리비
+                    </a>
+                    <a href="{% url 'classes:lesson_list' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
+                        <span class="text-base">🏫</span> 수업 관리
                     </a>
                     <a href="{% url 'payment:dashboard' %}" class="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2.5 rounded-md text-sm font-medium">
                         <span class="text-base">💳</span> 납부 현황

@@ -1,0 +1,193 @@
+{% extends 'classes/base_classes.html' %}
+{% load humanize %}
+
+{% block title %}{{ lesson.name }} - M'Class Manager{% endblock %}
+
+{% block classes_content %}
+<div class="space-y-6">
+
+    <!-- 수업 정보 카드 -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">{{ lesson.name }}</h1>
+                <div class="flex items-center gap-2 mt-1">
+                    {% if lesson.is_active %}
+                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">활성</span>
+                    {% else %}
+                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">비활성</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if user.is_staff %}
+            <div class="flex gap-2">
+                <a href="{% url 'classes:lesson_edit' lesson.pk %}"
+                   class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    수정
+                </a>
+                <a href="{% url 'classes:lesson_delete' lesson.pk %}"
+                   class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    삭제
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+                <p class="text-gray-500 text-xs mb-1">과목</p>
+                <p class="font-medium text-gray-800">{{ lesson.subject.name|default:'-' }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500 text-xs mb-1">담당 교사</p>
+                <p class="font-medium text-gray-800">{{ lesson.teacher.name|default:'-' }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500 text-xs mb-1">수업 요일</p>
+                <p class="font-medium text-gray-800">{{ lesson.days_display }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500 text-xs mb-1">수업 시간</p>
+                <p class="font-medium text-gray-800">{{ lesson.start_time|time:"H:i" }} ~ {{ lesson.end_time|time:"H:i" }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500 text-xs mb-1">기본 수강료</p>
+                <p class="font-medium text-gray-800">{{ lesson.base_tuition|intcomma }}원</p>
+            </div>
+            <div>
+                <p class="text-gray-500 text-xs mb-1">교재</p>
+                <p class="font-medium text-gray-800">
+                    {% for book in lesson.books.all %}{{ book.title }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}
+                </p>
+            </div>
+            {% if lesson.memo %}
+            <div class="col-span-2">
+                <p class="text-gray-500 text-xs mb-1">기타</p>
+                <p class="font-medium text-gray-800">{{ lesson.memo }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 수강생 목록 -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">
+                수강생 목록
+                <span class="ml-2 text-sm font-normal text-gray-500">({{ enrollments|length }}명)</span>
+            </h2>
+            {% if user.is_staff %}
+            <a href="{% url 'classes:enrollment_create' lesson.pk %}"
+               class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                수강 신청
+            </a>
+            {% endif %}
+        </div>
+
+        {% if enrollments %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">학생</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수강 시작일</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수강료</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">조정액</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">납부 현황</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+                        {% if user.is_staff %}
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for enrollment in enrollments %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <a href="{% url 'students:student_detail' enrollment.student.pk %}"
+                               class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
+                                {{ enrollment.student.name }}
+                            </a>
+                            <p class="text-xs text-gray-400">{{ enrollment.student.school_display }}{{ enrollment.student.get_grade_display|default:'' }}</p>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            {{ enrollment.enrollment_date }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            {{ enrollment.adjusted_tuition|intcomma }}원
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            {% if enrollment.tuition_adjustment > 0 %}
+                            <span class="text-blue-600">+{{ enrollment.tuition_adjustment|intcomma }}</span>
+                            {% elif enrollment.tuition_adjustment < 0 %}
+                            <span class="text-red-600">{{ enrollment.tuition_adjustment|intcomma }}</span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            {{ enrollment.payments.count }}회 납부
+                            {% if user.is_staff %}
+                            <a href="{% url 'classes:tuition_payment_create' enrollment.pk %}"
+                               class="ml-2 text-xs text-indigo-600 hover:text-indigo-800 underline">+ 납부</a>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if enrollment.is_active %}
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">수강중</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">종료</span>
+                            {% endif %}
+                        </td>
+                        {% if user.is_staff %}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <a href="{% url 'classes:enrollment_edit' lesson.pk enrollment.pk %}"
+                               class="text-yellow-600 hover:text-yellow-800 mr-2">수정</a>
+                            <a href="{% url 'classes:enrollment_delete' lesson.pk enrollment.pk %}"
+                               class="text-red-600 hover:text-red-800">취소</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+
+                    <!-- 납부 내역 (접힘) -->
+                    {% if enrollment.payments.all %}
+                    <tr class="bg-gray-50">
+                        <td colspan="{% if user.is_staff %}7{% else %}6{% endif %}" class="px-6 py-3">
+                            <div class="text-xs text-gray-500 space-y-1">
+                                <p class="font-medium text-gray-600 mb-1">납부 내역</p>
+                                {% for payment in enrollment.payments.all %}
+                                <div class="flex items-center gap-3">
+                                    <span class="text-gray-700">{{ payment.year }}년 {{ payment.month }}월</span>
+                                    <span class="font-medium">{{ payment.amount|intcomma }}원</span>
+                                    <span class="text-gray-400">{{ payment.payment_date }} · {{ payment.get_payment_method_display }}</span>
+                                    {% if payment.memo %}<span class="text-gray-400">· {{ payment.memo }}</span>{% endif %}
+                                    {% if user.is_staff %}
+                                    <form method="post" action="{% url 'classes:tuition_payment_delete' enrollment.pk payment.pk %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                onclick="return confirm('이 납부 기록을 삭제할까요?')"
+                                                class="text-red-400 hover:text-red-600 text-xs">삭제</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-8 text-center text-gray-500 text-sm">
+            수강생이 없습니다.
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
