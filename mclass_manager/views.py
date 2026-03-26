@@ -94,6 +94,23 @@ class IndexView(TemplateView):
             # 오늘 출근 교사 수
             today_present = Attendance.objects.filter(date=today, is_present=True).count()
 
+            # 이번 달 수입 - 수강료 / 교재 판매
+            from classes.models import TuitionPayment
+            from bookstore.models import BookSale
+            from django.db.models import F
+            month_tuition_income = TuitionPayment.objects.filter(
+                payment_date__year=today.year,
+                payment_date__month=today.month,
+            ).aggregate(s=Sum('amount'))['s'] or 0
+
+            month_book_income = BookSale.objects.filter(
+                is_paid=True,
+                payment_date__year=today.year,
+                payment_date__month=today.month,
+            ).aggregate(s=Sum(F('price') * F('quantity')))['s'] or 0
+
+            total_income = month_tuition_income + month_book_income
+
             # 이번 달 정산 - 지출
             month_maint = Maintenance.objects.filter(
                 date__year=today.year,
@@ -137,6 +154,9 @@ class IndexView(TemplateView):
                 'month_charge': month_charge,
                 'month_salary': month_salary,
                 'total_expense': total_expense,
+                'month_tuition_income': month_tuition_income,
+                'month_book_income': month_book_income,
+                'total_income': total_income,
             })
 
         return context
