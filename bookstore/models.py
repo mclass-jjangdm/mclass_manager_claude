@@ -124,8 +124,18 @@ class BookSale(models.Model):
     price = models.PositiveIntegerField(verbose_name="판매 당시 가격")  # 가격 변동 대비
     quantity = models.PositiveIntegerField(default=1, verbose_name="수량")
 
+    PAYMENT_METHOD = [
+        ('kjt', '결제선생'),
+        ('daon', '다온카드'),
+        ('card', '신용카드'),
+        ('transfer', '계좌이체'),
+        ('cash', '현금'),
+        ('other', '기타'),
+    ]
+
     is_paid = models.BooleanField(default=False, verbose_name="결제 완료 여부")
     payment_date = models.DateField(blank=True, null=True, verbose_name="결제일")
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD, blank=True, null=True, verbose_name="결제 수단")
 
     is_learning_completed = models.BooleanField(default=False, verbose_name="학습 완료")
 

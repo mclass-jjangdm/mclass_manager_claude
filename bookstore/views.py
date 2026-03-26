@@ -656,6 +656,7 @@ def book_sale_settle(request, pk):
 
     if request.method == 'POST':
         payment_date = request.POST.get('payment_date')
+        payment_method = request.POST.get('payment_method')
 
         if not payment_date:
             messages.error(request, "납부일이 입력되지 않았습니다.")
@@ -669,6 +670,8 @@ def book_sale_settle(request, pk):
                 sale.is_paid = True
                 # 날짜 문자열을 date 객체로 변환 (YYYY-MM-DD)
                 sale.payment_date = datetime.strptime(payment_date, '%Y-%m-%d').date()
+                if payment_method:
+                    sale.payment_method = payment_method
                 sale.save()
 
                 # 2. 학생 미납금 차감

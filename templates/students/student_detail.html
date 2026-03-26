@@ -556,9 +556,11 @@ function togglePaidSales() {
                     <label class="block text-xs text-gray-600 mb-1">납부 방법</label>
                     <select name="payment_method"
                             class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                        <option value="kjt">결제선생</option>
+                        <option value="daon">다온카드</option>
+                        <option value="card">신용카드</option>
                         <option value="transfer">계좌이체</option>
                         <option value="cash">현금</option>
-                        <option value="card">카드</option>
                         <option value="other">기타</option>
                     </select>
                 </div>
@@ -591,6 +593,18 @@ function togglePaidSales() {
         <form id="book-pay-form" method="POST">
             {% csrf_token %}
             <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">납부 방법</label>
+                    <select name="payment_method"
+                            class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400">
+                        <option value="kjt">결제선생</option>
+                        <option value="daon">다온카드</option>
+                        <option value="card">신용카드</option>
+                        <option value="transfer">계좌이체</option>
+                        <option value="cash">현금</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
                 <div>
                     <label class="block text-xs text-gray-600 mb-1">납부일</label>
                     <input type="date" name="payment_date" id="book-modal-payment-date"
