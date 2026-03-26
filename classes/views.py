@@ -40,10 +40,8 @@ def _get_lesson_form_context():
 def _get_default_teacher_pk():
     """'원장' 이름의 선생님 pk 반환 (is_active 무관). 없으면 None."""
     from teachers.models import Teacher
-    try:
-        return Teacher.objects.get(name='원장').pk
-    except Teacher.DoesNotExist:
-        return None
+    teacher = Teacher.objects.filter(name='원장').first()
+    return teacher.pk if teacher else None
 
 
 def _save_schedules(post_data, lesson):
