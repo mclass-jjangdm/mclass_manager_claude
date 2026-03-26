@@ -22,4 +22,5 @@ urlpatterns = [
     path('file/<int:file_id>/delete/', views.delete_student_file, name='delete_student_file'),
     path('<int:pk>/quit/', views.student_quit, name='student_quit'),
     path('<int:pk>/readmit/', views.student_readmit, name='student_readmit'),
+    path('<int:pk>/tuition-pay/<int:enroll_pk>/', views.student_tuition_pay, name='student_tuition_pay'),
 ]

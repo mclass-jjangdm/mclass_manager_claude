@@ -346,6 +346,7 @@ def student_detail(request, pk):
         'paid_sales': paid_sales,
         'total_unpaid_books': total_unpaid_books,
         'total_paid_books': total_paid_books,
+        'active_enrollments': active_enrollments,
         'current_month_tuition': current_month_tuition,
         'total_tuition_paid': total_tuition_paid,
         'internal_grades': regular_internal_grades,
@@ -361,6 +362,34 @@ def student_detail(request, pk):
         'middle_grade_summary': middle_grade_summary,
     }
     return render(request, 'students/student_detail.html', context)
+
+
+@login_required
+def student_tuition_pay(request, pk, enroll_pk):
+    from classes.models import Enrollment, TuitionPayment
+    student = get_object_or_404(Student, pk=pk)
+    enrollment = get_object_or_404(Enrollment, pk=enroll_pk, student=student)
+
+    if request.method == 'POST':
+        try:
+            year = int(request.POST.get('year'))
+            month = int(request.POST.get('month'))
+            amount = int(request.POST.get('amount'))
+            payment_date = request.POST.get('payment_date')
+            payment_method = request.POST.get('payment_method')
+
+            TuitionPayment.objects.create(
+                enrollment=enrollment,
+                year=year,
+                month=month,
+                amount=amount,
+                payment_date=payment_date,
+                payment_method=payment_method,
+            )
+            messages.success(request, f'{year}년 {month}월 수강료({enrollment.lesson.name}) 납부 처리되었습니다.')
+        except (ValueError, TypeError):
+            messages.error(request, '입력값이 올바르지 않습니다.')
+    return redirect('students:student_detail', pk=pk)
 
 
 @login_required

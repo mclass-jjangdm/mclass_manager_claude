@@ -126,6 +126,25 @@
                         <span class="text-xs text-blue-600">현재까지 납부</span>
                         <span class="font-bold text-green-600">{{ total_tuition_paid|intcomma }}원</span>
                     </div>
+                    {% if active_enrollments %}
+                    <div class="mt-3 border-t border-blue-200 pt-2 space-y-1">
+                        {% for enrollment in active_enrollments %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-blue-700 truncate" style="max-width:100px" title="{{ enrollment.lesson.name }}">{{ enrollment.lesson.name }}</span>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs font-medium text-blue-800">{{ enrollment.adjusted_tuition|intcomma }}원</span>
+                                <button type="button"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-0.5 rounded transition-colors"
+                                        onclick="openTuitionModal({{ enrollment.pk }}, '{{ enrollment.lesson.name|escapejs }}', {{ enrollment.adjusted_tuition }}, '{% url 'students:student_tuition_pay' student.pk enrollment.pk %}')">
+                                    납부
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="mt-2 text-xs text-blue-400 text-center">수강 중인 수업 없음</div>
+                    {% endif %}
                 </div>
                 <!-- 교재 대금 -->
                 <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
@@ -497,4 +516,103 @@ function togglePaidSales() {
         ← 목록으로 돌아가기
     </a>
 </div>
+
+<!-- 수강료 납부 모달 -->
+<div id="tuition-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">수강료 납부</h3>
+        <p id="modal-lesson-name" class="text-sm text-blue-600 mb-4"></p>
+        <form id="tuition-pay-form" method="POST">
+            {% csrf_token %}
+            <div class="space-y-3">
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-600 mb-1">연도</label>
+                        <input type="number" name="year" id="modal-year"
+                               class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-600 mb-1">월</label>
+                        <select name="month" id="modal-month"
+                                class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                            <option value="1">1월</option>
+                            <option value="2">2월</option>
+                            <option value="3">3월</option>
+                            <option value="4">4월</option>
+                            <option value="5">5월</option>
+                            <option value="6">6월</option>
+                            <option value="7">7월</option>
+                            <option value="8">8월</option>
+                            <option value="9">9월</option>
+                            <option value="10">10월</option>
+                            <option value="11">11월</option>
+                            <option value="12">12월</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">금액</label>
+                    <input type="number" name="amount" id="modal-amount"
+                           class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">납부 방법</label>
+                    <select name="payment_method"
+                            class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                        <option value="transfer">계좌이체</option>
+                        <option value="cash">현금</option>
+                        <option value="card">카드</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">납부일</label>
+                    <input type="date" name="payment_date" id="modal-payment-date"
+                           class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-5">
+                <button type="button" onclick="closeTuitionModal()"
+                        class="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                    취소
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors">
+                    납부 처리
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openTuitionModal(enrollPk, lessonName, amount, actionUrl) {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = today.getMonth() + 1;
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${String(mm).padStart(2, '0')}-${dd}`;
+
+    document.getElementById('modal-lesson-name').textContent = lessonName;
+    document.getElementById('modal-year').value = yyyy;
+    document.getElementById('modal-month').value = mm;
+    document.getElementById('modal-amount').value = amount;
+    document.getElementById('modal-payment-date').value = dateStr;
+    document.getElementById('tuition-pay-form').action = actionUrl;
+    document.getElementById('tuition-modal').classList.remove('hidden');
+}
+
+function closeTuitionModal() {
+    document.getElementById('tuition-modal').classList.add('hidden');
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeTuitionModal();
+});
+
+// 모달 바깥 클릭 시 닫기
+document.getElementById('tuition-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeTuitionModal();
+});
+</script>
 {% endblock %}
