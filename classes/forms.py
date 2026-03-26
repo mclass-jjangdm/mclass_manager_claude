@@ -1,8 +1,14 @@
 from django import forms
+from teachers.models import Teacher
 from .models import Lesson, Enrollment, TuitionPayment
 
 
 class LessonForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['teacher'].queryset = Teacher.objects.filter(is_active=True).order_by('name')
+        self.fields['teacher'].label = '담당 선생님'
+
     class Meta:
         model = Lesson
         fields = [

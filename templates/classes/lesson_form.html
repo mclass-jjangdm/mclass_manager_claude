@@ -22,41 +22,57 @@
                     {% if form.name.errors %}<p class="text-red-500 text-xs mt-1">{{ form.name.errors.0 }}</p>{% endif %}
                 </div>
 
-                <!-- 과목 / 담당 교사 -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">과목</label>
-                        <select name="subject"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- 선택 없음 --</option>
-                            {% for pk, name in form.fields.subject.choices %}
-                            {% if pk %}
-                            <option value="{{ pk }}" {% if form.subject.value|stringformat:"s" == pk|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
-                            {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">담당 교사</label>
-                        <select name="teacher"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- 선택 없음 --</option>
-                            {% for pk, name in form.fields.teacher.choices %}
-                            {% if pk %}
-                            <option value="{{ pk }}" {% if form.teacher.value|stringformat:"s" == pk|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
-                            {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
+                <!-- 교과 선택 (과목/교재 필터 기준) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">교과</label>
+                    <select id="category-select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">-- 교과 선택 (전체) --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-gray-400 mt-1">교과를 선택하면 아래 과목과 교재 목록이 필터링됩니다.</p>
+                </div>
+
+                <!-- 과목 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">과목</label>
+                    <select name="subject" id="subject-select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">-- 선택 없음 --</option>
+                        {% for pk, name in form.fields.subject.choices %}
+                        {% if pk %}
+                        <option value="{{ pk }}" data-category=""
+                                {% if form.subject.value|stringformat:"s" == pk|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    {% if form.subject.errors %}<p class="text-red-500 text-xs mt-1">{{ form.subject.errors.0 }}</p>{% endif %}
+                </div>
+
+                <!-- 담당 선생님 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">담당 선생님</label>
+                    <select name="teacher"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">-- 선택 없음 --</option>
+                        {% for pk, name in form.fields.teacher.choices %}
+                        {% if pk %}
+                        <option value="{{ pk }}" {% if form.teacher.value|stringformat:"s" == pk|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <!-- 교재 -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">교재 (복수 선택 가능)</label>
-                    <select name="books" multiple
+                    <select name="books" id="books-select" multiple
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 h-28">
                         {% for pk, name in form.fields.books.choices %}
-                        <option value="{{ pk }}" {% if pk in form.books.value %}selected{% endif %}>{{ name }}</option>
+                        <option value="{{ pk }}" data-category=""
+                                {% if pk in form.books.value %}selected{% endif %}>{{ name }}</option>
                         {% endfor %}
                     </select>
                     <p class="text-xs text-gray-400 mt-1">Ctrl(또는 Cmd) + 클릭으로 복수 선택</p>
@@ -151,4 +167,61 @@
         </form>
     </div>
 </div>
+
+<script>
+// 서버에서 렌더링된 과목/교재 데이터
+const SUBJECTS_DATA = {{ subjects_json|safe }};
+const BOOKS_DATA = {{ books_json|safe }};
+
+// 과목 select에 data-category 속성 부여
+(function initCategoryData() {
+    const subjectSelect = document.getElementById('subject-select');
+    const booksSelect = document.getElementById('books-select');
+
+    // 과목 옵션에 category 속성 설정
+    Array.from(subjectSelect.options).forEach(opt => {
+        if (!opt.value) return;
+        const s = SUBJECTS_DATA.find(s => s.id == opt.value);
+        if (s) opt.dataset.category = s.category;
+    });
+
+    // 교재 옵션에 category 속성 설정
+    Array.from(booksSelect.options).forEach(opt => {
+        if (!opt.value) return;
+        const b = BOOKS_DATA.find(b => b.id == opt.value);
+        if (b) opt.dataset.category = b.category;
+    });
+})();
+
+function filterByCategory(category) {
+    const subjectSelect = document.getElementById('subject-select');
+    const booksSelect = document.getElementById('books-select');
+
+    // 과목 필터링
+    Array.from(subjectSelect.options).forEach(opt => {
+        if (!opt.value) return;
+        const match = !category || opt.dataset.category === category;
+        opt.hidden = !match;
+        if (!match) opt.selected = false;
+    });
+
+    // 교재 필터링
+    Array.from(booksSelect.options).forEach(opt => {
+        if (!opt.value) return;
+        const match = !category || opt.dataset.category === category;
+        opt.hidden = !match;
+        if (!match) opt.selected = false;
+    });
+}
+
+document.getElementById('category-select').addEventListener('change', function() {
+    filterByCategory(this.value);
+});
+
+// 페이지 로드 시 현재 선택된 교과로 초기 필터링
+(function applyInitialFilter() {
+    const cat = document.getElementById('category-select').value;
+    if (cat) filterByCategory(cat);
+})();
+</script>
 {% endblock %}

@@ -2,9 +2,46 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+import json
 
 from .models import Lesson, Enrollment, TuitionPayment
 from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm
+
+
+def _get_lesson_form_context():
+    """수업 폼에 필요한 교과/과목/교재 JSON 데이터 반환"""
+    from subjects.models import Subject
+    from bookstore.models import Book
+
+    subjects = Subject.objects.filter(is_active=True).order_by('name')
+    books = Book.objects.select_related('subject').order_by('title')
+
+    subjects_data = [
+        {'id': s.pk, 'name': s.name, 'category': s.category}
+        for s in subjects
+    ]
+    books_data = [
+        {'id': b.pk, 'title': b.title,
+         'category': b.subject.category if b.subject else '기타'}
+        for b in books
+    ]
+
+    categories = sorted(set(s['category'] for s in subjects_data))
+
+    return {
+        'categories': categories,
+        'subjects_json': json.dumps(subjects_data, ensure_ascii=False),
+        'books_json': json.dumps(books_data, ensure_ascii=False),
+    }
+
+
+def _get_default_teacher_pk():
+    """'원장' 이름의 재직 중인 선생님 pk 반환. 없으면 None."""
+    from teachers.models import Teacher
+    try:
+        return Teacher.objects.get(name='원장', is_active=True).pk
+    except Teacher.DoesNotExist:
+        return None
 
 
 def _admin_required(request):
@@ -72,12 +109,13 @@ def lesson_create(request):
             messages.success(request, f'수업 "{lesson.name}"이 생성되었습니다.')
             return redirect('classes:lesson_detail', pk=lesson.pk)
     else:
-        form = LessonForm()
+        default_teacher_pk = _get_default_teacher_pk()
+        initial = {'teacher': default_teacher_pk} if default_teacher_pk else {}
+        form = LessonForm(initial=initial)
 
-    return render(request, 'classes/lesson_form.html', {
-        'form': form,
-        'action': 'create',
-    })
+    ctx = _get_lesson_form_context()
+    ctx.update({'form': form, 'action': 'create'})
+    return render(request, 'classes/lesson_form.html', ctx)
 
 
 @login_required
@@ -97,11 +135,12 @@ def lesson_edit(request, pk):
     else:
         form = LessonForm(instance=lesson)
 
-    return render(request, 'classes/lesson_form.html', {
-        'form': form,
-        'lesson': lesson,
-        'action': 'edit',
-    })
+    # 현재 과목의 교과(카테고리) 미리 선택
+    current_category = lesson.subject.category if lesson.subject else ''
+
+    ctx = _get_lesson_form_context()
+    ctx.update({'form': form, 'lesson': lesson, 'action': 'edit', 'current_category': current_category})
+    return render(request, 'classes/lesson_form.html', ctx)
 
 
 @login_required

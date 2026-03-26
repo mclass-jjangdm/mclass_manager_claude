@@ -23,7 +23,7 @@ class Lesson(models.Model):
         'teachers.Teacher',
         on_delete=models.SET_NULL,
         null=True, blank=True,
-        verbose_name='담당 교사',
+        verbose_name='담당 선생님',
     )
     books = models.ManyToManyField(
         'bookstore.Book',
