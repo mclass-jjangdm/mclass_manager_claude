@@ -209,29 +209,40 @@
                     <a href="{% url 'classes:lesson_detail' item.lesson.pk %}"
                        class="absolute inset-x-1 rounded-lg border overflow-hidden
                               px-2 py-1 hover:brightness-95 hover:shadow-md
-                              transition-all duration-150 cursor-pointer"
+                              transition-all duration-150 cursor-pointer flex flex-col gap-0.5"
                        style="top:{{ item.top }}px;
                               height:{{ item.height }}px;
                               background-color:{{ item.color.bg }};
                               border-color:{{ item.color.border }};"
                        title="{{ item.lesson.name }}&#10;{{ item.time }}&#10;{{ item.lesson.teacher.name|default:'원장' }}">
 
-                        <p class="text-xs font-bold leading-tight truncate"
-                           style="color:{{ item.color.text }}">
-                            {{ item.lesson.name }}
-                        </p>
-                        {% if item.height >= 36 %}
-                        <p class="text-xs leading-tight truncate"
-                           style="color:{{ item.color.text }}; opacity:.75">
-                            {{ item.time }}
-                        </p>
+                        <!-- 수업명 + 시간 -->
+                        <div>
+                            <p class="text-xs font-bold leading-tight truncate"
+                               style="color:{{ item.color.text }}">
+                                {{ item.lesson.name }}
+                            </p>
+                            {% if item.height >= 30 %}
+                            <p class="text-xs leading-none truncate"
+                               style="color:{{ item.color.text }}; opacity:.7; font-size:10px">
+                                {{ item.time }}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- 수강생 이름 목록 -->
+                        {% if item.students and item.height >= 44 %}
+                        <div class="flex flex-wrap gap-x-1 gap-y-0 overflow-hidden"
+                             style="max-height:{{ item.height|add:'-38' }}px">
+                            {% for name in item.students %}
+                            <span class="leading-tight whitespace-nowrap"
+                                  style="color:{{ item.color.text }}; opacity:.85; font-size:10px">
+                                {{ name }}{% if not forloop.last %},{% endif %}
+                            </span>
+                            {% endfor %}
+                        </div>
                         {% endif %}
-                        {% if item.height >= 56 %}
-                        <p class="text-xs leading-tight truncate"
-                           style="color:{{ item.color.text }}; opacity:.6">
-                            {{ item.lesson.teacher.name|default:'원장' }}
-                        </p>
-                        {% endif %}
+
                     </a>
                     {% endfor %}
 

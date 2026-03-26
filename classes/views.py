@@ -107,7 +107,7 @@ def lesson_list(request):
     tt_lessons = list(
         Lesson.objects.filter(is_active=True)
         .select_related('subject', 'teacher')
-        .prefetch_related('schedules')
+        .prefetch_related('schedules', 'enrollments__student')
         .order_by('pk')
     )
 
@@ -133,22 +133,27 @@ def lesson_list(request):
     else:
         base_min, top_min = 13 * 60, 22 * 60
 
-    PX_PER_MIN = 1.5
+    PX_PER_MIN = 1.2
     table_height = max(round((top_min - base_min) * PX_PER_MIN), 120)
 
     # 요일별 수업 블록 데이터
     day_map = {d: {'key': d, 'label': lbl, 'items': []} for d, lbl in DAY_CHOICES}
     for lesson in tt_lessons:
         color = lesson_color_map[lesson.pk]
+        # 현재 활성 수강생 이름 목록
+        students = sorted(
+            e.student.name for e in lesson.enrollments.all() if e.is_active
+        )
         for s in lesson.schedules.all():
             start_min = s.start_time.hour * 60 + s.start_time.minute
             end_min   = s.end_time.hour * 60 + s.end_time.minute
             day_map[s.day]['items'].append({
-                'lesson':  lesson,
-                'top':     round((start_min - base_min) * PX_PER_MIN),
-                'height':  max(round((end_min - start_min) * PX_PER_MIN), 22),
-                'time':    f"{s.start_time.strftime('%H:%M')}~{s.end_time.strftime('%H:%M')}",
-                'color':   color,
+                'lesson':   lesson,
+                'top':      round((start_min - base_min) * PX_PER_MIN),
+                'height':   max(round((end_min - start_min) * PX_PER_MIN), 22),
+                'time':     f"{s.start_time.strftime('%H:%M')}~{s.end_time.strftime('%H:%M')}",
+                'color':    color,
+                'students': students,
             })
 
     timetable_days = [day_map[d] for d, _ in DAY_CHOICES]
