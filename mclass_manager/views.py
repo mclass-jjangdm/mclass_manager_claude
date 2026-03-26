@@ -136,12 +136,10 @@ class IndexView(TemplateView):
 
             total_expense = month_rent + month_charge + month_salary + month_inbound_payment
 
-            # 미납 현황 (누적)
-            total_unpaid_tuition = Student.objects.filter(is_active=True).aggregate(
-                s=Sum('unpaid_amount'))['s'] or 0
+            # 미납 현황 (누적) - BookSale 실시간 계산 기준
             total_unpaid_book = BookSale.objects.filter(is_paid=False).aggregate(
                 s=Sum(F('price') * F('quantity')))['s'] or 0
-            total_unpaid = total_unpaid_tuition + total_unpaid_book
+            total_unpaid = total_unpaid_book
 
             context.update({
                 'grade_stats': grade_stats,
@@ -164,7 +162,6 @@ class IndexView(TemplateView):
                 'month_tuition_income': month_tuition_income,
                 'month_book_income': month_book_income,
                 'total_income': total_income,
-                'total_unpaid_tuition': total_unpaid_tuition,
                 'total_unpaid_book': total_unpaid_book,
                 'total_unpaid': total_unpaid,
             })
