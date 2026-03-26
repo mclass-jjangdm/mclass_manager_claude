@@ -199,32 +199,99 @@ def lesson_delete(request, pk):
 # Enrollment (수강 신청)
 # ──────────────────────────────────────────────
 
+GRADE_LABELS = {
+    'K5': '초5', 'K6': '초6',
+    'K7': '중1', 'K8': '중2', 'K9': '중3',
+    'K10': '고1', 'K11': '고2', 'K12': '고3',
+}
+GRADE_ORDER = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12']
+
+
+def _get_grade_groups(lesson):
+    """학년별 학생 그룹 리스트와 이미 수강 중인 학생 ID 세트 반환.
+    반환: (grade_groups, enrolled_ids)
+    grade_groups = [{'key': 'K7', 'label': '중1', 'students': [...]}, ...]
+    """
+    from students.models import Student
+    all_students = list(
+        Student.objects.filter(quit_date__isnull=True).order_by('grade', 'name')
+    )
+    enrolled_ids = set(
+        lesson.enrollments.filter(is_active=True).values_list('student_id', flat=True)
+    )
+    grade_groups = []
+    for grade in GRADE_ORDER:
+        group = [s for s in all_students if s.grade == grade]
+        if group:
+            grade_groups.append({
+                'key': grade,
+                'label': GRADE_LABELS.get(grade, grade),
+                'students': group,
+            })
+    others = [s for s in all_students if s.grade not in GRADE_ORDER]
+    if others:
+        grade_groups.append({'key': 'other', 'label': '기타', 'students': others})
+    return grade_groups, enrolled_ids
+
+
 @login_required
 def enrollment_create(request, pk):
     if not request.user.is_staff:
         messages.error(request, '관리자만 사용 가능합니다.')
         return redirect('index')
 
-    lesson = get_object_or_404(Lesson, pk=pk)
+    lesson = get_object_or_404(
+        Lesson.objects.prefetch_related('schedules', 'enrollments'), pk=pk
+    )
 
     if request.method == 'POST':
-        form = EnrollmentForm(request.POST)
-        if form.is_valid():
-            enrollment = form.save(commit=False)
-            enrollment.lesson = lesson
-            try:
-                enrollment.save()
-                messages.success(request, f'{enrollment.student} 학생의 수강 신청이 완료되었습니다.')
-                return redirect('classes:lesson_detail', pk=lesson.pk)
-            except Exception:
-                messages.error(request, '이미 수강 신청된 학생입니다.')
-    else:
-        form = EnrollmentForm()
+        student_pks = request.POST.getlist('student')
+        enrollment_date = request.POST.get('enrollment_date', '').strip()
+        end_date = request.POST.get('end_date', '').strip() or None
+        tuition_adjustment = request.POST.get('tuition_adjustment', 0)
+        memo = request.POST.get('memo', '')
+        is_active = 'is_active' in request.POST
+
+        errors = []
+        if not student_pks:
+            errors.append('학생을 한 명 이상 선택해 주세요.')
+        if not enrollment_date:
+            errors.append('수강 시작일을 입력해 주세요.')
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+        else:
+            from students.models import Student
+            success_count = 0
+            for spk in student_pks:
+                try:
+                    student = Student.objects.get(pk=spk)
+                    Enrollment.objects.create(
+                        student=student,
+                        lesson=lesson,
+                        enrollment_date=enrollment_date,
+                        end_date=end_date,
+                        tuition_adjustment=tuition_adjustment,
+                        memo=memo,
+                        is_active=is_active,
+                    )
+                    success_count += 1
+                except Exception:
+                    messages.warning(request, f'{student.name} 학생은 이미 수강 중입니다.')
+            if success_count:
+                messages.success(request, f'{success_count}명의 수강 신청이 완료되었습니다.')
+            return redirect('classes:lesson_detail', pk=lesson.pk)
+
+    grade_groups, enrolled_ids = _get_grade_groups(lesson)
+    today = timezone.localdate()
 
     return render(request, 'classes/enrollment_form.html', {
-        'form': form,
         'lesson': lesson,
         'action': 'create',
+        'grade_groups': grade_groups,
+        'enrolled_ids': enrolled_ids,
+        'today': today,
     })
 
 
@@ -234,7 +301,7 @@ def enrollment_edit(request, pk, enroll_pk):
         messages.error(request, '관리자만 사용 가능합니다.')
         return redirect('index')
 
-    lesson = get_object_or_404(Lesson, pk=pk)
+    lesson = get_object_or_404(Lesson.objects.prefetch_related('schedules'), pk=pk)
     enrollment = get_object_or_404(Enrollment, pk=enroll_pk, lesson=lesson)
 
     if request.method == 'POST':

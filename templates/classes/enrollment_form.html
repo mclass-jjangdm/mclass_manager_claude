@@ -4,7 +4,7 @@
 {% block title %}수강 신청 - {{ lesson.name }}{% endblock %}
 
 {% block classes_content %}
-<div class="max-w-lg mx-auto">
+<div class="max-w-2xl mx-auto">
     <div class="bg-white rounded-lg shadow p-6">
         <div class="mb-6">
             <h1 class="text-xl font-bold text-gray-800">
@@ -14,52 +14,127 @@
         </div>
 
         <!-- 수업 요약 -->
-        <div class="bg-indigo-50 rounded-lg p-3 mb-5 text-sm">
-            <div class="grid grid-cols-2 gap-2 text-gray-700">
-                <div><span class="text-gray-500">요일:</span> {{ lesson.days_display }}</div>
-                <div><span class="text-gray-500">시간:</span> {{ lesson.start_time|time:"H:i" }} ~ {{ lesson.end_time|time:"H:i" }}</div>
-                <div><span class="text-gray-500">기본 수강료:</span> {{ lesson.base_tuition|intcomma }}원</div>
+        <div class="bg-indigo-50 rounded-lg p-4 mb-6">
+            <div class="text-sm text-gray-700 space-y-2">
+                {% with schedules=lesson.schedules.all %}
+                {% if schedules %}
+                <div>
+                    <span class="text-gray-500 font-medium">수업 일정</span>
+                    <div class="flex flex-wrap gap-2 mt-1.5">
+                        {% for s in schedules %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-indigo-200 text-indigo-700 rounded-md text-xs font-medium">
+                            {{ s.get_day_display }}
+                            <span class="text-indigo-400 font-normal">{{ s.start_time|time:"H:i" }}~{{ s.end_time|time:"H:i" }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div><span class="text-gray-500">수업 일정:</span> <span class="text-gray-400 text-xs">미설정</span></div>
+                {% endif %}
+                {% endwith %}
+                <div>
+                    <span class="text-gray-500 font-medium">기본 수강료</span>
+                    <span class="ml-2 font-semibold text-gray-800">{{ lesson.base_tuition|intcomma }}원</span>
+                </div>
             </div>
         </div>
 
         <form method="post">
             {% csrf_token %}
-            <div class="space-y-4">
+            <div class="space-y-5">
 
-                <!-- 학생 선택 -->
+                <!-- ── 학생 선택 (신규 수강 신청) ── -->
+                {% if action == 'create' %}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">학생 <span class="text-red-500">*</span></label>
-                    {% if action == 'edit' %}
+                    <p class="text-sm font-medium text-gray-700 mb-2">
+                        학생 선택 <span class="text-red-500">*</span>
+                        <span class="ml-1 text-xs font-normal text-gray-400">학년 탭을 선택 후 학생을 체크하세요</span>
+                    </p>
+
+                    {% if grade_groups %}
+                    <!-- 학년 탭 -->
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        {% for grp in grade_groups %}
+                        <button type="button"
+                                onclick="selectGrade('{{ grp.key }}')"
+                                id="tab-{{ grp.key }}"
+                                class="grade-tab px-3 py-1.5 rounded-full text-sm font-medium border transition-colors border-gray-300 text-gray-600 bg-white hover:bg-gray-50">
+                            {{ grp.label }}
+                            <span class="ml-1 text-xs text-gray-400">({{ grp.students|length }})</span>
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 학년별 학생 패널 -->
+                    {% for grp in grade_groups %}
+                    <div id="students-{{ grp.key }}" class="grade-panel hidden">
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <!-- 전체 선택 -->
+                            <div class="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-200">
+                                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                                    <input type="checkbox" id="check-all-{{ grp.key }}"
+                                           onchange="toggleAll('{{ grp.key }}', this.checked)"
+                                           class="w-4 h-4 text-indigo-600 rounded border-gray-300">
+                                    <span class="font-medium">전체 선택</span>
+                                </label>
+                                <span class="text-xs text-gray-400" id="selected-count-{{ grp.key }}">0명 선택됨</span>
+                            </div>
+                            <!-- 학생 목록 -->
+                            <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+                                {% for student in grp.students %}
+                                <label class="flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors
+                                              {% if student.pk in enrolled_ids %}opacity-50 bg-gray-50{% else %}hover:bg-indigo-50{% endif %}
+                                              select-none">
+                                    <input type="checkbox"
+                                           name="student"
+                                           value="{{ student.pk }}"
+                                           class="student-cb-{{ grp.key }} w-4 h-4 text-indigo-600 rounded border-gray-300"
+                                           onchange="updateCount('{{ grp.key }}')"
+                                           {% if student.pk in enrolled_ids %}disabled title="이미 수강 중"{% endif %}>
+                                    <span class="text-sm text-gray-800">{{ student.name }}</span>
+                                    {% if student.pk in enrolled_ids %}
+                                    <span class="ml-auto text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">수강 중</span>
+                                    {% endif %}
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% else %}
+                    <p class="text-sm text-gray-400 py-3">등록된 재학생이 없습니다.</p>
+                    {% endif %}
+                </div>
+
+                {% else %}
+                <!-- ── 학생 표시 (수정 시 고정) ── -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">학생</label>
                     <input type="text" value="{{ enrollment.student.name }}" disabled
                            class="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-lg text-sm text-gray-500">
                     <input type="hidden" name="student" value="{{ enrollment.student.pk }}">
-                    {% else %}
-                    <select name="student"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="">-- 학생 선택 --</option>
-                        {% for pk, name in form.fields.student.choices %}
-                        {% if pk %}
-                        <option value="{{ pk }}" {% if form.student.value|stringformat:"s" == pk|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
-                        {% endif %}
-                        {% endfor %}
-                    </select>
-                    {% if form.student.errors %}<p class="text-red-500 text-xs mt-1">{{ form.student.errors.0 }}</p>{% endif %}
-                    {% endif %}
                 </div>
+                {% endif %}
 
                 <!-- 수강 시작일 / 종료일 -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">수강 시작일 <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            수강 시작일 <span class="text-red-500">*</span>
+                        </label>
                         <input type="date" name="enrollment_date"
-                               value="{{ form.enrollment_date.value|default:'' }}"
+                               value="{% if action == 'edit' %}{{ form.enrollment_date.value|default:'' }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        {% if form.enrollment_date.errors %}<p class="text-red-500 text-xs mt-1">{{ form.enrollment_date.errors.0 }}</p>{% endif %}
+                        {% if action == 'edit' and form.enrollment_date.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.enrollment_date.errors.0 }}</p>
+                        {% endif %}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">수강 종료일</label>
                         <input type="date" name="end_date"
-                               value="{{ form.end_date.value|default:'' }}"
+                               value="{% if action == 'edit' %}{{ form.end_date.value|default:'' }}{% endif %}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
@@ -69,12 +144,14 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">수강료 조정액</label>
                     <div class="relative">
                         <input type="number" name="tuition_adjustment"
-                               value="{{ form.tuition_adjustment.value|default:'0' }}"
+                               value="{% if action == 'edit' %}{{ form.tuition_adjustment.value|default:'0' }}{% else %}0{% endif %}"
                                class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <span class="absolute right-3 top-2 text-gray-400 text-sm">원</span>
                     </div>
                     <p class="text-xs text-gray-400 mt-1">월 중간 시작 시 음수 입력 가능 (예: -50000)</p>
-                    {% if form.tuition_adjustment.errors %}<p class="text-red-500 text-xs mt-1">{{ form.tuition_adjustment.errors.0 }}</p>{% endif %}
+                    {% if action == 'edit' and form.tuition_adjustment.errors %}
+                    <p class="text-red-500 text-xs mt-1">{{ form.tuition_adjustment.errors.0 }}</p>
+                    {% endif %}
                 </div>
 
                 <!-- 메모 -->
@@ -82,13 +159,15 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">메모</label>
                     <textarea name="memo" rows="2"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              placeholder="특이사항...">{{ form.memo.value|default:'' }}</textarea>
+                              placeholder="특이사항...">{% if action == 'edit' %}{{ form.memo.value|default:'' }}{% endif %}</textarea>
                 </div>
 
                 <!-- 활성 여부 -->
                 <div>
                     <label class="flex items-center gap-2 cursor-pointer">
-                        {{ form.is_active }}
+                        <input type="checkbox" name="is_active"
+                               {% if action == 'edit' %}{% if form.is_active.value %}checked{% endif %}{% else %}checked{% endif %}
+                               class="w-4 h-4 text-indigo-600 rounded border-gray-300">
                         <span class="text-sm font-medium text-gray-700">수강 활성</span>
                     </label>
                 </div>
@@ -108,4 +187,55 @@
         </form>
     </div>
 </div>
+
+{% if action == 'create' %}
+<script>
+function selectGrade(grade) {
+    // 모든 패널 숨기기
+    document.querySelectorAll('.grade-panel').forEach(p => p.classList.add('hidden'));
+    const panel = document.getElementById('students-' + grade);
+    if (panel) panel.classList.remove('hidden');
+
+    // 탭 스타일 초기화 → 활성 탭 강조
+    document.querySelectorAll('.grade-tab').forEach(t => {
+        t.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
+        t.classList.add('border-gray-300', 'text-gray-600', 'bg-white');
+    });
+    const activeTab = document.getElementById('tab-' + grade);
+    if (activeTab) {
+        activeTab.classList.remove('border-gray-300', 'text-gray-600', 'bg-white');
+        activeTab.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
+    }
+    updateCount(grade);
+}
+
+function toggleAll(grade, checked) {
+    document.querySelectorAll('.student-cb-' + grade + ':not([disabled])').forEach(cb => {
+        cb.checked = checked;
+    });
+    updateCount(grade);
+}
+
+function updateCount(grade) {
+    const available = document.querySelectorAll('.student-cb-' + grade + ':not([disabled])');
+    const checked   = document.querySelectorAll('.student-cb-' + grade + ':not([disabled]):checked');
+    const countEl   = document.getElementById('selected-count-' + grade);
+    if (countEl) countEl.textContent = checked.length + '명 선택됨';
+
+    const allCb = document.getElementById('check-all-' + grade);
+    if (allCb) {
+        allCb.checked = available.length > 0 && checked.length === available.length;
+        allCb.indeterminate = checked.length > 0 && checked.length < available.length;
+    }
+}
+
+// 페이지 로드 시 첫 번째 탭 자동 선택
+document.addEventListener('DOMContentLoaded', function() {
+    const firstTab = document.querySelector('.grade-tab');
+    if (firstTab) {
+        selectGrade(firstTab.id.replace('tab-', ''));
+    }
+});
+</script>
+{% endif %}
 {% endblock %}
