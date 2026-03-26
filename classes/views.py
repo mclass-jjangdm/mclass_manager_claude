@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+import datetime
 import json
 
 from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, DAY_CHOICES
@@ -284,7 +285,7 @@ def enrollment_create(request, pk):
             return redirect('classes:lesson_detail', pk=lesson.pk)
 
     grade_groups, enrolled_ids = _get_grade_groups(lesson)
-    today = timezone.localdate()
+    today = datetime.date.today()
 
     return render(request, 'classes/enrollment_form.html', {
         'lesson': lesson,
@@ -353,7 +354,7 @@ def tuition_payment_create(request, enroll_pk):
         return redirect('index')
 
     enrollment = get_object_or_404(Enrollment, pk=enroll_pk)
-    today = timezone.localdate()
+    today = datetime.date.today()
 
     if request.method == 'POST':
         form = TuitionPaymentForm(request.POST)
