@@ -158,8 +158,18 @@ def student_detail(request, pk):
     unpaid_sales = BookSale.objects.filter(student=student, is_paid=False).select_related('book').order_by('-sale_date', '-pk')
     paid_sales = BookSale.objects.filter(student=student, is_paid=True).select_related('book').order_by('-sale_date', '-pk')
 
-    # 총 납부 금액 계산
-    total_paid = sum(sale.get_total_price() for sale in paid_sales)
+    # 교재 대금 계산
+    total_unpaid_books = sum(sale.get_total_price() for sale in unpaid_sales)
+    total_paid_books = sum(sale.get_total_price() for sale in paid_sales)
+
+    # 수강료 계산
+    from classes.models import Enrollment, TuitionPayment
+    from django.db.models import Sum
+    active_enrollments = Enrollment.objects.filter(student=student, is_active=True).select_related('lesson')
+    current_month_tuition = sum(e.adjusted_tuition for e in active_enrollments)
+    total_tuition_paid = TuitionPayment.objects.filter(
+        enrollment__student=student
+    ).aggregate(total=Sum('amount'))['total'] or 0
 
     # 성적 데이터 조회
     internal_grades = Grade.objects.filter(
@@ -334,8 +344,10 @@ def student_detail(request, pk):
         'student': student,
         'unpaid_sales': unpaid_sales,
         'paid_sales': paid_sales,
-        'total_unpaid': student.unpaid_amount,
-        'total_paid': total_paid,
+        'total_unpaid_books': total_unpaid_books,
+        'total_paid_books': total_paid_books,
+        'current_month_tuition': current_month_tuition,
+        'total_tuition_paid': total_tuition_paid,
         'internal_grades': regular_internal_grades,
         'elective_grades': elective_grades,
         'mock_grades': mock_grades,

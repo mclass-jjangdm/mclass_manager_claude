@@ -111,17 +111,38 @@
             </div>
         </div>
 
-        <!-- 재무 요약 -->
+        <!-- 수납 현황 -->
         <div class="bg-gray-50 p-6 rounded-lg">
-            <h4 class="text-lg font-semibold text-gray-700 mb-4">재무 현황</h4>
+            <h4 class="text-lg font-semibold text-gray-700 mb-4">수납 현황</h4>
             <div class="space-y-4">
-                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div class="text-sm text-red-700 mb-1">미납 금액</div>
-                    <div class="text-2xl font-bold text-red-600">{{ total_unpaid|intcomma }}원</div>
+                <!-- 수강료 -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="text-sm font-semibold text-blue-800 mb-2">수강료</div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-blue-600">당월 수강료</span>
+                        <span class="font-bold text-blue-700">{{ current_month_tuition|intcomma }}원</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-xs text-blue-600">현재까지 납부</span>
+                        <span class="font-bold text-green-600">{{ total_tuition_paid|intcomma }}원</span>
+                    </div>
                 </div>
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div class="text-sm text-green-700 mb-1">총 납부 금액</div>
-                    <div class="text-2xl font-bold text-green-600">{{ total_paid|intcomma }}원</div>
+                <!-- 교재 대금 -->
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div class="text-sm font-semibold text-orange-800 mb-2">교재 대금</div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-orange-600">미납 금액</span>
+                        <span class="font-bold text-red-600">{{ total_unpaid_books|intcomma }}원</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-xs text-orange-600">총 납부 금액</span>
+                        <span class="font-bold text-green-600">{{ total_paid_books|intcomma }}원</span>
+                    </div>
+                </div>
+                <!-- 기타 비용 -->
+                <div class="bg-gray-100 border border-gray-200 rounded-lg p-4">
+                    <div class="text-sm font-semibold text-gray-600 mb-2">기타 비용</div>
+                    <div class="text-xs text-gray-400 text-center py-1">-</div>
                 </div>
             </div>
         </div>
