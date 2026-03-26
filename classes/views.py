@@ -37,12 +37,6 @@ def _get_lesson_form_context():
     }
 
 
-def _get_default_teacher_pk():
-    """'원장' 이름의 선생님 pk 반환 (is_active 무관). 없으면 None."""
-    from teachers.models import Teacher
-    teacher = Teacher.objects.filter(name='원장').first()
-    return teacher.pk if teacher else None
-
 
 def _save_schedules(post_data, lesson):
     """POST 데이터에서 요일별 시간 파싱 후 LessonSchedule 저장"""
@@ -131,9 +125,7 @@ def lesson_create(request):
             messages.success(request, f'수업 "{lesson.name}"이 생성되었습니다.')
             return redirect('classes:lesson_detail', pk=lesson.pk)
     else:
-        default_teacher_pk = _get_default_teacher_pk()
-        initial = {'teacher': default_teacher_pk} if default_teacher_pk else {}
-        form = LessonForm(initial=initial)
+        form = LessonForm()  # teacher 기본값 null = 원장
 
     ctx = _get_lesson_form_context()
     ctx.update({

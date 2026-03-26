@@ -441,9 +441,7 @@ function togglePaidSales() {
                         {% else %}
                         <span class="font-medium text-gray-800">{{ enrollment.lesson.name }}</span>
                         {% endif %}
-                        {% if enrollment.lesson.teacher %}
-                        <p class="text-xs text-gray-400">{{ enrollment.lesson.teacher.name }}</p>
-                        {% endif %}
+                        <p class="text-xs text-gray-400">{{ enrollment.lesson.teacher.name|default:'원장' }}</p>
                     </td>
                     <td class="px-4 py-3 text-gray-600">
                         <span class="font-medium">{{ enrollment.lesson.days_display }}</span>

@@ -1,5 +1,4 @@
 from django import forms
-from django.db.models import Q, Case, When, Value, IntegerField
 from teachers.models import Teacher
 from .models import Lesson, Enrollment, TuitionPayment
 
@@ -7,17 +6,13 @@ from .models import Lesson, Enrollment, TuitionPayment
 class LessonForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # 재직 중인 선생님 + 원장은 항상 포함, 원장을 맨 위에 표시
+        # 재직 중인 선생님만 표시, null(미선택) = 원장으로 취급
         self.fields['teacher'].queryset = Teacher.objects.filter(
-            Q(is_active=True) | Q(name='원장')
-        ).annotate(
-            sort_key=Case(
-                When(name='원장', then=Value(0)),
-                default=Value(1),
-                output_field=IntegerField(),
-            )
-        ).order_by('sort_key', 'name')
+            is_active=True
+        ).order_by('name')
         self.fields['teacher'].label = '담당 선생님'
+        self.fields['teacher'].empty_label = '원장'
+        self.fields['teacher'].required = False
 
     class Meta:
         model = Lesson
