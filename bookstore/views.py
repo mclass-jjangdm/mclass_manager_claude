@@ -20,6 +20,9 @@ import urllib3 # SSL 경고 숨기기용
 from django.db import transaction # 트랜잭션 필수
 from students.models import Student # 학생 모델 참조 필요
 from django.core.paginator import Paginator
+import logging
+
+logger = logging.getLogger(__name__)
 from subjects.models import Subject
 from collections import defaultdict
 import json
@@ -1091,6 +1094,8 @@ def student_book_progress_list(request, sale_pk):
             message_type='instruction'
         ).order_by('-created_at')[:5]
 
+    show_completed = request.GET.get('show_completed') == '1'
+
     return render(request, template_name, {
         'sale': sale,
         'student': student,
@@ -1102,6 +1107,7 @@ def student_book_progress_list(request, sale_pk):
         'from_teacher_portal': from_teacher_portal,
         'today': today,
         'student_messages': student_messages,
+        'show_completed': show_completed,
     })
 
 
@@ -1254,37 +1260,55 @@ def student_book_progress_bulk_update(request, sale_pk):
 
         # 선택된 진도 항목들 처리
         progress_ids = request.POST.getlist('progress_ids')
+        logger.info(f"[bulk_update] sale={sale_pk}, user={request.user}, progress_ids={progress_ids}")
 
-        for progress_id in progress_ids:
-            try:
-                # LearningRecord에서 조회
-                progress = LearningRecord.objects.get(pk=progress_id, book_sale=sale, record_type='textbook')
+        if not progress_ids:
+            messages.warning(request, '저장할 항목을 선택해주세요. (체크박스를 선택하세요)')
+        else:
+            for progress_id in progress_ids:
+                try:
+                    # LearningRecord에서 조회
+                    progress = LearningRecord.objects.get(pk=progress_id, book_sale=sale, record_type='textbook')
 
-                study_date = request.POST.get(f'study_date_{progress_id}')
-                achievement = request.POST.get(f'achievement_{progress_id}', '')
-                needs_review = request.POST.get(f'needs_review_{progress_id}') == 'on'
-                homework_done = request.POST.get(f'homework_done_{progress_id}') == 'on'
+                    study_date = request.POST.get(f'study_date_{progress_id}')
+                    achievement = request.POST.get(f'achievement_{progress_id}', '')
+                    needs_review = request.POST.get(f'needs_review_{progress_id}') == 'on'
+                    homework_done = request.POST.get(f'homework_done_{progress_id}') == 'on'
 
-                progress.date = study_date if study_date else None
-                progress.achievement = achievement
-                progress.needs_review = needs_review
-                progress.homework_checked = homework_done
+                    # 학습 날짜가 비어있으면 오늘 날짜로 기본값 설정
+                    progress.date = study_date if study_date else today
+                    progress.achievement = achievement
+                    progress.needs_review = needs_review
+                    progress.homework_checked = homework_done
 
-                if teacher:
-                    progress.teacher = teacher
+                    if teacher:
+                        progress.teacher = teacher
 
-                progress.save()
-                updated_count += 1
+                    progress.save()
+                    updated_count += 1
+                    logger.info(f"[bulk_update] saved progress_id={progress_id}, date={progress.date}, achievement={progress.achievement}")
 
-            except LearningRecord.DoesNotExist:
-                continue
+                except LearningRecord.DoesNotExist:
+                    logger.warning(f"[bulk_update] LearningRecord not found: pk={progress_id}, sale={sale_pk}")
+                    continue
+                except Exception as e:
+                    logger.error(f"[bulk_update] Error saving progress_id={progress_id}: {type(e).__name__}: {e}")
+                    messages.error(request, f"항목 {progress_id} 저장 중 오류: {e}")
+                    continue
 
-        if updated_count > 0:
-            messages.success(request, f"{updated_count}개 항목이 업데이트되었습니다.")
+            if updated_count > 0:
+                messages.success(request, f"{updated_count}개 항목이 완료 처리되었습니다.")
+            elif progress_ids:
+                messages.error(request, '항목 저장에 실패했습니다. 다시 시도해주세요.')
 
-        portal_param = '?from=teacher_portal' if from_teacher_portal else ''
         url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
-        return redirect(url + portal_param)
+        params = []
+        if from_teacher_portal:
+            params.append('from=teacher_portal')
+        if updated_count > 0:
+            params.append('show_completed=1')
+        query = '?' + '&'.join(params) if params else ''
+        return redirect(url + query)
 
     portal_param = '?from=teacher_portal' if from_teacher_portal else ''
     url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
