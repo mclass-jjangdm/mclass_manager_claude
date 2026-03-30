@@ -178,10 +178,19 @@ class IndexView(TemplateView):
                 next_year_val, next_month_val = today.year, today.month + 1
             first_of_next = today.replace(year=next_year_val, month=next_month_val, day=1)
 
-            next_month_confirmed = Enrollment.objects.filter(
+            from django.db.models import ExpressionWrapper, IntegerField as IntField
+            confirmed_qs = Enrollment.objects.filter(
                 is_active=True,
                 end_date__gte=first_of_next,
-            ).count()
+            )
+            next_month_confirmed = confirmed_qs.count()
+            next_month_confirmed_tuition = confirmed_qs.annotate(
+                adj=ExpressionWrapper(
+                    F('lesson__base_tuition') + F('tuition_adjustment'),
+                    output_field=IntField(),
+                )
+            ).aggregate(total=Sum('adj'))['total'] or 0
+
             next_month_pending = Enrollment.objects.filter(
                 is_active=True,
                 enrollment_date__lte=today,
@@ -217,6 +226,7 @@ class IndexView(TemplateView):
                 'next_year_val': next_year_val,
                 'next_month_val': next_month_val,
                 'next_month_confirmed': next_month_confirmed,
+                'next_month_confirmed_tuition': next_month_confirmed_tuition,
                 'next_month_pending': next_month_pending,
             })
 

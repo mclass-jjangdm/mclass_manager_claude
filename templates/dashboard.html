@@ -162,7 +162,8 @@
             <div class="bg-indigo-50 rounded-lg p-4 text-center">
                 <p class="text-xs font-medium text-indigo-600 mb-1">확정 완료</p>
                 <p class="text-3xl font-bold text-indigo-700">{{ next_month_confirmed }}<span class="text-sm font-normal text-indigo-400 ml-1">명</span></p>
-                <p class="text-xs text-indigo-400 mt-1">수강 기간 연장됨</p>
+                <p class="text-sm font-semibold text-indigo-600 mt-1">{{ next_month_confirmed_tuition|intcomma }}원</p>
+                <p class="text-xs text-indigo-400 mt-0.5">예상 수강료</p>
             </div>
             <a href="{% url 'classes:auto_enroll_next_month' %}"
                class="rounded-lg p-4 text-center transition-colors {% if next_month_pending > 0 %}bg-amber-50 hover:bg-amber-100{% else %}bg-gray-50{% endif %}">
@@ -176,7 +177,7 @@
     <!-- 이번 달 정산 -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-semibold text-gray-800">📊 이번 달 정산</h2>
+            <h2 class="text-sm font-semibold text-gray-800">📊 {{ today|date:"n" }}월 정산 <span class="text-xs font-normal text-gray-400">(이번 달)</span></h2>
             <span class="text-xs text-gray-400">{{ today|date:"Y년 n월" }} 기준</span>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
