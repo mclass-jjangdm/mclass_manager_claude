@@ -1090,6 +1090,12 @@ def parent_lookup(request):
     this_month_tuition = 0
     this_month_book_total = 0
     this_month_total = 0
+    unpaid_tuition_enrollments = []
+    total_unpaid_tuition = 0
+    paid_tuition_payments = []
+    total_paid_tuition = 0
+    total_unpaid_all = 0
+    total_paid_all = 0
 
     today = _dt.date.today()
     this_year = today.year
@@ -1125,14 +1131,14 @@ def parent_lookup(request):
             ).select_related('book').order_by('-payment_date')
             total_paid = sum(sale.get_total_price() for sale in paid_sales)
 
-            # 이번 달 수강료 청구액
-            active_enrollments = Enrollment.objects.filter(
+            # 이번 달 수강료 청구액 (활성 수강 신청 합산)
+            active_enrollments = list(Enrollment.objects.filter(
                 student=student,
                 is_active=True,
                 enrollment_date__lte=today,
             ).filter(
                 _Q(end_date__isnull=True) | _Q(end_date__gte=month_start)
-            ).select_related('lesson')
+            ).select_related('lesson'))
             this_month_tuition = sum(e.adjusted_tuition for e in active_enrollments)
 
             # 이번 달 교재 지급 금액 (sale_date 기준 이번 달)
@@ -1144,6 +1150,32 @@ def parent_lookup(request):
             this_month_book_total = sum(s.get_total_price() for s in month_book_sales)
 
             this_month_total = this_month_tuition + this_month_book_total
+
+            # 수강료 납부 현황
+            from classes.models import TuitionPayment
+            paid_tuition_this_month_pks = set(
+                TuitionPayment.objects.filter(
+                    enrollment__student=student,
+                    year=this_year,
+                    month=this_month,
+                ).values_list('enrollment_id', flat=True)
+            )
+            # 미납 수강료: 이번 달 납부 기록 없는 활성 수강 신청
+            unpaid_tuition_enrollments = [
+                e for e in active_enrollments if e.pk not in paid_tuition_this_month_pks
+            ]
+            total_unpaid_tuition = sum(e.adjusted_tuition for e in unpaid_tuition_enrollments)
+
+            # 납부 완료 수강료: 전체 납부 이력 (최신순)
+            paid_tuition_payments = list(
+                TuitionPayment.objects.filter(
+                    enrollment__student=student,
+                ).select_related('enrollment__lesson').order_by('-year', '-month')
+            )
+            total_paid_tuition = sum(p.amount for p in paid_tuition_payments)
+
+            total_unpaid_all = total_unpaid + total_unpaid_tuition
+            total_paid_all = total_paid + total_paid_tuition
 
         except Student.DoesNotExist:
             error_message = '학생 정보를 찾을 수 없습니다. 이름과 고유번호를 확인해 주세요.'
@@ -1163,6 +1195,12 @@ def parent_lookup(request):
         'this_month_tuition': this_month_tuition,
         'this_month_book_total': this_month_book_total,
         'this_month_total': this_month_total,
+        'unpaid_tuition_enrollments': unpaid_tuition_enrollments,
+        'total_unpaid_tuition': total_unpaid_tuition,
+        'paid_tuition_payments': paid_tuition_payments,
+        'total_paid_tuition': total_paid_tuition,
+        'total_unpaid_all': total_unpaid_all,
+        'total_paid_all': total_paid_all,
     }
     return render(request, 'students/parent_lookup.html', context)
 
