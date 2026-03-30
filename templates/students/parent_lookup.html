@@ -115,15 +115,37 @@
                 </a>
             </div><!-- /학습 현황 -->
 
-            <!-- 교재 카테고리 -->
+            <!-- 이번 달 내역 카테고리 -->
             <div class="space-y-3">
                 <!-- 카테고리 헤더 -->
                 <div class="flex items-center gap-2 px-1">
                     <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    <span class="text-sm font-bold text-indigo-600">교재</span>
+                    <span class="text-sm font-bold text-indigo-600">이번 달({{ this_month }}월) 내역</span>
                     <div class="flex-1 border-t-2 border-indigo-100"></div>
+                </div>
+
+                <!-- 이번 달 요약 카드 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="divide-y divide-gray-100">
+                        <div class="flex items-center justify-between px-5 py-3.5">
+                            <span class="text-sm text-gray-600 flex items-center gap-1.5">
+                                <span class="text-base">🎓</span> 수강료
+                            </span>
+                            <span class="text-sm font-semibold text-gray-800">{{ this_month_tuition|intcomma }}원</span>
+                        </div>
+                        <div class="flex items-center justify-between px-5 py-3.5">
+                            <span class="text-sm text-gray-600 flex items-center gap-1.5">
+                                <span class="text-base">📚</span> 교재
+                            </span>
+                            <span class="text-sm font-semibold text-gray-800">{{ this_month_book_total|intcomma }}원</span>
+                        </div>
+                        <div class="flex items-center justify-between px-5 py-3.5 bg-indigo-50">
+                            <span class="text-sm font-bold text-indigo-700">합계</span>
+                            <span class="text-base font-bold text-indigo-700">{{ this_month_total|intcomma }}원</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 미결제 내역 -->

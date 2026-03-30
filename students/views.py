@@ -1076,7 +1076,10 @@ def student_readmit(request, pk):
 
 def parent_lookup(request):
     """학부모 교재 결제 내역 조회 (로그인 불필요)"""
+    import datetime as _dt
+    from django.db.models import Q as _Q
     from bookstore.models import BookSale
+    from classes.models import Enrollment
 
     student = None
     unpaid_sales = []
@@ -1084,6 +1087,14 @@ def parent_lookup(request):
     total_unpaid = 0
     total_paid = 0
     error_message = None
+    this_month_tuition = 0
+    this_month_book_total = 0
+    this_month_total = 0
+
+    today = _dt.date.today()
+    this_year = today.year
+    this_month = today.month
+    month_start = today.replace(day=1)
 
     # 세션에서 학생 정보 복원 시도
     student_name = request.POST.get('student_name', '').strip()
@@ -1114,6 +1125,26 @@ def parent_lookup(request):
             ).select_related('book').order_by('-payment_date')
             total_paid = sum(sale.get_total_price() for sale in paid_sales)
 
+            # 이번 달 수강료 청구액
+            active_enrollments = Enrollment.objects.filter(
+                student=student,
+                is_active=True,
+                enrollment_date__lte=today,
+            ).filter(
+                _Q(end_date__isnull=True) | _Q(end_date__gte=month_start)
+            ).select_related('lesson')
+            this_month_tuition = sum(e.adjusted_tuition for e in active_enrollments)
+
+            # 이번 달 교재 지급 금액 (sale_date 기준 이번 달)
+            month_book_sales = BookSale.objects.filter(
+                student=student,
+                sale_date__year=this_year,
+                sale_date__month=this_month,
+            )
+            this_month_book_total = sum(s.get_total_price() for s in month_book_sales)
+
+            this_month_total = this_month_tuition + this_month_book_total
+
         except Student.DoesNotExist:
             error_message = '학생 정보를 찾을 수 없습니다. 이름과 고유번호를 확인해 주세요.'
     elif request.method == 'POST':
@@ -1127,6 +1158,11 @@ def parent_lookup(request):
         'total_paid': total_paid,
         'error_message': error_message,
         'bank_account': '신한은행 110-247-214359 장동민(엠클래스수학과학전문학원)',
+        'this_month': this_month,
+        'this_year': this_year,
+        'this_month_tuition': this_month_tuition,
+        'this_month_book_total': this_month_book_total,
+        'this_month_total': this_month_total,
     }
     return render(request, 'students/parent_lookup.html', context)
 
