@@ -115,7 +115,22 @@ def lesson_list(request):
         messages.error(request, '관리자만 사용 가능합니다.')
         return redirect('index')
 
-    lessons = Lesson.objects.select_related('subject', 'teacher').prefetch_related('schedules')
+    today = datetime.date.today()
+    if today.month == 12:
+        _next_year, _next_month = today.year + 1, 1
+    else:
+        _next_year, _next_month = today.year, today.month + 1
+    first_of_next = datetime.date(_next_year, _next_month, 1)
+
+    lessons = Lesson.objects.select_related('subject', 'teacher').prefetch_related('schedules').annotate(
+        next_month_count=django_models.Count(
+            'enrollments',
+            filter=django_models.Q(
+                enrollments__is_active=True,
+                enrollments__end_date__gte=first_of_next,
+            )
+        )
+    )
     search = request.GET.get('search', '').strip()
     status = request.GET.get('status', 'active')
 
@@ -213,6 +228,8 @@ def lesson_list(request):
         'lessons':        lessons,
         'search':         search,
         'status':         status,
+        'first_of_next':  first_of_next,
+        'next_month_label': f'{_next_year}년 {_next_month}월',
         # timetable
         'timetable_days': timetable_days,
         'hour_labels':    hour_labels,
@@ -233,9 +250,18 @@ def lesson_detail(request, pk):
     )
     enrollments = lesson.enrollments.select_related('student').prefetch_related('payments').order_by('-enrollment_date')
 
+    today = datetime.date.today()
+    if today.month == 12:
+        _next_year, _next_month = today.year + 1, 1
+    else:
+        _next_year, _next_month = today.year, today.month + 1
+    first_of_next = datetime.date(_next_year, _next_month, 1)
+
     return render(request, 'classes/lesson_detail.html', {
         'lesson': lesson,
         'enrollments': enrollments,
+        'first_of_next': first_of_next,
+        'next_month_label': f'{_next_month}월',
     })
 
 

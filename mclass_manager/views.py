@@ -170,6 +170,25 @@ class IndexView(TemplateView):
                 s=Sum(F('price') * F('quantity')))['s'] or 0
             total_unpaid = total_unpaid_book
 
+            # 다음 달 수강 현황
+            import calendar as _cal
+            if today.month == 12:
+                next_year_val, next_month_val = today.year + 1, 1
+            else:
+                next_year_val, next_month_val = today.year, today.month + 1
+            first_of_next = today.replace(year=next_year_val, month=next_month_val, day=1)
+
+            next_month_confirmed = Enrollment.objects.filter(
+                is_active=True,
+                end_date__gte=first_of_next,
+            ).count()
+            next_month_pending = Enrollment.objects.filter(
+                is_active=True,
+                enrollment_date__lte=today,
+            ).filter(
+                Q(end_date__isnull=True) | Q(end_date__lt=first_of_next)
+            ).count()
+
             context.update({
                 'grade_stats': grade_stats,
                 'total_students': total_students,
@@ -195,6 +214,10 @@ class IndexView(TemplateView):
                 'total_income': total_income,
                 'total_unpaid_book': total_unpaid_book,
                 'total_unpaid': total_unpaid,
+                'next_year_val': next_year_val,
+                'next_month_val': next_month_val,
+                'next_month_confirmed': next_month_confirmed,
+                'next_month_pending': next_month_pending,
             })
 
         return context

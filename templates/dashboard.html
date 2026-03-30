@@ -152,6 +152,27 @@
 
     </div>
 
+    <!-- 다음 달 수강 신청 현황 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-gray-800">📅 {{ next_month_val }}월 수강 신청 현황</h2>
+            <a href="{% url 'classes:auto_enroll_next_month' %}" class="text-xs text-indigo-500 hover:underline">자동 수강 신청 →</a>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                <p class="text-xs font-medium text-indigo-600 mb-1">확정 완료</p>
+                <p class="text-3xl font-bold text-indigo-700">{{ next_month_confirmed }}<span class="text-sm font-normal text-indigo-400 ml-1">명</span></p>
+                <p class="text-xs text-indigo-400 mt-1">수강 기간 연장됨</p>
+            </div>
+            <a href="{% url 'classes:auto_enroll_next_month' %}"
+               class="rounded-lg p-4 text-center transition-colors {% if next_month_pending > 0 %}bg-amber-50 hover:bg-amber-100{% else %}bg-gray-50{% endif %}">
+                <p class="text-xs font-medium {% if next_month_pending > 0 %}text-amber-600{% else %}text-gray-500{% endif %} mb-1">미확정</p>
+                <p class="text-3xl font-bold {% if next_month_pending > 0 %}text-amber-700{% else %}text-gray-400{% endif %}">{{ next_month_pending }}<span class="text-sm font-normal {% if next_month_pending > 0 %}text-amber-400{% else %}text-gray-400{% endif %} ml-1">명</span></p>
+                <p class="text-xs {% if next_month_pending > 0 %}text-amber-500{% else %}text-gray-400{% endif %} mt-1">{% if next_month_pending > 0 %}연장 필요 → 클릭{% else %}모두 처리됨 ✅{% endif %}</p>
+            </a>
+        </div>
+    </div>
+
     <!-- 이번 달 정산 -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <div class="flex items-center justify-between mb-4">
