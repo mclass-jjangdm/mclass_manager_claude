@@ -1090,6 +1090,8 @@ def parent_lookup(request):
     this_month_tuition = 0
     this_month_book_total = 0
     this_month_total = 0
+    active_enrollments = []
+    month_book_sales = []
     unpaid_tuition_enrollments = []
     total_unpaid_tuition = 0
     paid_tuition_payments = []
@@ -1142,11 +1144,11 @@ def parent_lookup(request):
             this_month_tuition = sum(e.adjusted_tuition for e in active_enrollments)
 
             # 이번 달 교재 지급 금액 (sale_date 기준 이번 달)
-            month_book_sales = BookSale.objects.filter(
+            month_book_sales = list(BookSale.objects.filter(
                 student=student,
                 sale_date__year=this_year,
                 sale_date__month=this_month,
-            )
+            ).select_related('book'))
             this_month_book_total = sum(s.get_total_price() for s in month_book_sales)
 
             this_month_total = this_month_tuition + this_month_book_total
@@ -1193,7 +1195,7 @@ def parent_lookup(request):
         'this_month': this_month,
         'this_year': this_year,
         'active_enrollments': active_enrollments,
-        'month_book_sales': list(month_book_sales.select_related('book')),
+        'month_book_sales': month_book_sales,
         'this_month_tuition': this_month_tuition,
         'this_month_book_total': this_month_book_total,
         'this_month_total': this_month_total,
