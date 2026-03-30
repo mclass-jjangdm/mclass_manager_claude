@@ -6,7 +6,7 @@
     <title>교재 결제 내역 조회 - 엠클래스</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-zinc-200 min-h-screen">
     <div class="max-w-2xl mx-auto py-6 px-4">
 
         <!-- 헤더 -->
@@ -92,24 +92,24 @@
             <div class="space-y-3">
                 <!-- 섹션 헤더 -->
                 <div class="flex items-center gap-2 px-1">
-                    <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
-                    <span class="text-sm font-bold text-indigo-600">학습 현황</span>
-                    <div class="flex-1 border-t-2 border-indigo-100"></div>
+                    <span class="text-sm font-bold text-slate-600">학습 현황</span>
+                    <div class="flex-1 border-t-2 border-slate-200"></div>
                 </div>
 
                 <!-- 학습 현황 카드 -->
                 <a href="{% url 'parent_grades' student.pk %}"
-                   class="bg-white rounded-xl shadow-md px-5 py-4 flex items-center justify-between hover:bg-indigo-50 transition-colors group">
+                   class="bg-white rounded-xl shadow-md px-5 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
                     <div class="flex items-center gap-3">
-                        <span class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-base group-hover:bg-indigo-200 transition-colors">📊</span>
+                        <span class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-base group-hover:bg-slate-200 transition-colors">📊</span>
                         <div>
                             <p class="text-sm font-semibold text-gray-800">퀴즈 · 테스트 · 학교 시험 성적</p>
                             <p class="text-xs text-gray-400 mt-0.5">진도 평가 분석 포함</p>
                         </div>
                     </div>
-                    <svg class="w-5 h-5 text-gray-300 group-hover:text-indigo-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-gray-300 group-hover:text-slate-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
                 </a>
@@ -119,11 +119,11 @@
             <div class="space-y-3">
                 <!-- 카테고리 헤더 -->
                 <div class="flex items-center gap-2 px-1">
-                    <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    <span class="text-sm font-bold text-indigo-600">이번 달({{ this_month }}월) 내역</span>
-                    <div class="flex-1 border-t-2 border-indigo-100"></div>
+                    <span class="text-sm font-bold text-slate-600">이번 달({{ this_month }}월) 내역</span>
+                    <div class="flex-1 border-t-2 border-slate-200"></div>
                 </div>
 
                 <!-- 이번 달 요약 카드 (기본 접힘) -->
@@ -141,7 +141,7 @@
 
                     <div id="month-summary-section" class="hidden">
                         <!-- 수강료 서브섹션 -->
-                        <div class="px-5 py-2 bg-gray-50 border-y border-gray-100 flex items-center gap-1.5">
+                        <div class="px-5 py-2 bg-gray-100 border-y border-gray-200 flex items-center gap-1.5">
                             <span class="text-base">🎓</span>
                             <span class="text-xs font-semibold text-gray-500">수강료</span>
                             <span class="ml-auto text-xs font-medium text-gray-600">{{ this_month_tuition|intcomma }}원</span>
@@ -160,27 +160,39 @@
                         {% endif %}
 
                         <!-- 교재 서브섹션 -->
-                        <div class="px-5 py-2 bg-gray-50 border-y border-gray-100 flex items-center gap-1.5">
+                        <div class="px-5 py-2 bg-gray-100 border-y border-gray-200 flex items-center gap-1.5">
                             <span class="text-base">📚</span>
                             <span class="text-xs font-semibold text-gray-500">교재 <span class="font-normal text-gray-400">(이번 달 지급)</span></span>
                             <span class="ml-auto text-xs font-medium text-gray-600">{{ this_month_book_total|intcomma }}원</span>
                         </div>
+                        {% if month_book_sales %}
+                        <div class="divide-y divide-gray-100">
+                            {% for sale in month_book_sales %}
+                            <div class="flex items-center justify-between px-5 py-3 pl-8">
+                                <span class="text-sm text-gray-700">{{ sale.book.title }}</span>
+                                <span class="text-sm font-medium text-gray-800">{{ sale.get_total_price|intcomma }}원</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="px-5 py-3 text-center text-xs text-gray-400">이번 달 지급된 교재가 없습니다.</div>
+                        {% endif %}
 
                         <!-- 합계 -->
-                        <div class="flex items-center justify-between px-5 py-3.5 bg-indigo-50">
-                            <span class="text-sm font-bold text-indigo-700">합계</span>
-                            <span class="text-base font-bold text-indigo-700">{{ this_month_total|intcomma }}원</span>
+                        <div class="flex items-center justify-between px-5 py-3.5 bg-slate-100">
+                            <span class="text-sm font-bold text-slate-700">합계</span>
+                            <span class="text-base font-bold text-slate-700">{{ this_month_total|intcomma }}원</span>
                         </div>
                     </div><!-- /month-summary-section -->
                 </div>
 
                 <!-- 미결제 내역 섹션 헤더 (외부) -->
                 <div class="flex items-center gap-2 px-1">
-                    <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
-                    <span class="text-sm font-bold text-red-500">미결제 내역</span>
-                    <div class="flex-1 border-t-2 border-red-100"></div>
+                    <span class="text-sm font-bold text-rose-600">미결제 내역</span>
+                    <div class="flex-1 border-t-2 border-rose-200"></div>
                 </div>
 
                 <!-- 미결제 내역 카드 (기본 접힘) -->
@@ -198,10 +210,10 @@
 
                     <div id="unpaid-section" class="hidden">
                         <!-- 수강료 서브섹션 -->
-                        <div class="px-5 py-2 bg-gray-50 border-y border-gray-100 flex items-center gap-1.5">
+                        <div class="px-5 py-2 bg-gray-100 border-y border-gray-200 flex items-center gap-1.5">
                             <span class="text-base">🎓</span>
                             <span class="text-xs font-semibold text-gray-500">수강료</span>
-                            <span class="ml-auto text-xs font-medium text-red-500">{{ total_unpaid_tuition|intcomma }}원</span>
+                            <span class="ml-auto text-xs font-medium text-rose-500">{{ total_unpaid_tuition|intcomma }}원</span>
                         </div>
                         {% if unpaid_tuition_enrollments %}
                         <div class="divide-y divide-gray-100">
@@ -220,10 +232,10 @@
                         {% endif %}
 
                         <!-- 교재 서브섹션 -->
-                        <div class="px-5 py-2 bg-gray-50 border-y border-gray-100 flex items-center gap-1.5">
+                        <div class="px-5 py-2 bg-gray-100 border-y border-gray-200 flex items-center gap-1.5">
                             <span class="text-base">📚</span>
                             <span class="text-xs font-semibold text-gray-500">교재</span>
-                            <span class="ml-auto text-xs font-medium text-red-500">{{ total_unpaid|intcomma }}원</span>
+                            <span class="ml-auto text-xs font-medium text-rose-500">{{ total_unpaid|intcomma }}원</span>
                         </div>
                         {% if unpaid_sales %}
                         <div class="divide-y divide-gray-100">
@@ -245,11 +257,11 @@
 
                 <!-- 납부·결제 완료 내역 섹션 헤더 (외부) -->
                 <div class="flex items-center gap-2 px-1">
-                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-teal-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <span class="text-sm font-bold text-green-600">납부·결제 완료 내역</span>
-                    <div class="flex-1 border-t-2 border-green-100"></div>
+                    <span class="text-sm font-bold text-teal-700">납부·결제 완료 내역</span>
+                    <div class="flex-1 border-t-2 border-teal-200"></div>
                 </div>
 
                 <!-- 납부·결제 완료 내역 카드 (기본 접힘) -->
@@ -267,10 +279,10 @@
 
                     <div id="paid-sales-section" class="hidden">
                         <!-- 수강료 서브섹션 -->
-                        <div class="px-5 py-2 bg-gray-50 border-b border-gray-100 flex items-center gap-1.5">
+                        <div class="px-5 py-2 bg-gray-100 border-b border-gray-200 flex items-center gap-1.5">
                             <span class="text-base">🎓</span>
                             <span class="text-xs font-semibold text-gray-500">수강료</span>
-                            <span class="ml-auto text-xs font-medium text-green-600">{{ total_paid_tuition|intcomma }}원</span>
+                            <span class="ml-auto text-xs font-medium text-teal-600">{{ total_paid_tuition|intcomma }}원</span>
                         </div>
                         {% if paid_tuition_payments %}
                         <div class="divide-y divide-gray-100">
@@ -289,10 +301,10 @@
                         {% endif %}
 
                         <!-- 교재 서브섹션 -->
-                        <div class="px-5 py-2 bg-gray-50 border-y border-gray-100 flex items-center gap-1.5">
+                        <div class="px-5 py-2 bg-gray-100 border-y border-gray-200 flex items-center gap-1.5">
                             <span class="text-base">📚</span>
                             <span class="text-xs font-semibold text-gray-500">교재</span>
-                            <span class="ml-auto text-xs font-medium text-green-600">{{ total_paid|intcomma }}원</span>
+                            <span class="ml-auto text-xs font-medium text-teal-600">{{ total_paid|intcomma }}원</span>
                         </div>
                         {% if paid_sales %}
                         <div class="divide-y divide-gray-100">

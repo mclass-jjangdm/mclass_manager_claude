@@ -1193,6 +1193,7 @@ def parent_lookup(request):
         'this_month': this_month,
         'this_year': this_year,
         'active_enrollments': active_enrollments,
+        'month_book_sales': list(month_book_sales.select_related('book')),
         'this_month_tuition': this_month_tuition,
         'this_month_book_total': this_month_book_total,
         'this_month_total': this_month_total,
