@@ -542,21 +542,12 @@ def auto_enroll_next_month(request):
         for enroll_id in selected_ids:
             try:
                 enroll = Enrollment.objects.select_related('student', 'lesson').get(pk=enroll_id)
-                # 중복 체크: 같은 학생+수업, 같은 시작일
-                if Enrollment.objects.filter(
-                    student=enroll.student,
-                    lesson=enroll.lesson,
-                    enrollment_date=first_of_next,
-                ).exists():
+                # 중복 체크: end_date가 이미 다음 달 이후면 skip
+                if enroll.end_date and enroll.end_date >= first_of_next:
                     skip_count += 1
                     continue
-                Enrollment.objects.create(
-                    student=enroll.student,
-                    lesson=enroll.lesson,
-                    enrollment_date=first_of_next,
+                Enrollment.objects.filter(pk=enroll.pk).update(
                     end_date=last_of_next,
-                    tuition_adjustment=0,  # 다음 달은 전월 조정 없이 기본 수강료
-                    memo='',
                     is_active=True,
                 )
                 created_count += 1
@@ -578,10 +569,10 @@ def auto_enroll_next_month(request):
         'student', 'lesson', 'lesson__teacher', 'lesson__subject'
     ).order_by('lesson__name', 'student__name')
 
-    # 다음 달에 이미 등록된 (student_id, lesson_id) 쌍
+    # 다음 달 이후까지 수강 기간이 연장된 (student_id, lesson_id) 쌍
     already_set = set(
         Enrollment.objects.filter(
-            enrollment_date=first_of_next,
+            end_date__gte=first_of_next,
         ).values_list('student_id', 'lesson_id')
     )
 
