@@ -126,26 +126,52 @@
                     <div class="flex-1 border-t-2 border-indigo-100"></div>
                 </div>
 
-                <!-- 이번 달 요약 카드 -->
+                <!-- 이번 달 요약 카드 (기본 접힘) -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                    <div class="divide-y divide-gray-100">
-                        <div class="flex items-center justify-between px-5 py-3.5">
-                            <span class="text-sm text-gray-600 flex items-center gap-1.5">
-                                <span class="text-base">🎓</span> 수강료
-                            </span>
-                            <span class="text-sm font-semibold text-gray-800">{{ this_month_tuition|intcomma }}원</span>
+                    <button type="button" onclick="toggleMonthSummary()"
+                            class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
+                        <span class="text-sm font-medium text-gray-600">{{ this_month }}월 합계</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-base font-bold text-indigo-700">{{ this_month_total|intcomma }}원</span>
+                            <svg id="month-summary-chevron" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
                         </div>
-                        <div class="flex items-center justify-between px-5 py-3.5">
-                            <span class="text-sm text-gray-600 flex items-center gap-1.5">
-                                <span class="text-base">📚</span> 교재
-                            </span>
-                            <span class="text-sm font-semibold text-gray-800">{{ this_month_book_total|intcomma }}원</span>
+                    </button>
+
+                    <div id="month-summary-section" class="hidden">
+                        <!-- 수강료 서브섹션 -->
+                        <div class="px-5 py-2 bg-gray-50 border-y border-gray-100 flex items-center gap-1.5">
+                            <span class="text-base">🎓</span>
+                            <span class="text-xs font-semibold text-gray-500">수강료</span>
+                            <span class="ml-auto text-xs font-medium text-gray-600">{{ this_month_tuition|intcomma }}원</span>
                         </div>
+                        {% if active_enrollments %}
+                        <div class="divide-y divide-gray-100">
+                            {% for enroll in active_enrollments %}
+                            <div class="flex items-center justify-between px-5 py-3 pl-8">
+                                <span class="text-sm text-gray-700">{{ enroll.lesson.name }}</span>
+                                <span class="text-sm font-medium text-gray-800">{{ enroll.adjusted_tuition|intcomma }}원</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="px-5 py-3 text-center text-xs text-gray-400">수강 중인 수업이 없습니다.</div>
+                        {% endif %}
+
+                        <!-- 교재 서브섹션 -->
+                        <div class="px-5 py-2 bg-gray-50 border-y border-gray-100 flex items-center gap-1.5">
+                            <span class="text-base">📚</span>
+                            <span class="text-xs font-semibold text-gray-500">교재 <span class="font-normal text-gray-400">(이번 달 지급)</span></span>
+                            <span class="ml-auto text-xs font-medium text-gray-600">{{ this_month_book_total|intcomma }}원</span>
+                        </div>
+
+                        <!-- 합계 -->
                         <div class="flex items-center justify-between px-5 py-3.5 bg-indigo-50">
                             <span class="text-sm font-bold text-indigo-700">합계</span>
                             <span class="text-base font-bold text-indigo-700">{{ this_month_total|intcomma }}원</span>
                         </div>
-                    </div>
+                    </div><!-- /month-summary-section -->
                 </div>
 
                 <!-- 미결제 내역 섹션 헤더 (외부) -->
@@ -289,6 +315,10 @@
                 </div>
 
                 <script>
+                function toggleMonthSummary() {
+                    document.getElementById('month-summary-section').classList.toggle('hidden');
+                    document.getElementById('month-summary-chevron').classList.toggle('rotate-180');
+                }
                 function toggleUnpaid() {
                     document.getElementById('unpaid-section').classList.toggle('hidden');
                     document.getElementById('unpaid-chevron').classList.toggle('rotate-180');

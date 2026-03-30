@@ -1192,6 +1192,7 @@ def parent_lookup(request):
         'bank_account': '신한은행 110-247-214359 장동민(엠클래스수학과학전문학원)',
         'this_month': this_month,
         'this_year': this_year,
+        'active_enrollments': active_enrollments,
         'this_month_tuition': this_month_tuition,
         'this_month_book_total': this_month_book_total,
         'this_month_total': this_month_total,
