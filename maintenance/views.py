@@ -1,5 +1,5 @@
 from django.views.generic import ListView, FormView, CreateView
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from django.db.models import Sum, Q
 from django.urls import reverse_lazy
 from django.contrib.messages import add_message, SUCCESS
@@ -7,11 +7,13 @@ from maintenance.forms import MaintenanceForm, MaintenanceUpdateForm, RoomForm
 from .models import Maintenance, Room
 from django.utils import timezone
 import json
+import datetime
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import UpdateView
 from django.urls import reverse
 from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
 
 
 class MaintenanceCreateView(LoginRequiredMixin, FormView):
@@ -191,6 +193,35 @@ class MaintenanceUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.add_message(self.request, messages.SUCCESS, '관리비 정보가 수정되었습니다.')
         return super().form_valid(form)
+
+
+class MaintenanceMarkPaidView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        maintenance = get_object_or_404(Maintenance, pk=pk)
+        date_paid_str = request.POST.get('date_paid', '')
+        try:
+            maintenance.date_paid = datetime.date.fromisoformat(date_paid_str)
+            maintenance.save()
+            messages.success(request, f'{maintenance.room.number}호 납부 처리되었습니다.')
+        except (ValueError, TypeError):
+            messages.error(request, '올바른 날짜를 입력해주세요.')
+        return redirect(
+            reverse('maintenance:monthly_report')
+            + f'?year={maintenance.date.year}&month={maintenance.date.month}'
+        )
+
+
+class MaintenanceCancelPaidView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        maintenance = get_object_or_404(Maintenance, pk=pk)
+        year, month = maintenance.date.year, maintenance.date.month
+        maintenance.date_paid = None
+        maintenance.save()
+        messages.success(request, f'{maintenance.room.number}호 납부가 취소되었습니다.')
+        return redirect(
+            reverse('maintenance:monthly_report')
+            + f'?year={year}&month={month}'
+        )
 
 
 class RoomListView(LoginRequiredMixin, ListView):
