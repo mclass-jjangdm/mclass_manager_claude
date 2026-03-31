@@ -66,6 +66,7 @@
                                 <th style="text-align: right;">기본급</th>
                                 <th style="text-align: right;">추가급여</th>
                                 <th style="text-align: right;">총 급여</th>
+                                <th class="text-center">지급</th>
                                 <th class="text-center">명세서</th>
                             </tr>
                         </thead>
@@ -91,6 +92,28 @@
                                         </td>
                                         <td style="text-align: right;" class="font-semibold">
                                             {{ data.total_amount|intcomma }}
+                                        </td>
+                                        <td class="text-center whitespace-nowrap">
+                                            {% if data.salary_id %}
+                                                {% if data.date_paid %}
+                                                    <div class="flex flex-col items-center gap-1">
+                                                        <span class="text-green-700 font-medium text-xs">{{ data.date_paid }}</span>
+                                                        <button type="button"
+                                                                onclick="openCancelModal('{{ data.salary_id }}', '{{ data.teacher.name }}')"
+                                                                class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded text-xs">
+                                                            취소
+                                                        </button>
+                                                    </div>
+                                                {% else %}
+                                                    <button type="button"
+                                                            onclick="openPayModal('{{ data.salary_id }}', '{{ data.teacher.name }}')"
+                                                            class="text-green-700 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded text-sm font-medium">
+                                                        지급
+                                                    </button>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-gray-300 text-xs">저장 필요</span>
+                                            {% endif %}
                                         </td>
                                         <td class="text-center">
                                             <button type="button"
@@ -125,6 +148,28 @@
                                         <td style="text-align: right; color: gray;" class="font-semibold">
                                             {{ data.total_amount|intcomma }}
                                         </td>
+                                        <td class="text-center whitespace-nowrap">
+                                            {% if data.salary_id %}
+                                                {% if data.date_paid %}
+                                                    <div class="flex flex-col items-center gap-1">
+                                                        <span class="text-green-700 font-medium text-xs">{{ data.date_paid }}</span>
+                                                        <button type="button"
+                                                                onclick="openCancelModal('{{ data.salary_id }}', '{{ data.teacher.name }}')"
+                                                                class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded text-xs">
+                                                            취소
+                                                        </button>
+                                                    </div>
+                                                {% else %}
+                                                    <button type="button"
+                                                            onclick="openPayModal('{{ data.salary_id }}', '{{ data.teacher.name }}')"
+                                                            class="text-green-700 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded text-sm font-medium">
+                                                        지급
+                                                    </button>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-gray-300 text-xs">저장 필요</span>
+                                            {% endif %}
+                                        </td>
                                         <td class="text-center">
                                             <button type="button"
                                                     onclick="openSlipPDF({{ data.teacher_id }})"
@@ -138,7 +183,7 @@
                         </tbody>
                         <tfoot>
                             <tr class="bg-gray-50">
-                                <td colspan="8" class="text-right font-semibold">
+                                <td colspan="9" class="text-right font-semibold">
                                     총 급여 합계
                                 </td>
                                 <td class="text-right font-semibold text-indigo-600" style="text-align: right;">
@@ -173,11 +218,65 @@
             <div class="ml-3 flex-1">
                 <p class="text-sm text-blue-700">
                     급여는 시급 × 근무시간으로 계산됩니다. 근무시간은 매일의 출퇴근 시간을 기준으로 산정됩니다.
+                    지급 버튼은 급여 저장 후 나타납니다.
                 </p>
             </div>
         </div>
     </div>
 </div>
+
+<!-- 지급 처리 모달 -->
+<div id="payModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">급여 지급 처리</h3>
+        <p id="payModalName" class="text-sm text-gray-500 mb-4"></p>
+        <div class="mb-6">
+            <label class="form-label">지급일자</label>
+            <input type="text" id="payDateInput"
+                   class="form-input mclass-datepicker"
+                   placeholder="날짜를 선택하세요" readonly>
+        </div>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="closePayModal()"
+                    class="form-button bg-gray-100 text-gray-700 hover:bg-gray-200">
+                닫기
+            </button>
+            <button type="button" onclick="submitPay()"
+                    class="form-button">
+                지급 확인
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 지급 취소 모달 -->
+<div id="cancelModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">지급 취소</h3>
+        <p id="cancelModalName" class="text-sm text-gray-500 mb-4"></p>
+        <p class="text-sm text-red-600 mb-6">급여 지급 처리를 취소하시겠습니까?</p>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeCancelModal()"
+                    class="form-button bg-gray-100 text-gray-700 hover:bg-gray-200">
+                닫기
+            </button>
+            <button type="button" onclick="submitCancel()"
+                    class="form-button bg-red-600 hover:bg-red-700 text-white">
+                취소 확인
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 숨겨진 form (form 중첩 회피 패턴) -->
+<form id="payForm" method="post" action="" style="display:none">
+    {% csrf_token %}
+    <input type="hidden" id="payDateHidden" name="date_paid">
+</form>
+<form id="cancelForm" method="post" action="" style="display:none">
+    {% csrf_token %}
+</form>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -200,5 +299,69 @@ function openSlipPDF(teacherId) {
     const baseUrl = `/teachers/salary/pdf/{{ year }}/{{ month }}/teacher/${teacherId}/`;
     window.open(baseUrl + `?additional_${teacherId}=${additionalValue}`, '_blank');
 }
+
+// 지급 처리 모달
+let currentPayId = null;
+let currentCancelId = null;
+
+function openPayModal(id, name) {
+    currentPayId = id;
+    document.getElementById('payModalName').textContent = name + ' 선생님 지급일자를 입력하세요.';
+    document.getElementById('payDateInput').value = '';
+    const modal = document.getElementById('payModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    const input = document.getElementById('payDateInput');
+    if (!input._flatpickr) {
+        flatpickr(input, { dateFormat: "Y-m-d", disableMobile: true });
+    }
+}
+
+function closePayModal() {
+    const modal = document.getElementById('payModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    currentPayId = null;
+}
+
+function submitPay() {
+    const dateVal = document.getElementById('payDateInput').value;
+    if (!dateVal) {
+        alert('지급일자를 선택해주세요.');
+        return;
+    }
+    const form = document.getElementById('payForm');
+    form.action = `/teachers/salary/pay/${currentPayId}/`;
+    document.getElementById('payDateHidden').value = dateVal;
+    form.submit();
+}
+
+function openCancelModal(id, name) {
+    currentCancelId = id;
+    document.getElementById('cancelModalName').textContent = name + ' 선생님 급여 지급을 취소합니다.';
+    const modal = document.getElementById('cancelModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeCancelModal() {
+    const modal = document.getElementById('cancelModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    currentCancelId = null;
+}
+
+function submitCancel() {
+    const form = document.getElementById('cancelForm');
+    form.action = `/teachers/salary/pay/${currentCancelId}/cancel/`;
+    form.submit();
+}
+
+document.getElementById('payModal').addEventListener('click', function(e) {
+    if (e.target === this) closePayModal();
+});
+document.getElementById('cancelModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCancelModal();
+});
 </script>
 {% endblock %}

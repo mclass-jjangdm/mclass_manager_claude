@@ -123,6 +123,7 @@ class Salary(models.Model):
     base_amount = models.PositiveIntegerField(verbose_name='기본급', default=15000)
     additional_amount = models.PositiveIntegerField(verbose_name='추가급', default=0)
     total_amount = models.PositiveIntegerField(verbose_name='총액')
+    date_paid = models.DateField(null=True, blank=True, verbose_name='지급일자')
 
     class Meta:
         verbose_name = '급여'

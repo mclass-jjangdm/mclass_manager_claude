@@ -4,7 +4,8 @@ from pyexpat.errors import messages
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.urls import reverse_lazy
+from django.views import View
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
@@ -417,8 +418,12 @@ class SalaryCalculationView(LoginRequiredMixin, View):
             try:
                 existing_salary = Salary.objects.get(teacher=teacher, year=year, month=month)
                 additional_amount = existing_salary.additional_amount
+                salary_id = existing_salary.id
+                date_paid = existing_salary.date_paid
             except Salary.DoesNotExist:
                 additional_amount = 0
+                salary_id = None
+                date_paid = None
 
             total_amount = base_amount + additional_amount
 
@@ -431,7 +436,9 @@ class SalaryCalculationView(LoginRequiredMixin, View):
                 'additional_amount': additional_amount,
                 'bank_name': teacher.bank.name if teacher.bank else None,
                 'account_number': teacher.account_number,
-                'total_amount': total_amount
+                'total_amount': total_amount,
+                'salary_id': salary_id,
+                'date_paid': date_paid,
             })
 
             total_salary += total_amount
@@ -482,6 +489,35 @@ class SalaryCalculationView(LoginRequiredMixin, View):
             messages.error(request, f'급여 저장 중 오류가 발생했습니다: {str(e)}')
 
         return redirect(f'{request.path}?year={year}&month={month}')
+
+
+class SalaryMarkPaidView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        salary = get_object_or_404(Salary, pk=pk)
+        date_paid_str = request.POST.get('date_paid', '')
+        try:
+            salary.date_paid = datetime.strptime(date_paid_str, '%Y-%m-%d').date()
+            salary.save()
+            messages.success(request, f'{salary.teacher.name} {salary.year}년 {salary.month}월 급여 지급 처리되었습니다.')
+        except (ValueError, TypeError):
+            messages.error(request, '올바른 날짜를 입력해주세요.')
+        return redirect(
+            reverse('teachers:salary_calculation')
+            + f'?year={salary.year}&month={salary.month}'
+        )
+
+
+class SalaryCancelPaidView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        salary = get_object_or_404(Salary, pk=pk)
+        year, month = salary.year, salary.month
+        salary.date_paid = None
+        salary.save()
+        messages.success(request, f'{salary.teacher.name} {year}년 {month}월 급여 지급이 취소되었습니다.')
+        return redirect(
+            reverse('teachers:salary_calculation')
+            + f'?year={year}&month={month}'
+        )
 
 
 class AttendanceStatsView(LoginRequiredMixin, View):
