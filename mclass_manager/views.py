@@ -1,8 +1,14 @@
+import datetime
+import io
+
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import authenticate
 from django.contrib import messages
-from django.db.models import Count, Q, Sum
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q, Sum, F
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils import timezone
 
 
@@ -231,3 +237,154 @@ class IndexView(TemplateView):
             })
 
         return context
+
+
+@login_required
+def billing_export(request):
+    """다음 달 수강료 자동 청구용 xlsx 내보내기"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 사용 가능합니다.')
+        from django.shortcuts import redirect
+        return redirect('index')
+
+    from students.models import Student
+    from classes.models import Enrollment
+    from bookstore.models import BookSale
+
+    today = datetime.date.today()
+    if today.month == 12:
+        next_year, next_month = today.year + 1, 1
+    else:
+        next_year, next_month = today.year, today.month + 1
+    first_of_next = datetime.date(next_year, next_month, 1)
+
+    # 다음 달 확정 수강 중인 enrollment
+    next_enrollments = (
+        Enrollment.objects
+        .filter(is_active=True, end_date__gte=first_of_next)
+        .select_related('student', 'lesson')
+    )
+
+    # 미납 교재 판매
+    unpaid_sales = (
+        BookSale.objects
+        .filter(is_paid=False)
+        .select_related('student', 'book')
+    )
+
+    # 학생별로 집계
+    from collections import defaultdict
+    student_map = {}  # pk -> dict
+
+    def get_or_create(student):
+        if student.pk not in student_map:
+            student_map[student.pk] = {
+                'student': student,
+                'tuition_items': [],   # (lesson_name, amount)
+                'book_items': [],      # (book_title, amount)
+            }
+        return student_map[student.pk]
+
+    for enr in next_enrollments:
+        entry = get_or_create(enr.student)
+        entry['tuition_items'].append((enr.lesson.name, enr.adjusted_tuition))
+
+    for sale in unpaid_sales:
+        entry = get_or_create(sale.student)
+        entry['book_items'].append((sale.book.title, sale.price * sale.quantity))
+
+    # 합계 계산 후 이름 순 정렬
+    for entry in student_map.values():
+        entry['tuition_total'] = sum(amt for _, amt in entry['tuition_items'])
+        entry['book_total'] = sum(amt for _, amt in entry['book_items'])
+        entry['total'] = entry['tuition_total'] + entry['book_total']
+
+    rows = sorted(student_map.values(), key=lambda x: x['student'].name)
+
+    # POST → xlsx 생성
+    if request.method == 'POST':
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+        memo_map = {}
+        for key, val in request.POST.items():
+            if key.startswith('memo_'):
+                try:
+                    pk = int(key[5:])
+                    memo_map[pk] = val.strip()
+                except ValueError:
+                    pass
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = f'{next_year}년 {next_month}월 청구'
+
+        # 헤더
+        headers = ['이름', '부모 전화번호', '청구금액', '내용', '메모']
+        header_fill = PatternFill(start_color='4F46E5', end_color='4F46E5', fill_type='solid')
+        header_font = Font(bold=True, color='FFFFFF')
+        thin = Side(border_style='thin', color='CCCCCC')
+        border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+        for col, h in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=h)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.border = border
+
+        # 데이터 행
+        for row_idx, entry in enumerate(rows, 2):
+            student = entry['student']
+            tuition_total = sum(amt for _, amt in entry['tuition_items'])
+            book_total = sum(amt for _, amt in entry['book_items'])
+            total = tuition_total + book_total
+
+            # 내용 텍스트
+            parts = []
+            for name, amt in entry['tuition_items']:
+                parts.append(f'수강료({name}): {amt:,}원')
+            for title, amt in entry['book_items']:
+                parts.append(f'교재비({title}): {amt:,}원')
+            content = '\n'.join(parts)
+
+            memo = memo_map.get(student.pk, '')
+
+            values = [
+                student.name,
+                student.parent_phone or '',
+                total,
+                content,
+                memo,
+            ]
+            for col, val in enumerate(values, 1):
+                cell = ws.cell(row=row_idx, column=col, value=val)
+                cell.border = border
+                cell.alignment = Alignment(vertical='top', wrap_text=(col == 4))
+
+        # 열 너비
+        ws.column_dimensions['A'].width = 12
+        ws.column_dimensions['B'].width = 16
+        ws.column_dimensions['C'].width = 14
+        ws.column_dimensions['D'].width = 45
+        ws.column_dimensions['E'].width = 25
+
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+
+        filename = f'{next_year}년_{next_month}월_수강료청구.xlsx'
+        response = HttpResponse(
+            buf.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{filename}'
+        return response
+
+    # GET → 미리보기 페이지
+    context = {
+        'rows': rows,
+        'next_year': next_year,
+        'next_month': next_month,
+    }
+    return render(request, 'billing_export.html', context)

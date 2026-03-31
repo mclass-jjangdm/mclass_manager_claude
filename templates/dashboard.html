@@ -156,7 +156,17 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-semibold text-gray-800">📅 {{ next_month_val }}월 수강 신청 현황</h2>
-            <a href="{% url 'classes:auto_enroll_next_month' %}" class="text-xs text-indigo-500 hover:underline">자동 수강 신청 →</a>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'billing_export' %}"
+                   class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    청구 파일 만들기
+                </a>
+                <a href="{% url 'classes:auto_enroll_next_month' %}" class="text-xs text-indigo-500 hover:underline">자동 수강 신청 →</a>
+            </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
             <div class="bg-indigo-50 rounded-lg p-4 text-center">

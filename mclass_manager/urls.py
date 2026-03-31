@@ -20,7 +20,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
-from .views import IndexView, AdminLoginView
+from .views import IndexView, AdminLoginView, billing_export
 from django.contrib.auth.views import LogoutView
 from common.views import (
     db_backup,
@@ -54,6 +54,7 @@ urlpatterns = [
     path('parent/grades/<int:student_pk>/school/import/', parent_grade_import, name='parent_grade_import'),
     path('parent/grades/<int:student_pk>/edit/<int:grade_pk>/', parent_grade_edit, name='parent_grade_edit'),
     path('parent/exit/', parent_logout, name='parent_logout'),
+    path('billing/export/', billing_export, name='billing_export'),
     path('admin/db-backup/', db_backup, name='db_backup'),
     # Google Drive 관리
     path('admin/google-drive/', google_drive_dashboard, name='google_drive_dashboard'),

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-5">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-bold text-gray-900">{{ next_year }}년 {{ next_month }}월 수강료 청구 파일 만들기</h1>
+            <p class="text-xs text-gray-500 mt-0.5">메모를 입력한 후 xlsx 다운로드 버튼을 누르세요.</p>
+        </div>
+        <a href="{% url 'index' %}" class="text-sm text-gray-500 hover:text-gray-700">← 대시보드</a>
+    </div>
+
+    {% if not rows %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center text-gray-400">
+        <p class="text-4xl mb-3">📭</p>
+        <p class="text-sm">{{ next_month }}월에 청구할 내역이 없습니다.</p>
+    </div>
+    {% else %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-indigo-600 text-white">
+                            <th class="px-4 py-3 text-left font-semibold w-20">이름</th>
+                            <th class="px-4 py-3 text-left font-semibold w-36">부모 전화번호</th>
+                            <th class="px-4 py-3 text-right font-semibold w-28">청구금액</th>
+                            <th class="px-4 py-3 text-left font-semibold">내용</th>
+                            <th class="px-4 py-3 text-left font-semibold w-52">메모</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for entry in rows %}
+                        <tr class="hover:bg-gray-50 transition-colors align-top">
+                            <td class="px-4 py-3 font-medium text-gray-900">{{ entry.student.name }}</td>
+                            <td class="px-4 py-3 text-gray-600 font-mono text-xs">{{ entry.student.parent_phone|default:"-" }}</td>
+                            <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ entry.total|intcomma }}원</td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-1">
+                                    {% for name, amt in entry.tuition_items %}
+                                    <span class="inline-block bg-indigo-50 text-indigo-700 rounded px-2 py-0.5 text-xs">수강료({{ name }}): {{ amt|intcomma }}원</span>
+                                    {% endfor %}
+                                    {% for title, amt in entry.book_items %}
+                                    <span class="inline-block bg-orange-50 text-orange-700 rounded px-2 py-0.5 text-xs">교재비({{ title }}): {{ amt|intcomma }}원</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <input type="text" name="memo_{{ entry.student.pk }}"
+                                       placeholder="메모 (선택)"
+                                       class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
+            <p class="text-sm text-gray-500">총 <strong class="text-gray-800">{{ rows|length }}명</strong></p>
+            <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                xlsx 다운로드
+            </button>
+        </div>
+
+    </form>
+
+    {% endif %}
+
+</div>
+{% endblock %}
