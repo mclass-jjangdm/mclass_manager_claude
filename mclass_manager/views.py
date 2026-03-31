@@ -101,41 +101,38 @@ class IndexView(TemplateView):
             today_present = Attendance.objects.filter(date=today, is_present=True).count()
 
             # 이번 달 수입 - 수강료 / 교재 판매
-            from classes.models import Enrollment, TuitionPayment
+            from classes.models import MonthlyEnrollment, TuitionPayment
             from bookstore.models import BookSale
             from django.db.models import F
 
-            month_start = today.replace(day=1)
-
-            # 이번 달 활성 수강 신청 목록 (청구 대상)
-            enrollments_this_month = list(
-                Enrollment.objects.filter(
-                    is_active=True,
-                    enrollment_date__lte=today,
-                ).filter(
-                    Q(end_date__isnull=True) | Q(end_date__gte=month_start)
-                ).select_related('lesson')
+            # 이번 달 MonthlyEnrollment (취소 제외)
+            monthly_this_month = list(
+                MonthlyEnrollment.objects.filter(
+                    year=today.year,
+                    month=today.month,
+                ).exclude(status='cancelled').select_related('lesson')
             )
 
             # 1) 이번 달 청구 금액
-            month_tuition_billing = sum(e.adjusted_tuition for e in enrollments_this_month)
+            month_tuition_billing = sum(me.adjusted_tuition for me in monthly_this_month)
 
-            # 2) 이번 달 수납 금액 (해당 월 수강료로 납부된 금액)
+            # 2) 이번 달 수납 금액 (TuitionPayment 기준)
             month_tuition_collected = TuitionPayment.objects.filter(
                 year=today.year,
                 month=today.month,
             ).aggregate(s=Sum('amount'))['s'] or 0
 
-            # 3) 이번 달 미납 금액 (청구됐으나 TuitionPayment 없는 enrollment 합산)
-            paid_enrollment_pks = set(
+            # 3) 이번 달 미납 금액 (청구됐으나 TuitionPayment 없는 MonthlyEnrollment 합산)
+            # TuitionPayment → Enrollment → (student_id, lesson_id) 로 cross-reference
+            paid_pairs = set(
                 TuitionPayment.objects.filter(
                     year=today.year,
                     month=today.month,
-                ).values_list('enrollment_id', flat=True)
+                ).values_list('enrollment__student_id', 'enrollment__lesson_id')
             )
             month_tuition_unpaid = sum(
-                e.adjusted_tuition for e in enrollments_this_month
-                if e.pk not in paid_enrollment_pks
+                me.adjusted_tuition for me in monthly_this_month
+                if (me.student_id, me.lesson_id) not in paid_pairs
             )
 
             month_book_income = BookSale.objects.filter(
@@ -176,33 +173,22 @@ class IndexView(TemplateView):
                 s=Sum(F('price') * F('quantity')))['s'] or 0
             total_unpaid = total_unpaid_book
 
-            # 다음 달 수강 현황
+            # 다음 달 수강 현황 (MonthlyEnrollment 기준)
             import calendar as _cal
             if today.month == 12:
                 next_year_val, next_month_val = today.year + 1, 1
             else:
                 next_year_val, next_month_val = today.year, today.month + 1
-            first_of_next = today.replace(year=next_year_val, month=next_month_val, day=1)
 
-            from django.db.models import ExpressionWrapper, IntegerField as IntField
-            confirmed_qs = Enrollment.objects.filter(
-                is_active=True,
-                end_date__gte=first_of_next,
-            )
-            next_month_confirmed = confirmed_qs.count()
-            next_month_confirmed_tuition = confirmed_qs.annotate(
-                adj=ExpressionWrapper(
-                    F('lesson__base_tuition') + F('tuition_adjustment'),
-                    output_field=IntField(),
-                )
-            ).aggregate(total=Sum('adj'))['total'] or 0
+            next_month_qs = MonthlyEnrollment.objects.filter(
+                year=next_year_val,
+                month=next_month_val,
+            ).select_related('lesson')
 
-            next_month_pending = Enrollment.objects.filter(
-                is_active=True,
-                enrollment_date__lte=today,
-            ).filter(
-                Q(end_date__isnull=True) | Q(end_date__lt=first_of_next)
-            ).count()
+            confirmed_next = next_month_qs.filter(status='confirmed')
+            next_month_confirmed = confirmed_next.count()
+            next_month_confirmed_tuition = sum(me.adjusted_tuition for me in confirmed_next)
+            next_month_pending = next_month_qs.filter(status='pending').count()
 
             context.update({
                 'grade_stats': grade_stats,
@@ -248,7 +234,7 @@ def billing_export(request):
         return redirect('index')
 
     from students.models import Student
-    from classes.models import Enrollment
+    from classes.models import MonthlyEnrollment
     from bookstore.models import BookSale
 
     today = datetime.date.today()
@@ -256,12 +242,12 @@ def billing_export(request):
         next_year, next_month = today.year + 1, 1
     else:
         next_year, next_month = today.year, today.month + 1
-    first_of_next = datetime.date(next_year, next_month, 1)
 
-    # 다음 달 확정 수강 중인 enrollment
+    # 다음 달 MonthlyEnrollment (취소 제외)
     next_enrollments = (
-        Enrollment.objects
-        .filter(is_active=True, end_date__gte=first_of_next)
+        MonthlyEnrollment.objects
+        .filter(year=next_year, month=next_month)
+        .exclude(status='cancelled')
         .select_related('student', 'lesson')
     )
 

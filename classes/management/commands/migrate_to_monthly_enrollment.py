@@ -51,10 +51,10 @@ class Command(BaseCommand):
             targets = [(this_year, this_month), (next_year, next_month)]
 
         for year, month in targets:
-            self.stdout.write(f'\n▶ {year}년 {month}월 처리 중...')
+            self.stdout.write(f'\n[처리] {year}년 {month}월 처리 중...')
             self._migrate_month(year, month, target_status)
 
-        self.stdout.write(self.style.SUCCESS('\n✅ 마이그레이션 완료'))
+        self.stdout.write(self.style.SUCCESS('\n[완료] 마이그레이션 완료'))
 
     def _migrate_month(self, year, month, status):
         first_of_month = datetime.date(year, month, 1)
