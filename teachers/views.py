@@ -491,6 +491,21 @@ class SalaryCalculationView(LoginRequiredMixin, View):
         return redirect(f'{request.path}?year={year}&month={month}')
 
 
+class SalaryBulkMarkPaidView(LoginRequiredMixin, View):
+    def post(self, request):
+        year = int(request.POST.get('year', timezone.now().year))
+        month = int(request.POST.get('month', timezone.now().month))
+        date_paid_str = request.POST.get('date_paid', '')
+        try:
+            date_paid = datetime.strptime(date_paid_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            messages.error(request, '올바른 날짜를 입력해주세요.')
+            return redirect(reverse('teachers:salary_calculation') + f'?year={year}&month={month}')
+        updated = Salary.objects.filter(year=year, month=month, date_paid__isnull=True).update(date_paid=date_paid)
+        messages.success(request, f'{year}년 {month}월 급여 {updated}건이 일괄 지급 처리되었습니다.')
+        return redirect(reverse('teachers:salary_calculation') + f'?year={year}&month={month}')
+
+
 class SalaryMarkPaidView(LoginRequiredMixin, View):
     def post(self, request, pk):
         salary = get_object_or_404(Salary, pk=pk)

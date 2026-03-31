@@ -14,6 +14,7 @@ urlpatterns = [
     path('salary/table/', views.SalaryTableView.as_view(), name='salary_table'),
     path('salary/table/<int:year>/', views.SalaryTableView.as_view(), name='salary_table_year'),
     path('teacher/<int:teacher_id>/pdf/', views.TeacherPDFReportView.as_view(), name='teacher_pdf_report'),
+    path('salary/pay/bulk/', views.SalaryBulkMarkPaidView.as_view(), name='salary_bulk_mark_paid'),
     path('salary/pay/<int:pk>/', views.SalaryMarkPaidView.as_view(), name='salary_mark_paid'),
     path('salary/pay/<int:pk>/cancel/', views.SalaryCancelPaidView.as_view(), name='salary_cancel_paid'),
     path('salary/pdf/<int:year>/<int:month>/', views.SalaryPDFReportView.as_view(), name='salary_pdf_report'),

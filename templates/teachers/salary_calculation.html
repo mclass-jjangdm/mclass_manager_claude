@@ -196,7 +196,12 @@
 
                 <!-- 저장 버튼 -->
                 {% if salary_data %}
-                <div class="mt-4 flex justify-end">
+                <div class="mt-4 flex justify-end gap-3">
+                    <button type="button"
+                            onclick="openBulkPayModal()"
+                            class="form-button bg-indigo-600 hover:bg-indigo-700">
+                        전체 지급 처리
+                    </button>
                     <button type="submit" class="form-button bg-green-600 hover:bg-green-700">
                         급여 저장
                     </button>
@@ -268,6 +273,30 @@
     </div>
 </div>
 
+<!-- 전체 지급 처리 모달 -->
+<div id="bulkPayModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-40">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">전체 급여 지급 처리</h3>
+        <p class="text-sm text-gray-500 mb-4">{{ year }}년 {{ month }}월 미지급 급여를 전체 지급 처리합니다.</p>
+        <div class="mb-6">
+            <label class="form-label">지급일자</label>
+            <input type="text" id="bulkPayDateInput"
+                   class="form-input mclass-datepicker"
+                   placeholder="날짜를 선택하세요" readonly>
+        </div>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="closeBulkPayModal()"
+                    class="form-button bg-gray-100 text-gray-700 hover:bg-gray-200">
+                닫기
+            </button>
+            <button type="button" onclick="submitBulkPay()"
+                    class="form-button bg-indigo-600 hover:bg-indigo-700">
+                전체 지급 확인
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- 숨겨진 form (form 중첩 회피 패턴) -->
 <form id="payForm" method="post" action="" style="display:none">
     {% csrf_token %}
@@ -275,6 +304,12 @@
 </form>
 <form id="cancelForm" method="post" action="" style="display:none">
     {% csrf_token %}
+</form>
+<form id="bulkPayForm" method="post" action="{% url 'teachers:salary_bulk_mark_paid' %}" style="display:none">
+    {% csrf_token %}
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="month" value="{{ month }}">
+    <input type="hidden" id="bulkPayDateHidden" name="date_paid">
 </form>
 
 {% endblock %}
@@ -363,5 +398,36 @@ document.getElementById('payModal').addEventListener('click', function(e) {
 document.getElementById('cancelModal').addEventListener('click', function(e) {
     if (e.target === this) closeCancelModal();
 });
+document.getElementById('bulkPayModal').addEventListener('click', function(e) {
+    if (e.target === this) closeBulkPayModal();
+});
+
+// 전체 지급 처리 모달
+function openBulkPayModal() {
+    document.getElementById('bulkPayDateInput').value = '';
+    const modal = document.getElementById('bulkPayModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    const input = document.getElementById('bulkPayDateInput');
+    if (!input._flatpickr) {
+        flatpickr(input, { dateFormat: "Y-m-d", disableMobile: true });
+    }
+}
+
+function closeBulkPayModal() {
+    const modal = document.getElementById('bulkPayModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+function submitBulkPay() {
+    const dateVal = document.getElementById('bulkPayDateInput').value;
+    if (!dateVal) {
+        alert('지급일자를 선택해주세요.');
+        return;
+    }
+    document.getElementById('bulkPayDateHidden').value = dateVal;
+    document.getElementById('bulkPayForm').submit();
+}
 </script>
 {% endblock %}
