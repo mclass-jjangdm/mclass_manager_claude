@@ -8,7 +8,7 @@ import datetime
 import json
 
 from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, DAY_CHOICES
-from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm
+from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm, NextMonthEnrollmentEditForm
 
 
 def _assign_timetable_columns(items):
@@ -638,4 +638,87 @@ def auto_enroll_next_month(request):
         'total_new': total_new,
         'total_exists': total_exists,
         'total': total_new + total_exists,
+    })
+
+
+@login_required
+def next_month_enrollments(request):
+    """다음 달 수강 확정 현황"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 사용 가능합니다.')
+        return redirect('index')
+
+    today = datetime.date.today()
+    if today.month == 12:
+        next_year, next_month = today.year + 1, 1
+    else:
+        next_year, next_month = today.year, today.month + 1
+
+    first_of_next = datetime.date(next_year, next_month, 1)
+
+    confirmed_enrollments = Enrollment.objects.filter(
+        end_date__gte=first_of_next,
+        is_active=True,
+    ).select_related(
+        'student', 'lesson', 'lesson__teacher', 'lesson__subject'
+    ).order_by('lesson__name', 'student__name')
+
+    lessons_dict = {}
+    for enroll in confirmed_enrollments:
+        lid = enroll.lesson_id
+        if lid not in lessons_dict:
+            lessons_dict[lid] = {
+                'lesson': enroll.lesson,
+                'items': [],
+            }
+        lessons_dict[lid]['items'].append(enroll)
+
+    lesson_groups = list(lessons_dict.values())
+    total_count = confirmed_enrollments.count()
+
+    return render(request, 'classes/next_month_enrollments.html', {
+        'next_year': next_year,
+        'next_month': next_month,
+        'first_of_next': first_of_next,
+        'lesson_groups': lesson_groups,
+        'total_count': total_count,
+    })
+
+
+@login_required
+def next_month_enrollment_edit(request, enroll_pk):
+    """다음 달 수강 확정 항목 수정 (수업 변경 포함)"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 사용 가능합니다.')
+        return redirect('index')
+
+    enrollment = get_object_or_404(
+        Enrollment.objects.select_related('student', 'lesson'),
+        pk=enroll_pk
+    )
+
+    if request.method == 'POST':
+        form = NextMonthEnrollmentEditForm(request.POST, instance=enrollment)
+        if form.is_valid():
+            new_lesson = form.cleaned_data['lesson']
+            # 수업이 변경된 경우 unique_together 충돌 체크
+            if new_lesson != enrollment.lesson:
+                if Enrollment.objects.filter(
+                    student=enrollment.student,
+                    lesson=new_lesson
+                ).exclude(pk=enrollment.pk).exists():
+                    messages.error(
+                        request,
+                        f'{enrollment.student.name} 학생은 이미 [{new_lesson.name}] 수업에 수강 신청되어 있습니다.'
+                    )
+                    return redirect('classes:next_month_enrollment_edit', enroll_pk=enroll_pk)
+            form.save()
+            messages.success(request, f'{enrollment.student.name} 수강 신청이 수정되었습니다.')
+            return redirect('classes:next_month_enrollments')
+    else:
+        form = NextMonthEnrollmentEditForm(instance=enrollment)
+
+    return render(request, 'classes/next_month_enrollment_edit.html', {
+        'form': form,
+        'enrollment': enrollment,
     })

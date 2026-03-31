@@ -36,6 +36,26 @@ class EnrollmentForm(forms.ModelForm):
         }
 
 
+class NextMonthEnrollmentEditForm(forms.ModelForm):
+    lesson = forms.ModelChoiceField(
+        queryset=Lesson.objects.filter(is_active=True).order_by('name'),
+        label='수업',
+    )
+
+    class Meta:
+        model = Enrollment
+        fields = ['lesson', 'end_date', 'tuition_adjustment', 'memo']
+        widgets = {
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+            'memo': forms.Textarea(attrs={'rows': 2}),
+        }
+        labels = {
+            'end_date': '수강 종료일',
+            'tuition_adjustment': '수강료 조정액',
+            'memo': '메모',
+        }
+
+
 class TuitionPaymentForm(forms.ModelForm):
     class Meta:
         model = TuitionPayment
