@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-xl font-bold text-gray-900">{{ next_year }}년 {{ next_month }}월 수강료 청구 파일 만들기</h1>
-            <p class="text-xs text-gray-500 mt-0.5">메모를 입력한 후 xlsx 다운로드 버튼을 누르세요.</p>
+            <p class="text-xs text-gray-500 mt-0.5">공통 메모와 파일 번호를 입력한 후 xlsx 다운로드 버튼을 누르세요.</p>
         </div>
         <a href="{% url 'index' %}" class="text-sm text-gray-500 hover:text-gray-700">← 대시보드</a>
     </div>
@@ -22,6 +22,33 @@
     <form method="POST">
         {% csrf_token %}
 
+        <!-- 공통 설정 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-4">
+            <h2 class="text-sm font-semibold text-gray-700 mb-4">⚙️ 파일 설정</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- 공통 메모 -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5">공통 메모
+                        <span class="text-gray-400 font-normal">(모든 학생 행에 동일하게 입력됩니다)</span>
+                    </label>
+                    <input type="text" name="common_memo"
+                           placeholder="예) 3월분 청구"
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent">
+                </div>
+                <!-- 파일 번호 (suffix) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5">파일 번호
+                        <span class="text-gray-400 font-normal">(파일명: paysam_format_{{ next_year }}_{{ next_month|stringformat:"02d" }}_<em>번호</em>.xlsx)</span>
+                    </label>
+                    <input type="text" name="file_suffix"
+                           value="1st"
+                           placeholder="1st"
+                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent">
+                </div>
+            </div>
+        </div>
+
+        <!-- 청구 목록 테이블 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -31,7 +58,6 @@
                             <th class="px-4 py-3 text-left font-semibold w-36">부모 전화번호</th>
                             <th class="px-4 py-3 text-right font-semibold w-28">청구금액</th>
                             <th class="px-4 py-3 text-left font-semibold">내용</th>
-                            <th class="px-4 py-3 text-left font-semibold w-52">메모</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -45,15 +71,10 @@
                                     {% for name, amt in entry.tuition_items %}
                                     <span class="inline-block bg-indigo-50 text-indigo-700 rounded px-2 py-0.5 text-xs">수강료({{ name }}): {{ amt|intcomma }}원</span>
                                     {% endfor %}
-                                    {% for title, amt in entry.book_items %}
-                                    <span class="inline-block bg-orange-50 text-orange-700 rounded px-2 py-0.5 text-xs">교재비({{ title }}): {{ amt|intcomma }}원</span>
-                                    {% endfor %}
+                                    {% if entry.book_total > 0 %}
+                                    <span class="inline-block bg-orange-50 text-orange-700 rounded px-2 py-0.5 text-xs">교재비: {{ entry.book_total|intcomma }}원</span>
+                                    {% endif %}
                                 </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="text" name="memo_{{ entry.student.pk }}"
-                                       placeholder="메모 (선택)"
-                                       class="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent">
                             </td>
                         </tr>
                         {% endfor %}
@@ -62,6 +83,7 @@
             </div>
         </div>
 
+        <!-- 합계 및 다운로드 버튼 -->
         <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
             <p class="text-sm text-gray-500">총 <strong class="text-gray-800">{{ rows|length }}명</strong></p>
             <button type="submit"

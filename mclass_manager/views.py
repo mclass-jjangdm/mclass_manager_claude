@@ -306,14 +306,8 @@ def billing_export(request):
         import openpyxl
         from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
-        memo_map = {}
-        for key, val in request.POST.items():
-            if key.startswith('memo_'):
-                try:
-                    pk = int(key[5:])
-                    memo_map[pk] = val.strip()
-                except ValueError:
-                    pass
+        common_memo = request.POST.get('common_memo', '').strip()
+        suffix = request.POST.get('file_suffix', '1st').strip() or '1st'
 
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -336,26 +330,21 @@ def billing_export(request):
         # 데이터 행
         for row_idx, entry in enumerate(rows, 2):
             student = entry['student']
-            tuition_total = sum(amt for _, amt in entry['tuition_items'])
-            book_total = sum(amt for _, amt in entry['book_items'])
-            total = tuition_total + book_total
 
-            # 내용 텍스트
+            # 내용 텍스트 — 수강료는 수업명별, 교재비는 합계만
             parts = []
             for name, amt in entry['tuition_items']:
                 parts.append(f'수강료({name}): {amt:,}원')
-            for title, amt in entry['book_items']:
-                parts.append(f'교재비({title}): {amt:,}원')
+            if entry['book_total'] > 0:
+                parts.append(f'교재비: {entry["book_total"]:,}원')
             content = '\n'.join(parts)
-
-            memo = memo_map.get(student.pk, '')
 
             values = [
                 student.name,
                 student.parent_phone or '',
-                total,
+                entry['total'],
                 content,
-                memo,
+                common_memo,
             ]
             for col, val in enumerate(values, 1):
                 cell = ws.cell(row=row_idx, column=col, value=val)
@@ -373,7 +362,7 @@ def billing_export(request):
         wb.save(buf)
         buf.seek(0)
 
-        filename = f'{next_year}년_{next_month}월_수강료청구.xlsx'
+        filename = f'paysam_format_{next_year}_{next_month:02d}_{suffix}.xlsx'
         response = HttpResponse(
             buf.read(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
