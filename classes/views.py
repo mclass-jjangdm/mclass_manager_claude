@@ -608,11 +608,18 @@ def auto_enroll_next_month(request):
     last_of_next = datetime.date(target_year, target_month,
                                  calendar.monthrange(target_year, target_month)[1])
 
-    # 현재 활성 수강 신청 (만료 안 된 것)
+    # 대상 월의 이전 달 1일 계산 (그 이후 종료된 수강도 포함)
+    if target_month == 1:
+        first_of_prev = datetime.date(target_year - 1, 12, 1)
+    else:
+        first_of_prev = datetime.date(target_year, target_month - 1, 1)
+
+    # 활성 수강 신청: 무기한(null)이거나 대상 월 이전 달 이후 종료된 것 포함
+    # → 이전 달 말일 기준으로 만료된 학생도 다음 달 신청 대상에 포함
     active_enrollments = Enrollment.objects.filter(
         is_active=True,
     ).filter(
-        django_models.Q(end_date__isnull=True) | django_models.Q(end_date__gte=today)
+        django_models.Q(end_date__isnull=True) | django_models.Q(end_date__gte=first_of_prev)
     ).select_related(
         'student', 'lesson', 'lesson__teacher', 'lesson__subject'
     ).order_by('lesson__name', 'student__name')
