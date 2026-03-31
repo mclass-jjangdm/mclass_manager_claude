@@ -1424,6 +1424,32 @@ def stock_log_list(request):
     # 실 지급 금액 = 입고 금액 - 반품 금액
     total_payment = inbound_payment - return_payment
 
+    # 구매처별 집계
+    supplier_ids = list(logs.values_list('supplier_id', flat=True).distinct())
+    supplier_breakdown = []
+    for supplier_id in supplier_ids:
+        if supplier_id is None:
+            qs = logs.filter(supplier__isnull=True)
+            s_name = '(구매처 미지정)'
+            s_pk = None
+        else:
+            qs = logs.filter(supplier_id=supplier_id)
+            s_name = qs.select_related('supplier').first().supplier.name
+            s_pk = supplier_id
+
+        s_inb = qs.filter(quantity__gt=0).aggregate(s=Sum('total_payment'))['s'] or 0
+        s_ret = qs.filter(quantity__lt=0).aggregate(s=Sum('total_payment'))['s'] or 0
+        s_uns = qs.filter(is_paid=False, quantity__gt=0).aggregate(s=Sum('total_payment'))['s'] or 0
+        s_uns_r = qs.filter(is_paid=False, quantity__lt=0).aggregate(s=Sum('total_payment'))['s'] or 0
+        supplier_breakdown.append({
+            'name': s_name,
+            'pk': s_pk,
+            'inbound_payment': s_inb,
+            'return_payment': s_ret,
+            'net_payment': s_inb - s_ret,
+            'unsettled_payment': s_uns - s_uns_r,
+        })
+
     context = {
         'logs': logs,
         'start_date': start_date,
@@ -1434,6 +1460,7 @@ def stock_log_list(request):
         'return_payment': return_payment,
         'return_quantity': abs(return_agg['return_quantity'] or 0),
         'today': date.today().strftime('%Y-%m-%d'),
+        'supplier_breakdown': supplier_breakdown,
     }
     return render(request, 'bookstore/stock_log_list.html', context)
 
