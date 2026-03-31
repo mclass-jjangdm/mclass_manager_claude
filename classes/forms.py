@@ -1,6 +1,6 @@
 from django import forms
 from teachers.models import Teacher
-from .models import Lesson, Enrollment, TuitionPayment
+from .models import Lesson, Enrollment, TuitionPayment, MonthlyEnrollment, STATUS_CHOICES
 
 
 class LessonForm(forms.ModelForm):
@@ -51,6 +51,28 @@ class NextMonthEnrollmentEditForm(forms.ModelForm):
         }
         labels = {
             'end_date': '수강 종료일',
+            'tuition_adjustment': '수강료 조정액',
+            'memo': '메모',
+        }
+
+
+class MonthlyEnrollmentEditForm(forms.ModelForm):
+    lesson = forms.ModelChoiceField(
+        queryset=Lesson.objects.filter(is_active=True).order_by('name'),
+        label='수업',
+    )
+    status = forms.ChoiceField(
+        choices=STATUS_CHOICES,
+        label='상태',
+    )
+
+    class Meta:
+        model = MonthlyEnrollment
+        fields = ['lesson', 'status', 'tuition_adjustment', 'memo']
+        widgets = {
+            'memo': forms.Textarea(attrs={'rows': 2}),
+        }
+        labels = {
             'tuition_adjustment': '수강료 조정액',
             'memo': '메모',
         }

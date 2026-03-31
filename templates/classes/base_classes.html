@@ -17,6 +17,10 @@
                    class="nav-link {% if request.resolver_match.url_name == 'lesson_create' %}active{% endif %}">
                     수업 개설
                 </a>
+                <a href="{% url 'classes:monthly_enrollment_list' %}"
+                   class="nav-link {% if request.resolver_match.url_name in 'monthly_enrollment_list monthly_enrollment_create monthly_enrollment_edit monthly_enrollment_delete' %}active{% endif %}">
+                    월별 수강 신청
+                </a>
                 {% endif %}
             </nav>
         </div>

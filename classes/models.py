@@ -1,6 +1,12 @@
 from django.db import models
 
 
+STATUS_CHOICES = [
+    ('pending',   '신청 중'),
+    ('confirmed', '확정'),
+    ('cancelled', '취소'),
+]
+
 PAYMENT_METHOD_CHOICES = [
     ('kjt', '결제선생'),
     ('daon', '다온카드'),
@@ -135,6 +141,45 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return f'{self.student} - {self.lesson}'
+
+    @property
+    def adjusted_tuition(self):
+        return self.lesson.base_tuition + self.tuition_adjustment
+
+
+class MonthlyEnrollment(models.Model):
+    student = models.ForeignKey(
+        'students.Student',
+        on_delete=models.CASCADE,
+        related_name='monthly_enrollments',
+        verbose_name='학생',
+    )
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name='monthly_enrollments',
+        verbose_name='수업',
+    )
+    year = models.IntegerField(verbose_name='연도')
+    month = models.IntegerField(choices=MONTH_CHOICES, verbose_name='월')
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending',
+        verbose_name='상태',
+    )
+    tuition_adjustment = models.IntegerField(default=0, verbose_name='수강료 조정액')
+    memo = models.TextField(blank=True, verbose_name='메모')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['student', 'year', 'month', 'lesson']
+        ordering = ['year', 'month', 'lesson__name', 'student__name']
+        verbose_name = '월별 수강 신청'
+        verbose_name_plural = '월별 수강 신청 목록'
+
+    def __str__(self):
+        return f'{self.student} - {self.lesson} ({self.year}년 {self.month}월)'
 
     @property
     def adjusted_tuition(self):
