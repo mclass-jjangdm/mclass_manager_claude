@@ -1425,7 +1425,7 @@ def stock_log_list(request):
     total_payment = inbound_payment - return_payment
 
     # 구매처별 집계
-    supplier_ids = list(logs.values_list('supplier_id', flat=True).distinct())
+    supplier_ids = list(logs.order_by('supplier_id').values_list('supplier_id', flat=True).distinct())
     supplier_breakdown = []
     for supplier_id in supplier_ids:
         if supplier_id is None:
