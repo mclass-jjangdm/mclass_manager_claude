@@ -58,12 +58,13 @@ class Command(BaseCommand):
 
     def _migrate_month(self, year, month, status):
         first_of_month = datetime.date(year, month, 1)
+        last_of_month = datetime.date(year, month, calendar.monthrange(year, month)[1])
 
         # 해당 월에 활성인 Enrollment 조회
-        # enrollment_date <= 해당 월 1일  AND  (end_date null 또는 end_date >= 해당 월 1일)
+        # enrollment_date <= 해당 월 말일  AND  (end_date null 또는 end_date >= 해당 월 1일)
         active_enrollments = Enrollment.objects.filter(
             is_active=True,
-            enrollment_date__lte=first_of_month,
+            enrollment_date__lte=last_of_month,
         ).filter(
             Q(end_date__isnull=True) | Q(end_date__gte=first_of_month)
         ).select_related('student', 'lesson')
