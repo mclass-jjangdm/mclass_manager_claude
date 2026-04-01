@@ -51,7 +51,7 @@ class TuitionPaymentAdmin(admin.ModelAdmin):
 
 @admin.register(MonthlyEnrollment)
 class MonthlyEnrollmentAdmin(admin.ModelAdmin):
-    list_display = ['student', 'lesson', 'year', 'month', 'status', 'tuition_adjustment']
+    list_display = ['student', 'lesson', 'year', 'month', 'status', 'tuition_fee', 'tuition_adjustment']
     list_filter = ['year', 'month', 'status', 'lesson']
     search_fields = ['student__name', 'lesson__name']
     ordering = ['-year', '-month', 'lesson__name', 'student__name']

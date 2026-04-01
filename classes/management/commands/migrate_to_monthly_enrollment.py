@@ -79,6 +79,7 @@ class Command(BaseCommand):
                 month=month,
                 defaults={
                     'status': status,
+                    'tuition_fee': enroll.lesson.base_tuition,
                     'tuition_adjustment': enroll.tuition_adjustment,
                     'memo': enroll.memo,
                 },

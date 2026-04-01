@@ -168,6 +168,7 @@ class MonthlyEnrollment(models.Model):
         default='pending',
         verbose_name='상태',
     )
+    tuition_fee = models.PositiveIntegerField(null=True, verbose_name='수강료')
     tuition_adjustment = models.IntegerField(default=0, verbose_name='수강료 조정액')
     memo = models.TextField(blank=True, verbose_name='메모')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -183,7 +184,8 @@ class MonthlyEnrollment(models.Model):
 
     @property
     def adjusted_tuition(self):
-        return self.lesson.base_tuition + self.tuition_adjustment
+        base = self.tuition_fee if self.tuition_fee is not None else self.lesson.base_tuition
+        return base + self.tuition_adjustment
 
 
 class TuitionPayment(models.Model):

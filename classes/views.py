@@ -899,6 +899,7 @@ def monthly_enrollment_create(request):
                     month=target_month,
                     defaults={
                         'status': 'pending',
+                        'tuition_fee': enroll.lesson.base_tuition,
                         'tuition_adjustment': enroll.tuition_adjustment,
                         'memo': '',
                     },
