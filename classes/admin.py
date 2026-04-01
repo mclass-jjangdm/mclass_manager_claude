@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment
+from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, MonthlyEnrollment
 
 
 class LessonScheduleInline(admin.TabularInline):
@@ -47,3 +47,11 @@ class EnrollmentAdmin(admin.ModelAdmin):
 class TuitionPaymentAdmin(admin.ModelAdmin):
     list_display = ['enrollment', 'year', 'month', 'amount', 'payment_date', 'payment_method']
     list_filter = ['year', 'month', 'payment_method']
+
+
+@admin.register(MonthlyEnrollment)
+class MonthlyEnrollmentAdmin(admin.ModelAdmin):
+    list_display = ['student', 'lesson', 'year', 'month', 'status', 'tuition_adjustment']
+    list_filter = ['year', 'month', 'status', 'lesson']
+    search_fields = ['student__name', 'lesson__name']
+    ordering = ['-year', '-month', 'lesson__name', 'student__name']
