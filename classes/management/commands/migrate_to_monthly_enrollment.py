@@ -72,6 +72,10 @@ class Command(BaseCommand):
         skipped = 0
 
         for enroll in active_enrollments:
+            is_enrollment_month = (
+                enroll.enrollment_date.year == year
+                and enroll.enrollment_date.month == month
+            )
             obj, was_created = MonthlyEnrollment.objects.get_or_create(
                 student=enroll.student,
                 lesson=enroll.lesson,
@@ -80,7 +84,7 @@ class Command(BaseCommand):
                 defaults={
                     'status': status,
                     'tuition_fee': enroll.lesson.base_tuition,
-                    'tuition_adjustment': enroll.tuition_adjustment,
+                    'tuition_adjustment': enroll.tuition_adjustment if is_enrollment_month else 0,
                     'memo': enroll.memo,
                 },
             )

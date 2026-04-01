@@ -892,6 +892,10 @@ def monthly_enrollment_create(request):
         for enroll_id in selected_ids:
             try:
                 enroll = Enrollment.objects.select_related('student', 'lesson').get(pk=enroll_id)
+                is_enrollment_month = (
+                    enroll.enrollment_date.year == target_year
+                    and enroll.enrollment_date.month == target_month
+                )
                 obj, created = MonthlyEnrollment.objects.get_or_create(
                     student=enroll.student,
                     lesson=enroll.lesson,
@@ -900,7 +904,7 @@ def monthly_enrollment_create(request):
                     defaults={
                         'status': 'pending',
                         'tuition_fee': enroll.lesson.base_tuition,
-                        'tuition_adjustment': enroll.tuition_adjustment,
+                        'tuition_adjustment': enroll.tuition_adjustment if is_enrollment_month else 0,
                         'memo': '',
                     },
                 )
