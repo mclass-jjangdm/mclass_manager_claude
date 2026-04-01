@@ -60,24 +60,24 @@ class StudentListView(LoginRequiredMixin, ListView):
         group_by = self.request.GET.get('group_by', 'grade')
         context['group_by'] = group_by
 
-        # 당월 수강료 미납 금액 계산 (학생별)
-        from classes.models import Enrollment, TuitionPayment
+        # 당월 수강료 미납 금액 계산 (학생별) - MonthlyEnrollment 기준
+        from classes.models import MonthlyEnrollment, TuitionPayment
         from django.utils import timezone as tz
         today_for_tuition = tz.now().date()
-        paid_enroll_pks = set(
+        paid_pairs = set(
             TuitionPayment.objects.filter(
                 year=today_for_tuition.year,
                 month=today_for_tuition.month,
-            ).values_list('enrollment_id', flat=True)
+            ).values_list('enrollment__student_id', 'enrollment__lesson_id')
         )
-        active_enrollments = Enrollment.objects.filter(
-            is_active=True
-        ).select_related('lesson')
+        this_month_mes = MonthlyEnrollment.objects.filter(
+            year=today_for_tuition.year,
+            month=today_for_tuition.month,
+        ).exclude(status='cancelled').select_related('lesson')
         unpaid_tuition_dict = {}
-        for enroll in active_enrollments:
-            if enroll.pk not in paid_enroll_pks:
-                sid = enroll.student_id
-                unpaid_tuition_dict[sid] = unpaid_tuition_dict.get(sid, 0) + enroll.adjusted_tuition
+        for me in this_month_mes:
+            if (me.student_id, me.lesson_id) not in paid_pairs:
+                unpaid_tuition_dict[me.student_id] = unpaid_tuition_dict.get(me.student_id, 0) + me.adjusted_tuition
 
         # 학생 그룹화
         students = self.get_queryset()
