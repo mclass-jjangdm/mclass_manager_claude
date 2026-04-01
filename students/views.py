@@ -60,23 +60,25 @@ class StudentListView(LoginRequiredMixin, ListView):
         group_by = self.request.GET.get('group_by', 'grade')
         context['group_by'] = group_by
 
-        # 당월 수강료 미납 금액 계산 (학생별) - MonthlyEnrollment 기준
+        # 수강료 미납 금액 계산 (학생별) - MonthlyEnrollment 기준
         from classes.models import MonthlyEnrollment, TuitionPayment
         from django.utils import timezone as tz
+        from django.db.models import Q as dQ
         today_for_tuition = tz.now().date()
-        paid_pairs = set(
-            TuitionPayment.objects.filter(
-                year=today_for_tuition.year,
-                month=today_for_tuition.month,
-            ).values_list('enrollment__student_id', 'enrollment__lesson_id')
+
+        # 모든 납부 기록 (student_id, lesson_id, year, month)
+        all_paid_quads = set(
+            TuitionPayment.objects.values_list(
+                'enrollment__student_id', 'enrollment__lesson_id', 'year', 'month'
+            )
         )
-        this_month_mes = MonthlyEnrollment.objects.filter(
-            year=today_for_tuition.year,
-            month=today_for_tuition.month,
-        ).exclude(status='cancelled').select_related('lesson')
+        all_mes = MonthlyEnrollment.objects.exclude(
+            status='cancelled'
+        ).select_related('lesson')
+
         unpaid_tuition_dict = {}
-        for me in this_month_mes:
-            if (me.student_id, me.lesson_id) not in paid_pairs:
+        for me in all_mes:
+            if (me.student_id, me.lesson_id, me.year, me.month) not in all_paid_quads:
                 unpaid_tuition_dict[me.student_id] = unpaid_tuition_dict.get(me.student_id, 0) + me.adjusted_tuition
 
         # 학생 그룹화
@@ -185,25 +187,60 @@ def student_detail(request, pk):
     total_unpaid_books = sum(sale.get_total_price() for sale in unpaid_sales)
     total_paid_books = sum(sale.get_total_price() for sale in paid_sales)
 
-    # 수강료 계산
-    from classes.models import Enrollment, TuitionPayment
-    from django.db.models import Sum
+    # 수강료 계산 - MonthlyEnrollment 기반
+    from classes.models import MonthlyEnrollment, Enrollment, TuitionPayment
+    from django.db.models import Sum, Q as dQ
+    today = timezone.now().date()
+
+    # 활성 Enrollment (납부 버튼 / 하단 수강 테이블용)
     active_enrollments = Enrollment.objects.filter(student=student, is_active=True).select_related('lesson')
-    current_month_tuition = sum(e.adjusted_tuition for e in active_enrollments)
+    enrollment_by_lesson = {e.lesson_id: e for e in active_enrollments}
+
+    # 당월 MonthlyEnrollment
+    current_mes = MonthlyEnrollment.objects.filter(
+        student=student, year=today.year, month=today.month,
+    ).exclude(status='cancelled').select_related('lesson')
+    current_month_tuition = sum(me.adjusted_tuition for me in current_mes)
+
+    # 당월 납부 완료 lesson_id 집합
+    paid_this_month_lesson_ids = set(
+        TuitionPayment.objects.filter(
+            enrollment__student=student, year=today.year, month=today.month,
+        ).values_list('enrollment__lesson_id', flat=True)
+    )
+
+    # 당월 수업별 항목 (ME + 납부상태 + enrollment)
+    current_me_items = [
+        {
+            'me': me,
+            'enrollment': enrollment_by_lesson.get(me.lesson_id),
+            'is_paid': me.lesson_id in paid_this_month_lesson_ids,
+        }
+        for me in current_mes
+    ]
+
+    # 과거 미납 (이번 달 이전 MonthlyEnrollment)
+    paid_quads = set(
+        TuitionPayment.objects.filter(
+            enrollment__student=student
+        ).values_list('enrollment__lesson_id', 'year', 'month')
+    )
+    past_mes = MonthlyEnrollment.objects.filter(
+        student=student,
+    ).filter(
+        dQ(year__lt=today.year) | dQ(year=today.year, month__lt=today.month)
+    ).exclude(status='cancelled').select_related('lesson')
+
+    past_unpaid_tuition = sum(
+        me.adjusted_tuition for me in past_mes
+        if (me.lesson_id, me.year, me.month) not in paid_quads
+    )
+
+    # 납부 이력
     tuition_payments = TuitionPayment.objects.filter(
         enrollment__student=student
     ).select_related('enrollment__lesson').order_by('-year', '-month', '-id')
     total_tuition_paid = tuition_payments.aggregate(total=Sum('amount'))['total'] or 0
-
-    # 당월 납부 완료된 enrollment pk 집합
-    today = timezone.now().date()
-    paid_this_month_enroll_pks = set(
-        TuitionPayment.objects.filter(
-            enrollment__student=student,
-            year=today.year,
-            month=today.month,
-        ).values_list('enrollment_id', flat=True)
-    )
 
     # 성적 데이터 조회
     internal_grades = Grade.objects.filter(
@@ -382,6 +419,8 @@ def student_detail(request, pk):
         'total_paid_books': total_paid_books,
         'active_enrollments': active_enrollments,
         'current_month_tuition': current_month_tuition,
+        'current_me_items': current_me_items,
+        'past_unpaid_tuition': past_unpaid_tuition,
         'total_tuition_paid': total_tuition_paid,
         'tuition_payments': tuition_payments,
         'internal_grades': regular_internal_grades,
@@ -393,7 +432,7 @@ def student_detail(request, pk):
         'combination_averages': combination_averages,
         'chart_data': json.dumps(chart_data, ensure_ascii=False),
         'today': today,
-        'paid_this_month_enroll_pks': paid_this_month_enroll_pks,
+        'paid_this_month_lesson_ids': paid_this_month_lesson_ids,
         'is_middle': is_middle,
         'middle_grade_summary': middle_grade_summary,
     }
