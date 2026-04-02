@@ -94,7 +94,9 @@
                             <td class="px-4 py-3">
                                 <input type="text"
                                        name="memo_{{ entry.student.pk }}"
-                                       class="memo-cell w-full border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-300 focus:border-transparent"
+                                       class="memo-cell w-full border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-300 focus:border-transparent{% if entry.auto_memo %} border-indigo-400 bg-indigo-50{% endif %}"
+                                       value="{{ entry.auto_memo }}"
+                                       {% if entry.auto_memo %}data-modified="true"{% endif %}
                                        placeholder="(공통 메모 사용)">
                             </td>
                         </tr>

@@ -307,6 +307,42 @@ def billing_export(request):
 
     rows = sorted(student_map.values(), key=lambda x: x['student'].name)
 
+    # 전월 미납 수강료 계산 (target_year/month 이전)
+    from classes.models import TuitionPayment
+    from django.db.models import Q as _Q
+
+    student_pks = list(student_map.keys())
+
+    # 대상 학생들의 납부 완료 (lesson_id, year, month) 집합
+    paid_quads = set(
+        TuitionPayment.objects
+        .filter(enrollment__student_id__in=student_pks)
+        .values_list('enrollment__student_id', 'enrollment__lesson_id', 'year', 'month')
+    )
+
+    # target 월 이전 미납 MonthlyEnrollment
+    past_mes = (
+        MonthlyEnrollment.objects
+        .filter(student_id__in=student_pks)
+        .filter(_Q(year__lt=target_year) | _Q(year=target_year, month__lt=target_month))
+        .exclude(status='cancelled')
+        .select_related('lesson')
+    )
+
+    past_unpaid_dict = {}  # student_pk -> 미납 합계
+    for me in past_mes:
+        if (me.student_id, me.lesson_id, me.year, me.month) not in paid_quads:
+            past_unpaid_dict[me.student_id] = past_unpaid_dict.get(me.student_id, 0) + me.adjusted_tuition
+
+    # 각 entry에 auto_memo 추가
+    for entry in rows:
+        student = entry['student']
+        parts = [student.student_id or '', 'mclass.co.kr']
+        past_unpaid = past_unpaid_dict.get(student.pk, 0)
+        if past_unpaid > 0:
+            parts.append(f'전월 미납 수강료가 {past_unpaid:,}원 있습니다.')
+        entry['auto_memo'] = ' / '.join(p for p in parts if p)
+
     # POST → xlsx 생성
     if request.method == 'POST':
         import openpyxl
