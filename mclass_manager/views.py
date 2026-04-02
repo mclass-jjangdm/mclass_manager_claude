@@ -238,15 +238,35 @@ def billing_export(request):
     from bookstore.models import BookSale
 
     today = datetime.date.today()
-    if today.month == 12:
-        next_year, next_month = today.year + 1, 1
-    else:
-        next_year, next_month = today.year, today.month + 1
 
-    # 다음 달 MonthlyEnrollment (취소 제외)
+    # GET/POST 파라미터로 연도·월 선택 (기본값: 다음 달)
+    param_year = request.GET.get('year') or request.POST.get('year')
+    param_month = request.GET.get('month') or request.POST.get('month')
+    if param_year and param_month:
+        target_year, target_month = int(param_year), int(param_month)
+    else:
+        if today.month == 12:
+            target_year, target_month = today.year + 1, 1
+        else:
+            target_year, target_month = today.year, today.month + 1
+
+    # 선택 가능 월 목록: 이번 달 기준 -2 ~ +1
+    month_options = []
+    base = today.replace(day=1)
+    for delta in range(-2, 2):
+        if delta >= 0:
+            d = (base.replace(month=base.month) + datetime.timedelta(days=32 * delta)).replace(day=1)
+        else:
+            # 음수 delta: timedelta로 직접 빼기
+            d = base
+            for _ in range(abs(delta)):
+                d = (d - datetime.timedelta(days=1)).replace(day=1)
+        month_options.append({'year': d.year, 'month': d.month})
+
+    # 선택된 달 MonthlyEnrollment (취소 제외)
     next_enrollments = (
         MonthlyEnrollment.objects
-        .filter(year=next_year, month=next_month)
+        .filter(year=target_year, month=target_month)
         .exclude(status='cancelled')
         .select_related('student', 'lesson')
     )
@@ -297,7 +317,7 @@ def billing_export(request):
 
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = f'{next_year}년 {next_month}월 청구'
+        ws.title = f'{target_year}년 {target_month}월 청구'
 
         # 헤더
         headers = ['이름', '부모 전화번호', '청구금액', '내용', '메모']
@@ -348,7 +368,7 @@ def billing_export(request):
         wb.save(buf)
         buf.seek(0)
 
-        filename = f'paysam_format_{next_year}_{next_month:02d}_{suffix}.xlsx'
+        filename = f'paysam_format_{target_year}_{target_month:02d}_{suffix}.xlsx'
         response = HttpResponse(
             buf.read(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -359,7 +379,10 @@ def billing_export(request):
     # GET → 미리보기 페이지
     context = {
         'rows': rows,
-        'next_year': next_year,
-        'next_month': next_month,
+        'next_year': target_year,
+        'next_month': target_month,
+        'target_year': target_year,
+        'target_month': target_month,
+        'month_options': month_options,
     }
     return render(request, 'billing_export.html', context)
