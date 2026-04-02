@@ -373,14 +373,8 @@ def billing_export(request):
         for row_idx, entry in enumerate(rows, 2):
             student = entry['student']
 
-            prev_fee = int(request.POST.get(f'prev_fee_{student.pk}', 0) or 0)
-            prev_desc = request.POST.get(f'prev_desc_{student.pk}', '').strip()
-
-            # 내용 텍스트 — 전월 수강료 먼저, 이번 달 수강료, 교재비 순
+            # 내용 텍스트 — 수강료는 수업명별, 교재비는 합계만
             parts = []
-            if prev_fee > 0:
-                label = f'전월 수강료({prev_desc})' if prev_desc else '전월 수강료'
-                parts.append(f'{label}: {prev_fee:,}원')
             for name, amt in entry['tuition_items']:
                 parts.append(f'수강료({name}): {amt:,}원')
             if entry['book_total'] > 0:
@@ -393,7 +387,7 @@ def billing_export(request):
             values = [
                 student.name,
                 student.parent_phone or '',
-                entry['total'] + prev_fee,
+                entry['total'],
                 content,
                 row_memo,
             ]
