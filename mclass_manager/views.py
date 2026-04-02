@@ -374,18 +374,22 @@ def billing_export(request):
             student = entry['student']
 
             prev_fee = int(request.POST.get(f'prev_fee_{student.pk}', 0) or 0)
-            prev_desc = request.POST.get(f'prev_desc_{student.pk}', '').strip()
 
-            # 내용 텍스트 — 전월 수강료 먼저, 이번 달 수강료, 교재비 순
+            # 전월 계산 (1월이면 전년 12월)
+            if target_month == 1:
+                prev_month, prev_year = 12, target_year - 1
+            else:
+                prev_month, prev_year = target_month - 1, target_year
+
+            # 내용 텍스트 — 전월 수강료 먼저, 이번 달 합산, 교재비 순 / 구분자: ', '
             parts = []
             if prev_fee > 0:
-                label = f'전월 수강료({prev_desc})' if prev_desc else '전월 수강료'
-                parts.append(f'{label}: {prev_fee:,}원')
-            for name, amt in entry['tuition_items']:
-                parts.append(f'수강료({name}): {amt:,}원')
+                parts.append(f'{prev_month}월 분 {prev_fee:,}원')
+            if entry['tuition_total'] > 0:
+                parts.append(f'{target_month}월 분 {entry["tuition_total"]:,}원')
             if entry['book_total'] > 0:
                 parts.append(f'교재비: {entry["book_total"]:,}원')
-            content = '\n'.join(parts)
+            content = ', '.join(parts)
 
             individual_memo = request.POST.get(f'memo_{student.pk}', '').strip()
             row_memo = individual_memo if individual_memo else common_memo
