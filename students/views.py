@@ -1118,7 +1118,7 @@ def parent_lookup(request):
     import datetime as _dt
     from django.db.models import Q as _Q
     from bookstore.models import BookSale
-    from classes.models import Enrollment
+    from classes.models import MonthlyEnrollment, TuitionPayment
 
     student = None
     unpaid_sales = []
@@ -1129,9 +1129,11 @@ def parent_lookup(request):
     this_month_tuition = 0
     this_month_book_total = 0
     this_month_total = 0
-    active_enrollments = []
+    current_me_items = []
     month_book_sales = []
-    unpaid_tuition_enrollments = []
+    past_unpaid_mes = []
+    current_unpaid_mes = []
+    past_unpaid_tuition = 0
     total_unpaid_tuition = 0
     paid_tuition_payments = []
     total_paid_tuition = 0
@@ -1172,15 +1174,26 @@ def parent_lookup(request):
             ).select_related('book').order_by('-payment_date')
             total_paid = sum(sale.get_total_price() for sale in paid_sales)
 
-            # 이번 달 수강료 청구액 (활성 수강 신청 합산)
-            active_enrollments = list(Enrollment.objects.filter(
-                student=student,
-                is_active=True,
-                enrollment_date__lte=today,
-            ).filter(
-                _Q(end_date__isnull=True) | _Q(end_date__gte=month_start)
-            ).select_related('lesson'))
-            this_month_tuition = sum(e.adjusted_tuition for e in active_enrollments)
+            # 전체 수강료 납부 기록 (학생)
+            paid_quads = set(
+                TuitionPayment.objects.filter(
+                    enrollment__student=student,
+                ).values_list('enrollment__lesson_id', 'year', 'month')
+            )
+
+            # 이번 달 ME (cancelled 제외)
+            current_mes = list(
+                MonthlyEnrollment.objects.filter(
+                    student=student,
+                    year=this_year,
+                    month=this_month,
+                ).exclude(status='cancelled').select_related('lesson').order_by('lesson__name')
+            )
+            current_me_items = [
+                {'me': me, 'is_paid': (me.lesson_id, me.year, me.month) in paid_quads}
+                for me in current_mes
+            ]
+            this_month_tuition = sum(item['me'].adjusted_tuition for item in current_me_items)
 
             # 이번 달 교재 지급 금액 (sale_date 기준 이번 달)
             month_book_sales = list(BookSale.objects.filter(
@@ -1192,20 +1205,25 @@ def parent_lookup(request):
 
             this_month_total = this_month_tuition + this_month_book_total
 
-            # 수강료 납부 현황
-            from classes.models import TuitionPayment
-            paid_tuition_this_month_pks = set(
-                TuitionPayment.objects.filter(
-                    enrollment__student=student,
-                    year=this_year,
-                    month=this_month,
-                ).values_list('enrollment_id', flat=True)
+            # 과거 미납 ME (이번 달 이전, 납부 기록 없는 것)
+            past_all_mes = list(
+                MonthlyEnrollment.objects.filter(
+                    student=student,
+                ).exclude(status='cancelled').filter(
+                    _Q(year__lt=this_year) | _Q(year=this_year, month__lt=this_month)
+                ).select_related('lesson').order_by('-year', '-month', 'lesson__name')
             )
-            # 미납 수강료: 이번 달 납부 기록 없는 활성 수강 신청
-            unpaid_tuition_enrollments = [
-                e for e in active_enrollments if e.pk not in paid_tuition_this_month_pks
+            past_unpaid_mes = [
+                me for me in past_all_mes
+                if (me.lesson_id, me.year, me.month) not in paid_quads
             ]
-            total_unpaid_tuition = sum(e.adjusted_tuition for e in unpaid_tuition_enrollments)
+            past_unpaid_tuition = sum(me.adjusted_tuition for me in past_unpaid_mes)
+
+            # 이번 달 미납 ME
+            current_unpaid_mes = [item['me'] for item in current_me_items if not item['is_paid']]
+            this_month_unpaid_tuition = sum(me.adjusted_tuition for me in current_unpaid_mes)
+
+            total_unpaid_tuition = past_unpaid_tuition + this_month_unpaid_tuition
 
             # 납부 완료 수강료: 전체 납부 이력 (최신순)
             paid_tuition_payments = list(
@@ -1233,12 +1251,14 @@ def parent_lookup(request):
         'bank_account': '신한은행 110-247-214359 장동민(엠클래스수학과학전문학원)',
         'this_month': this_month,
         'this_year': this_year,
-        'active_enrollments': active_enrollments,
+        'current_me_items': current_me_items,
         'month_book_sales': month_book_sales,
         'this_month_tuition': this_month_tuition,
         'this_month_book_total': this_month_book_total,
         'this_month_total': this_month_total,
-        'unpaid_tuition_enrollments': unpaid_tuition_enrollments,
+        'past_unpaid_mes': past_unpaid_mes,
+        'past_unpaid_tuition': past_unpaid_tuition,
+        'current_unpaid_mes': current_unpaid_mes,
         'total_unpaid_tuition': total_unpaid_tuition,
         'paid_tuition_payments': paid_tuition_payments,
         'total_paid_tuition': total_paid_tuition,
