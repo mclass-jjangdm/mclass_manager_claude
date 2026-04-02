@@ -239,16 +239,13 @@ def billing_export(request):
 
     today = datetime.date.today()
 
-    # GET/POST 파라미터로 연도·월 선택 (기본값: 다음 달)
+    # GET/POST 파라미터로 연도·월 선택 (기본값: 이번 달)
     param_year = request.GET.get('year') or request.POST.get('year')
     param_month = request.GET.get('month') or request.POST.get('month')
     if param_year and param_month:
         target_year, target_month = int(param_year), int(param_month)
     else:
-        if today.month == 12:
-            target_year, target_month = today.year + 1, 1
-        else:
-            target_year, target_month = today.year, today.month + 1
+        target_year, target_month = today.year, today.month
 
     # 선택 가능 월 목록: 이번 달 ~ 다음 달
     month_options = []
@@ -366,19 +363,51 @@ def billing_export(request):
         parts.append(HOMEPAGE_MSG)
         entry['auto_memo'] = ' / '.join(parts)
 
-    # POST → xlsx 생성
+    # POST → 파일 생성
     if request.method == 'POST':
+        suffix = request.POST.get('file_suffix', '1st').strip() or '1st'
+        export_format = request.POST.get('export_format', 'xlsx')
+
+        # 공통 데이터 행 생성
+        headers = ['이름', '부모 전화번호', '청구금액', '내용', '메모']
+        data_rows = []
+        for entry in rows:
+            student = entry['student']
+            prev_fee = entry['prev_month_fee']
+            parts = []
+            if prev_fee > 0:
+                parts.append(f'{prev_month}월 분 {prev_fee:,}원')
+            if entry['tuition_total'] > 0:
+                parts.append(f'{target_month}월 분 {entry["tuition_total"]:,}원')
+            if entry['book_total'] > 0:
+                parts.append(f'교재비: {entry["book_total"]:,}원')
+            content = ', '.join(parts)
+            data_rows.append([
+                student.name,
+                student.parent_phone or '',
+                entry['total'] + prev_fee,
+                content,
+                entry['auto_memo'],
+            ])
+
+        if export_format == 'csv':
+            import csv as _csv
+            response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+            filename = f'paysam_format_{target_year}_{target_month:02d}_{suffix}.csv'
+            response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{filename}'
+            writer = _csv.writer(response)
+            writer.writerow(headers)
+            writer.writerows(data_rows)
+            return response
+
+        # xlsx
         import openpyxl
         from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-
-        suffix = request.POST.get('file_suffix', '1st').strip() or '1st'
 
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = f'{target_year}년 {target_month}월 청구'
 
-        # 헤더
-        headers = ['이름', '부모 전화번호', '청구금액', '내용', '메모']
         header_fill = PatternFill(start_color='4F46E5', end_color='4F46E5', fill_type='solid')
         header_font = Font(bold=True, color='FFFFFF')
         thin = Side(border_style='thin', color='CCCCCC')
@@ -391,35 +420,12 @@ def billing_export(request):
             cell.alignment = Alignment(horizontal='center', vertical='center')
             cell.border = border
 
-        # 데이터 행
-        for row_idx, entry in enumerate(rows, 2):
-            student = entry['student']
-
-            prev_fee = entry['prev_month_fee']
-
-            # 내용 텍스트 — 전월 수강료 먼저, 이번 달 합산, 교재비 순 / 구분자: ', '
-            parts = []
-            if prev_fee > 0:
-                parts.append(f'{prev_month}월 분 {prev_fee:,}원')
-            if entry['tuition_total'] > 0:
-                parts.append(f'{target_month}월 분 {entry["tuition_total"]:,}원')
-            if entry['book_total'] > 0:
-                parts.append(f'교재비: {entry["book_total"]:,}원')
-            content = ', '.join(parts)
-
-            values = [
-                student.name,
-                student.parent_phone or '',
-                entry['total'] + prev_fee,
-                content,
-                entry['auto_memo'],
-            ]
+        for row_idx, values in enumerate(data_rows, 2):
             for col, val in enumerate(values, 1):
                 cell = ws.cell(row=row_idx, column=col, value=val)
                 cell.border = border
                 cell.alignment = Alignment(vertical='top', wrap_text=(col == 4))
 
-        # 열 너비
         ws.column_dimensions['A'].width = 12
         ws.column_dimensions['B'].width = 16
         ws.column_dimensions['C'].width = 14

@@ -60,7 +60,7 @@
                             <th class="px-4 py-3 text-left font-semibold w-36">부모 전화번호</th>
                             <th class="px-4 py-3 text-right font-semibold w-28">청구금액</th>
                             <th class="px-4 py-3 text-left font-semibold">내용</th>
-                            <th class="px-4 py-3 text-left font-semibold w-48">메모</th>
+                            <th class="px-4 py-3 text-left font-semibold min-w-80">메모</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -91,16 +91,27 @@
         </div>
 
         <!-- 합계 및 다운로드 버튼 -->
+        <input type="hidden" name="export_format" id="export-format" value="xlsx">
         <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
             <p class="text-sm text-gray-500">총 <strong class="text-gray-800">{{ rows|length }}명</strong></p>
-            <button type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                xlsx 다운로드
-            </button>
+            <div class="flex gap-2">
+                <button type="submit" onclick="document.getElementById('export-format').value='xlsx'"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    xlsx
+                </button>
+                <button type="submit" onclick="document.getElementById('export-format').value='csv'"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    csv
+                </button>
+            </div>
         </div>
 
     </form>
