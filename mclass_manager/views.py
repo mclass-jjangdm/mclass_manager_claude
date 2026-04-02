@@ -250,17 +250,11 @@ def billing_export(request):
         else:
             target_year, target_month = today.year, today.month + 1
 
-    # 선택 가능 월 목록: 이번 달 기준 -2 ~ +1
+    # 선택 가능 월 목록: 이번 달 ~ 다음 달
     month_options = []
     base = today.replace(day=1)
-    for delta in range(-2, 2):
-        if delta >= 0:
-            d = (base.replace(month=base.month) + datetime.timedelta(days=32 * delta)).replace(day=1)
-        else:
-            # 음수 delta: timedelta로 직접 빼기
-            d = base
-            for _ in range(abs(delta)):
-                d = (d - datetime.timedelta(days=1)).replace(day=1)
+    for delta in range(0, 2):
+        d = (base + datetime.timedelta(days=32 * delta)).replace(day=1)
         month_options.append({'year': d.year, 'month': d.month})
 
     # 선택된 달 MonthlyEnrollment (취소 제외)
@@ -362,11 +356,12 @@ def billing_export(request):
     # 각 entry에 auto_memo 추가
     for entry in rows:
         student = entry['student']
-        parts = [student.student_id or '', 'mclass.co.kr']
-        past_unpaid = past_unpaid_dict.get(student.pk, 0)
+        memo = f'고유 번호 : {student.student_id}' if student.student_id else ''
+        # 전월 분이 이미 청구에 포함된 학생은 미납 안내 제외
+        past_unpaid = past_unpaid_dict.get(student.pk, 0) - entry['prev_month_fee']
         if past_unpaid > 0:
-            parts.append(f'전월 미납 수강료가 {past_unpaid:,}원 있습니다.')
-        entry['auto_memo'] = ' / '.join(p for p in parts if p)
+            memo += f' / 전월 미납 수강료가 {past_unpaid:,}원 있습니다.'
+        entry['auto_memo'] = memo
 
     # POST → xlsx 생성
     if request.method == 'POST':
