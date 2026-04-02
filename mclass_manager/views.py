@@ -336,12 +336,27 @@ def billing_export(request):
     else:
         prev_month, prev_year = target_month - 1, target_year
 
+    # 전월에 월 중간(2일 이후) 등록한 (student_id, lesson_id) 집합
+    from classes.models import Enrollment as _Enrollment
+    mid_month_keys = set(
+        _Enrollment.objects
+        .filter(
+            student_id__in=student_pks,
+            enrollment_date__year=prev_year,
+            enrollment_date__month=prev_month,
+            enrollment_date__day__gt=1,
+        )
+        .values_list('student_id', 'lesson_id')
+    )
+
     past_unpaid_dict = {}  # student_pk -> 미납 합계
     for me in past_mes:
         if (me.student_id, me.lesson_id, me.year, me.month) not in paid_quads:
             past_unpaid_dict[me.student_id] = past_unpaid_dict.get(me.student_id, 0) + me.adjusted_tuition
-            # 바로 전월 미납이면 prev_month_fee에 별도 집계
-            if me.year == prev_year and me.month == prev_month and me.student_id in student_map:
+            # 바로 전월 미납이고 월 중간 등록인 경우만 prev_month_fee에 집계
+            if (me.year == prev_year and me.month == prev_month
+                    and me.student_id in student_map
+                    and (me.student_id, me.lesson_id) in mid_month_keys):
                 student_map[me.student_id]['prev_month_fee'] += me.adjusted_tuition
 
     # 각 entry에 auto_memo 추가
