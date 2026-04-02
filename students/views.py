@@ -1162,15 +1162,6 @@ def parent_lookup(request):
             request.session['parent_student_id'] = student_id
             request.session['parent_student_name'] = student_name
 
-            # 미결제 내역 (이번 달 청구분 제외)
-            unpaid_sales = BookSale.objects.filter(
-                student=student, is_paid=False
-            ).exclude(
-                sale_date__year=this_year,
-                sale_date__month=this_month,
-            ).select_related('book').order_by('-sale_date')
-            total_unpaid = sum(sale.get_total_price() for sale in unpaid_sales)
-
             # 결제 완료 내역
             paid_sales = BookSale.objects.filter(
                 student=student, is_paid=True
@@ -1198,13 +1189,16 @@ def parent_lookup(request):
             ]
             this_month_tuition = sum(item['me'].adjusted_tuition for item in current_me_items)
 
-            # 이번 달 교재 지급 금액 (sale_date 기준 이번 달)
+            # 미결제 교재 전체 → 청구 파일과 동일하게 날짜 무관 is_paid=False 전체
             month_book_sales = list(BookSale.objects.filter(
                 student=student,
-                sale_date__year=this_year,
-                sale_date__month=this_month,
-            ).select_related('book'))
+                is_paid=False,
+            ).select_related('book').order_by('-sale_date'))
             this_month_book_total = sum(s.get_total_price() for s in month_book_sales)
+
+            # 교재는 청구에 모두 포함되므로 미결제 내역에서 제외
+            unpaid_sales = []
+            total_unpaid = 0
 
             this_month_total = this_month_tuition + this_month_book_total
 
