@@ -353,22 +353,24 @@ def billing_export(request):
                     and (me.student_id, me.lesson_id) in mid_month_keys):
                 student_map[me.student_id]['prev_month_fee'] += me.adjusted_tuition
 
+    HOMEPAGE_MSG = '자세한 내역은 학원 홈페이지(https://mclass.co.kr)에서 확인할 수 있습니다.'
+
     # 각 entry에 auto_memo 추가
     for entry in rows:
         student = entry['student']
-        memo = f'고유 번호 : {student.student_id}' if student.student_id else ''
+        parts = [f'고유 번호 : {student.student_id}'] if student.student_id else []
         # 전월 분이 이미 청구에 포함된 학생은 미납 안내 제외
         past_unpaid = past_unpaid_dict.get(student.pk, 0) - entry['prev_month_fee']
         if past_unpaid > 0:
-            memo += f' / 전월 미납 수강료가 {past_unpaid:,}원 있습니다.'
-        entry['auto_memo'] = memo
+            parts.append(f'전월 미납 수강료가 {past_unpaid:,}원 있습니다.')
+        parts.append(HOMEPAGE_MSG)
+        entry['auto_memo'] = ' / '.join(parts)
 
     # POST → xlsx 생성
     if request.method == 'POST':
         import openpyxl
         from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
-        common_memo = request.POST.get('common_memo', '').strip()
         suffix = request.POST.get('file_suffix', '1st').strip() or '1st'
 
         wb = openpyxl.Workbook()
@@ -405,15 +407,12 @@ def billing_export(request):
                 parts.append(f'교재비: {entry["book_total"]:,}원')
             content = ', '.join(parts)
 
-            individual_memo = request.POST.get(f'memo_{student.pk}', '').strip()
-            row_memo = individual_memo if individual_memo else common_memo
-
             values = [
                 student.name,
                 student.parent_phone or '',
                 entry['total'] + prev_fee,
                 content,
-                row_memo,
+                entry['auto_memo'],
             ]
             for col, val in enumerate(values, 1):
                 cell = ws.cell(row=row_idx, column=col, value=val)

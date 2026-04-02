@@ -36,29 +36,17 @@
         <input type="hidden" name="year" value="{{ target_year }}">
         <input type="hidden" name="month" value="{{ target_month }}">
 
-        <!-- 공통 설정 -->
+        <!-- 파일 설정 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-4">
             <h2 class="text-sm font-semibold text-gray-700 mb-4">⚙️ 파일 설정</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- 공통 메모 -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1.5">공통 메모
-                        <span class="text-gray-400 font-normal">(모든 학생 행에 동일하게 입력됩니다)</span>
-                    </label>
-                    <input type="text" name="common_memo" id="common-memo"
-                           placeholder="예) 3월분 청구"
-                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent">
-                </div>
-                <!-- 파일 번호 (suffix) -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1.5">파일 번호
-                        <span class="text-gray-400 font-normal">(파일명: paysam_format_{{ next_year }}_{{ next_month|stringformat:"02d" }}_<em>번호</em>.xlsx)</span>
-                    </label>
-                    <input type="text" name="file_suffix"
-                           value="1st"
-                           placeholder="1st"
-                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent">
-                </div>
+            <div class="max-w-xs">
+                <label class="block text-xs font-medium text-gray-500 mb-1.5">파일 번호
+                    <span class="text-gray-400 font-normal">(파일명: paysam_format_{{ next_year }}_{{ next_month|stringformat:"02d" }}_<em>번호</em>.xlsx)</span>
+                </label>
+                <input type="text" name="file_suffix"
+                       value="1st"
+                       placeholder="1st"
+                       class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent">
             </div>
         </div>
 
@@ -94,14 +82,7 @@
                                     {% endif %}
                                 </div>
                             </td>
-                            <td class="px-4 py-3">
-                                <input type="text"
-                                       name="memo_{{ entry.student.pk }}"
-                                       class="memo-cell w-full border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-300 focus:border-transparent{% if entry.auto_memo %} border-indigo-400 bg-indigo-50{% endif %}"
-                                       value="{{ entry.auto_memo }}"
-                                       {% if entry.auto_memo %}data-modified="true"{% endif %}
-                                       placeholder="(공통 메모 사용)">
-                            </td>
+                            <td class="px-4 py-3 text-xs text-gray-500 leading-relaxed">{{ entry.auto_memo }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -128,29 +109,4 @@
 
 </div>
 
-<script>
-const commonMemoInput = document.getElementById('common-memo');
-const memoCells = document.querySelectorAll('.memo-cell');
-
-commonMemoInput.addEventListener('input', function () {
-    memoCells.forEach(cell => {
-        if (!cell.dataset.modified) {
-            cell.value = this.value;
-        }
-    });
-});
-
-memoCells.forEach(cell => {
-    cell.addEventListener('input', function () {
-        if (this.value === '') {
-            delete this.dataset.modified;
-            this.classList.remove('border-indigo-400', 'bg-indigo-50');
-            this.value = commonMemoInput.value;
-        } else {
-            this.dataset.modified = 'true';
-            this.classList.add('border-indigo-400', 'bg-indigo-50');
-        }
-    });
-});
-</script>
 {% endblock %}
