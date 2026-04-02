@@ -345,12 +345,15 @@ def billing_export(request):
                 parts.append(f'교재비: {entry["book_total"]:,}원')
             content = '\n'.join(parts)
 
+            individual_memo = request.POST.get(f'memo_{student.pk}', '').strip()
+            row_memo = individual_memo if individual_memo else common_memo
+
             values = [
                 student.name,
                 student.parent_phone or '',
                 entry['total'],
                 content,
-                common_memo,
+                row_memo,
             ]
             for col, val in enumerate(values, 1):
                 cell = ws.cell(row=row_idx, column=col, value=val)
