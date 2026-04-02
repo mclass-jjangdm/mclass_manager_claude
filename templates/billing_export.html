@@ -72,7 +72,6 @@
                             <th class="px-4 py-3 text-left font-semibold w-36">부모 전화번호</th>
                             <th class="px-4 py-3 text-right font-semibold w-28">청구금액</th>
                             <th class="px-4 py-3 text-left font-semibold">내용</th>
-                            <th class="px-4 py-3 text-left font-semibold w-44">전월 추가</th>
                             <th class="px-4 py-3 text-left font-semibold w-48">메모</th>
                         </tr>
                     </thead>
@@ -84,6 +83,9 @@
                             <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ entry.total|intcomma }}원</td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-1">
+                                    {% if entry.prev_month_fee > 0 %}
+                                    <span class="inline-block bg-amber-50 text-amber-700 rounded px-2 py-0.5 text-xs">{{ prev_month }}월 분 {{ entry.prev_month_fee|intcomma }}원</span>
+                                    {% endif %}
                                     {% if entry.tuition_total > 0 %}
                                     <span class="inline-block bg-indigo-50 text-indigo-700 rounded px-2 py-0.5 text-xs">{{ target_month }}월 분 {{ entry.tuition_total|intcomma }}원</span>
                                     {% endif %}
@@ -91,13 +93,6 @@
                                     <span class="inline-block bg-orange-50 text-orange-700 rounded px-2 py-0.5 text-xs">교재비: {{ entry.book_total|intcomma }}원</span>
                                     {% endif %}
                                 </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="number"
-                                       name="prev_fee_{{ entry.student.pk }}"
-                                       min="0" step="1000"
-                                       class="w-full border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-300 focus:border-transparent"
-                                       placeholder="전월 금액 (원)">
                             </td>
                             <td class="px-4 py-3">
                                 <input type="text"

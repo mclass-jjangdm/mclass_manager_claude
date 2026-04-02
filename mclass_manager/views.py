@@ -288,6 +288,7 @@ def billing_export(request):
                 'student': student,
                 'tuition_items': [],   # (lesson_name, amount)
                 'book_items': [],      # (book_title, amount)
+                'prev_month_fee': 0,
             }
         return student_map[student.pk]
 
@@ -329,10 +330,19 @@ def billing_export(request):
         .select_related('lesson')
     )
 
+    # 전월 계산
+    if target_month == 1:
+        prev_month, prev_year = 12, target_year - 1
+    else:
+        prev_month, prev_year = target_month - 1, target_year
+
     past_unpaid_dict = {}  # student_pk -> 미납 합계
     for me in past_mes:
         if (me.student_id, me.lesson_id, me.year, me.month) not in paid_quads:
             past_unpaid_dict[me.student_id] = past_unpaid_dict.get(me.student_id, 0) + me.adjusted_tuition
+            # 바로 전월 미납이면 prev_month_fee에 별도 집계
+            if me.year == prev_year and me.month == prev_month and me.student_id in student_map:
+                student_map[me.student_id]['prev_month_fee'] += me.adjusted_tuition
 
     # 각 entry에 auto_memo 추가
     for entry in rows:
@@ -373,13 +383,7 @@ def billing_export(request):
         for row_idx, entry in enumerate(rows, 2):
             student = entry['student']
 
-            prev_fee = int(request.POST.get(f'prev_fee_{student.pk}', 0) or 0)
-
-            # 전월 계산 (1월이면 전년 12월)
-            if target_month == 1:
-                prev_month, prev_year = 12, target_year - 1
-            else:
-                prev_month, prev_year = target_month - 1, target_year
+            prev_fee = entry['prev_month_fee']
 
             # 내용 텍스트 — 전월 수강료 먼저, 이번 달 합산, 교재비 순 / 구분자: ', '
             parts = []
@@ -432,6 +436,7 @@ def billing_export(request):
         'next_month': target_month,
         'target_year': target_year,
         'target_month': target_month,
+        'prev_month': prev_month,
         'month_options': month_options,
     }
     return render(request, 'billing_export.html', context)
