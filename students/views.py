@@ -1162,9 +1162,12 @@ def parent_lookup(request):
             request.session['parent_student_id'] = student_id
             request.session['parent_student_name'] = student_name
 
-            # 미결제 내역
+            # 미결제 내역 (이번 달 청구분 제외)
             unpaid_sales = BookSale.objects.filter(
                 student=student, is_paid=False
+            ).exclude(
+                sale_date__year=this_year,
+                sale_date__month=this_month,
             ).select_related('book').order_by('-sale_date')
             total_unpaid = sum(sale.get_total_price() for sale in unpaid_sales)
 
