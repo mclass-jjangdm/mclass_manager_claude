@@ -1223,7 +1223,7 @@ def parent_lookup(request):
             current_unpaid_mes = [item['me'] for item in current_me_items if not item['is_paid']]
             this_month_unpaid_tuition = sum(me.adjusted_tuition for me in current_unpaid_mes)
 
-            total_unpaid_tuition = past_unpaid_tuition + this_month_unpaid_tuition
+            total_unpaid_tuition = past_unpaid_tuition
 
             # 납부 완료 수강료: 전체 납부 이력 (최신순)
             paid_tuition_payments = list(
