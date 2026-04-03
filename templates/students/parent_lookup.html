@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>교재 결제 내역 조회 - 엠클래스</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-zinc-200 min-h-screen">
     <div class="max-w-2xl mx-auto py-6 px-4">
@@ -114,6 +115,246 @@
                     </svg>
                 </a>
             </div><!-- /학습 현황 -->
+
+            <!-- 성적 분석 섹션 -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-2 px-1">
+                    <svg class="w-4 h-4 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span class="text-sm font-bold text-indigo-600">성적 분석</span>
+                    <div class="flex-1 border-t-2 border-indigo-100"></div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <button type="button" onclick="toggleGrades()"
+                            class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
+                        <span class="text-sm font-medium text-gray-600">학교 시험 성적 · 분석</span>
+                        <div class="flex items-center gap-2">
+                            {% if grade_overall_average %}
+                            <span class="text-sm font-bold text-indigo-600">평균 {{ grade_overall_average }}등급</span>
+                            {% elif grade_is_middle and grade_middle_grade_summary %}
+                            <span class="text-sm font-bold text-green-600">{{ grade_middle_grade_summary|length }}과목</span>
+                            {% endif %}
+                            <svg id="grades-chevron" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </button>
+
+                    <div id="grades-section" class="hidden">
+                        {% if grade_overall_average or grade_is_middle and grade_middle_grade_summary %}
+
+                        {% if not grade_is_middle and grade_overall_average %}
+                        <!-- 고등학생: 통계 요약 카드 -->
+                        <div class="px-4 pt-4 pb-2">
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-3 border border-indigo-100">
+                                    <div class="text-xs text-gray-500 mb-0.5">전체 평균 내신 등급</div>
+                                    <div class="text-2xl font-bold text-indigo-600">{{ grade_overall_average }}</div>
+                                    <div class="text-xs text-gray-400">동일 가중치</div>
+                                </div>
+                                {% for weighted in grade_weighted_averages %}
+                                <div class="bg-white rounded-lg p-3 border border-gray-200">
+                                    <div class="text-xs text-gray-500 mb-0.5">가중 {{ weighted.name }}</div>
+                                    <div class="text-xl font-bold text-teal-600">{{ weighted.average }}</div>
+                                    <div class="text-xs text-gray-400">1:2:3학년</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- 학기별 평균 뱃지 -->
+                            <div class="mb-3">
+                                <div class="text-xs text-gray-500 mb-1.5">학기별 평균 (진로선택 제외)</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    {% for avg in grade_semester_averages %}
+                                    <span class="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs">
+                                        {{ avg.year }}-{{ avg.semester }}학기: <span class="font-bold ml-1">{{ avg.average }}</span>
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- 교과 조합 분석 -->
+                            {% if grade_combination_averages %}
+                            <div class="mb-3">
+                                <div class="text-xs text-gray-500 mb-1.5">교과 조합 평균</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    {% for combo in grade_combination_averages %}
+                                    <span class="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs">
+                                        {{ combo.name }}: <span class="font-bold ml-1">{{ combo.average }}</span>
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 라인 차트 -->
+                        {% if grade_semester_averages %}
+                        <div class="px-4 pb-3">
+                            <div class="text-xs text-gray-500 mb-1.5">학기별 평균 등급 추이 (낮을수록 우수)</div>
+                            <div style="position:relative; height:180px;">
+                                <canvas id="gradeLineChart"></canvas>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+
+                        {% if grade_is_middle and grade_middle_grade_summary %}
+                        <!-- 중학생: 원점수·평균·성취도 테이블 -->
+                        <div class="px-4 pt-4 pb-2">
+                            <div class="text-xs text-gray-500 mb-2">원점수 · 성취도</div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs">
+                                    <thead class="bg-green-50">
+                                        <tr>
+                                            <th class="px-2 py-1.5 text-left font-semibold text-gray-500">학년/학기</th>
+                                            <th class="px-2 py-1.5 text-left font-semibold text-gray-500">과목</th>
+                                            <th class="px-2 py-1.5 text-center font-semibold text-gray-500">원점수</th>
+                                            <th class="px-2 py-1.5 text-center font-semibold text-gray-500">평균</th>
+                                            <th class="px-2 py-1.5 text-center font-semibold text-gray-500">성취도</th>
+                                            <th class="px-2 py-1.5 text-center font-semibold text-gray-500">상위%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        {% for item in grade_middle_grade_summary %}
+                                        <tr class="hover:bg-green-50">
+                                            <td class="px-2 py-1.5 text-gray-500">{{ item.grade.year }}-{{ item.grade.semester }}</td>
+                                            <td class="px-2 py-1.5 font-medium text-gray-800">{{ item.grade.subject.name }}</td>
+                                            <td class="px-2 py-1.5 text-center font-bold text-gray-800">{{ item.grade.score|default:"-" }}</td>
+                                            <td class="px-2 py-1.5 text-center text-gray-500">{{ item.grade.subject_average|default:"-" }}</td>
+                                            <td class="px-2 py-1.5 text-center">
+                                                {% if item.grade.achievement_level %}
+                                                <span class="px-1 py-0.5 rounded text-xs font-bold
+                                                    {% if item.grade.achievement_level == 'A' %}bg-indigo-100 text-indigo-700
+                                                    {% elif item.grade.achievement_level == 'B' %}bg-blue-100 text-blue-700
+                                                    {% elif item.grade.achievement_level == 'C' %}bg-green-100 text-green-700
+                                                    {% elif item.grade.achievement_level == 'D' %}bg-yellow-100 text-yellow-700
+                                                    {% else %}bg-red-100 text-red-700{% endif %}">
+                                                    {{ item.grade.achievement_level }}
+                                                </span>
+                                                {% else %}-{% endif %}
+                                            </td>
+                                            <td class="px-2 py-1.5 text-center">
+                                                {% if item.upper_pct is not None %}
+                                                <span class="font-semibold {% if item.upper_pct <= 10 %}text-indigo-600{% elif item.upper_pct <= 30 %}text-blue-600{% elif item.upper_pct <= 50 %}text-green-600{% else %}text-gray-600{% endif %}">
+                                                    {{ item.upper_pct }}%
+                                                </span>
+                                                {% else %}-{% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- 학기별 성적 테이블 (접힘) -->
+                        {% if grade_groups %}
+                        <div class="px-4 pb-4">
+                            <div class="text-xs text-gray-500 mb-2 {% if not grade_is_middle %}mt-1{% endif %}">학기별 성적 상세</div>
+                            <div class="space-y-2">
+                                {% for group in grade_groups %}
+                                <div class="rounded-lg border border-gray-100 overflow-hidden">
+                                    <button type="button" onclick="toggleGradeGroup('pgg-{{ forloop.counter }}')"
+                                            class="w-full flex items-center justify-between px-3 py-2 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                                        <span class="text-xs font-semibold text-indigo-700">{{ group.year }}학년 {{ group.semester }}학기</span>
+                                        <svg id="chevron-pgg-{{ forloop.counter }}" class="w-3.5 h-3.5 text-indigo-400 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="pgg-{{ forloop.counter }}" class="hidden">
+                                        <table class="w-full text-xs">
+                                            {% if grade_is_middle %}
+                                            <thead class="bg-green-50 border-b border-gray-100">
+                                                <tr>
+                                                    <th class="px-3 py-1.5 text-left font-semibold text-gray-500">과목</th>
+                                                    <th class="px-2 py-1.5 text-center font-semibold text-gray-500">원점수</th>
+                                                    <th class="px-2 py-1.5 text-center font-semibold text-gray-500">평균</th>
+                                                    <th class="px-2 py-1.5 text-center font-semibold text-gray-500">표준편차</th>
+                                                    <th class="px-2 py-1.5 text-center font-semibold text-gray-500">성취도</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-50">
+                                                {% for g in group.grades %}
+                                                <tr class="hover:bg-green-50">
+                                                    <td class="px-3 py-2 font-medium text-gray-800">{{ g.subject.name }}</td>
+                                                    <td class="px-2 py-2 text-center font-bold text-gray-800">{{ g.score|default:"-" }}</td>
+                                                    <td class="px-2 py-2 text-center text-gray-500">{{ g.subject_average|default:"-" }}</td>
+                                                    <td class="px-2 py-2 text-center text-gray-500">{{ g.subject_stddev|default:"-" }}</td>
+                                                    <td class="px-2 py-2 text-center">
+                                                        {% if g.achievement_level %}
+                                                        <span class="px-1 py-0.5 rounded font-bold
+                                                            {% if g.achievement_level == 'A' %}bg-indigo-100 text-indigo-700
+                                                            {% elif g.achievement_level == 'B' %}bg-blue-100 text-blue-700
+                                                            {% elif g.achievement_level == 'C' %}bg-green-100 text-green-700
+                                                            {% elif g.achievement_level == 'D' %}bg-yellow-100 text-yellow-700
+                                                            {% else %}bg-red-100 text-red-700{% endif %}">
+                                                            {{ g.achievement_level }}
+                                                        </span>
+                                                        {% else %}-{% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                            {% else %}
+                                            <thead class="bg-gray-50 border-b border-gray-100">
+                                                <tr>
+                                                    <th class="px-3 py-1.5 text-left font-semibold text-gray-500">과목</th>
+                                                    <th class="px-2 py-1.5 text-center font-semibold text-gray-500">원점수</th>
+                                                    <th class="px-2 py-1.5 text-center font-semibold text-gray-500">등급</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-50">
+                                                {% for g in group.grades %}
+                                                <tr class="hover:bg-gray-50">
+                                                    <td class="px-3 py-2 font-medium text-gray-800">
+                                                        {{ g.subject.name }}
+                                                        {% if g.is_elective %}<span class="ml-1 text-purple-500">진로</span>{% endif %}
+                                                    </td>
+                                                    <td class="px-2 py-2 text-center text-gray-700">{{ g.score|default:"-" }}</td>
+                                                    <td class="px-2 py-2 text-center">
+                                                        {% if g.grade_rank %}
+                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full font-bold
+                                                            {% if g.grade_rank == 1 %}bg-indigo-100 text-indigo-700
+                                                            {% elif g.grade_rank == 2 %}bg-blue-100 text-blue-700
+                                                            {% elif g.grade_rank == 3 %}bg-cyan-100 text-cyan-700
+                                                            {% elif g.grade_rank == 4 %}bg-green-100 text-green-700
+                                                            {% elif g.grade_rank == 5 %}bg-yellow-100 text-yellow-700
+                                                            {% elif g.grade_rank == 6 %}bg-orange-100 text-orange-700
+                                                            {% else %}bg-red-100 text-red-700{% endif %}">
+                                                            {{ g.grade_rank }}
+                                                        </span>
+                                                        {% elif g.achievement_level %}
+                                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full font-bold
+                                                            {% if g.achievement_level == 'A' %}bg-indigo-100 text-indigo-700
+                                                            {% elif g.achievement_level == 'B' %}bg-blue-100 text-blue-700
+                                                            {% elif g.achievement_level == 'C' %}bg-green-100 text-green-700
+                                                            {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                                                            {{ g.achievement_level }}
+                                                        </span>
+                                                        {% else %}-{% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                            {% endif %}
+                                        </table>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% else %}
+                        <div class="px-5 py-8 text-center text-gray-400 text-sm">등록된 성적이 없습니다.</div>
+                        {% endif %}
+                    </div><!-- /grades-section -->
+                </div>
+            </div><!-- /성적 분석 -->
 
             <!-- 이번 달 내역 카테고리 -->
             <div class="space-y-3">
@@ -311,6 +552,14 @@
                 </div>
 
                 <script>
+                function toggleGrades() {
+                    document.getElementById('grades-section').classList.toggle('hidden');
+                    document.getElementById('grades-chevron').classList.toggle('rotate-180');
+                }
+                function toggleGradeGroup(id) {
+                    document.getElementById(id).classList.toggle('hidden');
+                    document.getElementById('chevron-' + id).classList.toggle('rotate-180');
+                }
                 function toggleMonthSummary() {
                     document.getElementById('month-summary-section').classList.toggle('hidden');
                     document.getElementById('month-summary-chevron').classList.toggle('rotate-180');
@@ -349,5 +598,88 @@
             </p>
         </div>
     </div>
+{% if student and grade_semester_averages %}
+<script>
+(function() {
+    var chartData = {{ grade_chart_data|safe }};
+    var labels = chartData.map(function(d) { return d.label; });
+
+    // 학기별 전체 평균 (모든 교과 포함)
+    var overallAvgs = {{ grade_semester_averages_json|safe }};
+    var overallData = overallAvgs.map(function(a) { return a.average; });
+
+    // 주요 교과별 시리즈
+    var MAIN_CATS = ['국어', '수학', '영어', '과학', '사회'];
+    var CAT_COLORS = {
+        '국어': '#6366f1', '수학': '#3b82f6', '영어': '#22c55e',
+        '과학': '#f59e0b', '사회': '#ec4899'
+    };
+    var catSeries = {};
+    MAIN_CATS.forEach(function(cat) {
+        var vals = chartData.map(function(d) {
+            return d.categories[cat] ? d.categories[cat].average : null;
+        });
+        if (vals.some(function(v) { return v !== null; })) {
+            catSeries[cat] = vals;
+        }
+    });
+
+    var datasets = [{
+        label: '전체 평균',
+        data: overallData,
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99,102,241,0.1)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        tension: 0.3,
+        fill: true,
+    }];
+    Object.keys(catSeries).forEach(function(cat) {
+        datasets.push({
+            label: cat,
+            data: catSeries[cat],
+            borderColor: CAT_COLORS[cat],
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            pointRadius: 3,
+            tension: 0.3,
+            borderDash: [4, 3],
+        });
+    });
+
+    var ctx = document.getElementById('gradeLineChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: { labels: labels, datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 16 } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.dataset.label + ': ' + (ctx.raw !== null ? ctx.raw + '등급' : '-');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        reverse: true,
+                        min: 1,
+                        max: 9,
+                        ticks: { stepSize: 1, font: { size: 10 } },
+                        title: { display: true, text: '등급 (1↑)', font: { size: 10 } }
+                    },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+})();
+</script>
+{% endif %}
 </body>
 </html>

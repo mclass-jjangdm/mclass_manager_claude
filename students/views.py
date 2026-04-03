@@ -1128,6 +1128,19 @@ def parent_lookup(request):
     error_message = None
     this_month_tuition = 0
     this_month_book_total = 0
+    # 성적 분석용 변수 초기화
+    grade_internal_grades = []
+    grade_elective_grades = []
+    grade_mock_grades = []
+    grade_semester_averages = []
+    grade_overall_average = None
+    grade_weighted_averages = []
+    grade_combination_averages = []
+    grade_chart_data = '[]'
+    grade_semester_averages_json = '[]'
+    grade_is_middle = False
+    grade_middle_grade_summary = []
+    grade_groups = []
     this_month_total = 0
     current_me_items = []
     month_book_sales = []
@@ -1233,6 +1246,154 @@ def parent_lookup(request):
             total_unpaid_all = total_unpaid + total_unpaid_tuition
             total_paid_all = total_paid + total_paid_tuition
 
+            # ── 성적 분석 데이터 ────────────────────────────────
+            from grades.models import Grade as _Grade
+            from collections import defaultdict as _defaultdict
+            from decimal import Decimal as _Decimal
+            import json as _json
+            import math as _math
+
+            _internal_grades = _Grade.objects.filter(
+                student=student, grade_type='internal'
+            ).select_related('subject').order_by('-year', '-semester', 'subject__subject_code')
+
+            _mock_grades = _Grade.objects.filter(
+                student=student, grade_type='mock'
+            ).select_related('subject').order_by('-exam_year', '-exam_month', 'subject__subject_code')
+
+            _semester_stats = _defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
+            _year_stats = _defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
+            _semester_category_grades = _defaultdict(lambda: _defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0}))
+            _category_stats = _defaultdict(lambda: {'total_weighted': 0, 'total_credits': 0})
+
+            for _g in _internal_grades:
+                if _g.grade_rank is None or _g.credits is None:
+                    continue
+                if not _g.is_elective:
+                    _key = f"{_g.year}-{_g.semester}"
+                    _cat = _g.curriculum or '기타'
+                    _semester_category_grades[_key][_cat]['total_weighted'] += _g.grade_rank * _g.credits
+                    _semester_category_grades[_key][_cat]['total_credits'] += _g.credits
+                    _category_stats[_cat]['total_weighted'] += _g.grade_rank * _g.credits
+                    _category_stats[_cat]['total_credits'] += _g.credits
+                if _g.is_elective:
+                    continue
+                _sem_key = (_g.year, _g.semester)
+                _semester_stats[_sem_key]['total_weighted'] += _g.grade_rank * _g.credits
+                _semester_stats[_sem_key]['total_credits'] += _g.credits
+                _year_stats[_g.year]['total_weighted'] += _g.grade_rank * _g.credits
+                _year_stats[_g.year]['total_credits'] += _g.credits
+
+            _semester_averages = []
+            for (_yr, _sem), _stats in sorted(_semester_stats.items()):
+                if _stats['total_credits'] > 0:
+                    _avg = _Decimal(_stats['total_weighted']) / _Decimal(_stats['total_credits'])
+                    _semester_averages.append({
+                        'year': _yr, 'semester': _sem,
+                        'average': round(_avg, 2),
+                        'total_credits': _stats['total_credits'],
+                    })
+
+            _total_wsum = sum(s['total_weighted'] for s in _semester_stats.values())
+            _total_csum = sum(s['total_credits'] for s in _semester_stats.values())
+            _overall_average = None
+            if _total_csum > 0:
+                _overall_average = round(_Decimal(_total_wsum) / _Decimal(_total_csum), 2)
+
+            _weight_configs = [
+                {'name': '30:30:40', 'weights': {1: 30, 2: 30, 3: 40}},
+                {'name': '20:40:40', 'weights': {1: 20, 2: 40, 3: 40}},
+                {'name': '20:30:50', 'weights': {1: 20, 2: 30, 3: 50}},
+            ]
+            _weighted_averages = []
+            for _config in _weight_configs:
+                _wts = _config['weights']
+                _wsum = _Decimal(0)
+                _wt_sum = _Decimal(0)
+                for _yr in [1, 2, 3]:
+                    if _yr in _year_stats and _year_stats[_yr]['total_credits'] > 0:
+                        _yr_avg = _Decimal(_year_stats[_yr]['total_weighted']) / _Decimal(_year_stats[_yr]['total_credits'])
+                        _wsum += _yr_avg * _Decimal(_wts[_yr])
+                        _wt_sum += _Decimal(_wts[_yr])
+                if _wt_sum > 0:
+                    _weighted_averages.append({'name': _config['name'], 'average': round(_wsum / _wt_sum, 2)})
+
+            _chart_data = []
+            for _sem_key in sorted(_semester_category_grades.keys()):
+                _yr, _sm = _sem_key.split('-')
+                _sem_data = {'label': f"{_yr}학년 {_sm}학기", 'categories': {}}
+                for _cat, _stats in _semester_category_grades[_sem_key].items():
+                    if _stats['total_credits'] > 0:
+                        _avg_g = round(float(_stats['total_weighted']) / float(_stats['total_credits']), 2)
+                        _sem_data['categories'][_cat] = {'average': _avg_g, 'total_credits': _stats['total_credits']}
+                _chart_data.append(_sem_data)
+
+            _category_combinations = [
+                {'name': '국수영과', 'categories': ['국어', '수학', '영어', '과학']},
+                {'name': '국수영사', 'categories': ['국어', '수학', '영어', '사회']},
+                {'name': '국수영사과', 'categories': ['국어', '수학', '영어', '사회', '과학']},
+            ]
+            _combination_averages = []
+            for _combo in _category_combinations:
+                _tw = 0; _tc = 0; _miss = []
+                for _cat in _combo['categories']:
+                    if _cat in _category_stats and _category_stats[_cat]['total_credits'] > 0:
+                        _tw += _category_stats[_cat]['total_weighted']
+                        _tc += _category_stats[_cat]['total_credits']
+                    else:
+                        _miss.append(_cat)
+                if _tc > 0:
+                    _combination_averages.append({
+                        'name': _combo['name'], 'categories': _combo['categories'],
+                        'average': round(_Decimal(_tw) / _Decimal(_tc), 2),
+                        'total_credits': _tc, 'missing': _miss,
+                    })
+
+            _regular_internal = [g for g in _internal_grades if not g.is_elective]
+            _elective = [g for g in _internal_grades if g.is_elective]
+
+            _is_middle = student.grade in ['K7', 'K8', 'K9']
+            _middle_summary = []
+            if _is_middle:
+                def _norm_cdf(x):
+                    return (1 + _math.erf(x / _math.sqrt(2))) / 2
+                for _g in sorted(_internal_grades, key=lambda g: (g.year, g.semester, g.subject.subject_code if g.subject else '')):
+                    _entry = {'grade': _g, 'upper_pct': None, 'est_rank': None}
+                    if _g.score is not None and _g.subject_average is not None and _g.subject_stddev and float(_g.subject_stddev) > 0:
+                        _z = (float(_g.score) - float(_g.subject_average)) / float(_g.subject_stddev)
+                        _up = round((1 - _norm_cdf(_z)) * 100, 1)
+                        _entry['upper_pct'] = _up
+                        if _g.enrolled_count:
+                            _entry['est_rank'] = max(1, round(_up / 100 * _g.enrolled_count))
+                    _middle_summary.append(_entry)
+
+            # 학기별 그룹 (성적 테이블용)
+            _grade_groups_dict = _defaultdict(list)
+            for _g in _Grade.objects.filter(
+                student=student, grade_type='internal'
+            ).select_related('subject').order_by('year', 'semester', 'subject__subject_code'):
+                _grade_groups_dict[(_g.year, _g.semester)].append(_g)
+            _grade_groups = [
+                {'year': k[0], 'semester': k[1], 'grades': v}
+                for k, v in sorted(_grade_groups_dict.items(), reverse=True)
+            ]
+
+            grade_internal_grades = _regular_internal
+            grade_elective_grades = _elective
+            grade_mock_grades = list(_mock_grades)
+            grade_semester_averages = _semester_averages
+            grade_overall_average = _overall_average
+            grade_weighted_averages = _weighted_averages
+            grade_combination_averages = _combination_averages
+            grade_chart_data = _json.dumps(_chart_data, ensure_ascii=False)
+            grade_semester_averages_json = _json.dumps(
+                [{'year': s['year'], 'semester': s['semester'], 'average': float(s['average'])} for s in _semester_averages],
+                ensure_ascii=False
+            )
+            grade_is_middle = _is_middle
+            grade_middle_grade_summary = _middle_summary
+            grade_groups = _grade_groups
+
         except Student.DoesNotExist:
             error_message = '학생 정보를 찾을 수 없습니다. 이름과 고유번호를 확인해 주세요.'
     elif request.method == 'POST':
@@ -1261,6 +1422,18 @@ def parent_lookup(request):
         'total_paid_tuition': total_paid_tuition,
         'total_unpaid_all': total_unpaid_all,
         'total_paid_all': total_paid_all,
+        'grade_internal_grades': grade_internal_grades,
+        'grade_elective_grades': grade_elective_grades,
+        'grade_mock_grades': grade_mock_grades,
+        'grade_semester_averages': grade_semester_averages,
+        'grade_overall_average': grade_overall_average,
+        'grade_weighted_averages': grade_weighted_averages,
+        'grade_combination_averages': grade_combination_averages,
+        'grade_chart_data': grade_chart_data,
+        'grade_semester_averages_json': grade_semester_averages_json,
+        'grade_is_middle': grade_is_middle,
+        'grade_middle_grade_summary': grade_middle_grade_summary,
+        'grade_groups': grade_groups,
     }
     return render(request, 'students/parent_lookup.html', context)
 
