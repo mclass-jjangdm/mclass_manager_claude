@@ -137,6 +137,7 @@ class IndexView(TemplateView):
                 ).values_list('student_id', 'lesson_id')
             )
 
+            prev_month_fee_total = 0
             if mid_month_keys:
                 # 전월 납부 완료 집합
                 paid_prev_quads = set(
@@ -176,7 +177,7 @@ class IndexView(TemplateView):
             month_tuition_unpaid = sum(
                 me.adjusted_tuition for me in monthly_this_month
                 if (me.student_id, me.lesson_id) not in paid_pairs
-            )
+            ) + prev_month_fee_total
 
             # 교재비 (청구서 기준 = billing export와 동일: 누적 미납 교재 전체)
             month_book_billing = BookSale.objects.filter(
