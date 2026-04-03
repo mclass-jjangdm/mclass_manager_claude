@@ -192,9 +192,10 @@ def student_detail(request, pk):
     from django.db.models import Sum, Q as dQ
     today = timezone.now().date()
 
-    # 활성 Enrollment (납부 버튼 / 하단 수강 테이블용)
+    # 활성 Enrollment (하단 수강 테이블용)
     active_enrollments = Enrollment.objects.filter(student=student, is_active=True).select_related('lesson')
-    enrollment_by_lesson = {e.lesson_id: e for e in active_enrollments}
+    # 납부 버튼용 - 비활성 수업도 포함 (MonthlyEnrollment가 있으면 납부 가능해야 함)
+    enrollment_by_lesson = {e.lesson_id: e for e in Enrollment.objects.filter(student=student).select_related('lesson')}
 
     # 당월 MonthlyEnrollment
     current_mes = MonthlyEnrollment.objects.filter(
