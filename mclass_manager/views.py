@@ -113,8 +113,51 @@ class IndexView(TemplateView):
                 ).exclude(status='cancelled').select_related('lesson')
             )
 
-            # 1) 이번 달 청구 금액
+            # 1) 이번 달 청구 금액 (MonthlyEnrollment 합산)
             month_tuition_billing = sum(me.adjusted_tuition for me in monthly_this_month)
+
+            # 1-1) 전월 중간 등록 학생의 전월 미납 수강료 (billing export의 prev_month_fee와 동일)
+            # billing export는 전월 중간 등록(enrollment_date__day > 1) 학생의 전월 미납분을 이번 달 청구에 포함
+            from classes.models import Enrollment as _Enrollment
+            if today.month == 1:
+                prev_year_val, prev_month_val = today.year - 1, 12
+            else:
+                prev_year_val, prev_month_val = today.year, today.month - 1
+
+            # 이번 달 청구 대상 학생 PK
+            this_month_student_pks = set(me.student_id for me in monthly_this_month)
+
+            # 전월 중간(2일 이후) 등록한 (student_id, lesson_id)
+            mid_month_keys = set(
+                _Enrollment.objects.filter(
+                    student_id__in=this_month_student_pks,
+                    enrollment_date__year=prev_year_val,
+                    enrollment_date__month=prev_month_val,
+                    enrollment_date__day__gt=1,
+                ).values_list('student_id', 'lesson_id')
+            )
+
+            if mid_month_keys:
+                # 전월 납부 완료 집합
+                paid_prev_quads = set(
+                    TuitionPayment.objects.filter(
+                        year=prev_year_val,
+                        month=prev_month_val,
+                        enrollment__student_id__in=this_month_student_pks,
+                    ).values_list('enrollment__student_id', 'enrollment__lesson_id', 'year', 'month')
+                )
+                # 전월 중간 등록 학생의 전월 미납 MonthlyEnrollment
+                prev_mes = MonthlyEnrollment.objects.filter(
+                    student_id__in=this_month_student_pks,
+                    year=prev_year_val,
+                    month=prev_month_val,
+                ).exclude(status='cancelled').select_related('lesson')
+                prev_month_fee_total = sum(
+                    me.adjusted_tuition for me in prev_mes
+                    if (me.student_id, me.lesson_id) in mid_month_keys
+                    and (me.student_id, me.lesson_id, me.year, me.month) not in paid_prev_quads
+                )
+                month_tuition_billing += prev_month_fee_total
 
             # 2) 이번 달 수납 금액 (TuitionPayment 기준)
             month_tuition_collected = TuitionPayment.objects.filter(
