@@ -125,12 +125,17 @@ class IndexView(TemplateView):
                 prev_year_val, prev_month_val = today.year, today.month - 1
 
             # 이번 달 청구 대상 학생 PK
+            # billing export와 동일하게: 이번 달 수강 학생 + 미납 교재 있는 학생 전체
             this_month_student_pks = set(me.student_id for me in monthly_this_month)
+            unpaid_book_student_pks = set(
+                BookSale.objects.filter(is_paid=False).values_list('student_id', flat=True)
+            )
+            all_billing_student_pks = this_month_student_pks | unpaid_book_student_pks
 
             # 전월 중간(2일 이후) 등록한 (student_id, lesson_id)
             mid_month_keys = set(
                 _Enrollment.objects.filter(
-                    student_id__in=this_month_student_pks,
+                    student_id__in=all_billing_student_pks,
                     enrollment_date__year=prev_year_val,
                     enrollment_date__month=prev_month_val,
                     enrollment_date__day__gt=1,
@@ -144,12 +149,12 @@ class IndexView(TemplateView):
                     TuitionPayment.objects.filter(
                         year=prev_year_val,
                         month=prev_month_val,
-                        enrollment__student_id__in=this_month_student_pks,
+                        enrollment__student_id__in=all_billing_student_pks,
                     ).values_list('enrollment__student_id', 'enrollment__lesson_id', 'year', 'month')
                 )
                 # 전월 중간 등록 학생의 전월 미납 MonthlyEnrollment
                 prev_mes = MonthlyEnrollment.objects.filter(
-                    student_id__in=this_month_student_pks,
+                    student_id__in=all_billing_student_pks,
                     year=prev_year_val,
                     month=prev_month_val,
                 ).exclude(status='cancelled').select_related('lesson')

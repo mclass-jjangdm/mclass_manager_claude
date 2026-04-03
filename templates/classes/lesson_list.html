@@ -96,6 +96,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">수업 일정</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">수강료</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">수강생</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">이번 달 청구</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">상태</th>
                     </tr>
                 </thead>
@@ -126,6 +127,13 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             {{ lesson.active_enrollment_count }}명
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                            {% if lesson.current_billing %}
+                            <span class="font-medium text-indigo-700">{{ lesson.current_billing|intcomma }}원</span>
+                            {% else %}
+                            <span class="text-gray-400">-</span>
+                            {% endif %}
                         </td>
 
                         <td class="px-6 py-4 whitespace-nowrap">

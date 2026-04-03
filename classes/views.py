@@ -134,12 +134,28 @@ def lesson_list(request):
     search = request.GET.get('search', '').strip()
     status = request.GET.get('status', 'active')
 
+    # 이번 달 수업별 청구 금액 계산 (adjusted_tuition 합산)
+    this_month_mes = list(
+        MonthlyEnrollment.objects.filter(
+            year=today.year,
+            month=today.month,
+        ).exclude(status='cancelled').select_related('lesson')
+    )
+    lesson_billing_map = {}
+    for me in this_month_mes:
+        lesson_billing_map[me.lesson_id] = lesson_billing_map.get(me.lesson_id, 0) + me.adjusted_tuition
+
     if search:
         lessons = lessons.filter(name__icontains=search)
     if status == 'active':
         lessons = lessons.filter(is_active=True)
     elif status == 'inactive':
         lessons = lessons.filter(is_active=False)
+
+    # 청구 금액 속성 부여
+    lessons = list(lessons)
+    for lesson in lessons:
+        lesson.current_billing = lesson_billing_map.get(lesson.pk, 0)
 
     # ── 시간표 데이터 (항상 활성 수업만, 검색 조건 무관) ──────────
     TIMETABLE_COLORS = [
