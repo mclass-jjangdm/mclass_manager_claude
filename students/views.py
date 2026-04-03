@@ -231,9 +231,28 @@ def student_detail(request, pk):
         dQ(year__lt=today.year) | dQ(year=today.year, month__lt=today.month)
     ).exclude(status='cancelled').select_related('lesson')
 
-    past_unpaid_tuition = sum(
-        me.adjusted_tuition for me in past_mes
+    past_unpaid_mes = [
+        me for me in past_mes
         if (me.lesson_id, me.year, me.month) not in paid_quads
+    ]
+    past_unpaid_tuition = sum(me.adjusted_tuition for me in past_unpaid_mes)
+
+    unpaid_lesson_ids = {me.lesson_id for me in past_unpaid_mes}
+    enrollments_for_unpaid = {
+        e.lesson_id: e
+        for e in Enrollment.objects.filter(student=student, lesson_id__in=unpaid_lesson_ids)
+    } if unpaid_lesson_ids else {}
+
+    past_unpaid_me_items = sorted(
+        [
+            {
+                'me': me,
+                'enrollment': enrollments_for_unpaid.get(me.lesson_id),
+            }
+            for me in past_unpaid_mes
+        ],
+        key=lambda x: (x['me'].year, x['me'].month),
+        reverse=True,
     )
 
     # 납부 이력
@@ -421,6 +440,7 @@ def student_detail(request, pk):
         'current_month_tuition': current_month_tuition,
         'current_me_items': current_me_items,
         'past_unpaid_tuition': past_unpaid_tuition,
+        'past_unpaid_me_items': past_unpaid_me_items,
         'total_tuition_paid': total_tuition_paid,
         'tuition_payments': tuition_payments,
         'internal_grades': regular_internal_grades,
