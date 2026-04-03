@@ -135,13 +135,20 @@ class IndexView(TemplateView):
                 if (me.student_id, me.lesson_id) not in paid_pairs
             )
 
-            month_book_income = BookSale.objects.filter(
+            # 이번 달 교재 청구 (sale_date 기준)
+            _book_this_month = BookSale.objects.filter(
+                sale_date__year=today.year,
+                sale_date__month=today.month,
+            )
+            month_book_billing = _book_this_month.aggregate(
+                s=Sum(F('price') * F('quantity')))['s'] or 0
+            month_book_collected = _book_this_month.filter(
                 is_paid=True,
-                payment_date__year=today.year,
-                payment_date__month=today.month,
             ).aggregate(s=Sum(F('price') * F('quantity')))['s'] or 0
+            month_book_unpaid = month_book_billing - month_book_collected
 
-            total_income = month_tuition_collected + month_book_income
+            # 합계 (청구 기준)
+            total_billing = month_tuition_billing + month_book_billing
 
             # 이번 달 정산 - 지출
             month_maint = Maintenance.objects.filter(
@@ -211,8 +218,10 @@ class IndexView(TemplateView):
                 'month_tuition_billing': month_tuition_billing,
                 'month_tuition_collected': month_tuition_collected,
                 'month_tuition_unpaid': month_tuition_unpaid,
-                'month_book_income': month_book_income,
-                'total_income': total_income,
+                'month_book_billing': month_book_billing,
+                'month_book_collected': month_book_collected,
+                'month_book_unpaid': month_book_unpaid,
+                'total_billing': total_billing,
                 'total_unpaid_book': total_unpaid_book,
                 'total_unpaid': total_unpaid,
                 'next_year_val': next_year_val,

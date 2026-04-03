@@ -216,17 +216,30 @@
                         <span class="text-xs text-gray-500">미납</span>
                         <span class="text-xs font-medium {% if month_tuition_unpaid > 0 %}text-red-500{% else %}text-gray-700{% endif %}">{{ month_tuition_unpaid|intcomma }}원</span>
                     </a>
-                    <!-- 교재 판매 -->
+                    <!-- 교재비 그룹 -->
                     <div class="pt-1 border-t border-green-200"></div>
+                    <div class="flex justify-between items-center py-1 px-2">
+                        <span class="text-sm font-medium text-gray-700">교재비</span>
+                    </div>
                     <a href="{% url 'bookstore:book_list' %}"
-                       class="flex justify-between items-center py-1.5 px-2 rounded hover:bg-green-100 transition-colors">
-                        <span class="text-sm text-gray-600">교재 판매</span>
-                        <span class="text-sm font-medium text-gray-800">{{ month_book_income|intcomma }}원</span>
+                       class="flex justify-between items-center py-1 pl-5 pr-2 rounded hover:bg-green-100 transition-colors">
+                        <span class="text-xs text-gray-500">청구</span>
+                        <span class="text-xs font-medium text-gray-700">{{ month_book_billing|intcomma }}원</span>
                     </a>
-                    <!-- 합계 (수납 기준) -->
+                    <a href="{% url 'bookstore:book_list' %}"
+                       class="flex justify-between items-center py-1 pl-5 pr-2 rounded hover:bg-green-100 transition-colors">
+                        <span class="text-xs text-gray-500">수납</span>
+                        <span class="text-xs font-medium text-gray-700">{{ month_book_collected|intcomma }}원</span>
+                    </a>
+                    <a href="{% url 'bookstore:book_list' %}"
+                       class="flex justify-between items-center py-1 pl-5 pr-2 rounded hover:bg-green-100 transition-colors">
+                        <span class="text-xs text-gray-500">미납</span>
+                        <span class="text-xs font-medium {% if month_book_unpaid > 0 %}text-red-500{% else %}text-gray-700{% endif %}">{{ month_book_unpaid|intcomma }}원</span>
+                    </a>
+                    <!-- 합계 (청구 기준) -->
                     <div class="pt-2 mt-1 border-t border-green-200 flex justify-between items-center px-2">
-                        <span class="text-sm font-semibold text-green-700">합계 <span class="text-xs font-normal text-green-500">(수납 기준)</span></span>
-                        <span class="text-base font-bold text-green-700">{{ total_income|intcomma }}원</span>
+                        <span class="text-sm font-semibold text-green-700">합계 <span class="text-xs font-normal text-green-500">(청구 기준)</span></span>
+                        <span class="text-base font-bold text-green-700">{{ total_billing|intcomma }}원</span>
                     </div>
                 </div>
             </div>
