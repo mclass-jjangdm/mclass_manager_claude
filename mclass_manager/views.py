@@ -193,8 +193,8 @@ class IndexView(TemplateView):
             month_book_collected = _book_qs['collected']  or 0
             month_book_unpaid    = month_book_billing - month_book_collected
 
-            # 합계 (청구 기준) = 수강료 청구 + 교재비 청구 (납부 여부 무관, 고정값)
-            total_billing = month_tuition_billing + month_book_billing
+            # 합계 (청구 기준) = 수강료 청구 + 교재비 미납 누계
+            total_billing = month_tuition_billing + month_book_unpaid
 
             # 이번 달 정산 - 지출
             month_maint = Maintenance.objects.filter(
