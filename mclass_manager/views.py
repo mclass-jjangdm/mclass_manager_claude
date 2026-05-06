@@ -184,12 +184,16 @@ class IndexView(TemplateView):
                 if (me.student_id, me.lesson_id) not in paid_pairs
             ) + prev_month_fee_total
 
-            # 교재비 (청구서 기준 = billing export와 동일: 누적 미납 교재 전체)
-            month_book_billing = BookSale.objects.filter(
-                is_paid=False,
-            ).aggregate(s=Sum(F('price') * F('quantity')))['s'] or 0
+            # 교재비 청구 = 누적 판매 총액 (is_paid 무관, 납부해도 변하지 않음)
+            _book_qs = BookSale.objects.aggregate(
+                billing=Sum(F('price') * F('quantity')),
+                collected=Sum(F('price') * F('quantity'), filter=Q(is_paid=True)),
+            )
+            month_book_billing   = _book_qs['billing']   or 0
+            month_book_collected = _book_qs['collected']  or 0
+            month_book_unpaid    = month_book_billing - month_book_collected
 
-            # 합계 (청구 기준) = 수강료 청구 + 교재비 미납 누계
+            # 합계 (청구 기준) = 수강료 청구 + 교재비 청구 (납부 여부 무관, 고정값)
             total_billing = month_tuition_billing + month_book_billing
 
             # 이번 달 정산 - 지출
@@ -261,6 +265,8 @@ class IndexView(TemplateView):
                 'month_tuition_collected': month_tuition_collected,
                 'month_tuition_unpaid': month_tuition_unpaid,
                 'month_book_billing': month_book_billing,
+                'month_book_collected': month_book_collected,
+                'month_book_unpaid': month_book_unpaid,
                 'total_billing': total_billing,
                 'total_unpaid_book': total_unpaid_book,
                 'total_unpaid': total_unpaid,
