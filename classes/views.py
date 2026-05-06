@@ -264,7 +264,7 @@ def lesson_detail(request, pk):
         Lesson.objects.prefetch_related('schedules', 'books'),
         pk=pk,
     )
-    enrollments = lesson.enrollments.select_related('student').prefetch_related('payments').order_by('-enrollment_date')
+    enrollments = lesson.enrollments.filter(student__is_active=True).select_related('student').prefetch_related('payments').order_by('-enrollment_date')
 
     today = datetime.date.today()
     if today.month == 12:
