@@ -334,7 +334,6 @@ def billing_export(request):
                 'student': student,
                 'tuition_items': [],   # (lesson_name, amount)
                 'book_items': [],      # (book_title, amount)
-                'prev_month_fee': 0,
             }
         return student_map[student.pk]
 
@@ -382,41 +381,37 @@ def billing_export(request):
     else:
         prev_month, prev_year = target_month - 1, target_year
 
-    # 전월에 월 중간(2일 이후) 등록한 (student_id, lesson_id) 집합
-    from classes.models import Enrollment as _Enrollment
-    mid_month_keys = set(
-        _Enrollment.objects
-        .filter(
-            student_id__in=student_pks,
-            enrollment_date__year=prev_year,
-            enrollment_date__month=prev_month,
-            enrollment_date__day__gt=1,
-        )
-        .values_list('student_id', 'lesson_id')
-    )
+    # 전월 미납: 청구에 반영 / 2개월 이상 미납: 메모에만 표시
+    prev_unpaid_dict = {}   # student_pk -> [{'name': str, 'amount': int}, ...]
+    older_unpaid_dict = {}  # student_pk -> int
 
-    past_unpaid_dict = {}  # student_pk -> 미납 합계
     for me in past_mes:
         if (me.student_id, me.lesson_id, me.year, me.month) not in paid_quads:
-            past_unpaid_dict[me.student_id] = past_unpaid_dict.get(me.student_id, 0) + me.adjusted_tuition
-            # 바로 전월 미납이고 월 중간 등록인 경우만 prev_month_fee에 집계
-            if (me.year == prev_year and me.month == prev_month
-                    and me.student_id in student_map
-                    and (me.student_id, me.lesson_id) in mid_month_keys):
-                student_map[me.student_id]['prev_month_fee'] += me.adjusted_tuition
+            if me.year == prev_year and me.month == prev_month:
+                prev_unpaid_dict.setdefault(me.student_id, []).append(
+                    {'name': me.lesson.name, 'amount': me.adjusted_tuition}
+                )
+            else:
+                older_unpaid_dict[me.student_id] = (
+                    older_unpaid_dict.get(me.student_id, 0) + me.adjusted_tuition
+                )
 
     HOMEPAGE_MSG = '자세한 내역은 학원 홈페이지(https://mclass.co.kr)에서 확인할 수 있습니다.'
 
-    # 각 entry에 auto_memo 추가
     for entry in rows:
         student = entry['student']
-        parts = [f'고유 번호 : {student.student_id}'] if student.student_id else []
-        # 전월 분이 이미 청구에 포함된 학생은 미납 안내 제외
-        past_unpaid = past_unpaid_dict.get(student.pk, 0) - entry['prev_month_fee']
-        if past_unpaid > 0:
-            parts.append(f'전월 미납 수강료가 {past_unpaid:,}원 있습니다.')
-        parts.append(HOMEPAGE_MSG)
-        entry['auto_memo'] = ' / '.join(parts)
+        prev_items = prev_unpaid_dict.get(student.pk, [])
+        prev_total = sum(item['amount'] for item in prev_items)
+        older_unpaid = older_unpaid_dict.get(student.pk, 0)
+
+        entry['prev_items'] = prev_items
+        entry['prev_total'] = prev_total
+
+        memo_parts = [f'고유 번호 : {student.student_id}'] if student.student_id else []
+        if older_unpaid > 0:
+            memo_parts.append(f'2개월 이상 미납 수강료가 {older_unpaid:,}원 있습니다.')
+        memo_parts.append(HOMEPAGE_MSG)
+        entry['auto_memo'] = ' / '.join(memo_parts)
 
     # POST → 파일 생성
     if request.method == 'POST':
@@ -428,19 +423,18 @@ def billing_export(request):
         data_rows = []
         for entry in rows:
             student = entry['student']
-            prev_fee = entry['prev_month_fee']
             parts = []
-            if prev_fee > 0:
-                parts.append(f'{prev_month}월 분 {prev_fee:,}원')
+            for item in entry['prev_items']:
+                parts.append(f'{prev_month}월 미납 {item["name"]} {item["amount"]:,}원')
             if entry['tuition_total'] > 0:
-                parts.append(f'{target_month}월 분 {entry["tuition_total"]:,}원')
+                parts.append(f'{target_month}월 수강료 {entry["tuition_total"]:,}원')
             if entry['book_total'] > 0:
-                parts.append(f'교재비: {entry["book_total"]:,}원')
+                parts.append(f'교재비 {entry["book_total"]:,}원')
             content = ', '.join(parts)
             data_rows.append([
                 student.name,
                 student.parent_phone or '',
-                entry['total'] + prev_fee,
+                entry['total'] + entry['prev_total'],
                 content,
                 entry['auto_memo'],
             ])

@@ -68,14 +68,14 @@
                         <tr class="hover:bg-gray-50 transition-colors align-top">
                             <td class="px-4 py-3 font-medium text-gray-900">{{ entry.student.name }}</td>
                             <td class="px-4 py-3 text-gray-600 text-sm">{{ entry.student.parent_phone|default:"-" }}</td>
-                            <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ entry.total|add:entry.prev_month_fee|intcomma }}원</td>
+                            <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ entry.total|add:entry.prev_total|intcomma }}원</td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-1">
-                                    {% if entry.prev_month_fee > 0 %}
-                                    <span class="inline-block bg-amber-50 text-amber-700 rounded px-2 py-0.5 text-xs">{{ prev_month }}월 분 {{ entry.prev_month_fee|intcomma }}원</span>
-                                    {% endif %}
+                                    {% for item in entry.prev_items %}
+                                    <span class="inline-block bg-amber-50 text-amber-700 rounded px-2 py-0.5 text-xs">{{ prev_month }}월 미납 {{ item.name }} {{ item.amount|intcomma }}원</span>
+                                    {% endfor %}
                                     {% if entry.tuition_total > 0 %}
-                                    <span class="inline-block bg-indigo-50 text-indigo-700 rounded px-2 py-0.5 text-xs">{{ target_month }}월 분 {{ entry.tuition_total|intcomma }}원</span>
+                                    <span class="inline-block bg-indigo-50 text-indigo-700 rounded px-2 py-0.5 text-xs">{{ target_month }}월 수강료 {{ entry.tuition_total|intcomma }}원</span>
                                     {% endif %}
                                     {% if entry.book_total > 0 %}
                                     <span class="inline-block bg-orange-50 text-orange-700 rounded px-2 py-0.5 text-xs">교재비: {{ entry.book_total|intcomma }}원</span>
