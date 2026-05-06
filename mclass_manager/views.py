@@ -373,43 +373,36 @@ def billing_export(request):
         .filter(_Q(year__lt=target_year) | _Q(year=target_year, month__lt=target_month))
         .exclude(status='cancelled')
         .select_related('lesson')
+        .order_by('year', 'month', 'lesson__name')
     )
 
-    # 전월 계산
+    # 전월 계산 (prev_month는 template 컨텍스트용으로만 유지)
     if target_month == 1:
         prev_month, prev_year = 12, target_year - 1
     else:
         prev_month, prev_year = target_month - 1, target_year
 
-    # 전월 미납: 청구에 반영 / 2개월 이상 미납: 메모에만 표시
-    prev_unpaid_dict = {}   # student_pk -> [{'name': str, 'amount': int}, ...]
-    older_unpaid_dict = {}  # student_pk -> int
+    # 모든 과거 미납: 청구금액·내용에 반영
+    all_unpaid_dict = {}  # student_pk -> [{'label': str, 'name': str, 'amount': int}, ...]
 
     for me in past_mes:
         if (me.student_id, me.lesson_id, me.year, me.month) not in paid_quads:
-            if me.year == prev_year and me.month == prev_month:
-                prev_unpaid_dict.setdefault(me.student_id, []).append(
-                    {'name': me.lesson.name, 'amount': me.adjusted_tuition}
-                )
-            else:
-                older_unpaid_dict[me.student_id] = (
-                    older_unpaid_dict.get(me.student_id, 0) + me.adjusted_tuition
-                )
+            label = f'{me.month}월' if me.year == target_year else f'{me.year}년 {me.month}월'
+            all_unpaid_dict.setdefault(me.student_id, []).append(
+                {'label': label, 'name': me.lesson.name, 'amount': me.adjusted_tuition}
+            )
 
     HOMEPAGE_MSG = '자세한 내역은 학원 홈페이지(https://mclass.co.kr)에서 확인할 수 있습니다.'
 
     for entry in rows:
         student = entry['student']
-        prev_items = prev_unpaid_dict.get(student.pk, [])
-        prev_total = sum(item['amount'] for item in prev_items)
-        older_unpaid = older_unpaid_dict.get(student.pk, 0)
+        unpaid_items = all_unpaid_dict.get(student.pk, [])
+        unpaid_total = sum(item['amount'] for item in unpaid_items)
 
-        entry['prev_items'] = prev_items
-        entry['prev_total'] = prev_total
+        entry['unpaid_items'] = unpaid_items
+        entry['unpaid_total'] = unpaid_total
 
         memo_parts = [f'고유 번호 : {student.student_id}'] if student.student_id else []
-        if older_unpaid > 0:
-            memo_parts.append(f'2개월 이상 미납 수강료가 {older_unpaid:,}원 있습니다.')
         memo_parts.append(HOMEPAGE_MSG)
         entry['auto_memo'] = ' / '.join(memo_parts)
 
@@ -424,8 +417,8 @@ def billing_export(request):
         for entry in rows:
             student = entry['student']
             parts = []
-            for item in entry['prev_items']:
-                parts.append(f'{prev_month}월 미납 {item["name"]} {item["amount"]:,}원')
+            for item in entry['unpaid_items']:
+                parts.append(f'{item["label"]} 미납 {item["name"]} {item["amount"]:,}원')
             if entry['tuition_total'] > 0:
                 parts.append(f'{target_month}월 수강료 {entry["tuition_total"]:,}원')
             if entry['book_total'] > 0:
@@ -434,7 +427,7 @@ def billing_export(request):
             data_rows.append([
                 student.name,
                 student.parent_phone or '',
-                entry['total'] + entry['prev_total'],
+                entry['total'] + entry['unpaid_total'],
                 content,
                 entry['auto_memo'],
             ])
