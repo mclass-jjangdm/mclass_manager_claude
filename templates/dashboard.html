@@ -221,7 +221,7 @@
                     <a href="{% url 'bookstore:book_list' %}"
                        class="flex justify-between items-center py-1.5 px-2 rounded hover:bg-green-100 transition-colors">
                         <span class="text-sm text-gray-600">교재비 <span class="text-xs text-gray-400">(미납 누계)</span></span>
-                        <span class="text-sm font-medium {% if month_book_billing > 0 %}text-orange-600{% else %}text-gray-800{% endif %}">{{ month_book_billing|intcomma }}원</span>
+                        <span class="text-sm font-medium {% if total_unpaid_book > 0 %}text-orange-600{% else %}text-gray-800{% endif %}">{{ total_unpaid_book|intcomma }}원</span>
                     </a>
                     <!-- 합계 (청구 기준) -->
                     <div class="pt-2 mt-1 border-t border-green-200 flex justify-between items-center px-2">
