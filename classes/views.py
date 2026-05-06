@@ -1,9 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponse
 from django.db import models as django_models
 import datetime
 import json
+
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, MonthlyEnrollment, DAY_CHOICES
 from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm, MonthlyEnrollmentEditForm
@@ -836,3 +841,169 @@ def monthly_enrollment_bulk_delete(request):
             redirect_url += f'?year={year}&month={month}'
         return redirect(redirect_url)
     return redirect('classes:monthly_enrollment_list')
+
+
+@login_required
+def monthly_enrollment_export_xlsx(request):
+    """월별 수강 신청 현황 엑셀 다운로드"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 사용 가능합니다.')
+        return redirect('index')
+
+    target_year, target_month, _, _ = _get_target_month(request)
+    status_filter = request.GET.get('status', '')
+
+    qs = MonthlyEnrollment.objects.filter(
+        year=target_year, month=target_month,
+    ).select_related('student', 'lesson', 'lesson__teacher')
+
+    if status_filter in ('pending', 'confirmed', 'cancelled'):
+        qs = qs.filter(status=status_filter)
+
+    qs = qs.order_by('lesson__name', 'student__name')
+
+    # ── 워크북 생성 ───────────────────────────────────────
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = f'{target_year}년 {target_month}월'
+
+    # 스타일 정의
+    title_font    = Font(name='맑은 고딕', bold=True, size=14)
+    header_font   = Font(name='맑은 고딕', bold=True, size=10, color='FFFFFF')
+    cell_font     = Font(name='맑은 고딕', size=10)
+    lesson_font   = Font(name='맑은 고딕', bold=True, size=10, color='1E3A5F')
+    total_font    = Font(name='맑은 고딕', bold=True, size=10)
+
+    header_fill   = PatternFill('solid', fgColor='1F4E79')
+    lesson_fill   = PatternFill('solid', fgColor='D6E4F0')
+    total_fill    = PatternFill('solid', fgColor='F0F0F0')
+
+    center_align  = Alignment(horizontal='center', vertical='center')
+    left_align    = Alignment(horizontal='left',   vertical='center')
+    right_align   = Alignment(horizontal='right',  vertical='center')
+
+    thin = Side(style='thin', color='CCCCCC')
+    thin_border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    STATUS_LABEL = {'pending': '신청 중', 'confirmed': '확정', 'cancelled': '취소'}
+
+    # ── 타이틀 행 ─────────────────────────────────────────
+    ws.merge_cells('A1:I1')
+    title_cell = ws['A1']
+    status_title = f' ({STATUS_LABEL[status_filter]})' if status_filter else ''
+    title_cell.value = f'{target_year}년 {target_month}월 수강 신청 현황{status_title}'
+    title_cell.font = title_font
+    title_cell.alignment = center_align
+    ws.row_dimensions[1].height = 28
+
+    # ── 헤더 행 (3행) ─────────────────────────────────────
+    headers = ['No.', '수업명', '담당 선생님', '학생명', '학년',
+               '기본 수강료', '조정액', '최종 수강료', '상태']
+    ws.append([])  # 빈 행(2행)
+    ws.append(headers)
+    header_row = 3
+    for col_idx, _ in enumerate(headers, start=1):
+        cell = ws.cell(row=header_row, column=col_idx)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center_align
+        cell.border = thin_border
+    ws.row_dimensions[header_row].height = 20
+
+    # ── 컬럼 너비 설정 ────────────────────────────────────
+    col_widths = [6, 22, 14, 12, 8, 14, 10, 14, 10]
+    for i, width in enumerate(col_widths, start=1):
+        ws.column_dimensions[get_column_letter(i)].width = width
+
+    # ── 데이터 행 ─────────────────────────────────────────
+    # 수업별 그룹핑
+    lessons_dict = {}
+    for me in qs:
+        lid = me.lesson_id
+        if lid not in lessons_dict:
+            lessons_dict[lid] = {'lesson': me.lesson, 'items': []}
+        lessons_dict[lid]['items'].append(me)
+
+    row_num = header_row + 1
+    seq = 0
+    grand_total = 0
+
+    for grp in lessons_dict.values():
+        lesson = grp['lesson']
+        items = grp['items']
+        lesson_total = sum(me.adjusted_tuition for me in items)
+        grand_total += lesson_total
+
+        # 수업 소계 행
+        ws.merge_cells(f'B{row_num}:I{row_num}')
+        ws.cell(row=row_num, column=1).value = ''
+        lesson_label_cell = ws.cell(row=row_num, column=2)
+        lesson_label_cell.value = f'▶ {lesson.name}  ({lesson.teacher.name if lesson.teacher else "원장"})  —  {len(items)}명 / {lesson_total:,}원'
+        lesson_label_cell.font = lesson_font
+        lesson_label_cell.fill = lesson_fill
+        lesson_label_cell.alignment = left_align
+        for col_idx in range(1, 10):
+            ws.cell(row=row_num, column=col_idx).fill = lesson_fill
+            ws.cell(row=row_num, column=col_idx).border = thin_border
+        ws.row_dimensions[row_num].height = 18
+        row_num += 1
+
+        # 학생 행
+        for me in items:
+            seq += 1
+            row_data = [
+                seq,
+                lesson.name,
+                lesson.teacher.name if lesson.teacher else '원장',
+                me.student.name,
+                me.student.get_grade_display() if hasattr(me.student, 'get_grade_display') else me.student.grade,
+                lesson.base_tuition,
+                me.tuition_adjustment,
+                me.adjusted_tuition,
+                STATUS_LABEL.get(me.status, me.status),
+            ]
+            ws.append(row_data)
+            for col_idx, value in enumerate(row_data, start=1):
+                cell = ws.cell(row=row_num, column=col_idx)
+                cell.font = cell_font
+                cell.border = thin_border
+                if col_idx == 1:
+                    cell.alignment = center_align
+                elif col_idx in (6, 7, 8):
+                    cell.alignment = right_align
+                    cell.number_format = '#,##0'
+                elif col_idx == 9:
+                    cell.alignment = center_align
+                else:
+                    cell.alignment = left_align
+            ws.row_dimensions[row_num].height = 17
+            row_num += 1
+
+    # ── 합계 행 ───────────────────────────────────────────
+    ws.merge_cells(f'A{row_num}:G{row_num}')
+    total_label = ws.cell(row=row_num, column=1)
+    total_label.value = f'합계  {seq}명'
+    total_label.font = total_font
+    total_label.fill = total_fill
+    total_label.alignment = right_align
+    total_amount = ws.cell(row=row_num, column=8)
+    total_amount.value = grand_total
+    total_amount.font = total_font
+    total_amount.fill = total_fill
+    total_amount.alignment = right_align
+    total_amount.number_format = '#,##0'
+    ws.cell(row=row_num, column=9).fill = total_fill
+    for col_idx in range(1, 10):
+        ws.cell(row=row_num, column=col_idx).border = thin_border
+    ws.row_dimensions[row_num].height = 20
+
+    # ── 응답 반환 ─────────────────────────────────────────
+    status_suffix = f'_{STATUS_LABEL[status_filter]}' if status_filter else ''
+    filename = f'{target_year}년{target_month}월_수강신청{status_suffix}.xlsx'
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{filename}'
+    wb.save(response)
+    return response

@@ -23,6 +23,7 @@ urlpatterns = [
     # 월별 수강 신청 (MonthlyEnrollment)
     path('monthly/', views.monthly_enrollment_list, name='monthly_enrollment_list'),
     path('monthly/create/', views.monthly_enrollment_create, name='monthly_enrollment_create'),
+    path('monthly/export/', views.monthly_enrollment_export_xlsx, name='monthly_enrollment_export_xlsx'),
     path('monthly/bulk-confirm/', views.monthly_enrollment_bulk_confirm, name='monthly_enrollment_bulk_confirm'),
     path('monthly/bulk-delete/', views.monthly_enrollment_bulk_delete, name='monthly_enrollment_bulk_delete'),
     path('monthly/<int:pk>/edit/', views.monthly_enrollment_edit, name='monthly_enrollment_edit'),

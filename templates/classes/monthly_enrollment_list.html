@@ -20,6 +20,16 @@
                 </svg>
                 수강 신청 생성
             </a>
+            {% if total > 0 %}
+            <a href="{% url 'classes:monthly_enrollment_export_xlsx' %}?year={{ target_year }}&month={{ target_month }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+               class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                엑셀 다운로드
+            </a>
+            {% endif %}
             <a href="{% url 'classes:lesson_list' %}"
                class="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
