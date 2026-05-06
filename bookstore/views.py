@@ -132,10 +132,13 @@ def book_create(request):
 def book_update(request, pk):
     """교재 정보 수정"""
     book = get_object_or_404(Book, pk=pk)
+    original_stock = book.stock  # 재고는 입고/반품 처리로만 변경 (log 없이 변경 방지)
     if request.method == 'POST':
         form = BookForm(request.POST, instance=book)
         if form.is_valid():
-            form.save()
+            updated = form.save(commit=False)
+            updated.stock = original_stock
+            updated.save()
             return redirect('bookstore:book_list')
     else:
         form = BookForm(instance=book)
@@ -164,6 +167,8 @@ def book_update(request, pk):
         'grouped_subjects_json': json.dumps(dict(grouped_subjects), ensure_ascii=False),
         'categories': categories,
         'selected_category': selected_category,
+        'is_update': True,
+        'current_stock': original_stock,
     })
 
 

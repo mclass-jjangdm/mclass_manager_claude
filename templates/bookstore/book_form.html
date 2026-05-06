@@ -96,10 +96,19 @@
                 </div>
             </div>
 
+            {% if is_update %}
+            <div>
+                <label class="form-label">현재 재고</label>
+                <div class="form-input bg-gray-100 text-gray-600 cursor-not-allowed">
+                    {{ current_stock }}권 (재고 변경은 <a href="{% url 'bookstore:book_restock' form.instance.pk %}" class="text-indigo-600 underline">추가 입고</a> 또는 반품 처리로만 가능)
+                </div>
+            </div>
+            {% else %}
             <div>
                 <label for="id_stock" class="form-label">초기 입고 수량</label>
                 {{ form.stock }}
             </div>
+            {% endif %}
 
             <div>
                 <label for="id_memo" class="form-label">비고</label>
