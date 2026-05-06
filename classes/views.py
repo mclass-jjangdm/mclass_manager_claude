@@ -211,7 +211,7 @@ def lesson_list(request):
         color = lesson_color_map[lesson.pk]
         # 현재 활성 수강생 이름 목록
         students = sorted(
-            e.student.name for e in lesson.enrollments.all() if e.is_active
+            e.student.name for e in lesson.enrollments.all() if e.is_active and e.student.is_active
         )
         for s in lesson.schedules.all():
             start_min = s.start_time.hour * 60 + s.start_time.minute

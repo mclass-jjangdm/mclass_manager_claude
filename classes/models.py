@@ -86,7 +86,7 @@ class Lesson(models.Model):
 
     @property
     def active_enrollment_count(self):
-        return self.enrollments.filter(is_active=True).count()
+        return self.enrollments.filter(is_active=True, student__is_active=True).count()
 
 
 class LessonSchedule(models.Model):
