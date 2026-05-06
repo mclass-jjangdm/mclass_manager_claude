@@ -3,6 +3,8 @@ from teachers.models import Teacher
 from .models import Lesson, Enrollment, TuitionPayment, MonthlyEnrollment, STATUS_CHOICES
 
 
+
+
 class LessonForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -33,26 +35,6 @@ class EnrollmentForm(forms.ModelForm):
             'enrollment_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
             'memo': forms.Textarea(attrs={'rows': 2}),
-        }
-
-
-class NextMonthEnrollmentEditForm(forms.ModelForm):
-    lesson = forms.ModelChoiceField(
-        queryset=Lesson.objects.filter(is_active=True).order_by('name'),
-        label='수업',
-    )
-
-    class Meta:
-        model = Enrollment
-        fields = ['lesson', 'end_date', 'tuition_adjustment', 'memo']
-        widgets = {
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
-            'memo': forms.Textarea(attrs={'rows': 2}),
-        }
-        labels = {
-            'end_date': '수강 종료일',
-            'tuition_adjustment': '수강료 조정액',
-            'memo': '메모',
         }
 
 

@@ -4,13 +4,6 @@ from . import views
 app_name = 'classes'
 
 urlpatterns = [
-    # 다음 달 자동 수강 신청
-    path('auto-enroll/', views.auto_enroll_next_month, name='auto_enroll_next_month'),
-
-    # 다음 달 수강 확정 현황
-    path('next-month/', views.next_month_enrollments, name='next_month_enrollments'),
-    path('next-month/<int:enroll_pk>/edit/', views.next_month_enrollment_edit, name='next_month_enrollment_edit'),
-
     # 수업 (Lesson)
     path('', views.lesson_list, name='lesson_list'),
     path('create/', views.lesson_create, name='lesson_create'),

@@ -1,14 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.utils import timezone
 from django.db import models as django_models
-import calendar
 import datetime
 import json
 
 from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, MonthlyEnrollment, DAY_CHOICES
-from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm, NextMonthEnrollmentEditForm, MonthlyEnrollmentEditForm
+from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm, MonthlyEnrollmentEditForm
 
 
 def _assign_timetable_columns(items):
@@ -116,21 +114,8 @@ def lesson_list(request):
         return redirect('index')
 
     today = datetime.date.today()
-    if today.month == 12:
-        _next_year, _next_month = today.year + 1, 1
-    else:
-        _next_year, _next_month = today.year, today.month + 1
-    first_of_next = datetime.date(_next_year, _next_month, 1)
 
-    lessons = Lesson.objects.select_related('subject', 'teacher').prefetch_related('schedules').annotate(
-        next_month_count=django_models.Count(
-            'enrollments',
-            filter=django_models.Q(
-                enrollments__is_active=True,
-                enrollments__end_date__gte=first_of_next,
-            )
-        )
-    )
+    lessons = Lesson.objects.select_related('subject', 'teacher').prefetch_related('schedules')
     search = request.GET.get('search', '').strip()
     status = request.GET.get('status', 'active')
 
@@ -244,8 +229,6 @@ def lesson_list(request):
         'lessons':        lessons,
         'search':         search,
         'status':         status,
-        'first_of_next':  first_of_next,
-        'next_month_label': f'{_next_year}년 {_next_month}월',
         # timetable
         'timetable_days': timetable_days,
         'hour_labels':    hour_labels,
@@ -266,18 +249,9 @@ def lesson_detail(request, pk):
     )
     enrollments = lesson.enrollments.filter(student__is_active=True).select_related('student').prefetch_related('payments').order_by('-enrollment_date')
 
-    today = datetime.date.today()
-    if today.month == 12:
-        _next_year, _next_month = today.year + 1, 1
-    else:
-        _next_year, _next_month = today.year, today.month + 1
-    first_of_next = datetime.date(_next_year, _next_month, 1)
-
     return render(request, 'classes/lesson_detail.html', {
         'lesson': lesson,
         'enrollments': enrollments,
-        'first_of_next': first_of_next,
-        'next_month_label': f'{_next_month}월',
     })
 
 
@@ -555,240 +529,6 @@ def tuition_payment_delete(request, enroll_pk, pay_pk):
 
     return render(request, 'classes/tuition_payment_confirm_delete.html', {
         'payment': payment,
-        'enrollment': enrollment,
-    })
-
-
-@login_required
-def auto_enroll_next_month(request):
-    """다음 달 수강 신청 자동 생성 (대상 월 선택 가능)"""
-    if not request.user.is_staff:
-        messages.error(request, '관리자만 사용 가능합니다.')
-        return redirect('index')
-
-    today = datetime.date.today()
-
-    # 기본값: 다음 달
-    if today.month == 12:
-        default_year, default_month = today.year + 1, 1
-    else:
-        default_year, default_month = today.year, today.month + 1
-
-    if request.method == 'POST':
-        # POST: hidden 필드에서 대상 연/월 읽기
-        try:
-            target_year = int(request.POST.get('target_year', default_year))
-            target_month = int(request.POST.get('target_month', default_month))
-        except (ValueError, TypeError):
-            target_year, target_month = default_year, default_month
-
-        first_of_next = datetime.date(target_year, target_month, 1)
-        last_of_next = datetime.date(target_year, target_month,
-                                     calendar.monthrange(target_year, target_month)[1])
-
-        selected_ids = request.POST.getlist('enrollment_ids')
-        created_count = 0
-        skip_count = 0
-
-        for enroll_id in selected_ids:
-            try:
-                enroll = Enrollment.objects.select_related('student', 'lesson').get(pk=enroll_id)
-                if enroll.end_date and enroll.end_date >= first_of_next:
-                    skip_count += 1
-                    continue
-                Enrollment.objects.filter(pk=enroll.pk).update(
-                    end_date=last_of_next,
-                    is_active=True,
-                )
-                created_count += 1
-            except Enrollment.DoesNotExist:
-                continue
-
-        msg = f'{target_year}년 {target_month}월 수강 신청 {created_count}건 생성 완료'
-        if skip_count:
-            msg += f' (이미 존재 {skip_count}건 제외)'
-        messages.success(request, msg)
-        return redirect(f"{request.path}?year={target_year}&month={target_month}")
-
-    # GET: 쿼리 파라미터로 대상 연/월 선택 (없으면 다음 달)
-    try:
-        target_year = int(request.GET.get('year', default_year))
-        target_month = int(request.GET.get('month', default_month))
-        # 유효 범위 체크
-        if not (1 <= target_month <= 12):
-            target_year, target_month = default_year, default_month
-    except (ValueError, TypeError):
-        target_year, target_month = default_year, default_month
-
-    first_of_next = datetime.date(target_year, target_month, 1)
-    last_of_next = datetime.date(target_year, target_month,
-                                 calendar.monthrange(target_year, target_month)[1])
-
-    first_of_target = datetime.date(target_year, target_month, 1)
-
-    # 활성 수강 신청: 무기한(null)이거나 대상 월 1일 이후 종료된 것 포함
-    # 퇴원 학생(student.is_active=False) 제외
-    active_enrollments = Enrollment.objects.filter(
-        is_active=True,
-        student__is_active=True,
-    ).filter(
-        django_models.Q(end_date__isnull=True) | django_models.Q(end_date__gte=first_of_target)
-    ).select_related(
-        'student', 'lesson', 'lesson__teacher', 'lesson__subject'
-    ).order_by('lesson__name', 'student__name')
-
-    # 대상 월 이후까지 수강 기간이 연장된 (student_id, lesson_id) 쌍
-    already_set = set(
-        Enrollment.objects.filter(
-            end_date__gte=first_of_next,
-        ).values_list('student_id', 'lesson_id')
-    )
-
-    # 수업별 그룹핑
-    lessons_dict = {}
-    total_new = 0
-    total_exists = 0
-    for enroll in active_enrollments:
-        lid = enroll.lesson_id
-        if lid not in lessons_dict:
-            lessons_dict[lid] = {
-                'lesson': enroll.lesson,
-                'items': [],
-                'new_count': 0,
-                'exists_count': 0,
-            }
-        already = (enroll.student_id, enroll.lesson_id) in already_set
-        lessons_dict[lid]['items'].append({
-            'enrollment': enroll,
-            'already': already,
-        })
-        if already:
-            lessons_dict[lid]['exists_count'] += 1
-            total_exists += 1
-        else:
-            lessons_dict[lid]['new_count'] += 1
-            total_new += 1
-
-    lesson_groups = list(lessons_dict.values())
-
-    # 이전/다음 월 계산
-    if target_month == 1:
-        prev_year, prev_month = target_year - 1, 12
-    else:
-        prev_year, prev_month = target_year, target_month - 1
-    if target_month == 12:
-        next_year_nav, next_month_nav = target_year + 1, 1
-    else:
-        next_year_nav, next_month_nav = target_year, target_month + 1
-
-    return render(request, 'classes/auto_enroll.html', {
-        'next_year': target_year,
-        'next_month': target_month,
-        'first_of_next': first_of_next,
-        'last_of_next': last_of_next,
-        'lesson_groups': lesson_groups,
-        'total_new': total_new,
-        'total_exists': total_exists,
-        'total': total_new + total_exists,
-        'prev_year': prev_year,
-        'prev_month': prev_month,
-        'next_year_nav': next_year_nav,
-        'next_month_nav': next_month_nav,
-        'default_year': default_year,
-        'default_month': default_month,
-    })
-
-
-@login_required
-def next_month_enrollments(request):
-    """수강 확정 현황 (월 선택 가능)"""
-    if not request.user.is_staff:
-        messages.error(request, '관리자만 사용 가능합니다.')
-        return redirect('index')
-
-    today = datetime.date.today()
-    if today.month == 12:
-        default_year, default_month = today.year + 1, 1
-    else:
-        default_year, default_month = today.year, today.month + 1
-
-    try:
-        target_year = int(request.GET.get('year', default_year))
-        target_month = int(request.GET.get('month', default_month))
-        if not (1 <= target_month <= 12):
-            target_year, target_month = default_year, default_month
-    except (ValueError, TypeError):
-        target_year, target_month = default_year, default_month
-
-    first_of_target = datetime.date(target_year, target_month, 1)
-    last_of_target = datetime.date(target_year, target_month,
-                                   calendar.monthrange(target_year, target_month)[1])
-
-    confirmed_enrollments = Enrollment.objects.filter(
-        end_date__gte=first_of_target,
-        end_date__lte=last_of_target,
-        is_active=True,
-    ).select_related(
-        'student', 'lesson', 'lesson__teacher', 'lesson__subject'
-    ).order_by('lesson__name', 'student__name')
-
-    lessons_dict = {}
-    for enroll in confirmed_enrollments:
-        lid = enroll.lesson_id
-        if lid not in lessons_dict:
-            lessons_dict[lid] = {
-                'lesson': enroll.lesson,
-                'items': [],
-            }
-        lessons_dict[lid]['items'].append(enroll)
-
-    lesson_groups = list(lessons_dict.values())
-    total_count = confirmed_enrollments.count()
-
-    return render(request, 'classes/next_month_enrollments.html', {
-        'next_year': target_year,
-        'next_month': target_month,
-        'first_of_next': first_of_target,
-        'lesson_groups': lesson_groups,
-        'total_count': total_count,
-    })
-
-
-@login_required
-def next_month_enrollment_edit(request, enroll_pk):
-    """다음 달 수강 확정 항목 수정 (수업 변경 포함)"""
-    if not request.user.is_staff:
-        messages.error(request, '관리자만 사용 가능합니다.')
-        return redirect('index')
-
-    enrollment = get_object_or_404(
-        Enrollment.objects.select_related('student', 'lesson'),
-        pk=enroll_pk
-    )
-
-    if request.method == 'POST':
-        form = NextMonthEnrollmentEditForm(request.POST, instance=enrollment)
-        if form.is_valid():
-            new_lesson = form.cleaned_data['lesson']
-            # 수업이 변경된 경우 unique_together 충돌 체크
-            if new_lesson != enrollment.lesson:
-                if Enrollment.objects.filter(
-                    student=enrollment.student,
-                    lesson=new_lesson
-                ).exclude(pk=enrollment.pk).exists():
-                    messages.error(
-                        request,
-                        f'{enrollment.student.name} 학생은 이미 [{new_lesson.name}] 수업에 수강 신청되어 있습니다.'
-                    )
-                    return redirect('classes:next_month_enrollment_edit', enroll_pk=enroll_pk)
-            form.save()
-            messages.success(request, f'{enrollment.student.name} 수강 신청이 수정되었습니다.')
-            return redirect('classes:next_month_enrollments')
-    else:
-        form = NextMonthEnrollmentEditForm(instance=enrollment)
-
-    return render(request, 'classes/next_month_enrollment_edit.html', {
-        'form': form,
         'enrollment': enrollment,
     })
 
