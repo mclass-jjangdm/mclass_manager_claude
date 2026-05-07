@@ -20,6 +20,9 @@ urlpatterns = [
     path('enrollment/<int:enroll_pk>/payment/create/', views.tuition_payment_create, name='tuition_payment_create'),
     path('enrollment/<int:enroll_pk>/payment/<int:pay_pk>/delete/', views.tuition_payment_delete, name='tuition_payment_delete'),
 
+    # 반 이동 (Lesson Transfer)
+    path('transfer/', views.lesson_transfer, name='lesson_transfer'),
+
     # 월별 수강 신청 (MonthlyEnrollment)
     path('monthly/', views.monthly_enrollment_list, name='monthly_enrollment_list'),
     path('monthly/create/', views.monthly_enrollment_create, name='monthly_enrollment_create'),

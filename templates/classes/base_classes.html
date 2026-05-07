@@ -21,6 +21,10 @@
                    class="nav-link {% if request.resolver_match.url_name in 'monthly_enrollment_list monthly_enrollment_create monthly_enrollment_edit monthly_enrollment_delete' %}active{% endif %}">
                     월별 수강 신청
                 </a>
+                <a href="{% url 'classes:lesson_transfer' %}"
+                   class="nav-link {% if request.resolver_match.url_name == 'lesson_transfer' %}active{% endif %}">
+                    반 이동
+                </a>
                 {% endif %}
             </nav>
         </div>

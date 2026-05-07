@@ -10,8 +10,10 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter  # noqa: F401 (used in export view)
 
+import calendar
+
 from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, MonthlyEnrollment, DAY_CHOICES
-from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm, MonthlyEnrollmentEditForm
+from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm, MonthlyEnrollmentEditForm, LessonTransferForm
 
 
 def _assign_timetable_columns(items):
@@ -925,3 +927,126 @@ def monthly_enrollment_export_xlsx(request):
     response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{filename}'
     wb.save(response)
     return response
+
+
+# ──────────────────────────────────────────────
+# 반 이동 (Lesson Transfer)
+# ──────────────────────────────────────────────
+
+@login_required
+def lesson_transfer(request):
+    """학생의 반 이동 처리: 기존 수강 종료 + 신규 수강 시작 + 수강료 일할 계산"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 사용 가능합니다.')
+        return redirect('index')
+
+    preview = None
+
+    if request.method == 'POST':
+        form = LessonTransferForm(request.POST)
+        if form.is_valid():
+            student     = form.cleaned_data['student']
+            from_lesson = form.cleaned_data['from_lesson']
+            to_lesson   = form.cleaned_data['to_lesson']
+            transfer_date = form.cleaned_data['transfer_date']
+
+            year  = transfer_date.year
+            month = transfer_date.month
+            days_in_month = calendar.monthrange(year, month)[1]
+
+            # 전반일 이전 일수 (구 반 수강일): 1일 ~ 전반일-1일
+            old_days = transfer_date.day - 1
+            # 전반일부터 월말 일수 (신 반 수강일): 전반일 ~ 말일
+            new_days = days_in_month - transfer_date.day + 1
+
+            old_tuition = round(from_lesson.base_tuition * old_days / days_in_month)
+            new_tuition = round(to_lesson.base_tuition   * new_days / days_in_month)
+
+            # 미리보기 요청 (confirm=0)
+            if request.POST.get('confirm') != '1':
+                preview = {
+                    'student': student,
+                    'from_lesson': from_lesson,
+                    'to_lesson': to_lesson,
+                    'transfer_date': transfer_date,
+                    'year': year,
+                    'month': month,
+                    'days_in_month': days_in_month,
+                    'old_days': old_days,
+                    'new_days': new_days,
+                    'old_tuition': old_tuition,
+                    'new_tuition': new_tuition,
+                }
+                return render(request, 'classes/lesson_transfer.html', {
+                    'form': form,
+                    'preview': preview,
+                })
+
+            # ── 확정 처리 ──────────────────────────────────────
+
+            # 1. 기존 Enrollment 비활성화
+            old_enrollment = Enrollment.objects.get(student=student, lesson=from_lesson, is_active=True)
+            old_enrollment.is_active = False
+            old_enrollment.end_date  = transfer_date - datetime.timedelta(days=1)
+            old_enrollment.save()
+
+            # 2. 기존 반 이번 달 MonthlyEnrollment 수강료 조정
+            try:
+                old_me = MonthlyEnrollment.objects.get(
+                    student=student, lesson=from_lesson, year=year, month=month
+                )
+                old_me.tuition_fee = old_tuition
+                old_me.tuition_adjustment = 0
+                old_me.memo = (old_me.memo + f'\n전반({transfer_date} 이전 {old_days}일 분)').strip()
+                old_me.save()
+            except MonthlyEnrollment.DoesNotExist:
+                # 해당 월 수강 신청이 없으면 생성하지 않음 (이미 없는 달이므로 무시)
+                pass
+
+            # 3. 신규 Enrollment 생성 또는 재활성화
+            new_enrollment, created = Enrollment.objects.get_or_create(
+                student=student,
+                lesson=to_lesson,
+                defaults={
+                    'enrollment_date': transfer_date,
+                    'is_active': True,
+                },
+            )
+            if not created:
+                new_enrollment.is_active = True
+                new_enrollment.enrollment_date = transfer_date
+                new_enrollment.end_date = None
+                new_enrollment.save()
+
+            # 4. 신규 반 이번 달 MonthlyEnrollment 생성 또는 갱신
+            new_me, me_created = MonthlyEnrollment.objects.get_or_create(
+                student=student,
+                lesson=to_lesson,
+                year=year,
+                month=month,
+                defaults={
+                    'status': 'pending',
+                    'tuition_fee': new_tuition,
+                    'tuition_adjustment': 0,
+                    'memo': f'전반({transfer_date}부터 {new_days}일 분)',
+                },
+            )
+            if not me_created:
+                new_me.tuition_fee = new_tuition
+                new_me.tuition_adjustment = 0
+                new_me.memo = (new_me.memo + f'\n전반({transfer_date}부터 {new_days}일 분)').strip()
+                new_me.save()
+
+            messages.success(
+                request,
+                f'{student.name} 학생이 [{from_lesson.name}] → [{to_lesson.name}]으로 전반되었습니다. '
+                f'({year}년 {month}월 수강료: {old_tuition:,}원 / {new_tuition:,}원)'
+            )
+            return redirect(f'/classes/monthly/?year={year}&month={month}')
+    else:
+        form = LessonTransferForm()
+
+    return render(request, 'classes/lesson_transfer.html', {
+        'form': form,
+        'preview': preview,
+    })

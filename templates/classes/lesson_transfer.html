@@ -1,0 +1,206 @@
+{% extends 'classes/base_classes.html' %}
+{% load humanize %}
+
+{% block title %}반 이동 - M'Class Manager{% endblock %}
+
+{% block classes_content %}
+<div class="space-y-5 max-w-2xl mx-auto">
+
+    <!-- 헤더 -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">반 이동</h1>
+            <p class="text-sm text-gray-500 mt-1">학생의 반을 이동하고 수강료를 일할 계산합니다.</p>
+        </div>
+        <a href="{% url 'classes:monthly_enrollment_list' %}"
+           class="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            월별 수강 신청
+        </a>
+    </div>
+
+    <!-- 폼 오류 -->
+    {% if form.non_field_errors %}
+    <div class="bg-red-50 border border-red-200 rounded-xl px-5 py-4">
+        {% for error in form.non_field_errors %}
+        <p class="text-sm text-red-600">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not preview %}
+    <!-- 입력 폼 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <form method="post" id="transfer-form">
+            {% csrf_token %}
+            <input type="hidden" name="confirm" value="0">
+
+            <div class="space-y-5">
+                <!-- 학생 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">학생</label>
+                    <select name="student" id="id_student"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        <option value="">-- 학생 선택 --</option>
+                        {% for student in form.fields.student.queryset %}
+                        <option value="{{ student.pk }}"
+                            {% if form.student.value == student.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ student.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.student.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.student.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 현재 반 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">현재 반</label>
+                    <select name="from_lesson" id="id_from_lesson"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        <option value="">-- 현재 반 선택 --</option>
+                        {% for lesson in form.fields.from_lesson.queryset %}
+                        <option value="{{ lesson.pk }}"
+                            {% if form.from_lesson.value == lesson.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ lesson.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.from_lesson.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.from_lesson.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 이동할 반 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">이동할 반</label>
+                    <select name="to_lesson" id="id_to_lesson"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        <option value="">-- 이동할 반 선택 --</option>
+                        {% for lesson in form.fields.to_lesson.queryset %}
+                        <option value="{{ lesson.pk }}"
+                            {% if form.to_lesson.value == lesson.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ lesson.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.to_lesson.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.to_lesson.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- 전반일 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">전반일</label>
+                    <input type="date" name="transfer_date"
+                           value="{{ form.transfer_date.value|default:'' }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <p class="text-xs text-gray-400 mt-1">전반일 당일부터 새 반 수업으로 처리됩니다.</p>
+                    {% if form.transfer_date.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ form.transfer_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="submit"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    수강료 미리보기
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% else %}
+    <!-- 미리보기 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
+        <h2 class="text-base font-semibold text-gray-800">전반 내용 확인</h2>
+
+        <!-- 전반 요약 -->
+        <div class="bg-indigo-50 rounded-xl p-4 space-y-2 text-sm">
+            <div class="flex items-center gap-3">
+                <span class="font-medium text-gray-700 w-20">학생</span>
+                <span class="text-gray-900 font-semibold">{{ preview.student.name }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="font-medium text-gray-700 w-20">전반일</span>
+                <span class="text-gray-900">{{ preview.transfer_date|date:"Y년 n월 j일" }}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-1">
+                <span class="font-medium text-gray-700 w-20">이동</span>
+                <span class="text-indigo-700 font-medium">{{ preview.from_lesson.name }}</span>
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <span class="text-emerald-700 font-medium">{{ preview.to_lesson.name }}</span>
+            </div>
+        </div>
+
+        <!-- 수강료 계산 -->
+        <div>
+            <h3 class="text-sm font-medium text-gray-700 mb-3">
+                {{ preview.year }}년 {{ preview.month }}월 수강료 (총 {{ preview.days_in_month }}일)
+            </h3>
+            <div class="grid grid-cols-2 gap-3">
+                <!-- 구 반 -->
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <p class="text-xs text-gray-500 mb-1">{{ preview.from_lesson.name }} (구 반)</p>
+                    <p class="text-xs text-gray-400 mb-2">
+                        1일 ~ {{ preview.transfer_date.day|add:"-1" }}일 ({{ preview.old_days }}일)
+                    </p>
+                    <p class="text-lg font-bold text-gray-800">{{ preview.old_tuition|intcomma }}원</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        {{ preview.from_lesson.base_tuition|intcomma }}원 × {{ preview.old_days }}/{{ preview.days_in_month }}
+                    </p>
+                </div>
+                <!-- 신 반 -->
+                <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                    <p class="text-xs text-emerald-600 mb-1">{{ preview.to_lesson.name }} (신 반)</p>
+                    <p class="text-xs text-gray-400 mb-2">
+                        {{ preview.transfer_date.day }}일 ~ {{ preview.days_in_month }}일 ({{ preview.new_days }}일)
+                    </p>
+                    <p class="text-lg font-bold text-emerald-700">{{ preview.new_tuition|intcomma }}원</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        {{ preview.to_lesson.base_tuition|intcomma }}원 × {{ preview.new_days }}/{{ preview.days_in_month }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 처리 내용 안내 -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-700 space-y-1">
+            <p class="font-medium mb-1">처리 내용:</p>
+            <p>• [{{ preview.from_lesson.name }}] 수강 종료일: {{ preview.transfer_date|date:"Y-n-j" }} 전날</p>
+            <p>• [{{ preview.from_lesson.name }}] {{ preview.year }}년 {{ preview.month }}월 수강료 → {{ preview.old_tuition|intcomma }}원으로 조정</p>
+            <p>• [{{ preview.to_lesson.name }}] 수강 시작일: {{ preview.transfer_date|date:"Y-n-j" }}</p>
+            <p>• [{{ preview.to_lesson.name }}] {{ preview.year }}년 {{ preview.month }}월 수강 신청 생성 ({{ preview.new_tuition|intcomma }}원, 신청 중)</p>
+        </div>
+
+        <!-- 버튼 -->
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="student" value="{{ preview.student.pk }}">
+            <input type="hidden" name="from_lesson" value="{{ preview.from_lesson.pk }}">
+            <input type="hidden" name="to_lesson" value="{{ preview.to_lesson.pk }}">
+            <input type="hidden" name="transfer_date" value="{{ preview.transfer_date|date:'Y-m-d' }}">
+            <input type="hidden" name="confirm" value="1">
+
+            <div class="flex justify-between items-center pt-2">
+                <a href="{% url 'classes:lesson_transfer' %}"
+                   class="text-sm text-gray-500 hover:text-gray-700">
+                    ← 다시 입력
+                </a>
+                <button type="submit"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    전반 확정
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
