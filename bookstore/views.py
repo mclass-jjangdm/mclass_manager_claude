@@ -35,11 +35,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def book_list(request):
     """교재 목록 조회 (검색 실패 시 자동 이동 플래그 처리)"""
     query = request.GET.get('q', '')
+    subject_id = request.GET.get('subject', '')
 
-    # 기본 정렬: 재고 내림차순 (재고 많은 것 먼저)
-    books = Book.objects.all().order_by('-stock', 'title')
+    books = Book.objects.select_related('subject').order_by('-stock', 'title')
 
-    is_search_empty = False  # 검색 결과 없음 플래그
+    is_search_empty = False
+
+    if subject_id:
+        books = books.filter(subject_id=subject_id)
 
     if query:
         books = books.filter(
@@ -47,9 +50,13 @@ def book_list(request):
             Q(isbn__icontains=query) |
             Q(author__icontains=query)
         )
-        # 검색어는 있는데 결과가 0개인 경우 -> 자동 이동 트리거
         if not books.exists():
             is_search_empty = True
+
+    # 교재가 있는 과목만 필터 목록에 표시
+    subjects_with_books = Subject.objects.filter(
+        books__isnull=False
+    ).distinct().order_by('name')
 
     paginator = Paginator(books, 10)
     page_number = request.GET.get('page')
@@ -59,6 +66,8 @@ def book_list(request):
         'page_obj': page_obj,
         'query': query,
         'is_search_empty': is_search_empty,
+        'subjects': subjects_with_books,
+        'selected_subject': subject_id,
     })
 
 

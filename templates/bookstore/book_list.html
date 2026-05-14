@@ -7,7 +7,10 @@
 <div class="space-y-6">
     <!-- 검색 폼 -->
     <div class="flex justify-center">
-        <form method="GET" action="{% url 'bookstore:book_list' %}" class="flex gap-3 w-full max-w-2xl">
+        <form method="GET" action="{% url 'bookstore:book_list' %}" class="flex gap-3 w-full max-w-2xl" id="search-form">
+            {% if selected_subject %}
+                <input type="hidden" name="subject" value="{{ selected_subject }}">
+            {% endif %}
             <input type="text"
                    name="q"
                    value="{{ query }}"
@@ -20,9 +23,33 @@
         </form>
     </div>
 
+    <!-- 과목 필터 -->
+    {% if subjects %}
+    <div class="flex flex-wrap gap-2 items-center">
+        <span class="text-sm font-medium text-gray-600 mr-1">과목 필터:</span>
+        <a href="?q={{ query }}"
+           class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors {% if not selected_subject %}bg-indigo-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+            전체
+        </a>
+        {% for subject in subjects %}
+        <a href="?subject={{ subject.pk }}&q={{ query }}"
+           class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors {% if selected_subject == subject.pk|stringformat:'s' %}bg-indigo-600 text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+            {{ subject.name }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- 헤더 영역 -->
     <div class="flex flex-wrap justify-between items-center gap-3">
-        <h2 class="text-2xl font-bold text-gray-800">교재 목록</h2>
+        <h2 class="text-2xl font-bold text-gray-800">
+            교재 목록
+            {% if selected_subject %}
+                <span class="text-base font-normal text-indigo-600 ml-2">
+                    — {{ page_obj.paginator.count }}권
+                </span>
+            {% endif %}
+        </h2>
 
         <div class="flex gap-3">
             <a href="{% url 'bookstore:book_upload' %}"
@@ -136,11 +163,11 @@
     <!-- 페이지네이션 -->
     <div class="flex justify-center gap-2">
         {% if page_obj.has_previous %}
-            <a href="?page=1&q={{ query }}"
+            <a href="?page=1&q={{ query }}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}"
                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
                 처음
             </a>
-            <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}"
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}"
                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
                 이전
             </a>
@@ -151,11 +178,11 @@
         </span>
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&q={{ query }}"
+            <a href="?page={{ page_obj.next_page_number }}&q={{ query }}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}"
                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
                 다음
             </a>
-            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}"
+            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}"
                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
                 마지막
             </a>
