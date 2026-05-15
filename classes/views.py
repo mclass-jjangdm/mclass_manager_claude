@@ -474,6 +474,22 @@ def enrollment_delete(request, pk, enroll_pk):
 
     if request.method == 'POST':
         student_name = enrollment.student.name
+
+        # 납부 기록이 있으면 삭제 불가 (TuitionPayment.on_delete=CASCADE로 납부 내역까지 사라짐)
+        if enrollment.payments.exists():
+            messages.error(
+                request,
+                f'{student_name} 학생은 납부 기록이 있어 수강을 삭제할 수 없습니다. '
+                '비활성화(종료 처리)를 이용해 주세요.'
+            )
+            return redirect('classes:lesson_detail', pk=lesson.pk)
+
+        # 연결된 MonthlyEnrollment를 cancelled 처리 (고아 레코드 방지)
+        MonthlyEnrollment.objects.filter(
+            student=enrollment.student,
+            lesson=enrollment.lesson,
+        ).update(status='cancelled')
+
         enrollment.delete()
         messages.success(request, f'{student_name} 학생의 수강이 취소되었습니다.')
         return redirect('classes:lesson_detail', pk=lesson.pk)
