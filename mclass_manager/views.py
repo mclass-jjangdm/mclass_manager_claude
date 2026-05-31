@@ -341,15 +341,44 @@ def billing_export(request):
         entry = get_or_create(enr.student)
         entry['tuition_items'].append((enr.lesson.name, enr.adjusted_tuition))
 
+    # 해당 월에 운영 중인 특별 수업 (미납) 포함
+    import calendar as _cal
+    last_day = _cal.monthrange(target_year, target_month)[1]
+    first_of_month = datetime.date(target_year, target_month, 1)
+    last_of_month  = datetime.date(target_year, target_month, last_day)
+
+    from classes.models import Enrollment as ClassEnrollment, TuitionPayment as _TP
+    special_enrollments = ClassEnrollment.objects.filter(
+        is_active=True,
+        lesson__is_special=True,
+        lesson__start_date__lte=last_of_month,
+        lesson__end_date__gte=first_of_month,
+    ).select_related('student', 'lesson')
+
+    paid_special_ids = set(
+        _TP.objects.filter(
+            enrollment__lesson__is_special=True,
+        ).values_list('enrollment_id', flat=True)
+    )
+
+    for enr in special_enrollments:
+        if enr.pk not in paid_special_ids:
+            entry = get_or_create(enr.student)
+            entry.setdefault('special_items', []).append(
+                (enr.lesson.name, enr.adjusted_tuition)
+            )
+
     for sale in unpaid_sales:
         entry = get_or_create(sale.student)
         entry['book_items'].append((sale.book.title, sale.price * sale.quantity))
 
     # 합계 계산 후 이름 순 정렬
     for entry in student_map.values():
+        entry.setdefault('special_items', [])
         entry['tuition_total'] = sum(amt for _, amt in entry['tuition_items'])
+        entry['special_total'] = sum(amt for _, amt in entry['special_items'])
         entry['book_total'] = sum(amt for _, amt in entry['book_items'])
-        entry['total'] = entry['tuition_total'] + entry['book_total']
+        entry['total'] = entry['tuition_total'] + entry['special_total'] + entry['book_total']
 
     rows = sorted(student_map.values(), key=lambda x: x['student'].name)
 
@@ -421,6 +450,8 @@ def billing_export(request):
                 parts.append(f'{item["label"]} 미납 {item["name"]} {item["amount"]:,}원')
             if entry['tuition_total'] > 0:
                 parts.append(f'{target_month}월 수강료 {entry["tuition_total"]:,}원')
+            for name, amt in entry['special_items']:
+                parts.append(f'{name} {amt:,}원')
             if entry['book_total'] > 0:
                 parts.append(f'교재비 {entry["book_total"]:,}원')
             content = ', '.join(parts)

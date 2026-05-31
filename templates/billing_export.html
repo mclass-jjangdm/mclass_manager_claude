@@ -77,6 +77,9 @@
                                     {% if entry.tuition_total > 0 %}
                                     <span class="inline-block bg-indigo-50 text-indigo-700 rounded px-2 py-0.5 text-xs">{{ target_month }}월 수강료 {{ entry.tuition_total|intcomma }}원</span>
                                     {% endif %}
+                                    {% for name, amt in entry.special_items %}
+                                    <span class="inline-block bg-purple-50 text-purple-700 rounded px-2 py-0.5 text-xs">{{ name }} {{ amt|intcomma }}원</span>
+                                    {% endfor %}
                                     {% if entry.book_total > 0 %}
                                     <span class="inline-block bg-orange-50 text-orange-700 rounded px-2 py-0.5 text-xs">교재비: {{ entry.book_total|intcomma }}원</span>
                                     {% endif %}
