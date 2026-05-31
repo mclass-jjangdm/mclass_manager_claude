@@ -54,6 +54,10 @@ class Lesson(models.Model):
     # 수강료
     base_tuition = models.PositiveIntegerField(verbose_name='기본 수강료')
 
+    is_special = models.BooleanField(default=False, verbose_name='특별 수업')
+    start_date = models.DateField(null=True, blank=True, verbose_name='시작일')
+    end_date = models.DateField(null=True, blank=True, verbose_name='종료일')
+
     memo = models.TextField(blank=True, verbose_name='기타')
     is_active = models.BooleanField(default=True, verbose_name='활성')
     created_at = models.DateTimeField(auto_now_add=True)

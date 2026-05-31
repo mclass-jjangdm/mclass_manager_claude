@@ -105,7 +105,7 @@
 
                 <!-- 기본 수강료 -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">기본 수강료 (월) <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" id="tuition-label">기본 수강료 (월) <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <input type="number" name="base_tuition" value="{{ form.base_tuition.value|default:'' }}"
                                min="0" step="1000"
@@ -114,6 +114,42 @@
                         <span class="absolute right-3 top-2 text-gray-400 text-sm">원</span>
                     </div>
                     {% if form.base_tuition.errors %}<p class="text-red-500 text-xs mt-1">{{ form.base_tuition.errors.0 }}</p>{% endif %}
+                </div>
+
+                <!-- 특별 수업 설정 -->
+                <div class="border border-purple-200 rounded-lg overflow-hidden">
+                    <button type="button" onclick="toggleSpecial()"
+                            class="w-full flex items-center justify-between px-4 py-3 bg-purple-50 hover:bg-purple-100 transition-colors">
+                        <span class="text-sm font-medium text-purple-800">특별 수업 설정</span>
+                        <svg id="special-chevron" class="w-4 h-4 text-purple-600 transition-transform duration-200 {% if form.is_special.value %}rotate-180{% endif %}"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="special-section" class="{% if not form.is_special.value %}hidden{% endif %} px-4 py-4 space-y-4 bg-white">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="is_special" id="id_is_special"
+                                   {% if form.is_special.value %}checked{% endif %}
+                                   onchange="onSpecialChange()"
+                                   class="w-4 h-4 text-purple-600 rounded">
+                            <span class="text-sm font-medium text-gray-700">한시적 특별 수업으로 지정</span>
+                        </label>
+                        <p class="text-xs text-gray-500">특별 수업은 월별 자동 수강 생성에서 제외되며, 기간 전체에 대한 단일 수강료로 청구됩니다.</p>
+                        <div id="special-dates" class="grid grid-cols-2 gap-4 {% if not form.is_special.value %}hidden{% endif %}">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">시작일 <span class="text-red-500">*</span></label>
+                                <input type="date" name="start_date" value="{{ form.start_date.value|default:'' }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                {% if form.start_date.errors %}<p class="text-red-500 text-xs mt-1">{{ form.start_date.errors.0 }}</p>{% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">종료일 <span class="text-red-500">*</span></label>
+                                <input type="date" name="end_date" value="{{ form.end_date.value|default:'' }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                {% if form.end_date.errors %}<p class="text-red-500 text-xs mt-1">{{ form.end_date.errors.0 }}</p>{% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 기타 -->
@@ -186,6 +222,35 @@ document.getElementById('category-select').addEventListener('change', function()
     const cat = document.getElementById('category-select').value;
     if (cat) filterByCategory(cat);
 })();
+
+// ── 특별 수업 토글 ──────────────────────────
+function toggleSpecial() {
+    const section = document.getElementById('special-section');
+    const chevron = document.getElementById('special-chevron');
+    const isHidden = section.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180', !isHidden);
+    if (isHidden) {
+        document.getElementById('id_is_special').checked = false;
+        document.getElementById('special-dates').classList.add('hidden');
+        updateTuitionLabel(false);
+    }
+}
+
+function onSpecialChange() {
+    const checked = document.getElementById('id_is_special').checked;
+    document.getElementById('special-dates').classList.toggle('hidden', !checked);
+    updateTuitionLabel(checked);
+}
+
+function updateTuitionLabel(isSpecial) {
+    document.getElementById('tuition-label').innerHTML = isSpecial
+        ? '수강료 (기간 전체) <span class="text-red-500">*</span>'
+        : '기본 수강료 (월) <span class="text-red-500">*</span>';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateTuitionLabel(document.getElementById('id_is_special').checked);
+});
 
 // ── 요일별 시간 토글 ──────────────────────────
 function toggleDayTime(day) {

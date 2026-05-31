@@ -101,6 +101,12 @@
                                class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
                                 {{ lesson.name }}
                             </a>
+                            {% if lesson.is_special %}
+                            <span class="ml-1.5 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">특별</span>
+                            {% if lesson.start_date and lesson.end_date %}
+                            <p class="text-xs text-purple-500 mt-0.5">{{ lesson.start_date|date:"m/d" }}~{{ lesson.end_date|date:"m/d" }}</p>
+                            {% endif %}
+                            {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             {{ lesson.subject.name|default:'-' }}

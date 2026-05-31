@@ -9,7 +9,6 @@ from .models import Lesson, Enrollment, TuitionPayment, MonthlyEnrollment, STATU
 class LessonForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # 재직 중인 선생님만 표시, null(미선택) = 원장으로 취급
         self.fields['teacher'].queryset = Teacher.objects.filter(
             is_active=True
         ).order_by('name')
@@ -17,11 +16,28 @@ class LessonForm(forms.ModelForm):
         self.fields['teacher'].empty_label = '원장'
         self.fields['teacher'].required = False
 
+    def clean(self):
+        cleaned = super().clean()
+        is_special = cleaned.get('is_special')
+        start_date = cleaned.get('start_date')
+        end_date = cleaned.get('end_date')
+        if is_special:
+            if not start_date:
+                self.add_error('start_date', '특별 수업은 시작일이 필요합니다.')
+            if not end_date:
+                self.add_error('end_date', '특별 수업은 종료일이 필요합니다.')
+            if start_date and end_date and end_date < start_date:
+                self.add_error('end_date', '종료일은 시작일 이후여야 합니다.')
+        return cleaned
+
     class Meta:
         model = Lesson
-        fields = ['name', 'subject', 'teacher', 'books', 'base_tuition', 'memo', 'is_active']
+        fields = ['name', 'subject', 'teacher', 'books', 'base_tuition',
+                  'is_special', 'start_date', 'end_date', 'memo', 'is_active']
         widgets = {
             'memo': forms.Textarea(attrs={'rows': 3}),
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
 

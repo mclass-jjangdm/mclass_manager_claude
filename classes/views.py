@@ -434,6 +434,8 @@ def enrollment_create(request, pk):
         'grade_groups': grade_groups,
         'enrolled_ids': enrolled_ids,
         'today': today,
+        'prefill_end_date': lesson.end_date if lesson.is_special else None,
+        'prefill_start_date': lesson.start_date if lesson.is_special else None,
     })
 
 
@@ -705,6 +707,7 @@ def monthly_enrollment_create(request):
     active_enrollments = Enrollment.objects.filter(
         is_active=True,
         student__is_active=True,
+        lesson__is_special=False,
     ).filter(
         django_models.Q(end_date__isnull=True) | django_models.Q(end_date__gte=first_of_target)
     ).select_related(
