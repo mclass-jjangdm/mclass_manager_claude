@@ -284,6 +284,12 @@ def student_detail(request, pk):
     ).select_related('enrollment__lesson').order_by('-year', '-month', '-id')
     total_tuition_paid = tuition_payments.aggregate(total=Sum('amount'))['total'] or 0
 
+    # 환불 이력
+    from classes.models import WithdrawalRefund
+    withdrawal_refunds = WithdrawalRefund.objects.filter(
+        student=student
+    ).select_related('enrollment__lesson').order_by('-year', '-month', '-id')
+
     # 성적 데이터 조회
     internal_grades = Grade.objects.filter(
         student=student,
@@ -467,6 +473,7 @@ def student_detail(request, pk):
         'special_enrollment_items': special_enrollment_items,
         'total_tuition_paid': total_tuition_paid,
         'tuition_payments': tuition_payments,
+        'withdrawal_refunds': withdrawal_refunds,
         'internal_grades': regular_internal_grades,
         'elective_grades': elective_grades,
         'mock_grades': mock_grades,

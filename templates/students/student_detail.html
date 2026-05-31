@@ -352,6 +352,22 @@
                 </td>
             </tr>
             {% endfor %}
+            {% for wr in withdrawal_refunds %}
+            <tr class="bg-purple-50 hover:bg-purple-100 transition-colors">
+                <td class="px-4 py-3 text-sm font-semibold text-purple-700">{{ wr.year }}년 {{ wr.month }}월</td>
+                <td class="px-4 py-3 text-sm text-gray-800">
+                    {{ wr.enrollment.lesson.name }}
+                    <span class="ml-1 px-1.5 py-0.5 rounded text-xs font-medium bg-purple-200 text-purple-700">환불</span>
+                </td>
+                <td class="px-4 py-3 text-sm text-right font-semibold text-purple-700">▼ {{ wr.refund_amount|intcomma }}원</td>
+                <td class="px-4 py-3 text-xs text-gray-500">
+                    {{ wr.passed_days }}/{{ wr.total_days }}일 수강
+                    ({{ wr.refund_rate }}%)
+                </td>
+                <td class="px-4 py-3 text-sm text-purple-600 font-semibold">{{ wr.quit_date|date:"Y-m-d" }}</td>
+                <td class="px-4 py-3 text-center text-xs text-gray-400">퇴원 처리</td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
     </div>
