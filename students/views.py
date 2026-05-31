@@ -289,6 +289,16 @@ def student_detail(request, pk):
     withdrawal_refunds = WithdrawalRefund.objects.filter(
         student=student
     ).select_related('enrollment__lesson').order_by('-year', '-month', '-id')
+    total_tuition_refund = withdrawal_refunds.aggregate(total=Sum('refund_amount'))['total'] or 0
+    total_tuition_net = total_tuition_paid - total_tuition_refund
+
+    # 납부+환불 통합 정렬 (최신순)
+    combined_tuition_history = sorted(
+        [{'type': 'payment', 'year': tp.year, 'month': tp.month, 'obj': tp} for tp in tuition_payments] +
+        [{'type': 'refund',  'year': wr.year, 'month': wr.month, 'obj': wr} for wr in withdrawal_refunds],
+        key=lambda x: (x['year'], x['month'], x['obj'].id),
+        reverse=True,
+    )
 
     # 성적 데이터 조회
     internal_grades = Grade.objects.filter(
@@ -474,6 +484,9 @@ def student_detail(request, pk):
         'total_tuition_paid': total_tuition_paid,
         'tuition_payments': tuition_payments,
         'withdrawal_refunds': withdrawal_refunds,
+        'combined_tuition_history': combined_tuition_history,
+        'total_tuition_refund': total_tuition_refund,
+        'total_tuition_net': total_tuition_net,
         'internal_grades': regular_internal_grades,
         'elective_grades': elective_grades,
         'mock_grades': mock_grades,
