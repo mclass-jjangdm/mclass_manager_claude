@@ -1127,19 +1127,66 @@ def grade_promotion_execute(request):
 
 @login_required
 def student_quit(request, pk):
-    """학생 퇴원 처리"""
-    from django.utils import timezone
+    """학생 퇴원 처리 (환불 계산 포함)"""
+    import datetime as _dt
+    from classes.models import Enrollment
+    from classes.utils import calculate_refund
 
     student = get_object_or_404(Student, pk=pk)
 
     if request.method == 'POST':
-        student.quit_date = timezone.now().date()
+        quit_date_str = request.POST.get('quit_date', '')
+        try:
+            quit_date = _dt.date.fromisoformat(quit_date_str)
+        except ValueError:
+            quit_date = _dt.date.today()
+
+        student.quit_date = quit_date
         student.is_active = False
         student.save()
-        messages.success(request, f'{student.name} 학생이 퇴원 처리되었습니다.')
+
+        # 활성 수강 종료 처리
+        active_enrollments = Enrollment.objects.filter(
+            student=student, is_active=True
+        )
+        for enroll in active_enrollments:
+            enroll.is_active = False
+            enroll.end_date = quit_date
+            enroll.save()
+
+        messages.success(
+            request,
+            f'{student.name} 학생이 퇴원 처리되었습니다. (퇴원일: {quit_date})'
+        )
         return redirect('students:student_detail', pk=pk)
 
-    return render(request, 'students/student_quit_confirm.html', {'student': student})
+    # GET: 환불 금액 미리보기
+    today = _dt.date.today()
+    active_enrollments = Enrollment.objects.filter(
+        student=student, is_active=True
+    ).select_related('lesson')
+
+    quit_date_str = request.GET.get('quit_date', today.isoformat())
+    try:
+        quit_date = _dt.date.fromisoformat(quit_date_str)
+    except ValueError:
+        quit_date = today
+
+    refund_items = []
+    total_refund = 0
+    for enroll in active_enrollments:
+        info = calculate_refund(enroll, quit_date)
+        info['enrollment'] = enroll
+        info['lesson_name'] = enroll.lesson.name
+        refund_items.append(info)
+        total_refund += info['refund_amount']
+
+    return render(request, 'students/student_quit_confirm.html', {
+        'student': student,
+        'quit_date': quit_date,
+        'refund_items': refund_items,
+        'total_refund': total_refund,
+    })
 
 
 @login_required

@@ -1,0 +1,93 @@
+import calendar
+from datetime import date
+from django.db.models import Sum
+
+
+DAY_CODE = {'mon': 0, 'tue': 1, 'wed': 2, 'thu': 3, 'fri': 4, 'sat': 5, 'sun': 6}
+
+
+def _class_days_in_month(lesson, year, month):
+    """해당 월에 수업이 있는 날짜 목록 반환"""
+    schedule_weekdays = {DAY_CODE[s.day] for s in lesson.schedules.all()}
+    if not schedule_weekdays:
+        return []
+    _, last_day = calendar.monthrange(year, month)
+    return [
+        date(year, month, d)
+        for d in range(1, last_day + 1)
+        if date(year, month, d).weekday() in schedule_weekdays
+    ]
+
+
+def calculate_refund(enrollment, quit_date):
+    """
+    퇴원일 기준 해당 월 환불 금액 계산.
+
+    환불 정책 (법정 기준):
+    - 수업일의 1/3 미만 수강 → 전액 환불
+    - 수업일의 1/3 이상 1/2 미만 수강 → 50% 환불
+    - 수업일의 1/2 이상 수강 → 환불 없음
+    """
+    from classes.models import MonthlyEnrollment, TuitionPayment
+
+    year, month = quit_date.year, quit_date.month
+    lesson = enrollment.lesson
+
+    all_days = _class_days_in_month(lesson, year, month)
+    total = len(all_days)
+
+    if total == 0:
+        return {
+            'total_days': 0,
+            'passed_days': 0,
+            'ratio': 0,
+            'tuition': 0,
+            'refund_amount': 0,
+            'refund_rate': 0,
+            'policy': '수업 일정 없음',
+        }
+
+    passed_days = sum(1 for d in all_days if d <= quit_date)
+    ratio = passed_days / total  # 수강 비율
+
+    # MonthlyEnrollment에서 해당 월 수강료 조회
+    try:
+        me = MonthlyEnrollment.objects.get(
+            student=enrollment.student,
+            lesson=lesson,
+            year=year,
+            month=month,
+        )
+        tuition = me.adjusted_tuition
+    except MonthlyEnrollment.DoesNotExist:
+        tuition = enrollment.adjusted_tuition
+
+    # 이미 납부한 금액 확인
+    paid = TuitionPayment.objects.filter(
+        enrollment=enrollment,
+        year=year,
+        month=month,
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    if ratio < 1 / 3:
+        refund_rate = 100
+        policy = f'수업일 1/3 미만 수강 ({passed_days}/{total}일) → 전액 환불'
+    elif ratio < 1 / 2:
+        refund_rate = 50
+        policy = f'수업일 1/3~1/2 수강 ({passed_days}/{total}일) → 50% 환불'
+    else:
+        refund_rate = 0
+        policy = f'수업일 1/2 이상 수강 ({passed_days}/{total}일) → 환불 없음'
+
+    refund_amount = round(tuition * refund_rate / 100)
+
+    return {
+        'total_days': total,
+        'passed_days': passed_days,
+        'ratio': ratio,
+        'tuition': tuition,
+        'paid': paid,
+        'refund_rate': refund_rate,
+        'refund_amount': refund_amount,
+        'policy': policy,
+    }
