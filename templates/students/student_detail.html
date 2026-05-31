@@ -177,6 +177,39 @@
                     <div class="mt-2 text-xs text-blue-400 text-center">이번 달 수강 신청 없음</div>
                     {% endif %}
                 </div>
+                <!-- 특별 수업 수강료 -->
+                {% if special_enrollment_items %}
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="text-sm font-semibold text-purple-800">특별 수업 수강료</div>
+                    </div>
+                    <div class="border-t border-purple-200 pt-2 space-y-2">
+                        {% for item in special_enrollment_items %}
+                        <div class="flex justify-between items-center">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-purple-800 truncate" style="max-width:120px" title="{{ item.enrollment.lesson.name }}">{{ item.enrollment.lesson.name }}</span>
+                                {% if item.enrollment.lesson.start_date and item.enrollment.lesson.end_date %}
+                                <span class="text-xs text-purple-400">{{ item.enrollment.lesson.start_date|date:"m/d" }}~{{ item.enrollment.lesson.end_date|date:"m/d" }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs font-medium text-purple-800">{{ item.enrollment.adjusted_tuition|intcomma }}원</span>
+                                {% if item.is_paid %}
+                                <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-medium">납부 완료</span>
+                                {% else %}
+                                <button type="button"
+                                        class="bg-purple-500 hover:bg-purple-600 text-white text-xs px-2 py-0.5 rounded transition-colors"
+                                        onclick="openTuitionModal({{ item.enrollment.pk }}, '{{ item.enrollment.lesson.name|escapejs }}', {{ item.enrollment.adjusted_tuition }}, '{% url 'students:student_tuition_pay' student.pk item.enrollment.pk %}')">
+                                    납부
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- 교재 대금 -->
                 <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
                     <div class="text-sm font-semibold text-orange-800 mb-2">교재 대금</div>

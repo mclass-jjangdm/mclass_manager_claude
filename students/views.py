@@ -256,6 +256,28 @@ def student_detail(request, pk):
         reverse=True,
     )
 
+    # 특별 수업 수강 현황
+    special_enrollments = Enrollment.objects.filter(
+        student=student,
+        is_active=True,
+        lesson__is_special=True,
+    ).select_related('lesson')
+
+    paid_special_enrollment_ids = set(
+        TuitionPayment.objects.filter(
+            enrollment__student=student,
+            enrollment__lesson__is_special=True,
+        ).values_list('enrollment_id', flat=True)
+    )
+
+    special_enrollment_items = [
+        {
+            'enrollment': e,
+            'is_paid': e.pk in paid_special_enrollment_ids,
+        }
+        for e in special_enrollments
+    ]
+
     # 납부 이력
     tuition_payments = TuitionPayment.objects.filter(
         enrollment__student=student
@@ -442,6 +464,7 @@ def student_detail(request, pk):
         'current_me_items': current_me_items,
         'past_unpaid_tuition': past_unpaid_tuition,
         'past_unpaid_me_items': past_unpaid_me_items,
+        'special_enrollment_items': special_enrollment_items,
         'total_tuition_paid': total_tuition_paid,
         'tuition_payments': tuition_payments,
         'internal_grades': regular_internal_grades,
