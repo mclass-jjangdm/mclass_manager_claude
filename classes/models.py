@@ -192,6 +192,40 @@ class MonthlyEnrollment(models.Model):
         return base + self.tuition_adjustment
 
 
+class WithdrawalRefund(models.Model):
+    """퇴원 시 수강료 환불 기록"""
+    enrollment = models.ForeignKey(
+        'Enrollment',
+        on_delete=models.CASCADE,
+        related_name='refunds',
+        verbose_name='수강 신청',
+    )
+    student = models.ForeignKey(
+        'students.Student',
+        on_delete=models.CASCADE,
+        related_name='refunds',
+        verbose_name='학생',
+    )
+    quit_date = models.DateField(verbose_name='퇴원일')
+    year = models.IntegerField(verbose_name='환불 연도')
+    month = models.IntegerField(choices=MONTH_CHOICES, verbose_name='환불 월')
+    tuition = models.PositiveIntegerField(verbose_name='월 수강료')
+    total_days = models.PositiveIntegerField(verbose_name='총 수업일수')
+    passed_days = models.PositiveIntegerField(verbose_name='수강 일수')
+    refund_rate = models.PositiveIntegerField(verbose_name='환불율(%)')
+    refund_amount = models.PositiveIntegerField(verbose_name='환불 금액')
+    memo = models.TextField(blank=True, verbose_name='메모')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-quit_date', '-created_at']
+        verbose_name = '수강료 환불'
+        verbose_name_plural = '수강료 환불 목록'
+
+    def __str__(self):
+        return f'{self.student} - {self.enrollment.lesson} ({self.year}년 {self.month}월 환불)'
+
+
 class TuitionPayment(models.Model):
     enrollment = models.ForeignKey(
         Enrollment,

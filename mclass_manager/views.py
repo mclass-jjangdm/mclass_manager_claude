@@ -171,6 +171,13 @@ class IndexView(TemplateView):
                 month=today.month,
             ).aggregate(s=Sum('amount'))['s'] or 0
 
+            # 2-1) 이번 달 환불 금액 (WithdrawalRefund 기준)
+            from classes.models import WithdrawalRefund
+            month_tuition_refund = WithdrawalRefund.objects.filter(
+                year=today.year,
+                month=today.month,
+            ).aggregate(s=Sum('refund_amount'))['s'] or 0
+
             # 3) 이번 달 미납 금액 (청구됐으나 TuitionPayment 없는 MonthlyEnrollment 합산)
             # TuitionPayment → Enrollment → (student_id, lesson_id) 로 cross-reference
             paid_pairs = set(
@@ -263,6 +270,7 @@ class IndexView(TemplateView):
                 'total_expense': total_expense,
                 'month_tuition_billing': month_tuition_billing,
                 'month_tuition_collected': month_tuition_collected,
+                'month_tuition_refund': month_tuition_refund,
                 'month_tuition_unpaid': month_tuition_unpaid,
                 'month_book_billing': month_book_billing,
                 'month_book_collected': month_book_collected,

@@ -1135,6 +1135,8 @@ def student_quit(request, pk):
     student = get_object_or_404(Student, pk=pk)
 
     if request.method == 'POST':
+        from classes.models import WithdrawalRefund
+
         quit_date_str = request.POST.get('quit_date', '')
         try:
             quit_date = _dt.date.fromisoformat(quit_date_str)
@@ -1145,18 +1147,38 @@ def student_quit(request, pk):
         student.is_active = False
         student.save()
 
-        # 활성 수강 종료 처리
+        # 활성 수강별 환불 계산 → 기록 저장 + 수강 종료
         active_enrollments = Enrollment.objects.filter(
             student=student, is_active=True
-        )
+        ).select_related('lesson')
+
+        total_refund = 0
         for enroll in active_enrollments:
+            info = calculate_refund(enroll, quit_date)
+            # 환불 금액이 있는 수업만 저장 (수업 일정 없거나 환불율 0%인 경우 제외)
+            if info['total_days'] > 0:
+                WithdrawalRefund.objects.create(
+                    enrollment=enroll,
+                    student=student,
+                    quit_date=quit_date,
+                    year=quit_date.year,
+                    month=quit_date.month,
+                    tuition=info['tuition'],
+                    total_days=info['total_days'],
+                    passed_days=info['passed_days'],
+                    refund_rate=info['refund_rate'],
+                    refund_amount=info['refund_amount'],
+                )
+                total_refund += info['refund_amount']
+
             enroll.is_active = False
             enroll.end_date = quit_date
             enroll.save()
 
+        refund_msg = f' 환불 예정액: {total_refund:,}원' if total_refund > 0 else ''
         messages.success(
             request,
-            f'{student.name} 학생이 퇴원 처리되었습니다. (퇴원일: {quit_date})'
+            f'{student.name} 학생이 퇴원 처리되었습니다. (퇴원일: {quit_date}{refund_msg})'
         )
         return redirect('students:student_detail', pk=pk)
 

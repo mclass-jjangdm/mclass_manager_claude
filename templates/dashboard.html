@@ -211,6 +211,13 @@
                         <span class="text-xs text-gray-500">수납</span>
                         <span class="text-xs font-medium text-gray-700">{{ month_tuition_collected|intcomma }}원</span>
                     </a>
+                    {% if month_tuition_refund > 0 %}
+                    <a href="{% url 'students:student_list' %}?show_inactive=on"
+                       class="flex justify-between items-center py-1 pl-5 pr-2 rounded hover:bg-green-100 transition-colors">
+                        <span class="text-xs text-gray-500">환불</span>
+                        <span class="text-xs font-medium text-purple-600">▼ {{ month_tuition_refund|intcomma }}원</span>
+                    </a>
+                    {% endif %}
                     <a href="{% url 'students:student_list' %}"
                        class="flex justify-between items-center py-1 pl-5 pr-2 rounded hover:bg-green-100 transition-colors">
                         <span class="text-xs text-gray-500">미납</span>
