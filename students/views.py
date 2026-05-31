@@ -296,7 +296,7 @@ def student_detail(request, pk):
     combined_tuition_history = sorted(
         [{'type': 'payment', 'year': tp.year, 'month': tp.month, 'obj': tp} for tp in tuition_payments] +
         [{'type': 'refund',  'year': wr.year, 'month': wr.month, 'obj': wr} for wr in withdrawal_refunds],
-        key=lambda x: (x['year'], x['month'], x['obj'].id),
+        key=lambda x: (x['year'], x['month'], 1 if x['type'] == 'refund' else 0, x['obj'].id),
         reverse=True,
     )
 
