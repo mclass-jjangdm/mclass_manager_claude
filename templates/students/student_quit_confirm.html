@@ -109,7 +109,7 @@
         <input type="hidden" name="quit_date" value="{{ quit_date|date:'Y-m-d' }}">
         <button type="submit"
                 class="bg-red-600 hover:bg-red-700 text-white px-10 py-3 rounded-lg font-medium text-base transition-colors"
-                onclick="return confirm('{{ quit_date|date:&quot;Y년 n월 j일&quot; }}자로 {{ student.name }} 학생을 퇴원 처리하시겠습니까?')">
+                onclick="return confirm('{{ quit_date }} 자로 {{ student.name }} 학생을 퇴원 처리하시겠습니까?')">
             퇴원 처리 확정
         </button>
         <a href="{% url 'students:student_detail' student.pk %}"
