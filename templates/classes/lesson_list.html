@@ -125,10 +125,21 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             {{ lesson.active_enrollment_count }}명
+                            {% if lesson.billing_missing_count %}
+                            <span class="ml-1 text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-medium"
+                                  title="{{ lesson.billing_missing_count }}명 수강 신청 누락">
+                                ⚠ {{ lesson.billing_missing_count }}명 누락
+                            </span>
+                            {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                             {% if lesson.current_billing %}
                             <span class="font-medium text-indigo-700">{{ lesson.current_billing|intcomma }}원</span>
+                            {% if lesson.billing_missing_count %}
+                            <p class="text-xs text-yellow-600 mt-0.5">
+                                예상: {{ lesson.active_enrollment_count }}명 × {{ lesson.base_tuition|intcomma }}원
+                            </p>
+                            {% endif %}
                             {% else %}
                             <span class="text-gray-400">-</span>
                             {% endif %}
