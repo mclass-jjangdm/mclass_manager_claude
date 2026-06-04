@@ -178,17 +178,24 @@
                                 </span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="text-sm text-gray-600">
-                                    {{ item.enrollment.adjusted_tuition|intcomma }}원
+                                <span class="text-sm {% if item.is_prorated %}text-amber-600 font-semibold{% else %}text-gray-600{% endif %}">
+                                    {{ item.preview_tuition|intcomma }}원
                                 </span>
                                 {% if item.already %}
                                 <span class="text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full font-medium">
                                     이미 등록
                                 </span>
                                 {% else %}
-                                <span class="text-xs bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full font-medium">
-                                    신규
-                                </span>
+                                    {% if item.is_prorated %}
+                                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium"
+                                          title="기본 수강료 {{ item.enrollment.lesson.base_tuition|intcomma }}원에서 수강 시작일 기준 일할 계산">
+                                        일할
+                                    </span>
+                                    {% else %}
+                                    <span class="text-xs bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full font-medium">
+                                        신규
+                                    </span>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>

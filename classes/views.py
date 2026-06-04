@@ -741,7 +741,24 @@ def monthly_enrollment_create(request):
                 'exists_count': 0,
             }
         already = (enroll.student_id, enroll.lesson_id) in already_set
-        lessons_dict[lid]['items'].append({'enrollment': enroll, 'already': already})
+        is_enrollment_month = (
+            enroll.enrollment_date.year == target_year
+            and enroll.enrollment_date.month == target_month
+        )
+        if is_enrollment_month:
+            preview_tuition = calculate_prorated_tuition(
+                enroll.lesson, target_year, target_month, enroll.enrollment_date
+            )
+            is_prorated = preview_tuition != enroll.lesson.base_tuition
+        else:
+            preview_tuition = enroll.lesson.base_tuition
+            is_prorated = False
+        lessons_dict[lid]['items'].append({
+            'enrollment': enroll,
+            'already': already,
+            'preview_tuition': preview_tuition,
+            'is_prorated': is_prorated,
+        })
         if already:
             lessons_dict[lid]['exists_count'] += 1
             total_exists += 1
