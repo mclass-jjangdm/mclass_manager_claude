@@ -34,7 +34,8 @@ def calculate_prorated_tuition(lesson, year, month, start_date):
     if payable_days == total:
         return lesson.base_tuition
 
-    return round(lesson.base_tuition * payable_days / total)
+    raw = lesson.base_tuition * payable_days / total
+    return round(raw / 1000) * 1000
 
 
 def calculate_refund(enrollment, quit_date):
