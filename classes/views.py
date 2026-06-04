@@ -241,10 +241,13 @@ def lesson_list(request):
         })
         h += 1
 
+    total_billing = sum(lesson.current_billing for lesson in lessons)
+
     return render(request, 'classes/lesson_list.html', {
         'lessons':        lessons,
         'search':         search,
         'status':         status,
+        'total_billing':  total_billing,
         # timetable
         'timetable_days': timetable_days,
         'hour_labels':    hour_labels,

@@ -155,6 +155,15 @@
                     </tr>
                     {% endfor %}
                 </tbody>
+                <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                    <tr>
+                        <td colspan="6" class="px-6 py-3 text-sm font-semibold text-gray-700 text-right">이번 달 청구 합계</td>
+                        <td class="px-6 py-3 text-right">
+                            <span class="text-base font-bold text-indigo-700">{{ total_billing|intcomma }}원</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
         {% else %}
