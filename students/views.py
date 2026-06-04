@@ -1,6 +1,7 @@
 import logging
 import datetime
 import csv
+from django.db import models
 import io
 from openpyxl import load_workbook, Workbook
 from django.shortcuts import render, redirect, get_object_or_404
@@ -192,8 +193,12 @@ def student_detail(request, pk):
     from django.db.models import Sum, Q as dQ
     today = timezone.now().date()
 
-    # 활성 Enrollment (하단 수강 테이블용)
-    active_enrollments = Enrollment.objects.filter(student=student, is_active=True).select_related('lesson')
+    # 활성 Enrollment (하단 수강 테이블용) — end_date 지난 것 제외
+    active_enrollments = Enrollment.objects.filter(
+        student=student, is_active=True,
+    ).filter(
+        models.Q(end_date__isnull=True) | models.Q(end_date__gte=today)
+    ).select_related('lesson')
     # 납부 버튼용 - 비활성 수업도 포함 (MonthlyEnrollment가 있으면 납부 가능해야 함)
     enrollment_by_lesson = {e.lesson_id: e for e in Enrollment.objects.filter(student=student).select_related('lesson')}
 

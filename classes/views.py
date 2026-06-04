@@ -204,7 +204,7 @@ def lesson_list(request):
         color = lesson_color_map[lesson.pk]
         # 현재 활성 수강생 이름 목록
         students = sorted(
-            e.student.name for e in lesson.enrollments.all() if e.is_active and e.student.is_active
+            e.student.name for e in lesson.enrollments.all() if e.is_currently_active and e.student.is_active
         )
         for s in lesson.schedules.all():
             start_min = s.start_time.hour * 60 + s.start_time.minute
@@ -360,7 +360,11 @@ def _get_grade_groups(lesson):
         Student.objects.filter(quit_date__isnull=True).order_by('grade', 'name')
     )
     enrolled_ids = set(
-        lesson.enrollments.filter(is_active=True).values_list('student_id', flat=True)
+        lesson.enrollments.filter(
+            is_active=True,
+        ).filter(
+            django_models.Q(end_date__isnull=True) | django_models.Q(end_date__gte=datetime.date.today())
+        ).values_list('student_id', flat=True)
     )
     grade_groups = []
     for grade in GRADE_ORDER:

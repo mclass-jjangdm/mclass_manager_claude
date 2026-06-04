@@ -90,7 +90,11 @@ class Lesson(models.Model):
 
     @property
     def active_enrollment_count(self):
-        return self.enrollments.filter(is_active=True, student__is_active=True).count()
+        from datetime import date
+        from django.db.models import Q
+        return self.enrollments.filter(
+            is_active=True, student__is_active=True,
+        ).filter(Q(end_date__isnull=True) | Q(end_date__gte=date.today())).count()
 
 
 class LessonSchedule(models.Model):
@@ -145,6 +149,12 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return f'{self.student} - {self.lesson}'
+
+    @property
+    def is_currently_active(self):
+        """is_active이면서 end_date가 없거나 오늘 이후인 경우 True"""
+        from datetime import date
+        return self.is_active and (self.end_date is None or self.end_date >= date.today())
 
     @property
     def adjusted_tuition(self):

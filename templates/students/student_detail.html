@@ -646,7 +646,7 @@ function togglePaidSales() {
                     <td class="px-4 py-3 text-gray-700">{{ enrollment.adjusted_tuition|intcomma }}원</td>
                     <td class="px-4 py-3 text-gray-600">{{ enrollment.enrollment_date }}</td>
                     <td class="px-4 py-3">
-                        {% if enrollment.is_active %}
+                        {% if enrollment.is_currently_active %}
                         <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">수강중</span>
                         {% else %}
                         <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-500">종료</span>
