@@ -728,6 +728,15 @@ def monthly_enrollment_create(request):
         ).values_list('student_id', 'lesson_id')
     )
 
+    # 수강 시작월 기준으로 MonthlyEnrollment가 아직 없는 (student_id, lesson_id, year, month) 조합
+    # → 현재 target보다 이전 월에 시작했지만 해당 월 MonthlyEnrollment 누락 여부 체크용
+    existing_me_keys = set(
+        MonthlyEnrollment.objects.filter(
+            year=target_year,
+            month__lt=target_month,
+        ).values_list('student_id', 'lesson_id', 'year', 'month')
+    )
+
     lessons_dict = {}
     total_new = 0
     total_exists = 0
@@ -741,23 +750,29 @@ def monthly_enrollment_create(request):
                 'exists_count': 0,
             }
         already = (enroll.student_id, enroll.lesson_id) in already_set
-        is_enrollment_month = (
-            enroll.enrollment_date.year == target_year
-            and enroll.enrollment_date.month == target_month
-        )
+        ed = enroll.enrollment_date
+        is_enrollment_month = (ed.year == target_year and ed.month == target_month)
         if is_enrollment_month:
             preview_tuition = calculate_prorated_tuition(
-                enroll.lesson, target_year, target_month, enroll.enrollment_date
+                enroll.lesson, target_year, target_month, ed
             )
             is_prorated = preview_tuition != enroll.lesson.base_tuition
+            missing_month = None
         else:
             preview_tuition = enroll.lesson.base_tuition
             is_prorated = False
+            # 수강 시작월이 같은 연도의 이전 달이고 해당 월 ME가 없으면 경고
+            if ed.year == target_year and ed.month < target_month:
+                key = (enroll.student_id, enroll.lesson_id, ed.year, ed.month)
+                missing_month = ed.month if key not in existing_me_keys else None
+            else:
+                missing_month = None
         lessons_dict[lid]['items'].append({
             'enrollment': enroll,
             'already': already,
             'preview_tuition': preview_tuition,
             'is_prorated': is_prorated,
+            'missing_month': missing_month,
         })
         if already:
             lessons_dict[lid]['exists_count'] += 1

@@ -197,6 +197,14 @@
                                     </span>
                                     {% endif %}
                                 {% endif %}
+                                {% if item.missing_month %}
+                                <a href="?year={{ target_year }}&month={{ item.missing_month }}"
+                                   class="text-xs bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium flex items-center gap-0.5"
+                                   title="{{ item.missing_month }}월 수강 신청(일할)이 아직 생성되지 않았습니다."
+                                   onclick="event.stopPropagation()">
+                                    ⚠ {{ item.missing_month }}월 누락
+                                </a>
+                                {% endif %}
                             </div>
                         </div>
                     </label>
