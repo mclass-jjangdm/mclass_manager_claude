@@ -1068,6 +1068,7 @@ def lesson_transfer(request):
                 lesson=to_lesson,
                 defaults={
                     'enrollment_date': transfer_date,
+                    'end_date': None,
                     'is_active': True,
                 },
             )
