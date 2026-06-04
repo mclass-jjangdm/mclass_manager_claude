@@ -652,10 +652,7 @@ def monthly_enrollment_create(request):
         return redirect('index')
 
     today = datetime.date.today()
-    if today.month == 12:
-        default_year, default_month = today.year + 1, 1
-    else:
-        default_year, default_month = today.year, today.month + 1
+    default_year, default_month = today.year, today.month
 
     if request.method == 'POST':
         try:
