@@ -14,6 +14,7 @@ import calendar
 
 from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, MonthlyEnrollment, DAY_CHOICES
 from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm, MonthlyEnrollmentEditForm, LessonTransferForm
+from .utils import calculate_prorated_tuition
 
 
 def _assign_timetable_columns(items):
@@ -674,6 +675,12 @@ def monthly_enrollment_create(request):
                     enroll.enrollment_date.year == target_year
                     and enroll.enrollment_date.month == target_month
                 )
+                if is_enrollment_month:
+                    tuition_fee = calculate_prorated_tuition(
+                        enroll.lesson, target_year, target_month, enroll.enrollment_date
+                    )
+                else:
+                    tuition_fee = enroll.lesson.base_tuition
                 obj, created = MonthlyEnrollment.objects.get_or_create(
                     student=enroll.student,
                     lesson=enroll.lesson,
@@ -681,8 +688,8 @@ def monthly_enrollment_create(request):
                     month=target_month,
                     defaults={
                         'status': 'pending',
-                        'tuition_fee': enroll.lesson.base_tuition,
-                        'tuition_adjustment': enroll.tuition_adjustment if is_enrollment_month else 0,
+                        'tuition_fee': tuition_fee,
+                        'tuition_adjustment': 0,
                         'memo': '',
                     },
                 )

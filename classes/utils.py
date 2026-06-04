@@ -19,6 +19,24 @@ def _class_days_in_month(lesson, year, month):
     ]
 
 
+def calculate_prorated_tuition(lesson, year, month, start_date):
+    """
+    수강 시작일 기준 일할 수강료 계산.
+    시작일 이후(포함) 수업 일수 / 월 전체 수업 일수 × 기본 수강료
+    수업 일정이 없거나 해당 월이 아닌 경우 base_tuition 반환.
+    """
+    all_days = _class_days_in_month(lesson, year, month)
+    total = len(all_days)
+    if total == 0:
+        return lesson.base_tuition
+
+    payable_days = sum(1 for d in all_days if d >= start_date)
+    if payable_days == total:
+        return lesson.base_tuition
+
+    return round(lesson.base_tuition * payable_days / total)
+
+
 def calculate_refund(enrollment, quit_date):
     """
     퇴원일 기준 해당 월 환불 금액 계산.
