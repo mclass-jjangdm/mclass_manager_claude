@@ -671,7 +671,7 @@
                                  data-assignment-type="normal"
                                  data-assigned="true">
                                 <div class="student-details">
-                                    <div class="student-name">{{ assignment.student.name }}</div>
+                                    <div class="student-name">{{ assignment.student.name }}{% if assignment.student.grade %} <span style="font-size:10px;color:#94a3b8;font-weight:400;">{{ assignment.student.grade }}</span>{% endif %}</div>
                                 </div>
                             </div>
                             {% endfor %}
@@ -714,7 +714,7 @@
                                  data-assignment-type="director"
                                  data-assigned="true">
                                 <div class="student-details">
-                                    <div class="student-name">{{ assignment.student.name }}</div>
+                                    <div class="student-name">{{ assignment.student.name }}{% if assignment.student.grade %} <span style="font-size:10px;color:#94a3b8;font-weight:400;">{{ assignment.student.grade }}</span>{% endif %}</div>
                                 </div>
                             </div>
                             {% endfor %}
@@ -748,7 +748,7 @@
                                  data-absence-reason="{{ assignment.absence_reason }}"
                                  data-assigned="true">
                                 <div class="student-details">
-                                    <div class="student-name">{{ assignment.student.name }}</div>
+                                    <div class="student-name">{{ assignment.student.name }}{% if assignment.student.grade %} <span style="font-size:10px;color:#94a3b8;font-weight:400;">{{ assignment.student.grade }}</span>{% endif %}</div>
                                     <div class="absence-reason-display text-xs text-red-600"
                                          onclick="event.stopPropagation(); showAbsenceReasonSelect(this);"
                                          style="cursor: pointer;">
@@ -798,7 +798,7 @@
                                  data-assignment-type="exception"
                                  data-assigned="true">
                                 <div class="student-details">
-                                    <div class="student-name">{{ assignment.student.name }}</div>
+                                    <div class="student-name">{{ assignment.student.name }}{% if assignment.student.grade %} <span style="font-size:10px;color:#94a3b8;font-weight:400;">{{ assignment.student.grade }}</span>{% endif %}</div>
                                 </div>
                             </div>
                             {% endfor %}
@@ -892,7 +892,7 @@
                               data-student-name="{{ assignment.student.name }}"
                               data-current-teacher="{{ teacher.id }}"
                               data-assignment-type="normal"
-                              data-assigned="true">{{ assignment.student.name }}</span>
+                              data-assigned="true">{{ assignment.student.name }}{% if assignment.student.grade %} <span style="font-size:9px;color:#94a3b8;font-weight:400;">{{ assignment.student.grade }}</span>{% endif %}</span>
                         {% endfor %}
                     </td>
                     {% endfor %}
@@ -904,7 +904,7 @@
                               data-student-id="{{ assignment.student.id }}"
                               data-student-name="{{ assignment.student.name }}"
                               data-assignment-type="director"
-                              data-assigned="true">{{ assignment.student.name }}</span>
+                              data-assigned="true">{{ assignment.student.name }}{% if assignment.student.grade %} <span style="font-size:9px;color:#94a3b8;font-weight:400;">{{ assignment.student.grade }}</span>{% endif %}</span>
                         {% endfor %}
                     </td>
                     <td class="dropzone absent-col" data-assignment-type="absent" data-dropzone="special">
@@ -917,7 +917,7 @@
                                   data-student-name="{{ assignment.student.name }}"
                                   data-assignment-type="absent"
                                   data-absence-reason="{{ assignment.absence_reason }}"
-                                  data-assigned="true">{{ assignment.student.name }}</span>
+                                  data-assigned="true">{{ assignment.student.name }}{% if assignment.student.grade %} <span style="font-size:9px;color:#94a3b8;font-weight:400;">{{ assignment.student.grade }}</span>{% endif %}</span>
                             <span class="absence-reason-display-ss text-xs text-red-600"
                                   onclick="event.stopPropagation(); showAbsenceReasonSelectSS(this);"
                                   style="cursor: pointer;">
@@ -946,7 +946,7 @@
                               data-student-id="{{ assignment.student.id }}"
                               data-student-name="{{ assignment.student.name }}"
                               data-assignment-type="exception"
-                              data-assigned="true">{{ assignment.student.name }}</span>
+                              data-assigned="true">{{ assignment.student.name }}{% if assignment.student.grade %} <span style="font-size:9px;color:#94a3b8;font-weight:400;">{{ assignment.student.grade }}</span>{% endif %}</span>
                         {% endfor %}
                     </td>
                 </tr>
