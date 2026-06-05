@@ -259,7 +259,7 @@
                         <label for="student_{{ student.id }}">
                             <span class="student-checkbox"></span>
                             <div class="student-details">
-                                <div class="name">{{ student.name }}</div>
+                                <div class="name">{{ student.name }}{% if student.grade %} <span style="font-size:11px;color:#94a3b8;font-weight:400;">{{ student.grade }}</span>{% endif %}</div>
                                 {% if student.school %}
                                 <div class="school">{{ student.school.name }}</div>
                                 {% endif %}
