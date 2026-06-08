@@ -2110,21 +2110,21 @@ def tuition_certificate_pdf(request, pk):
     monthly_amounts = {p['month']: p['total'] for p in payments}
     annual_total = sum(monthly_amounts.values())
 
-    # 한글 폰트 등록 (NanumGothic)
+    # 한글 폰트 등록 — 프로젝트 번들 폰트 우선, Linux/Windows 시스템 폰트 순
     font_paths = [
         os.path.join(settings.BASE_DIR, 'static', 'fonts', 'NanumGothic.ttf'),
+        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
         'C:/Windows/Fonts/malgun.ttf',
-        'C:/Windows/Fonts/NanumGothic.ttf',
     ]
     font_name = 'Helvetica'  # fallback
     for fp in font_paths:
         if os.path.exists(fp):
             try:
-                pdfmetrics.registerFont(TTFont('Korean', fp))
-                font_name = 'Korean'
+                pdfmetrics.registerFont(TTFont('KoreanFont', fp))
+                font_name = 'KoreanFont'
+                break
             except Exception:
-                pass
-            break
+                continue
 
     buffer = io.BytesIO()
     w, h = A4  # 210mm x 297mm

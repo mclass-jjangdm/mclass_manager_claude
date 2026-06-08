@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     netcat-openbsd \
     default-mysql-client \
+    fonts-nanum \
     && rm -rf /var/lib/apt/lists/*
 
 # requirements.txt 복사 및 패키지 설치
