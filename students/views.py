@@ -504,6 +504,11 @@ def student_detail(request, pk):
         'paid_this_month_lesson_ids': paid_this_month_lesson_ids,
         'is_middle': is_middle,
         'middle_grade_summary': middle_grade_summary,
+        'cert_years': sorted(
+            TuitionPayment.objects.filter(enrollment__student=student)
+            .values_list('year', flat=True).distinct(),
+            reverse=True,
+        ),
     }
     return render(request, 'students/student_detail.html', context)
 
@@ -2077,3 +2082,307 @@ def parent_grade_edit(request, student_pk, grade_pk):
         'error_message': error_message,
     }
     return render(request, 'students/parent_grade_edit.html', context)
+
+
+@login_required
+def tuition_certificate_pdf(request, pk):
+    """학원교육비(수강료) 납입증명서 PDF 생성"""
+    import io
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.pdfgen import canvas
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.lib import colors
+    from classes.models import TuitionPayment
+    from django.conf import settings
+    import os
+
+    student = get_object_or_404(Student, pk=pk)
+    year = int(request.GET.get('year', datetime.date.today().year))
+
+    # 해당 연도의 월별 납부 금액 집계
+    payments = TuitionPayment.objects.filter(
+        enrollment__student=student,
+        year=year,
+    ).values('month').annotate(total=models.Sum('amount'))
+
+    monthly_amounts = {p['month']: p['total'] for p in payments}
+    annual_total = sum(monthly_amounts.values())
+
+    # 한글 폰트 등록 (NanumGothic)
+    font_paths = [
+        os.path.join(settings.BASE_DIR, 'static', 'fonts', 'NanumGothic.ttf'),
+        'C:/Windows/Fonts/malgun.ttf',
+        'C:/Windows/Fonts/NanumGothic.ttf',
+    ]
+    font_name = 'Helvetica'  # fallback
+    for fp in font_paths:
+        if os.path.exists(fp):
+            try:
+                pdfmetrics.registerFont(TTFont('Korean', fp))
+                font_name = 'Korean'
+            except Exception:
+                pass
+            break
+
+    buffer = io.BytesIO()
+    w, h = A4  # 210mm x 297mm
+
+    c = canvas.Canvas(buffer, pagesize=A4)
+
+    def font(size, bold=False):
+        c.setFont(font_name, size)
+
+    # 여백
+    ml = 20 * mm
+    mr = w - 20 * mm
+    mt = h - 15 * mm
+
+    # 상단 서식 번호
+    font(7)
+    c.drawString(ml, mt, '[별지 제44호 서식(2)](\'00.4.3신설)')
+
+    # 외곽선
+    top = mt - 6 * mm
+    bottom = 20 * mm
+    c.setLineWidth(1.5)
+    c.rect(ml, bottom, mr - ml, top - bottom)
+
+    # 제목
+    font(16)
+    title = '학원교육비(수강료) 납입증명서'
+    c.drawCentredString(w / 2, top - 12 * mm, title)
+
+    # 제목 아래 구분선
+    c.setLineWidth(0.5)
+    y = top - 16 * mm
+    c.line(ml, y, mr, y)
+
+    # 섹션 1: 신청인
+    font(9)
+    c.drawString(ml + 2 * mm, y - 6 * mm, '1. 신청인')
+    y1 = y - 10 * mm
+    c.line(ml, y1, mr, y1)
+
+    # 신청인 표 (① 성명 / ② 주민등록번호)
+    row_h = 8 * mm
+    mid = ml + (mr - ml) / 2
+
+    c.rect(ml, y1 - row_h, mr - ml, row_h)
+    c.line(mid, y1 - row_h, mid, y1)
+    # 수직 구분: 성명 라벨/값
+    name_label_x = ml + 25 * mm
+    c.line(name_label_x, y1 - row_h, name_label_x, y1)
+    ssn_label_x = mid + 30 * mm
+    c.line(ssn_label_x, y1 - row_h, ssn_label_x, y1)
+    font(8)
+    c.drawString(ml + 2 * mm, y1 - 5.5 * mm, '① 성명')
+    c.drawString(mid + 2 * mm, y1 - 5.5 * mm, '② 주민등록번호')
+
+    y2 = y1 - row_h
+    # ③ 주소 행
+    c.rect(ml, y2 - row_h, mr - ml, row_h)
+    addr_label_x = ml + 25 * mm
+    c.line(addr_label_x, y2 - row_h, addr_label_x, y2)
+    c.drawString(ml + 2 * mm, y2 - 5.5 * mm, '③ 주소')
+
+    y3 = y2 - row_h
+    # 대상 학원생 (2행)
+    subject_rows = 2
+    subject_h = row_h * subject_rows
+    c.rect(ml, y3 - subject_h, mr - ml, subject_h)
+    # 대상 학원생 라벨
+    subject_label_x = ml + 25 * mm
+    c.line(subject_label_x, y3 - subject_h, subject_label_x, y3)
+    c.drawString(ml + 2 * mm, y3 - subject_h / 2 - 2 * mm, '대상 학원생')
+
+    # 내부 행 구분선
+    c.line(subject_label_x, y3 - row_h, mr, y3 - row_h)
+    # ④ 성명 / ⑤ 주민등록번호
+    mid2 = subject_label_x + (mr - subject_label_x) / 2
+    c.line(mid2, y3 - row_h, mid2, y3)
+    name4_x = subject_label_x + 25 * mm
+    c.line(name4_x, y3 - row_h, name4_x, y3)
+    ssn5_x = mid2 + 30 * mm
+    c.line(ssn5_x, y3 - row_h, ssn5_x, y3)
+
+    c.drawString(subject_label_x + 2 * mm, y3 - 5.5 * mm, '④ 성명')
+    # 학생 이름
+    font(9)
+    c.drawString(name4_x + 3 * mm, y3 - 5.5 * mm, student.name)
+    font(8)
+    c.drawString(mid2 + 2 * mm, y3 - 5.5 * mm, '⑤ 주민등록번호')
+
+    # ⑥ 주소 / ⑦ 소득자와의 관계
+    c.drawString(subject_label_x + 2 * mm, y3 - row_h - 5.5 * mm, '⑥ 주소')
+    mid3 = subject_label_x + (mr - subject_label_x) * 0.6
+    c.line(mid3, y3 - subject_h, mid3, y3 - row_h)
+    c.drawString(mid3 + 2 * mm, y3 - row_h - 5.5 * mm, '⑦ 소득자와의 관계')
+
+    # 섹션 2: 수강 학원
+    y4 = y3 - subject_h
+    c.setLineWidth(0.5)
+    c.line(ml, y4, mr, y4)
+    font(9)
+    c.drawString(ml + 2 * mm, y4 - 6 * mm, '2. 수강 학원')
+    y5 = y4 - 10 * mm
+    c.line(ml, y5, mr, y5)
+
+    # ⑧ 학원명 행
+    c.rect(ml, y5 - row_h, mr - ml, row_h)
+    lbl8_x = ml + 25 * mm
+    c.line(lbl8_x, y5 - row_h, lbl8_x, y5)
+    mid8 = lbl8_x + (mr - lbl8_x) * 0.5
+    c.line(mid8, y5 - row_h, mid8, y5)
+    ssn9_x = mid8 + 30 * mm
+    c.line(ssn9_x, y5 - row_h, ssn9_x, y5)
+    font(8)
+    c.drawString(ml + 2 * mm, y5 - 5.5 * mm, '⑧ 학원명')
+    font(9)
+    c.drawString(lbl8_x + 3 * mm, y5 - 5.5 * mm, '엠클래스수학과학전문학원')
+    font(8)
+    c.drawString(mid8 + 2 * mm, y5 - 5.5 * mm, '⑨ 사업자등록번호')
+    font(9)
+    c.drawString(ssn9_x + 3 * mm, y5 - 5.5 * mm, '134-92-52806')
+
+    y6 = y5 - row_h
+    # ⑩ 소재지 행
+    c.rect(ml, y6 - row_h, mr - ml, row_h)
+    lbl10_x = ml + 25 * mm
+    c.line(lbl10_x, y6 - row_h, lbl10_x, y6)
+    tel_x = mr - 50 * mm
+    c.line(tel_x, y6 - row_h, tel_x, y6)
+    tel_lbl_x = tel_x + 18 * mm
+    c.line(tel_lbl_x, y6 - row_h, tel_lbl_x, y6)
+    font(8)
+    c.drawString(ml + 2 * mm, y6 - 5.5 * mm, '⑩ 소재지')
+    font(8.5)
+    c.drawString(lbl10_x + 3 * mm, y6 - 5.5 * mm, '경기도 안산시 단원구 광덕대로 130 폴리타운 516호')
+    font(8)
+    c.drawString(tel_x + 2 * mm, y6 - 5.5 * mm, '⑪ 전화번호')
+    font(9)
+    c.drawString(tel_lbl_x + 2 * mm, y6 - 5.5 * mm, '031-439-1222')
+
+    y7 = y6 - row_h
+    # ⑫ 1일 수업시간 / ⑬ 1주간 수업일수 행
+    c.rect(ml, y7 - row_h, mr - ml, row_h)
+    lbl12_x = ml + 35 * mm
+    c.line(lbl12_x, y7 - row_h, lbl12_x, y7)
+    val12_x = lbl12_x + 25 * mm
+    c.line(val12_x, y7 - row_h, val12_x, y7)
+    lbl13_x = val12_x + 35 * mm
+    c.line(lbl13_x, y7 - row_h, lbl13_x, y7)
+    font(8)
+    c.drawString(ml + 2 * mm, y7 - 5.5 * mm, '⑫ 1일 수업시간')
+    c.drawString(lbl12_x + 8 * mm, y7 - 5.5 * mm, '시간')
+    c.drawString(val12_x + 2 * mm, y7 - 5.5 * mm, '⑬ 1주간 수업일수')
+    c.drawString(lbl13_x + 8 * mm, y7 - 5.5 * mm, '일')
+
+    # 섹션 3: 수강료 납입 금액
+    y8 = y7 - row_h
+    c.line(ml, y8, mr, y8)
+    font(9)
+    c.drawString(ml + 2 * mm, y8 - 6 * mm, '3. 수강료 납입 금액')
+    y9 = y8 - 10 * mm
+    c.line(ml, y9, mr, y9)
+
+    # 월별 납입 금액 표
+    table_mid = (ml + mr) / 2
+    months_per_col = 6
+    col_w = (mr - ml) / 2
+    month_lbl_w = 20 * mm
+    month_row_h = 8 * mm
+
+    # 헤더 행
+    c.rect(ml, y9 - month_row_h, mr - ml, month_row_h)
+    c.line(table_mid, y9 - month_row_h, table_mid, y9)
+    c.line(ml + month_lbl_w, y9 - month_row_h, ml + month_lbl_w, y9)
+    c.line(table_mid + month_lbl_w, y9 - month_row_h, table_mid + month_lbl_w, y9)
+    font(8)
+    c.drawCentredString(ml + month_lbl_w / 2, y9 - 5.5 * mm, '⑭ 월별')
+    c.drawCentredString(ml + month_lbl_w + (col_w - month_lbl_w) / 2, y9 - 5.5 * mm, '⑮ 납입금액')
+    c.drawCentredString(table_mid + month_lbl_w / 2, y9 - 5.5 * mm, '⑭ 월별')
+    c.drawCentredString(table_mid + month_lbl_w + (col_w - month_lbl_w) / 2, y9 - 5.5 * mm, '⑮ 납입금액')
+
+    y10 = y9 - month_row_h
+    for i in range(months_per_col):
+        month_l = i + 1
+        month_r = i + 7
+        row_y = y10 - i * month_row_h
+
+        c.rect(ml, row_y - month_row_h, col_w, month_row_h)
+        c.rect(table_mid, row_y - month_row_h, col_w, month_row_h)
+        c.line(ml + month_lbl_w, row_y - month_row_h, ml + month_lbl_w, row_y)
+        c.line(table_mid + month_lbl_w, row_y - month_row_h, table_mid + month_lbl_w, row_y)
+
+        font(9)
+        c.drawCentredString(ml + month_lbl_w / 2, row_y - 5.5 * mm, f'{month_l}월')
+        c.drawCentredString(table_mid + month_lbl_w / 2, row_y - 5.5 * mm, f'{month_r}월')
+
+        amt_l = monthly_amounts.get(month_l)
+        amt_r = monthly_amounts.get(month_r)
+        if amt_l:
+            c.drawRightString(mr / 2 - 3 * mm, row_y - 5.5 * mm, f'{amt_l:,}원')
+        if amt_r:
+            c.drawRightString(mr - 3 * mm, row_y - 5.5 * mm, f'{amt_r:,}원')
+
+    y11 = y10 - months_per_col * month_row_h
+    # 연간합계액 행
+    c.rect(ml, y11 - month_row_h, mr - ml, month_row_h)
+    c.line(ml + month_lbl_w, y11 - month_row_h, ml + month_lbl_w, y11)
+    sum_mid = (ml + month_lbl_w + mr) / 2
+    c.line(sum_mid, y11 - month_row_h, sum_mid, y11)
+    yodo_x = sum_mid + (mr - sum_mid) / 3
+    c.line(yodo_x, y11 - month_row_h, yodo_x, y11)
+    font(8)
+    c.drawCentredString(ml + month_lbl_w / 2, y11 - 5.5 * mm, '연간합계액')
+    if annual_total:
+        font(9)
+        c.drawRightString(sum_mid - 3 * mm, y11 - 5.5 * mm, f'{annual_total:,}원')
+    font(8)
+    c.drawCentredString(yodo_x - (yodo_x - sum_mid) / 2, y11 - 5.5 * mm, '용도')
+
+    # 신청인 서명 문구
+    y12 = y11 - month_row_h - 4 * mm
+    font(8.5)
+    c.drawString(ml + 2 * mm, y12,
+                 '소득세법 제52조 및 소득세법 시행령 제113조 제1항의 규정에 의하여 교육비 공제를 받고자 하')
+    c.drawString(ml + 2 * mm, y12 - 5 * mm,
+                 '니 위와 같이 학원교육비(수강료)를 납입하였음을 증명하여 주시기 바랍니다.')
+    c.drawString(ml + 2 * mm, y12 - 10 * mm,
+                 f'                                        {year}년      월      일')
+    c.drawString(ml + 2 * mm, y12 - 15 * mm,
+                 '              신청인                                   (서명 또는 인)')
+
+    c.line(ml, y12 - 19 * mm, mr, y12 - 19 * mm)
+
+    y13 = y12 - 22 * mm
+    c.drawString(ml + 2 * mm, y13, '위와 같이 학원교육비(수강료)를 납입하였음을 증명합니다.')
+    c.drawString(ml + 2 * mm, y13 - 5 * mm,
+                 f'                                        {year}년      월      일')
+    c.drawString(ml + 2 * mm, y13 - 10 * mm,
+                 '              학원장                                   직인 (서명)')
+
+    c.line(ml, y13 - 14 * mm, mr, y13 - 14 * mm)
+
+    # 주석
+    y14 = y13 - 17 * mm
+    font(7.5)
+    notice = (
+        '※ 소득세법 제52조에 의한 특별공제를 받을 수 있는 학원의 수강료는 초등학교 취학 전 아동이 학원의 '
+        '설립·운영에 관한 법률에 의한 학원에서 1일 3시간 이상, 1주 5일 이상 교육을 실시하는 교육과정의 '
+        '교습을 받고 지출한 수강료만 해당합니다.'
+    )
+    from reportlab.lib.utils import simpleSplit
+    lines = simpleSplit(notice, font_name, 7.5, (mr - ml - 4 * mm))
+    for i, line in enumerate(lines):
+        c.drawString(ml + 2 * mm, y14 - i * 4.5 * mm, line)
+
+    c.save()
+    buffer.seek(0)
+
+    filename = f'수강료납입증명서_{student.name}_{year}.pdf'
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"; filename*=UTF-8\'\'{filename}'
+    return response

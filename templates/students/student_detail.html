@@ -5,11 +5,44 @@
 <!-- 헤더 -->
 <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
     <h2 class="text-3xl font-bold text-gray-800">학생 상세 정보</h2>
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-wrap">
         <a href="{% url 'bookstore:book_sale_create' student.pk %}"
            class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             교재 구매
         </a>
+        <!-- 납입증명서 다운로드 -->
+        <div class="relative" id="cert-dropdown-wrap">
+            <button onclick="toggleCertMenu()"
+                    class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                납입증명서
+            </button>
+            <div id="cert-dropdown-menu"
+                 class="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-10 hidden">
+                {% for y in cert_years %}
+                <a href="{% url 'students:tuition_certificate_pdf' student.pk %}?year={{ y }}"
+                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 first:rounded-t-lg last:rounded-b-lg">
+                    {{ y }}년 납입증명서
+                </a>
+                {% empty %}
+                <span class="block px-4 py-2 text-sm text-gray-400">납부 기록 없음</span>
+                {% endfor %}
+            </div>
+        </div>
+        <script>
+        function toggleCertMenu() {
+            document.getElementById('cert-dropdown-menu').classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(e) {
+            var wrap = document.getElementById('cert-dropdown-wrap');
+            if (wrap && !wrap.contains(e.target)) {
+                document.getElementById('cert-dropdown-menu').classList.add('hidden');
+            }
+        });
+        </script>
         <a href="{% url 'students:student_files' student.pk %}"
            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             파일 관리
