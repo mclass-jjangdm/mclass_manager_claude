@@ -2216,9 +2216,13 @@ def tuition_certificate_pdf(request, pk):
     c.drawString(mid2 + 2 * mm, y3 - 5.5 * mm, '⑤ 주민등록번호')
 
     # ⑥ 주소 / ⑦ 소득자와의 관계
+    name6_x = subject_label_x + 25 * mm          # ⑥ 라벨 | 내용 구획선
+    mid3 = subject_label_x + (mr - subject_label_x) * 0.6  # ⑥영역 | ⑦영역 구획선
+    name7_x = mid3 + 35 * mm                      # ⑦ 라벨 | 내용 구획선
+    c.line(name6_x, y3 - subject_h, name6_x, y3 - row_h)
+    c.line(mid3,    y3 - subject_h, mid3,    y3 - row_h)
+    c.line(name7_x, y3 - subject_h, name7_x, y3 - row_h)
     c.drawString(subject_label_x + 2 * mm, y3 - row_h - 5.5 * mm, '⑥ 주소')
-    mid3 = subject_label_x + (mr - subject_label_x) * 0.6
-    c.line(mid3, y3 - subject_h, mid3, y3 - row_h)
     c.drawString(mid3 + 2 * mm, y3 - row_h - 5.5 * mm, '⑦ 소득자와의 관계')
 
     # 섹션 2: 수강 학원
