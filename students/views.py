@@ -2388,7 +2388,12 @@ def tuition_certificate_pdf(request, pk):
     if sig_path:
         sig_w = 25 * mm
         sig_h = 12 * mm
-        c.drawImage(sig_path, mr - sig_w - 5 * mm, y13 - 13 * mm,
+        sig_x = mr - sig_w - 5 * mm
+        sig_y = y13 - 13 * mm
+        font(8.5)
+        academy_text = '엠클래스수학과학전문학원'
+        c.drawRightString(sig_x - 3 * mm, sig_y + sig_h / 2 - 2 * mm, academy_text)
+        c.drawImage(sig_path, sig_x, sig_y,
                     width=sig_w, height=sig_h, preserveAspectRatio=True, mask='auto')
     else:
         c.drawString(mr - 40 * mm, y13 - 10 * mm, '직인 (서명)')
