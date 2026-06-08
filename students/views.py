@@ -2100,6 +2100,7 @@ def tuition_certificate_pdf(request, pk):
 
     student = get_object_or_404(Student, pk=pk)
     year = int(request.GET.get('year', datetime.date.today().year))
+    today_date = datetime.date.today()
 
     # 해당 연도의 월별 납부 금액 집계
     payments = TuitionPayment.objects.filter(
@@ -2275,9 +2276,15 @@ def tuition_certificate_pdf(request, pk):
     c.line(lbl13_x, y7 - row_h, lbl13_x, y7)
     font(8)
     c.drawString(ml + 2 * mm, y7 - 5.5 * mm, '⑫ 1일 수업시간')
+    font(9)
+    c.drawString(lbl12_x + 3 * mm, y7 - 5.5 * mm, '2')
+    font(8)
     c.drawString(lbl12_x + 8 * mm, y7 - 5.5 * mm, '시간')
     c.drawString(val12_x + 2 * mm, y7 - 5.5 * mm, '⑬ 1주간 수업일수')
-    c.drawString(lbl13_x + 8 * mm, y7 - 5.5 * mm, '일')
+    font(9)
+    c.drawString(lbl13_x + 3 * mm, y7 - 5.5 * mm, '3')
+    font(8)
+    c.drawString(lbl13_x + 8 * mm, y7 - 5.5 * mm, '회')
 
     # 섹션 3: 수강료 납입 금액
     y8 = y7 - row_h
@@ -2343,6 +2350,14 @@ def tuition_certificate_pdf(request, pk):
     font(8)
     c.drawCentredString(yodo_x - (yodo_x - sum_mid) / 2, y11 - 5.5 * mm, '용도')
 
+    # 서명 이미지 경로 (media/signature.png 또는 .jpg 등)
+    sig_path = None
+    for ext in ('png', 'jpg', 'jpeg'):
+        candidate = os.path.join(settings.MEDIA_ROOT, f'signature.{ext}')
+        if os.path.exists(candidate):
+            sig_path = candidate
+            break
+
     # 신청인 서명 문구
     y12 = y11 - month_row_h - 4 * mm
     font(8.5)
@@ -2350,8 +2365,8 @@ def tuition_certificate_pdf(request, pk):
                  '소득세법 제52조 및 소득세법 시행령 제113조 제1항의 규정에 의하여 교육비 공제를 받고자 하')
     c.drawString(ml + 2 * mm, y12 - 5 * mm,
                  '니 위와 같이 학원교육비(수강료)를 납입하였음을 증명하여 주시기 바랍니다.')
-    c.drawString(ml + 2 * mm, y12 - 10 * mm,
-                 f'                                        {year}년      월      일')
+    date_str = f'{today_date.year}년  {today_date.month}월  {today_date.day}일'
+    c.drawString(w / 2 - 15 * mm, y12 - 10 * mm, date_str)
     c.drawString(ml + 2 * mm, y12 - 15 * mm,
                  '              신청인                                   (서명 또는 인)')
 
@@ -2359,10 +2374,17 @@ def tuition_certificate_pdf(request, pk):
 
     y13 = y12 - 22 * mm
     c.drawString(ml + 2 * mm, y13, '위와 같이 학원교육비(수강료)를 납입하였음을 증명합니다.')
-    c.drawString(ml + 2 * mm, y13 - 5 * mm,
-                 f'                                        {year}년      월      일')
-    c.drawString(ml + 2 * mm, y13 - 10 * mm,
-                 '              학원장                                   직인 (서명)')
+    c.drawString(w / 2 - 15 * mm, y13 - 5 * mm, date_str)
+    c.drawString(ml + 2 * mm, y13 - 10 * mm, '              학원장')
+
+    # 서명 이미지 삽입 (있을 경우)
+    if sig_path:
+        sig_w = 25 * mm
+        sig_h = 12 * mm
+        c.drawImage(sig_path, mr - sig_w - 5 * mm, y13 - 13 * mm,
+                    width=sig_w, height=sig_h, preserveAspectRatio=True, mask='auto')
+    else:
+        c.drawString(mr - 40 * mm, y13 - 10 * mm, '직인 (서명)')
 
     c.line(ml, y13 - 14 * mm, mr, y13 - 14 * mm)
 
