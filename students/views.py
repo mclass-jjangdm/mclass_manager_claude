@@ -2361,18 +2361,21 @@ def tuition_certificate_pdf(request, pk):
     # 신청인 서명 문구
     y12 = y11 - month_row_h - 4 * mm
     font(8.5)
-    c.drawString(ml + 2 * mm, y12,
-                 '소득세법 제52조 및 소득세법 시행령 제113조 제1항의 규정에 의하여 교육비 공제를 받고자 하')
-    c.drawString(ml + 2 * mm, y12 - 5 * mm,
-                 '니 위와 같이 학원교육비(수강료)를 납입하였음을 증명하여 주시기 바랍니다.')
+    from reportlab.lib.utils import simpleSplit
+    req_text = ('소득세법 제52조 및 소득세법 시행령 제113조 제1항의 규정에 의하여 교육비 공제를 받고자 하니 '
+                '위와 같이 학원교육비(수강료)를 납입하였음을 증명하여 주시기 바랍니다.')
+    req_lines = simpleSplit(req_text, font_name, 8.5, mr - ml - 4 * mm)
+    for i, line in enumerate(req_lines):
+        c.drawString(ml + 2 * mm, y12 - i * 5 * mm, line)
+    sig_top_offset = len(req_lines) * 5 * mm
     date_str = f'{today_date.year}년  {today_date.month}월  {today_date.day}일'
-    c.drawString(w / 2 - 15 * mm, y12 - 10 * mm, date_str)
-    c.drawString(ml + 2 * mm, y12 - 15 * mm,
+    c.drawString(w / 2 - 15 * mm, y12 - sig_top_offset - 4 * mm, date_str)
+    c.drawString(ml + 2 * mm, y12 - sig_top_offset - 9 * mm,
                  '              신청인                                   (서명 또는 인)')
 
-    c.line(ml, y12 - 19 * mm, mr, y12 - 19 * mm)
+    c.line(ml, y12 - sig_top_offset - 13 * mm, mr, y12 - sig_top_offset - 13 * mm)
 
-    y13 = y12 - 22 * mm
+    y13 = y12 - sig_top_offset - 16 * mm
     c.drawString(ml + 2 * mm, y13, '위와 같이 학원교육비(수강료)를 납입하였음을 증명합니다.')
     c.drawString(w / 2 - 15 * mm, y13 - 5 * mm, date_str)
     c.drawString(ml + 2 * mm, y13 - 10 * mm, '              학원장')
