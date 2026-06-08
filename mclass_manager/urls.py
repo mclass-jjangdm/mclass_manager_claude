@@ -31,6 +31,7 @@ from common.views import (
     google_drive_upload_file,
     google_drive_share_folder,
     google_drive_delete,
+    seal_upload,
 )
 from students.views import parent_lookup, parent_student_update, parent_logout, parent_grades, parent_grade_bulk_create, parent_mock_grade_create, parent_grade_import, parent_grade_edit
 
@@ -56,6 +57,7 @@ urlpatterns = [
     path('parent/exit/', parent_logout, name='parent_logout'),
     path('billing/export/', billing_export, name='billing_export'),
     path('admin/db-backup/', db_backup, name='db_backup'),
+    path('admin/seal/', seal_upload, name='seal_upload'),
     # Google Drive 관리
     path('admin/google-drive/', google_drive_dashboard, name='google_drive_dashboard'),
     path('admin/google-drive/setup/', google_drive_setup, name='google_drive_setup'),

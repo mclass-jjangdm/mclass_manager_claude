@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}학원장 직인 관리{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto mt-8 px-4">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">학원장 직인 이미지 관리</h2>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="mb-4 px-4 py-3 rounded-lg
+        {% if msg.tags == 'success' %}bg-green-100 text-green-800 border border-green-200
+        {% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 현재 직인 미리보기 -->
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <h3 class="text-base font-semibold text-gray-700 mb-3">현재 등록된 직인</h3>
+        {% if current_seal %}
+        <div class="flex items-center gap-4">
+            <img src="{{ current_seal }}" alt="직인" class="h-20 border border-gray-200 rounded p-1 bg-gray-50">
+            <p class="text-sm text-gray-500">납입증명서 PDF에 자동으로 삽입됩니다.</p>
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-400">등록된 직인이 없습니다. 아래에서 업로드해 주세요.</p>
+        {% endif %}
+    </div>
+
+    <!-- 업로드 폼 -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-base font-semibold text-gray-700 mb-4">
+            {% if current_seal %}직인 교체{% else %}직인 업로드{% endif %}
+        </h3>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-sm text-gray-600 mb-2">
+                    이미지 파일 <span class="text-gray-400">(PNG 권장 · 배경 투명 시 더 자연스럽습니다)</span>
+                </label>
+                <input type="file" name="seal_image" accept=".png,.jpg,.jpeg"
+                       class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2
+                              file:mr-3 file:py-1 file:px-3 file:rounded file:border-0
+                              file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+            </div>
+            <button type="submit"
+                    class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-lg font-medium transition-colors">
+                업로드
+            </button>
+        </form>
+        <p class="mt-4 text-xs text-gray-400">
+            업로드 시 기존 직인 파일은 자동으로 교체됩니다.
+        </p>
+    </div>
+
+    <div class="mt-4">
+        <a href="javascript:history.back()" class="text-sm text-gray-500 hover:text-gray-700">← 뒤로</a>
+    </div>
+</div>
+{% endblock %}

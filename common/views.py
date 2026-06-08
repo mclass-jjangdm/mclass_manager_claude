@@ -291,3 +291,46 @@ def google_drive_delete(request, file_id):
         messages.error(request, '삭제에 실패했습니다.')
 
     return redirect(request.META.get('HTTP_REFERER', 'google_drive_dashboard'))
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def seal_upload(request):
+    """학원장 직인 이미지 업로드 (관리자 전용)"""
+    SEAL_FILENAME = 'signature'
+    ALLOWED_EXTENSIONS = ('png', 'jpg', 'jpeg')
+
+    # 현재 직인 파일 경로 탐색
+    current_seal = None
+    for ext in ALLOWED_EXTENSIONS:
+        path = os.path.join(settings.MEDIA_ROOT, f'{SEAL_FILENAME}.{ext}')
+        if os.path.exists(path):
+            current_seal = f'{settings.MEDIA_URL}{SEAL_FILENAME}.{ext}'
+            break
+
+    if request.method == 'POST':
+        uploaded = request.FILES.get('seal_image')
+        if not uploaded:
+            messages.error(request, '파일을 선택해 주세요.')
+            return redirect('seal_upload')
+
+        ext = uploaded.name.rsplit('.', 1)[-1].lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            messages.error(request, 'PNG 또는 JPG 파일만 업로드 가능합니다.')
+            return redirect('seal_upload')
+
+        # 기존 직인 파일 모두 삭제
+        for old_ext in ALLOWED_EXTENSIONS:
+            old_path = os.path.join(settings.MEDIA_ROOT, f'{SEAL_FILENAME}.{old_ext}')
+            if os.path.exists(old_path):
+                os.remove(old_path)
+
+        save_path = os.path.join(settings.MEDIA_ROOT, f'{SEAL_FILENAME}.{ext}')
+        with open(save_path, 'wb') as f:
+            for chunk in uploaded.chunks():
+                f.write(chunk)
+
+        messages.success(request, f'직인 이미지가 업로드되었습니다. ({uploaded.name})')
+        return redirect('seal_upload')
+
+    return render(request, 'common/seal_upload.html', {'current_seal': current_seal})
