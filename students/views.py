@@ -2388,16 +2388,18 @@ def tuition_certificate_pdf(request, pk):
     if sig_path:
         sig_w = 25 * mm
         sig_h = 12 * mm
-        sig_y = y13 - 13 * mm
+        sig_w = 18 * mm
+        sig_h = 18 * mm
+        sig_y = y13 - 14 * mm
         font(8.5)
         academy_text = '엠클래스수학과학전문학원'
-        # 학원명 텍스트 너비 계산 후 직인을 마지막 '학원' 글자에 살짝 겹치게 배치
         from reportlab.pdfbase.pdfmetrics import stringWidth
         text_w = stringWidth(academy_text, font_name, 8.5)
-        text_right_x = mr - 5 * mm           # 텍스트 오른쪽 끝
-        text_left_x  = text_right_x - text_w  # 텍스트 왼쪽 끝
-        # '학원' 두 글자(약 6mm) 앞에서 직인 시작 → 살짝 겹침
-        sig_x = text_right_x - 6 * mm
+        # 직인은 문서 오른쪽 경계에서 3mm 안쪽에 고정
+        sig_x = mr - sig_w - 3 * mm
+        # 학원명은 직인 왼쪽 끝 기준으로 '학원' 두 글자(약 7mm) 겹치도록 오른쪽 정렬
+        text_right_x = sig_x + 7 * mm
+        text_left_x  = text_right_x - text_w
         c.drawString(text_left_x, sig_y + sig_h / 2 - 2 * mm, academy_text)
         c.drawImage(sig_path, sig_x, sig_y,
                     width=sig_w, height=sig_h, preserveAspectRatio=True, mask='auto')
