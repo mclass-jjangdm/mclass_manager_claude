@@ -505,8 +505,8 @@ def student_detail(request, pk):
         'is_middle': is_middle,
         'middle_grade_summary': middle_grade_summary,
         'cert_years': sorted(
-            TuitionPayment.objects.filter(enrollment__student=student)
-            .values_list('year', flat=True).distinct(),
+            set(TuitionPayment.objects.filter(enrollment__student=student)
+                .values_list('year', flat=True)),
             reverse=True,
         ),
     }
