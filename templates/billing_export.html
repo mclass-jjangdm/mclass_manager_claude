@@ -52,10 +52,23 @@
 
         <!-- 청구 목록 테이블 -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+            <div class="px-4 py-2.5 border-b border-gray-100 flex items-center gap-3 bg-gray-50">
+                <button type="button" onclick="toggleAll(true)"
+                        class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">전체 선택</button>
+                <span class="text-gray-300">|</span>
+                <button type="button" onclick="toggleAll(false)"
+                        class="text-xs text-gray-500 hover:text-gray-700 font-medium">전체 해제</button>
+                <span class="text-xs text-gray-400 ml-2">체크된 학생만 파일에 포함됩니다.</span>
+            </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-indigo-600 text-white">
+                            <th class="px-3 py-3 text-center w-10">
+                                <input type="checkbox" id="check-all" checked
+                                       onchange="toggleAll(this.checked)"
+                                       class="w-4 h-4 rounded cursor-pointer">
+                            </th>
                             <th class="px-4 py-3 text-left font-semibold w-20">이름</th>
                             <th class="px-4 py-3 text-left font-semibold w-36">부모 전화번호</th>
                             <th class="px-4 py-3 text-right font-semibold w-28">청구금액</th>
@@ -65,7 +78,12 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         {% for entry in rows %}
-                        <tr class="hover:bg-gray-50 transition-colors align-top">
+                        <tr class="hover:bg-gray-50 transition-colors align-top row-item">
+                            <td class="px-3 py-3 text-center">
+                                <input type="checkbox" name="student_pks" value="{{ entry.student.pk }}"
+                                       checked onchange="updateCount()"
+                                       class="row-check w-4 h-4 rounded cursor-pointer">
+                            </td>
                             <td class="px-4 py-3 font-medium text-gray-900">{{ entry.student.name }}</td>
                             <td class="px-4 py-3 text-gray-600 text-sm">{{ entry.student.parent_phone|default:"-" }}</td>
                             <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ entry.total|add:entry.unpaid_total|intcomma }}원</td>
@@ -93,10 +111,24 @@
             </div>
         </div>
 
+        <script>
+        function toggleAll(checked) {
+            document.querySelectorAll('.row-check').forEach(cb => cb.checked = checked);
+            document.getElementById('check-all').checked = checked;
+            updateCount();
+        }
+        function updateCount() {
+            const total = document.querySelectorAll('.row-check').length;
+            const selected = document.querySelectorAll('.row-check:checked').length;
+            document.getElementById('selected-count').textContent = selected;
+            document.getElementById('check-all').checked = (selected === total);
+        }
+        </script>
+
         <!-- 합계 및 다운로드 버튼 -->
         <input type="hidden" name="export_format" id="export-format" value="xlsx">
         <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
-            <p class="text-sm text-gray-500">총 <strong class="text-gray-800">{{ rows|length }}명</strong></p>
+            <p class="text-sm text-gray-500">총 <strong class="text-gray-800">{{ rows|length }}명</strong> 중 <strong class="text-indigo-700" id="selected-count">{{ rows|length }}</strong>명 선택</p>
             <div class="flex gap-2">
                 <button type="submit" onclick="document.getElementById('export-format').value='xlsx'"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">

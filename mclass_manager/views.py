@@ -448,10 +448,18 @@ def billing_export(request):
         suffix = request.POST.get('file_suffix', '1st').strip() or '1st'
         export_format = request.POST.get('export_format', 'xlsx')
 
+        # 체크된 학생만 필터링 (체크박스 미선택 시 전체)
+        selected_pks = request.POST.getlist('student_pks')
+        if selected_pks:
+            selected_pks_set = set(int(pk) for pk in selected_pks)
+            export_rows = [r for r in rows if r['student'].pk in selected_pks_set]
+        else:
+            export_rows = rows
+
         # 공통 데이터 행 생성
         headers = ['이름', '부모 전화번호', '청구금액', '내용', '메모']
         data_rows = []
-        for entry in rows:
+        for entry in export_rows:
             student = entry['student']
             parts = []
             for item in entry['unpaid_items']:
