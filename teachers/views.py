@@ -392,9 +392,8 @@ class SalaryCalculationView(LoginRequiredMixin, View):
         return Teacher.objects.filter(
             # 입사일이 해당 월 마지막날보다 이전이거나 같고
             hire_date__lte=end_date,
-            is_active=True,
         ).filter(
-            # 퇴사일이 없거나, 퇴사일이 해당 월 첫날보다 이후인 경우
+            # 퇴사일이 없거나, 퇴사일이 해당 월 첫날보다 이후인 경우 (퇴직자도 해당 월 근무 시 포함)
             models.Q(resignation_date__isnull=True) |
             models.Q(resignation_date__gte=start_date)
         )
