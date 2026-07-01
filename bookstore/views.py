@@ -142,12 +142,22 @@ def book_update(request, pk):
     """교재 정보 수정"""
     book = get_object_or_404(Book, pk=pk)
     original_stock = book.stock  # 재고는 입고/반품 처리로만 변경 (log 없이 변경 방지)
+    original_created_at = book.created_at
     if request.method == 'POST':
         form = BookForm(request.POST, instance=book)
         if form.is_valid():
             updated = form.save(commit=False)
             updated.stock = original_stock
             updated.save()
+
+            # 등록일(입고일)을 수정한 경우, 최초 입고 기록(신규 도서 등록)의 날짜도 함께 갱신
+            # (입고 기록 조회 페이지는 BookStockLog.created_at 기준으로 집계/필터하기 때문)
+            if updated.created_at != original_created_at:
+                BookStockLog.objects.filter(
+                    book=updated,
+                    memo="신규 도서 등록 (초기 재고)"
+                ).update(created_at=updated.created_at)
+
             return redirect('bookstore:book_list')
     else:
         form = BookForm(instance=book)
