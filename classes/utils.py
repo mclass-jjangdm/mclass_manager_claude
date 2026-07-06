@@ -98,7 +98,10 @@ def calculate_refund(enrollment, quit_date):
         refund_rate = 0
         policy = f'수업일 1/2 이상 수강 ({passed_days}/{total}일) → 환불 없음'
 
-    refund_amount = round(tuition * refund_rate / 100)
+    # 실제 납부액을 초과해 환불할 수 없음 (청구가 삭제/취소된 달은 paid=0 → 환불 없음)
+    refund_amount = min(round(tuition * refund_rate / 100), paid)
+    if paid == 0:
+        policy += ' (납부 내역 없음 → 환불 없음)'
 
     return {
         'total_days': total,
