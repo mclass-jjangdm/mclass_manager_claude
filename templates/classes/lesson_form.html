@@ -229,11 +229,6 @@ function toggleSpecial() {
     const chevron = document.getElementById('special-chevron');
     const isHidden = section.classList.toggle('hidden');
     chevron.classList.toggle('rotate-180', !isHidden);
-    if (isHidden) {
-        document.getElementById('id_is_special').checked = false;
-        document.getElementById('special-dates').classList.add('hidden');
-        updateTuitionLabel(false);
-    }
 }
 
 function onSpecialChange() {
