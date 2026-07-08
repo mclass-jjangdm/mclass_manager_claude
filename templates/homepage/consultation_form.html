@@ -103,7 +103,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">학생 전화번호</label>
                     <input type="tel" name="phone_number" value="{{ post.phone_number|default:'' }}"
-                           placeholder="010-0000-0000"
+                           placeholder="010-0000-0000" maxlength="13" oninput="formatPhoneInput(this)"
                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 </div>
 
@@ -119,7 +119,7 @@
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-semibold text-gray-600 mb-1">부모님 전화번호 <span class="text-red-500">*</span></label>
                     <input type="tel" name="parent_phone" value="{{ post.parent_phone|default:'' }}"
-                           placeholder="010-0000-0000"
+                           placeholder="010-0000-0000" maxlength="13" oninput="formatPhoneInput(this)"
                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 </div>
 
@@ -279,6 +279,26 @@
 
 {% block extra_js %}
 <script>
+// ── 전화번호 자동 하이픈 ──
+function formatPhoneInput(el) {
+    let numbers = el.value.replace(/\D/g, '').slice(0, 11);
+    let formatted;
+    if (numbers.length <= 3) {
+        formatted = numbers;
+    } else if (numbers.length <= 7) {
+        formatted = numbers.slice(0, 3) + '-' + numbers.slice(3);
+    } else if (numbers.length <= 10) {
+        if (numbers.startsWith('02')) {
+            formatted = numbers.slice(0, 2) + '-' + numbers.slice(2, numbers.length - 4) + '-' + numbers.slice(-4);
+        } else {
+            formatted = numbers.slice(0, 3) + '-' + numbers.slice(3, numbers.length - 4) + '-' + numbers.slice(-4);
+        }
+    } else {
+        formatted = numbers.slice(0, 3) + '-' + numbers.slice(3, 7) + '-' + numbers.slice(7);
+    }
+    el.value = formatted;
+}
+
 // ── 점수 슬라이더 ──
 function updateScore(val) {
     document.getElementById('score-display').textContent = val;

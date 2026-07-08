@@ -98,7 +98,9 @@ class StudentForm(forms.ModelForm):
         })
         self.fields['phone_number'].widget = forms.TextInput(attrs={
             'class': 'form-input',
-            'placeholder': '학생 전화번호를 입력하세요'
+            'placeholder': '010-0000-0000',
+            'maxlength': '13',
+            'oninput': 'formatPhoneInput(this)'
         })
         self.fields['email'].widget = forms.EmailInput(attrs={
             'class': 'form-input',
@@ -106,7 +108,9 @@ class StudentForm(forms.ModelForm):
         })
         self.fields['parent_phone'].widget = forms.TextInput(attrs={
             'class': 'form-input',
-            'placeholder': '부모님 전화번호를 입력하세요'
+            'placeholder': '010-0000-0000',
+            'maxlength': '13',
+            'oninput': 'formatPhoneInput(this)'
         })
         self.fields['receipt_number'].widget = forms.TextInput(attrs={
             'class': 'form-input',
