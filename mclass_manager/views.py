@@ -482,7 +482,7 @@ def billing_export(request):
         if export_format == 'csv':
             import csv as _csv
             response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-            filename = f'paysam_format_{target_year}_{target_month:02d}_{suffix}.csv'
+            filename = f'payssam_format_{target_year}_{target_month:02d}_{suffix}.csv'
             response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{filename}'
             writer = _csv.writer(response)
             writer.writerow(headers)
@@ -525,7 +525,7 @@ def billing_export(request):
         wb.save(buf)
         buf.seek(0)
 
-        filename = f'paysam_format_{target_year}_{target_month:02d}_{suffix}.xlsx'
+        filename = f'payssam_format_{target_year}_{target_month:02d}_{suffix}.xlsx'
         response = HttpResponse(
             buf.read(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
