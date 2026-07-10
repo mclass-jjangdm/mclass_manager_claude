@@ -20,9 +20,9 @@ class BookForm(forms.ModelForm):
                 'id': 'id_isbn',
             }),
             'supplier': forms.Select(attrs={'class': 'form-control'}),
-            'original_price': forms.NumberInput(attrs={'step': '50'}),
-            'cost_price': forms.NumberInput(attrs={'step': '50'}),
-            'price': forms.NumberInput(attrs={'step': '50'}),
+            'original_price': forms.NumberInput(attrs={'step': '1'}),
+            'cost_price': forms.NumberInput(attrs={'step': '1'}),
+            'price': forms.NumberInput(attrs={'step': '1'}),
             'memo': forms.TextInput(attrs={'placeholder': '비고 (선택 사항)'}),
         }
 
