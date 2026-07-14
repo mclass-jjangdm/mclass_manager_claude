@@ -501,26 +501,51 @@ def create_grade_from_row(row, student, grade_type, row_num):
     # '과목' 컬럼(새 형식) 또는 '과목명' 컬럼(구 형식) 모두 지원; '교과'는 카테고리명이므로 과목 찾기에 사용 안 함
     subject_name = str(get_value(row, '과목명', '과목', '과목이름', 'subject_name', 'subject') or '').strip()
 
+    # 일부 성적표 형식은 진로선택 과목의 경우 '과목명'을 비워두고 '진로선택' 컬럼에
+    # 과목명을 직접 적어두는 경우가 있다 (예: 과목명='', 진로선택='생명과학2').
+    # 이 컬럼 값이 단순 여부 표시(진로선택/예/1 등)가 아니라면 과목명으로 간주한다.
+    force_elective = False
+    if not subject_name:
+        elective_raw = str(get_value(row, '진로선택', '진로_선택', '선택과목', 'elective') or '').strip()
+        elective_marker_keywords = {'1', 'true', 'yes', 'y', 'o', '예', '진로선택', '○', 'v', '선택'}
+        if elective_raw and elective_raw.lower() not in elective_marker_keywords:
+            subject_name = elective_raw
+            force_elective = True
+
     if not subject_code and not subject_name:
         return None  # 빈 행 건너뛰기
 
     # 과목 찾기
+    # 동일한 이름의 과목이 2015/2022 교육과정에 모두 존재할 수 있으므로
+    # (예: '문학', '확률과 통계') 학생의 교육과정과 일치하는 과목을 우선 선택한다.
+    student_curriculum = getattr(student, 'curriculum_year', None)
+
+    def pick_by_curriculum(candidates):
+        candidates = list(candidates)
+        if not candidates:
+            return None
+        if student_curriculum:
+            for c in candidates:
+                if c.curriculum_year == student_curriculum:
+                    return c
+        return candidates[0]
+
     subject = None
     if subject_code:
         subject = Subject.objects.filter(subject_code=subject_code, is_active=True).first()
     if not subject and subject_name:
-        # 정확한 이름 매칭
-        subject = Subject.objects.filter(name=subject_name, is_active=True).first()
-        # 띄어쓰기 무시 매칭 (기술가정 = 기술 가정)
-        if not subject:
-            search_name_no_space = subject_name.replace(' ', '')
-            for s in Subject.objects.filter(is_active=True):
-                if s.name.replace(' ', '') == search_name_no_space:
-                    subject = s
-                    break
+        # 정확한 이름 매칭 + 띄어쓰기 무시 매칭(기술가정 = 기술 가정)을 한 풀로 모아
+        # 학생 교육과정과 일치하는 과목을 우선 선택한다. (한 쪽 매칭 방식에서만
+        # 찾아지는 후보가 다른 교육과정 것이면 잘못된 과목이 뽑히므로 분리하지 않는다)
+        search_name_no_space = subject_name.replace(' ', '')
+        name_candidates = [
+            s for s in Subject.objects.filter(is_active=True)
+            if s.name == subject_name or s.name.replace(' ', '') == search_name_no_space
+        ]
+        subject = pick_by_curriculum(name_candidates)
         # 부분 매칭 시도
         if not subject:
-            subject = Subject.objects.filter(name__icontains=subject_name, is_active=True).first()
+            subject = pick_by_curriculum(Subject.objects.filter(name__icontains=subject_name, is_active=True))
 
     if not subject:
         raise ValueError(f"과목을 찾을 수 없습니다: 코드={subject_code}, 이름={subject_name}")
@@ -537,6 +562,10 @@ def create_grade_from_row(row, student, grade_type, row_num):
         '융합': 'fusion', '융합선택': 'fusion',
     }
     subject_classification = classification_map.get(classification_raw, '')
+
+    # '진로선택' 컬럼 값을 과목명으로 사용한 경우, 그 컬럼 자체가 진로선택 표시이므로 확정
+    if force_elective:
+        subject_classification = 'elective'
 
     # 2022 교육과정 과목: 과목코드 3번째 자리에서 자동 추출 (0=공통, 1=일반선택, 2=진로선택, 3=융합선택)
     if not subject_classification and subject and len(subject.subject_code) == 6 and subject.curriculum_year == 2022:
