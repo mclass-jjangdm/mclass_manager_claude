@@ -516,14 +516,22 @@ def create_grade_from_row(row, student, grade_type, row_num):
         return None  # 빈 행 건너뛰기
 
     # 과목 찾기
-    # 동일한 이름의 과목이 2015/2022 교육과정에 모두 존재할 수 있으므로
-    # (예: '문학', '확률과 통계') 학생의 교육과정과 일치하는 과목을 우선 선택한다.
+    # 동일한 이름의 과목이 2015/2022 교육과정 간에, 또는 중학교/고등학교 간에
+    # 공존할 수 있으므로 (예: '문학'은 2015/2022 고교 과목끼리, '수학'은 고교/중학교끼리
+    # 이름이 겹침) 학생의 교육과정·학교급과 일치하는 과목을 우선 선택한다.
     student_curriculum = getattr(student, 'curriculum_year', None)
+    student_school_level = 'M' if student.grade in ['K7', 'K8', 'K9'] else 'H'
 
-    def pick_by_curriculum(candidates):
+    def pick_best(candidates):
         candidates = list(candidates)
         if not candidates:
             return None
+        for c in candidates:
+            if c.school_level == student_school_level and c.curriculum_year == student_curriculum:
+                return c
+        for c in candidates:
+            if c.school_level == student_school_level:
+                return c
         if student_curriculum:
             for c in candidates:
                 if c.curriculum_year == student_curriculum:
@@ -535,17 +543,17 @@ def create_grade_from_row(row, student, grade_type, row_num):
         subject = Subject.objects.filter(subject_code=subject_code, is_active=True).first()
     if not subject and subject_name:
         # 정확한 이름 매칭 + 띄어쓰기 무시 매칭(기술가정 = 기술 가정)을 한 풀로 모아
-        # 학생 교육과정과 일치하는 과목을 우선 선택한다. (한 쪽 매칭 방식에서만
-        # 찾아지는 후보가 다른 교육과정 것이면 잘못된 과목이 뽑히므로 분리하지 않는다)
+        # 학생 교육과정·학교급과 일치하는 과목을 우선 선택한다. (한 쪽 매칭 방식에서만
+        # 찾아지는 후보가 다른 교육과정/학교급 것이면 잘못된 과목이 뽑히므로 분리하지 않는다)
         search_name_no_space = subject_name.replace(' ', '')
         name_candidates = [
             s for s in Subject.objects.filter(is_active=True)
             if s.name == subject_name or s.name.replace(' ', '') == search_name_no_space
         ]
-        subject = pick_by_curriculum(name_candidates)
+        subject = pick_best(name_candidates)
         # 부분 매칭 시도
         if not subject:
-            subject = pick_by_curriculum(Subject.objects.filter(name__icontains=subject_name, is_active=True))
+            subject = pick_best(Subject.objects.filter(name__icontains=subject_name, is_active=True))
 
     if not subject:
         raise ValueError(f"과목을 찾을 수 없습니다: 코드={subject_code}, 이름={subject_name}")
