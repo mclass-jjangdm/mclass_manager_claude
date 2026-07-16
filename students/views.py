@@ -6,7 +6,7 @@ import io
 from openpyxl import load_workbook, Workbook
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.edit import CreateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -152,6 +152,13 @@ class StudentCreateView(LoginRequiredMixin, CreateView):
         student = form.save(commit=False)
         student.student_id = self.generate_student_id()
         student.save()
+
+        # 구글 드라이브 개인 폴더 생성 (실패해도 학생 등록은 계속 진행)
+        try:
+            from .drive import ensure_student_drive_folder
+            ensure_student_drive_folder(student)
+        except Exception:
+            logger.exception(f'학생 등록 시 구글 드라이브 폴더 생성 실패: {student.name}')
 
         # 상담 신청이 있으면 처리 상태를 '등록 완료'로 업데이트
         consultation_pk = self.request.POST.get('consultation_pk') or self.request.GET.get('consultation_pk')
@@ -1256,6 +1263,59 @@ def student_readmit(request, pk):
     return render(request, 'students/student_readmit_confirm.html', {'student': student})
 
 
+@login_required
+def student_drive_upload(request, pk):
+    """학생 개인 구글 드라이브 폴더에 자료 업로드 (교사/관리자용)"""
+    from django.conf import settings
+    from .drive import upload_file_to_student_folder
+
+    student = get_object_or_404(Student, pk=pk)
+    redirect_url = request.META.get('HTTP_REFERER') or reverse('grades:student_grades', args=[pk])
+
+    if request.method == 'POST':
+        uploaded_file = request.FILES.get('file')
+
+        if not uploaded_file:
+            messages.error(request, '파일을 선택하세요.')
+        elif uploaded_file.size > settings.MAX_UPLOAD_SIZE:
+            messages.error(request, f'파일 크기가 너무 큽니다. (최대 {settings.MAX_UPLOAD_SIZE // 1024 // 1024}MB)')
+        else:
+            try:
+                result = upload_file_to_student_folder(
+                    student,
+                    uploaded_file.name,
+                    uploaded_file.read(),
+                    uploaded_file.content_type,
+                )
+            except Exception:
+                logger.exception(f'학생 드라이브 업로드 실패: {student.name}')
+                result = None
+
+            if result:
+                messages.success(request, f'"{uploaded_file.name}" 파일이 {student.name} 학생 폴더에 업로드되었습니다.')
+            else:
+                messages.error(request, '업로드에 실패했습니다. Google Drive 연동 상태를 확인하세요.')
+
+    return redirect(redirect_url)
+
+
+@login_required
+def student_drive_file_download(request, pk, file_id):
+    """학생 개인 구글 드라이브 폴더 내 파일 다운로드 (교사/관리자용)"""
+    from django.http import HttpResponse
+    from .drive import get_student_drive_file
+
+    student = get_object_or_404(Student, pk=pk)
+    file_data = get_student_drive_file(student, file_id)
+    if not file_data:
+        messages.error(request, '파일을 찾을 수 없습니다.')
+        return redirect(request.META.get('HTTP_REFERER') or reverse('students:student_detail', args=[pk]))
+
+    response = HttpResponse(file_data['content'], content_type=file_data['mime_type'])
+    response['Content-Disposition'] = f'attachment; filename="{file_data["name"]}"'
+    return response
+
+
 def parent_lookup(request):
     """학부모 교재 결제 내역 조회 (로그인 불필요)"""
     import datetime as _dt
@@ -1766,6 +1826,41 @@ def _parent_auth(request, student_pk):
         return student
     except Student.DoesNotExist:
         return None
+
+
+def parent_student_drive(request, student_pk):
+    """학부모용 학생 자료실 (세션 기반 인증, 로그인 불필요)"""
+    from .drive import list_student_drive_files
+
+    student = _parent_auth(request, student_pk)
+    if not student:
+        return redirect('parent_lookup')
+
+    files = list_student_drive_files(student)
+
+    return render(request, 'students/parent_drive.html', {
+        'student': student,
+        'files': files,
+    })
+
+
+def parent_student_drive_file_download(request, student_pk, file_id):
+    """학부모용 학생 자료실 파일 다운로드 (세션 기반 인증)"""
+    from django.http import HttpResponse
+    from .drive import get_student_drive_file
+
+    student = _parent_auth(request, student_pk)
+    if not student:
+        return redirect('parent_lookup')
+
+    file_data = get_student_drive_file(student, file_id)
+    if not file_data:
+        messages.error(request, '파일을 찾을 수 없습니다.')
+        return redirect('parent_student_drive', student_pk=student_pk)
+
+    response = HttpResponse(file_data['content'], content_type=file_data['mime_type'])
+    response['Content-Disposition'] = f'attachment; filename="{file_data["name"]}"'
+    return response
 
 
 def parent_grade_bulk_create(request, student_pk):

@@ -74,6 +74,7 @@ class StudentForm(forms.ModelForm):
             'extra3',     # 예비3
             'extra4',     # 예비4
             'extra5',     # 예비5
+            'drive_folder_id',  # 구글 드라이브 폴더 ID (시스템 관리)
         )
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

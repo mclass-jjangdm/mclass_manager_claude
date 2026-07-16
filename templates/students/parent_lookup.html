@@ -114,6 +114,21 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
                 </a>
+
+                <!-- 학생 자료실 카드 -->
+                <a href="{% url 'parent_student_drive' student.pk %}"
+                   class="bg-white rounded-xl shadow-md px-5 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                    <div class="flex items-center gap-3">
+                        <span class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-base group-hover:bg-slate-200 transition-colors">📁</span>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">학생 자료실</p>
+                            <p class="text-xs text-gray-400 mt-0.5">시험지 등 개인 자료 확인</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-300 group-hover:text-slate-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
             </div><!-- /학습 현황 -->
 
             <!-- 성적 분석 섹션 -->

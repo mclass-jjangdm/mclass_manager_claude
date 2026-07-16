@@ -33,7 +33,7 @@ from common.views import (
     google_drive_delete,
     seal_upload,
 )
-from students.views import parent_lookup, parent_student_update, parent_logout, parent_grades, parent_grade_bulk_create, parent_mock_grade_create, parent_grade_import, parent_grade_edit
+from students.views import parent_lookup, parent_student_update, parent_logout, parent_grades, parent_grade_bulk_create, parent_mock_grade_create, parent_grade_import, parent_grade_edit, parent_student_drive, parent_student_drive_file_download
 
 
 admin.site.site_header = "엠클래스수학과학전문학원"  # 로그인 페이지와 관리자 페이지 상단의 타이틀
@@ -54,6 +54,8 @@ urlpatterns = [
     path('parent/grades/<int:student_pk>/school/mock/', parent_mock_grade_create, name='parent_mock_grade_create'),
     path('parent/grades/<int:student_pk>/school/import/', parent_grade_import, name='parent_grade_import'),
     path('parent/grades/<int:student_pk>/edit/<int:grade_pk>/', parent_grade_edit, name='parent_grade_edit'),
+    path('parent/drive/<int:student_pk>/', parent_student_drive, name='parent_student_drive'),
+    path('parent/drive/<int:student_pk>/file/<str:file_id>/', parent_student_drive_file_download, name='parent_student_drive_file_download'),
     path('parent/exit/', parent_logout, name='parent_logout'),
     path('billing/export/', billing_export, name='billing_export'),
     path('admin/db-backup/', db_backup, name='db_backup'),

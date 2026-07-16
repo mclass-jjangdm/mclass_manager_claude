@@ -1157,6 +1157,10 @@ def student_grades(request, student_pk):
             and float(g.subject_stddev) > 0
         ], ensure_ascii=False) if student.grade in ['K7', 'K8', 'K9'] else '[]',
     }
+
+    from students.drive import list_student_drive_files
+    context['drive_files'] = list_student_drive_files(student)
+
     return render(request, 'grades/student_grades.html', context)
 
 

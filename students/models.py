@@ -52,6 +52,8 @@ class Student(models.Model):
     unpaid_amount = models.IntegerField(default=0, verbose_name='미납 수업료')
     director_memo = models.TextField(null=True, blank=True, verbose_name='원장 메모',
                                      help_text='학생 특징 및 요구사항 (선생님에게 표시됨)')
+    drive_folder_id = models.CharField(max_length=100, null=True, blank=True,
+                                       verbose_name='구글 드라이브 폴더 ID')
 
     @property
     def curriculum_year(self):

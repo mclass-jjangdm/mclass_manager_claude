@@ -12,7 +12,7 @@ from django.conf import settings
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload, MediaIoBaseUpload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseUpload, MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 
 logger = logging.getLogger(__name__)
@@ -456,6 +456,42 @@ class GoogleDriveService:
         except HttpError as e:
             logger.error(f'파일 목록 조회 실패: {str(e)}')
             return []
+
+    def download_file(self, file_id: str) -> Optional[Dict[str, Any]]:
+        """
+        파일 내용을 메모리로 다운로드 (프록시 응답용)
+
+        Args:
+            file_id: 파일 ID
+
+        Returns:
+            {name, mime_type, content(bytes)} 또는 None
+        """
+        if not self.is_available():
+            return None
+
+        try:
+            file_info = self.service.files().get(
+                fileId=file_id,
+                fields='name, mimeType'
+            ).execute()
+
+            request = self.service.files().get_media(fileId=file_id)
+            buffer = BytesIO()
+            downloader = MediaIoBaseDownload(buffer, request)
+            done = False
+            while not done:
+                _, done = downloader.next_chunk()
+
+            return {
+                'name': file_info.get('name'),
+                'mime_type': file_info.get('mimeType'),
+                'content': buffer.getvalue(),
+            }
+
+        except HttpError as e:
+            logger.error(f'파일 다운로드 실패: {str(e)}')
+            return None
 
     # ==========================================
     # 공유 기능
