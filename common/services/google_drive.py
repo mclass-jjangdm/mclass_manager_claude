@@ -652,6 +652,23 @@ class GoogleDriveService:
             return True
 
         except HttpError as e:
+            # 소유자가 아니라 권한 부족(예: 개인 계정으로 직접 업로드한 파일)으로 실패한 경우
+            # 관리자 계정으로 위임하여 한 번 더 시도
+            if e.resp.status == 403 and not self.delegated_user_email:
+                owner_email = getattr(settings, 'GOOGLE_DRIVE_OWNER_EMAIL', '')
+                if owner_email:
+                    try:
+                        fallback_service = GoogleDriveService(delegated_user_email=owner_email)
+                        if fallback_service.is_available():
+                            fallback_service.service.files().update(
+                                fileId=file_id,
+                                body={'trashed': True}
+                            ).execute()
+                            logger.info(f'위임 계정({owner_email})으로 삭제 완료: {file_id}')
+                            return True
+                    except HttpError as retry_error:
+                        logger.error(f'위임 계정 삭제 재시도 실패: {str(retry_error)}')
+
             logger.error(f'파일/폴더 삭제 실패: {str(e)}')
             return False
 

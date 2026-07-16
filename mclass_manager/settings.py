@@ -394,3 +394,7 @@ GOOGLE_DRIVE_ROOT_FOLDER_ID = os.environ.get('GOOGLE_DRIVE_ROOT_FOLDER_ID', '')
 # 도메인 전체 위임 사용 시 위임할 사용자 이메일
 GOOGLE_DELEGATED_USER_EMAIL = os.environ.get('GOOGLE_DELEGATED_USER_EMAIL', '')
 
+# 소유자 권한 문제(예: 개인 계정으로 직접 업로드한 파일)로 삭제가 실패할 경우
+# 재시도할 위임 계정 (기본 서비스 계정에 삭제 권한이 없을 때의 폴백)
+GOOGLE_DRIVE_OWNER_EMAIL = os.environ.get('GOOGLE_DRIVE_OWNER_EMAIL', 'jjangdm@mclass.co.kr')
+
