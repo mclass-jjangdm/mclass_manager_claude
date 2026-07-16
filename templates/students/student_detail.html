@@ -362,7 +362,9 @@
             {% for sale in unpaid_sales %}
             <tr class="hover:bg-gray-50/70 transition-colors">
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-700">{{ sale.sale_date|date:"Y-m-d" }}</td>
-                <td class="whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-900">{{ sale.book.title }}</td>
+                <td class="px-3 py-2 text-sm font-medium text-gray-900">
+                    <span class="block max-w-[180px] truncate" title="{{ sale.book.title }}">{{ sale.book.title }}</span>
+                </td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-center text-gray-700">{{ sale.quantity }}권</td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-right text-gray-700">{{ sale.price|intcomma }}원</td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-right font-semibold text-red-600">{{ sale.get_total_price|intcomma }}원</td>
@@ -444,7 +446,9 @@
             {% if item.type == 'payment' %}{% with tp=item.obj %}
             <tr class="hover:bg-gray-50/70 transition-colors">
                 <td class="whitespace-nowrap px-3 py-2 text-sm font-semibold text-blue-700">{{ tp.year }}년 {{ tp.month }}월</td>
-                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-800">{{ tp.enrollment.lesson.name }}</td>
+                <td class="px-3 py-2 text-sm text-gray-800">
+                    <span class="block max-w-[200px] truncate" title="{{ tp.enrollment.lesson.name }}">{{ tp.enrollment.lesson.name }}</span>
+                </td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-right font-semibold text-gray-900">{{ tp.amount|intcomma }}원</td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{{ tp.get_payment_method_display }}</td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-green-600 font-semibold">{{ tp.payment_date|date:"Y-m-d" }}</td>
@@ -471,9 +475,11 @@
             {% endwith %}{% else %}{% with wr=item.obj %}
             <tr class="bg-purple-50/60 hover:bg-purple-100/60 transition-colors">
                 <td class="whitespace-nowrap px-3 py-2 text-sm font-semibold text-purple-700">{{ wr.year }}년 {{ wr.month }}월</td>
-                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-800">
-                    {{ wr.enrollment.lesson.name }}
-                    <span class="ml-1 px-1.5 py-0.5 rounded-lg text-xs font-medium bg-purple-200 text-purple-700">환불</span>
+                <td class="px-3 py-2 text-sm text-gray-800">
+                    <div class="flex items-center gap-1">
+                        <span class="max-w-[160px] truncate" title="{{ wr.enrollment.lesson.name }}">{{ wr.enrollment.lesson.name }}</span>
+                        <span class="shrink-0 px-1.5 py-0.5 rounded-lg text-xs font-medium bg-purple-200 text-purple-700">환불</span>
+                    </div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-right font-semibold text-purple-700">▼ {{ wr.refund_amount|intcomma }}원</td>
                 <td class="whitespace-nowrap px-3 py-2 text-xs text-gray-500">{{ wr.passed_days }}/{{ wr.total_days }}일 수강 ({{ wr.refund_rate }}%)</td>
@@ -539,7 +545,9 @@
             <tr class="hover:bg-gray-50/70 transition-colors">
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-700">{{ sale.sale_date|date:"Y-m-d" }}</td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-green-600 font-semibold">{{ sale.payment_date|date:"Y-m-d" }}</td>
-                <td class="whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-900">{{ sale.book.title }}</td>
+                <td class="px-3 py-2 text-sm font-medium text-gray-900">
+                    <span class="block max-w-[180px] truncate" title="{{ sale.book.title }}">{{ sale.book.title }}</span>
+                </td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-center text-gray-700">{{ sale.quantity }}권</td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-right text-gray-700">{{ sale.price|intcomma }}원</td>
                 <td class="whitespace-nowrap px-3 py-2 text-sm text-right font-semibold text-gray-900">{{ sale.get_total_price|intcomma }}원</td>
