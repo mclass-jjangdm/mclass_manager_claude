@@ -1299,10 +1299,20 @@ def student_drive_upload(request, pk):
     return redirect(redirect_url)
 
 
+def _drive_file_response(file_data):
+    """드라이브 파일 응답 생성. PDF/이미지 등은 기기에서 바로 열람 가능하도록 inline으로 응답."""
+    from django.http import HttpResponse
+    from urllib.parse import quote
+
+    response = HttpResponse(file_data['content'], content_type=file_data['mime_type'])
+    encoded_name = quote(file_data['name'])
+    response['Content-Disposition'] = f"inline; filename*=UTF-8''{encoded_name}"
+    return response
+
+
 @login_required
 def student_drive_file_download(request, pk, file_id):
-    """학생 개인 구글 드라이브 폴더 내 파일 다운로드 (교사/관리자용)"""
-    from django.http import HttpResponse
+    """학생 개인 구글 드라이브 폴더 내 파일 열람/다운로드 (교사/관리자용)"""
     from .drive import get_student_drive_file
 
     student = get_object_or_404(Student, pk=pk)
@@ -1311,9 +1321,7 @@ def student_drive_file_download(request, pk, file_id):
         messages.error(request, '파일을 찾을 수 없습니다.')
         return redirect(request.META.get('HTTP_REFERER') or reverse('students:student_detail', args=[pk]))
 
-    response = HttpResponse(file_data['content'], content_type=file_data['mime_type'])
-    response['Content-Disposition'] = f'attachment; filename="{file_data["name"]}"'
-    return response
+    return _drive_file_response(file_data)
 
 
 def parent_lookup(request):
@@ -1845,8 +1853,7 @@ def parent_student_drive(request, student_pk):
 
 
 def parent_student_drive_file_download(request, student_pk, file_id):
-    """학부모용 학생 자료실 파일 다운로드 (세션 기반 인증)"""
-    from django.http import HttpResponse
+    """학부모용 학생 자료실 파일 열람/다운로드 (세션 기반 인증)"""
     from .drive import get_student_drive_file
 
     student = _parent_auth(request, student_pk)
@@ -1858,9 +1865,7 @@ def parent_student_drive_file_download(request, student_pk, file_id):
         messages.error(request, '파일을 찾을 수 없습니다.')
         return redirect('parent_student_drive', student_pk=student_pk)
 
-    response = HttpResponse(file_data['content'], content_type=file_data['mime_type'])
-    response['Content-Disposition'] = f'attachment; filename="{file_data["name"]}"'
-    return response
+    return _drive_file_response(file_data)
 
 
 def parent_grade_bulk_create(request, student_pk):

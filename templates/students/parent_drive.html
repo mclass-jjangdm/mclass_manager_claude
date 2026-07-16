@@ -46,6 +46,7 @@
             <div class="space-y-2">
                 {% for file in files %}
                 <a href="{% url 'parent_student_drive_file_download' student.pk file.id %}"
+                   target="_blank" rel="noopener"
                    class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
                     <div class="flex items-center gap-3 min-w-0">
                         <span class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 flex-shrink-0">📄</span>
@@ -56,7 +57,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    <span class="text-xs text-gray-400 flex-shrink-0">다운로드</span>
+                    <span class="text-xs text-gray-400 flex-shrink-0">열기</span>
                 </a>
                 {% endfor %}
             </div>

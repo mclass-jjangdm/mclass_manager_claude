@@ -47,6 +47,7 @@
         <div class="space-y-2">
             {% for file in drive_files %}
             <a href="{% url 'students:student_drive_file_download' student.pk file.id %}"
+               target="_blank" rel="noopener"
                class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                 <span class="text-sm text-gray-700 truncate">📄 {{ file.name }}</span>
                 {% if file.createdTime %}
