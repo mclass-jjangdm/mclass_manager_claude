@@ -495,7 +495,7 @@ def billing_export(request):
 
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = f'{target_year}년 {target_month}월 청구'
+        ws.title = '청구서발송양식'
 
         header_fill = PatternFill(start_color='4F46E5', end_color='4F46E5', fill_type='solid')
         header_font = Font(bold=True, color='FFFFFF')
