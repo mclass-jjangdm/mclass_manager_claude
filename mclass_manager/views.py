@@ -464,8 +464,8 @@ def billing_export(request):
             parts = []
             for item in entry['unpaid_items']:
                 parts.append(f'{item["label"]} 미납 {item["name"]} {item["amount"]:,}원')
-            if entry['tuition_total'] > 0:
-                parts.append(f'{target_month}월 수강료 {entry["tuition_total"]:,}원')
+            for name, amt in entry['tuition_items']:
+                parts.append(f'{name} {amt:,}원')
             for name, amt in entry['special_items']:
                 parts.append(f'{name} {amt:,}원')
             if entry['book_total'] > 0:
