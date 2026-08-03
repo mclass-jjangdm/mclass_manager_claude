@@ -154,11 +154,7 @@
                         {% for item in student.special_enrollment_items %}
                         <p class="text-purple-700 text-xs flex items-center justify-between gap-1">
                             <span class="truncate" title="{{ item.enrollment.lesson.name }}">🎯 {{ item.enrollment.lesson.name }}: {{ item.enrollment.adjusted_tuition|intcomma }}원</span>
-                            {% if item.is_paid %}
-                            <span class="flex-shrink-0 bg-green-100 text-green-700 text-xs px-1.5 py-0.5 rounded-lg font-medium">납부완료</span>
-                            {% else %}
                             <span class="flex-shrink-0 bg-purple-100 text-purple-700 text-xs px-1.5 py-0.5 rounded-lg font-medium">미납</span>
-                            {% endif %}
                         </p>
                         {% endfor %}
                     </div>

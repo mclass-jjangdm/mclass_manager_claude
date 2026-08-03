@@ -81,7 +81,7 @@ class StudentListView(LoginRequiredMixin, ListView):
 
         from collections import defaultdict
 
-        # 특별 수업 수강 현황 (학생별) - student_detail.html과 동일한 기준
+        # 특별 수업 수강 현황 (학생별) - 미납인 것만 표시
         special_enrollments = Enrollment.objects.filter(
             is_active=True,
             lesson__is_special=True,
@@ -95,10 +95,9 @@ class StudentListView(LoginRequiredMixin, ListView):
 
         special_enrollments_dict = defaultdict(list)
         for e in special_enrollments:
-            special_enrollments_dict[e.student_id].append({
-                'enrollment': e,
-                'is_paid': e.pk in paid_special_enrollment_ids,
-            })
+            if e.pk in paid_special_enrollment_ids:
+                continue
+            special_enrollments_dict[e.student_id].append({'enrollment': e})
 
         # 학생 그룹화
         students = self.get_queryset()
