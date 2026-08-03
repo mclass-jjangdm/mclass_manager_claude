@@ -489,40 +489,51 @@ def billing_export(request):
             writer.writerows(data_rows)
             return response
 
-        # xlsx
-        import openpyxl
-        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = '청구서발송양식'
-
-        header_fill = PatternFill(start_color='4F46E5', end_color='4F46E5', fill_type='solid')
-        header_font = Font(bold=True, color='FFFFFF')
-        thin = Side(border_style='thin', color='CCCCCC')
-        border = Border(left=thin, right=thin, top=thin, bottom=thin)
-
-        for col, h in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col, value=h)
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.alignment = Alignment(horizontal='center', vertical='center')
-            cell.border = border
-
-        for row_idx, values in enumerate(data_rows, 2):
-            for col, val in enumerate(values, 1):
-                cell = ws.cell(row=row_idx, column=col, value=val)
-                cell.border = border
-                cell.alignment = Alignment(vertical='top', wrap_text=(col == 4))
-
-        ws.column_dimensions['A'].width = 12
-        ws.column_dimensions['B'].width = 16
-        ws.column_dimensions['C'].width = 14
-        ws.column_dimensions['D'].width = 45
-        ws.column_dimensions['E'].width = 25
+        # xlsx - xlsxwriter 사용 (openpyxl은 인라인 문자열로 저장해 일부 외부
+        # 업로드 사이트의 엑셀 파서와 호환되지 않는 문제가 있어, 공유 문자열
+        # (shared strings) 방식으로 저장하는 xlsxwriter로 생성)
+        import xlsxwriter
 
         buf = io.BytesIO()
-        wb.save(buf)
+        wb = xlsxwriter.Workbook(buf)
+        ws = wb.add_worksheet('청구서발송양식')
+
+        header_format = wb.add_format({
+            'bold': True,
+            'font_color': '#FFFFFF',
+            'bg_color': '#4F46E5',
+            'align': 'center',
+            'valign': 'vcenter',
+            'border': 1,
+            'border_color': '#CCCCCC',
+        })
+        cell_format = wb.add_format({
+            'valign': 'top',
+            'border': 1,
+            'border_color': '#CCCCCC',
+        })
+        wrap_format = wb.add_format({
+            'valign': 'top',
+            'border': 1,
+            'border_color': '#CCCCCC',
+            'text_wrap': True,
+        })
+
+        for col, h in enumerate(headers):
+            ws.write(0, col, h, header_format)
+
+        for row_idx, values in enumerate(data_rows, 1):
+            for col, val in enumerate(values):
+                fmt = wrap_format if col == 3 else cell_format
+                ws.write(row_idx, col, val, fmt)
+
+        ws.set_column('A:A', 12)
+        ws.set_column('B:B', 16)
+        ws.set_column('C:C', 14)
+        ws.set_column('D:D', 45)
+        ws.set_column('E:E', 25)
+
+        wb.close()
         buf.seek(0)
 
         filename = f'payssam_format_{target_year}_{target_month:02d}_{suffix}.xlsx'
