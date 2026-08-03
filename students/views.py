@@ -62,7 +62,7 @@ class StudentListView(LoginRequiredMixin, ListView):
         context['group_by'] = group_by
 
         # 수강료 미납 금액 계산 (학생별) - MonthlyEnrollment 기준
-        from classes.models import MonthlyEnrollment, TuitionPayment
+        from classes.models import MonthlyEnrollment, TuitionPayment, Enrollment
         from django.utils import timezone as tz
         from django.db.models import Q as dQ
         today_for_tuition = tz.now().date()
@@ -82,13 +82,36 @@ class StudentListView(LoginRequiredMixin, ListView):
             if (me.student_id, me.lesson_id, me.year, me.month) not in all_paid_quads:
                 unpaid_tuition_dict[me.student_id] = unpaid_tuition_dict.get(me.student_id, 0) + me.adjusted_tuition
 
+        from collections import defaultdict
+
+        # 특별 수업 수강 현황 (학생별)
+        special_enrollments = Enrollment.objects.filter(
+            is_active=True,
+            lesson__is_special=True,
+        ).filter(
+            dQ(end_date__isnull=True) | dQ(end_date__gte=today_for_tuition)
+        ).select_related('lesson')
+
+        paid_special_enrollment_ids = set(
+            TuitionPayment.objects.filter(
+                enrollment__lesson__is_special=True,
+            ).values_list('enrollment_id', flat=True)
+        )
+
+        special_enrollments_dict = defaultdict(list)
+        for e in special_enrollments:
+            special_enrollments_dict[e.student_id].append({
+                'enrollment': e,
+                'is_paid': e.pk in paid_special_enrollment_ids,
+            })
+
         # 학생 그룹화
         students = self.get_queryset()
 
-        # 학생 객체에 unpaid_tuition 속성 부여
+        # 학생 객체에 unpaid_tuition, special_enrollments 속성 부여
         for student in students:
             student.unpaid_tuition = unpaid_tuition_dict.get(student.pk, 0)
-        from collections import defaultdict
+            student.special_enrollment_items = special_enrollments_dict.get(student.pk, [])
 
         if group_by == 'school':
             # 학교별 그룹화

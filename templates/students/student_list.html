@@ -148,6 +148,21 @@
                         📚 교재 미납: {{ student.unpaid_book_total|intcomma }}원
                     </p>
                     {% endif %}
+
+                    {% if student.special_enrollment_items %}
+                    <div class="mt-2 pt-2 border-t border-purple-100 space-y-0.5">
+                        {% for item in student.special_enrollment_items %}
+                        <p class="text-purple-700 text-xs flex items-center justify-between gap-1">
+                            <span class="truncate" title="{{ item.enrollment.lesson.name }}">🎯 {{ item.enrollment.lesson.name }}: {{ item.enrollment.adjusted_tuition|intcomma }}원</span>
+                            {% if item.is_paid %}
+                            <span class="flex-shrink-0 bg-green-100 text-green-700 text-xs px-1.5 py-0.5 rounded-lg font-medium">납부완료</span>
+                            {% else %}
+                            <span class="flex-shrink-0 bg-purple-100 text-purple-700 text-xs px-1.5 py-0.5 rounded-lg font-medium">미납</span>
+                            {% endif %}
+                        </p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
             </a>
             {% endfor %}
