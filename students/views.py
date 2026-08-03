@@ -63,9 +63,6 @@ class StudentListView(LoginRequiredMixin, ListView):
 
         # 수강료 미납 금액 계산 (학생별) - MonthlyEnrollment 기준
         from classes.models import MonthlyEnrollment, TuitionPayment, Enrollment
-        from django.utils import timezone as tz
-        from django.db.models import Q as dQ
-        today_for_tuition = tz.now().date()
 
         # 모든 납부 기록 (student_id, lesson_id, year, month)
         all_paid_quads = set(
@@ -84,12 +81,10 @@ class StudentListView(LoginRequiredMixin, ListView):
 
         from collections import defaultdict
 
-        # 특별 수업 수강 현황 (학생별)
+        # 특별 수업 수강 현황 (학생별) - student_detail.html과 동일한 기준
         special_enrollments = Enrollment.objects.filter(
             is_active=True,
             lesson__is_special=True,
-        ).filter(
-            dQ(end_date__isnull=True) | dQ(end_date__gte=today_for_tuition)
         ).select_related('lesson')
 
         paid_special_enrollment_ids = set(
