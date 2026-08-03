@@ -93,7 +93,7 @@
                                     <span class="inline-block bg-amber-50 text-amber-700 rounded px-2 py-0.5 text-xs">{{ item.label }} 미납 {{ item.name }} {{ item.amount|intcomma }}원</span>
                                     {% endfor %}
                                     {% for name, amt in entry.tuition_items %}
-                                    <span class="inline-block bg-indigo-50 text-indigo-700 rounded px-2 py-0.5 text-xs">{{ name }} {{ amt|intcomma }}원</span>
+                                    <span class="inline-block bg-indigo-50 text-indigo-700 rounded px-2 py-0.5 text-xs">{{ target_month }}월 {{ name }} {{ amt|intcomma }}원</span>
                                     {% endfor %}
                                     {% for name, amt in entry.special_items %}
                                     <span class="inline-block bg-purple-50 text-purple-700 rounded px-2 py-0.5 text-xs">{{ name }} {{ amt|intcomma }}원</span>
