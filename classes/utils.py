@@ -1,5 +1,5 @@
 import calendar
-from datetime import date
+from datetime import date, timedelta
 from django.db.models import Sum
 
 
@@ -16,6 +16,17 @@ def _class_days_in_month(lesson, year, month):
         date(year, month, d)
         for d in range(1, last_day + 1)
         if date(year, month, d).weekday() in schedule_weekdays
+    ]
+
+
+def _class_days_in_range(lesson, start, end):
+    """해당 기간(start~end, 양끝 포함)에 수업이 있는 날짜 목록 반환"""
+    schedule_weekdays = {DAY_CODE[s.day] for s in lesson.schedules.all()}
+    if not schedule_weekdays or start > end:
+        return []
+    return [
+        d for d in (start + timedelta(days=i) for i in range((end - start).days + 1))
+        if d.weekday() in schedule_weekdays
     ]
 
 
@@ -40,7 +51,11 @@ def calculate_prorated_tuition(lesson, year, month, start_date):
 
 def calculate_refund(enrollment, quit_date):
     """
-    퇴원일 기준 해당 월 환불 금액 계산.
+    퇴원일 기준 환불 금액 계산.
+
+    특별 수업(is_special)은 수업 기간이 월 경계를 넘나들거나 한 달보다
+    훨씬 짧을 수 있어, 퇴원월의 달력 기준이 아니라 수업 시작일~종료일
+    전체 기간을 기준으로 계산한다. 일반 수업은 퇴원월 1개월 기준.
 
     환불 정책 (법정 기준):
     - 수업일의 1/3 미만 수강 → 전액 환불
@@ -52,7 +67,10 @@ def calculate_refund(enrollment, quit_date):
     year, month = quit_date.year, quit_date.month
     lesson = enrollment.lesson
 
-    all_days = _class_days_in_month(lesson, year, month)
+    if lesson.is_special and lesson.start_date and lesson.end_date:
+        all_days = _class_days_in_range(lesson, lesson.start_date, lesson.end_date)
+    else:
+        all_days = _class_days_in_month(lesson, year, month)
     total = len(all_days)
 
     if total == 0:
