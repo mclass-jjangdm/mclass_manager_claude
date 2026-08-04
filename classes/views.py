@@ -12,7 +12,7 @@ from openpyxl.utils import get_column_letter  # noqa: F401 (used in export view)
 
 import calendar
 
-from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, MonthlyEnrollment, DAY_CHOICES
+from .models import Lesson, LessonSchedule, Enrollment, TuitionPayment, MonthlyEnrollment, WithdrawalRefund, DAY_CHOICES
 from .forms import LessonForm, EnrollmentForm, TuitionPaymentForm, MonthlyEnrollmentEditForm, LessonTransferForm
 from .utils import calculate_prorated_tuition
 
@@ -1120,4 +1120,82 @@ def lesson_transfer(request):
     return render(request, 'classes/lesson_transfer.html', {
         'form': form,
         'preview': preview,
+    })
+
+
+@login_required
+def tuition_history(request):
+    """연도별 월별 수강료 정산 내역 (청구/수납/납부율)"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 사용 가능합니다.')
+        return redirect('index')
+
+    from django.db.models import Sum
+
+    today = datetime.date.today()
+
+    available_years = sorted(set(
+        list(MonthlyEnrollment.objects.values_list('year', flat=True).distinct()) +
+        list(TuitionPayment.objects.values_list('year', flat=True).distinct())
+    ), reverse=True)
+    if today.year not in available_years:
+        available_years.insert(0, today.year)
+        available_years.sort(reverse=True)
+
+    try:
+        selected_year = int(request.GET.get('year', today.year))
+    except (TypeError, ValueError):
+        selected_year = today.year
+
+    monthly_data = []
+    total_billing = total_collected = total_refund = 0
+
+    for month in range(1, 13):
+        mes = MonthlyEnrollment.objects.filter(
+            year=selected_year, month=month,
+        ).exclude(status='cancelled').select_related('lesson')
+        billing = sum(me.adjusted_tuition for me in mes)
+
+        collected = TuitionPayment.objects.filter(
+            year=selected_year, month=month,
+        ).aggregate(s=Sum('amount'))['s'] or 0
+
+        refund = WithdrawalRefund.objects.filter(
+            year=selected_year, month=month,
+        ).aggregate(s=Sum('refund_amount'))['s'] or 0
+
+        unpaid = max(billing - collected, 0)
+        rate = round(collected / billing * 100, 1) if billing > 0 else 0
+
+        monthly_data.append({
+            'month': month,
+            'billing': billing,
+            'collected': collected,
+            'refund': refund,
+            'unpaid': unpaid,
+            'rate': rate,
+        })
+        total_billing += billing
+        total_collected += collected
+        total_refund += refund
+
+    total_rate = round(total_collected / total_billing * 100, 1) if total_billing > 0 else 0
+
+    chart_data = {
+        'labels': [f'{d["month"]}월' for d in monthly_data],
+        'billing': [d['billing'] for d in monthly_data],
+        'collected': [d['collected'] for d in monthly_data],
+        'rate': [d['rate'] for d in monthly_data],
+    }
+
+    return render(request, 'classes/tuition_history.html', {
+        'available_years': available_years,
+        'selected_year': selected_year,
+        'monthly_data': monthly_data,
+        'total_billing': total_billing,
+        'total_collected': total_collected,
+        'total_refund': total_refund,
+        'total_unpaid': max(total_billing - total_collected, 0),
+        'total_rate': total_rate,
+        'chart_data_json': json.dumps(chart_data),
     })

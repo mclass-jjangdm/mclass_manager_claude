@@ -1,0 +1,152 @@
+{% extends 'classes/base_classes.html' %}
+{% load humanize %}
+
+{% block title %}{{ selected_year }}년 수강료 정산 내역 - M'Class Manager{% endblock %}
+
+{% block classes_content %}
+<div class="space-y-5">
+
+    <!-- 헤더 -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">{{ selected_year }}년 수강료 정산 내역</h1>
+            <p class="text-sm text-gray-500 mt-1">월별 청구/수납/환불 및 납부율</p>
+        </div>
+        <form method="get" class="flex items-center gap-2">
+            <select name="year" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm" onchange="this.form.submit()">
+                {% for y in available_years %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}년</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- 월별 표 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-100 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase">월</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase">청구</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase">수납</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase">환불</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase">미납</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-medium text-gray-500 uppercase">납부율</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    {% for d in monthly_data %}
+                    <tr class="hover:bg-gray-50 {% if d.billing == 0 and d.collected == 0 %}text-gray-300{% endif %}">
+                        <td class="px-3 py-2 font-medium text-gray-700">{{ d.month }}월</td>
+                        <td class="px-3 py-2 text-right">{{ d.billing|intcomma }}원</td>
+                        <td class="px-3 py-2 text-right">{{ d.collected|intcomma }}원</td>
+                        <td class="px-3 py-2 text-right {% if d.refund > 0 %}text-purple-600{% endif %}">
+                            {% if d.refund > 0 %}▼ {{ d.refund|intcomma }}원{% else %}-{% endif %}
+                        </td>
+                        <td class="px-3 py-2 text-right {% if d.unpaid > 0 %}text-red-500 font-medium{% endif %}">
+                            {% if d.unpaid > 0 %}{{ d.unpaid|intcomma }}원{% else %}-{% endif %}
+                        </td>
+                        <td class="px-3 py-2 text-right font-semibold {% if d.billing == 0 %}text-gray-300{% elif d.rate >= 100 %}text-emerald-600{% elif d.rate >= 80 %}text-amber-600{% else %}text-red-500{% endif %}">
+                            {% if d.billing > 0 %}{{ d.rate }}%{% else %}-{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-50 font-semibold">
+                        <td class="px-3 py-3 text-gray-700">합계</td>
+                        <td class="px-3 py-3 text-right">{{ total_billing|intcomma }}원</td>
+                        <td class="px-3 py-3 text-right">{{ total_collected|intcomma }}원</td>
+                        <td class="px-3 py-3 text-right {% if total_refund > 0 %}text-purple-600{% endif %}">
+                            {% if total_refund > 0 %}▼ {{ total_refund|intcomma }}원{% else %}-{% endif %}
+                        </td>
+                        <td class="px-3 py-3 text-right {% if total_unpaid > 0 %}text-red-500{% endif %}">
+                            {% if total_unpaid > 0 %}{{ total_unpaid|intcomma }}원{% else %}-{% endif %}
+                        </td>
+                        <td class="px-3 py-3 text-right {% if total_rate >= 100 %}text-emerald-600{% elif total_rate >= 80 %}text-amber-600{% else %}text-red-500{% endif %}">
+                            {% if total_billing > 0 %}{{ total_rate }}%{% else %}-{% endif %}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- 그래프 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <h2 class="text-base font-semibold text-gray-700 mb-4">월별 청구/수납 및 납부율</h2>
+        <div style="width: 100%; aspect-ratio: 16 / 7;">
+            <canvas id="tuitionChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var chartData = JSON.parse('{{ chart_data_json|escapejs }}');
+    var ctx = document.getElementById('tuitionChart').getContext('2d');
+
+    new Chart(ctx, {
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                {
+                    type: 'bar',
+                    label: '청구',
+                    data: chartData.billing,
+                    backgroundColor: 'rgba(99, 102, 241, 0.35)',
+                    yAxisID: 'y',
+                    order: 2,
+                },
+                {
+                    type: 'bar',
+                    label: '수납',
+                    data: chartData.collected,
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    yAxisID: 'y',
+                    order: 2,
+                },
+                {
+                    type: 'line',
+                    label: '납부율(%)',
+                    data: chartData.rate,
+                    borderColor: 'rgba(234, 88, 12, 1)',
+                    backgroundColor: 'rgba(234, 88, 12, 1)',
+                    yAxisID: 'y1',
+                    tension: 0.2,
+                    order: 1,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top' },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) { return value.toLocaleString() + '원'; }
+                    },
+                },
+                y1: {
+                    position: 'right',
+                    beginAtZero: true,
+                    max: 120,
+                    grid: { drawOnChartArea: false },
+                    ticks: {
+                        callback: function(value) { return value + '%'; }
+                    },
+                },
+            },
+        },
+    });
+});
+</script>
+{% endblock %}

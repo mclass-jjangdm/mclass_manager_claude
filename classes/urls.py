@@ -23,6 +23,9 @@ urlpatterns = [
     # 반 이동 (Lesson Transfer)
     path('transfer/', views.lesson_transfer, name='lesson_transfer'),
 
+    # 수강료 정산 내역 (연도별 월별)
+    path('tuition-history/', views.tuition_history, name='tuition_history'),
+
     # 월별 수강 신청 (MonthlyEnrollment)
     path('monthly/', views.monthly_enrollment_list, name='monthly_enrollment_list'),
     path('monthly/create/', views.monthly_enrollment_create, name='monthly_enrollment_create'),
