@@ -171,6 +171,12 @@ class IndexView(TemplateView):
                 month=today.month,
             ).aggregate(s=Sum('amount'))['s'] or 0
 
+            # 1-2) 이번 달에 결제됐지만 청구월은 지난달 이전인 금액 (전월 미납 후납분)
+            month_tuition_late_payment = TuitionPayment.objects.filter(
+                payment_date__year=today.year,
+                payment_date__month=today.month,
+            ).exclude(year=today.year, month=today.month).aggregate(s=Sum('amount'))['s'] or 0
+
             # 2-1) 이번 달 환불 금액 (WithdrawalRefund 기준)
             from classes.models import WithdrawalRefund
             month_tuition_refund = WithdrawalRefund.objects.filter(
@@ -270,6 +276,7 @@ class IndexView(TemplateView):
                 'total_expense': total_expense,
                 'month_tuition_billing': month_tuition_billing,
                 'month_tuition_collected': month_tuition_collected,
+                'month_tuition_late_payment': month_tuition_late_payment,
                 'month_tuition_refund': month_tuition_refund,
                 'month_tuition_unpaid': month_tuition_unpaid,
                 'month_book_billing': month_book_billing,
