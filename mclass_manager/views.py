@@ -480,7 +480,7 @@ def billing_export(request):
             content = ', '.join(parts)
             data_rows.append([
                 student.name,
-                student.parent_phone or '',
+                student.receipt_number or '',
                 entry['total'] + entry['unpaid_total'],
                 content,
                 entry['auto_memo'],

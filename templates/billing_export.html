@@ -85,7 +85,7 @@
                                        class="row-check w-4 h-4 rounded cursor-pointer">
                             </td>
                             <td class="px-4 py-3 font-medium text-gray-900">{{ entry.student.name }}</td>
-                            <td class="px-4 py-3 text-gray-600 text-sm">{{ entry.student.parent_phone|default:"-" }}</td>
+                            <td class="px-4 py-3 text-gray-600 text-sm">{{ entry.student.receipt_number|default:"-" }}</td>
                             <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ entry.total|add:entry.unpaid_total|intcomma }}원</td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-1">
