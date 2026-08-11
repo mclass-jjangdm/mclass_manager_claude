@@ -91,12 +91,6 @@ class IndexView(TemplateView):
             month_unpaid_payment = month_logs.filter(is_paid=False, quantity__gt=0).aggregate(
                 s=Sum('total_payment'))['s'] or 0
 
-            # 미납 학생 (unpaid_amount > 0)
-            unpaid_students = Student.objects.filter(
-                is_active=True, unpaid_amount__gt=0
-            ).order_by('-unpaid_amount')
-            unpaid_student_count = unpaid_students.count()
-
             # 오늘 출근 교사 수
             today_present = Attendance.objects.filter(date=today, is_present=True).count()
 
@@ -234,11 +228,46 @@ class IndexView(TemplateView):
 
             total_expense = month_rent + month_charge + month_salary + month_inbound_payment
 
-            # 미납 현황 (누적) - BookSale + Student.unpaid_amount 실시간 계산 기준
-            total_unpaid_book = BookSale.objects.filter(is_paid=False).aggregate(
-                s=Sum(F('price') * F('quantity')))['s'] or 0
-            total_unpaid_tuition = unpaid_students.aggregate(s=Sum('unpaid_amount'))['s'] or 0
-            total_unpaid = total_unpaid_book + total_unpaid_tuition
+            # 미납 현황 (누적, 학생별) - 수강료: MonthlyEnrollment 전체 vs TuitionPayment 비교
+            from django.db.models import Case, When, IntegerField
+
+            all_paid_quads = set(
+                TuitionPayment.objects.values_list(
+                    'enrollment__student_id', 'enrollment__lesson_id', 'year', 'month'
+                )
+            )
+            all_mes = MonthlyEnrollment.objects.exclude(status='cancelled').select_related('lesson')
+            tuition_unpaid_dict = {}
+            for me in all_mes:
+                if (me.student_id, me.lesson_id, me.year, me.month) not in all_paid_quads:
+                    tuition_unpaid_dict[me.student_id] = tuition_unpaid_dict.get(me.student_id, 0) + me.adjusted_tuition
+            tuition_unpaid_dict = {sid: amt for sid, amt in tuition_unpaid_dict.items() if amt > 0}
+
+            tuition_unpaid_students = list(Student.objects.filter(pk__in=tuition_unpaid_dict.keys()))
+            for s in tuition_unpaid_students:
+                s.tuition_unpaid_amount = tuition_unpaid_dict[s.pk]
+            tuition_unpaid_students.sort(key=lambda s: -s.tuition_unpaid_amount)
+            total_unpaid_tuition = sum(tuition_unpaid_dict.values())
+
+            # 미납 현황 (누적, 학생별) - 교재비: BookSale 실시간 계산 기준
+            book_unpaid_students = list(
+                Student.objects.annotate(
+                    book_unpaid_amount=Sum(
+                        Case(
+                            When(book_sales__is_paid=False,
+                                 then=F('book_sales__price') * F('book_sales__quantity')),
+                            default=0,
+                            output_field=IntegerField(),
+                        )
+                    )
+                ).filter(book_unpaid_amount__gt=0).order_by('-book_unpaid_amount')
+            )
+            total_unpaid_book = sum(s.book_unpaid_amount for s in book_unpaid_students)
+
+            total_unpaid = total_unpaid_tuition + total_unpaid_book
+            unpaid_student_count = len(
+                set(tuition_unpaid_dict.keys()) | {s.pk for s in book_unpaid_students}
+            )
 
             # 다음 달 수강 현황 (MonthlyEnrollment 기준)
             import calendar as _cal
@@ -268,7 +297,8 @@ class IndexView(TemplateView):
                 'today_progress_records': today_progress_records,
                 'month_inbound_payment': month_inbound_payment,
                 'month_unpaid_payment': month_unpaid_payment,
-                'unpaid_students': unpaid_students,
+                'tuition_unpaid_students': tuition_unpaid_students,
+                'book_unpaid_students': book_unpaid_students,
                 'unpaid_student_count': unpaid_student_count,
                 'today_present': today_present,
                 'month_rent': month_rent,

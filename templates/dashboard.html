@@ -253,25 +253,53 @@
         <!-- 미납 현황 -->
         <div class="mt-4 rounded-lg bg-orange-50 border border-orange-100 p-4">
             <h3 class="text-xs font-semibold text-orange-600 uppercase tracking-wide mb-3">⚠️ 미납 현황 <span class="text-orange-400 font-normal normal-case">(누적 기준)</span></h3>
-            {% if unpaid_students %}
-            <div class="space-y-0.5 mb-2">
-                {% for s in unpaid_students %}
-                <a href="{% url 'students:student_detail' s.pk %}"
-                   class="flex justify-between items-center py-1 px-2 rounded hover:bg-orange-100 transition-colors">
-                    <span class="text-sm text-gray-600">{{ s.name }}</span>
-                    <span class="text-sm font-medium text-orange-700">{{ s.unpaid_amount|intcomma }}원</span>
-                </a>
-                {% endfor %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- 수강료 미납 학생 목록 -->
+                <div>
+                    <p class="text-xs font-semibold text-orange-500 mb-1.5">수강료 미납</p>
+                    {% if tuition_unpaid_students %}
+                    <div class="space-y-0.5">
+                        {% for s in tuition_unpaid_students %}
+                        <a href="{% url 'students:student_detail' s.pk %}"
+                           class="flex justify-between items-center py-1 px-2 rounded hover:bg-orange-100 transition-colors">
+                            <span class="text-sm text-gray-600">{{ s.name }}</span>
+                            <span class="text-sm font-medium text-orange-700">{{ s.tuition_unpaid_amount|intcomma }}원</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-xs text-gray-400 py-1 px-2">미납 없음</p>
+                    {% endif %}
+                </div>
+
+                <!-- 교재 미납 학생 목록 -->
+                <div>
+                    <p class="text-xs font-semibold text-orange-500 mb-1.5">교재 미납</p>
+                    {% if book_unpaid_students %}
+                    <div class="space-y-0.5">
+                        {% for s in book_unpaid_students %}
+                        <a href="{% url 'students:student_detail' s.pk %}"
+                           class="flex justify-between items-center py-1 px-2 rounded hover:bg-orange-100 transition-colors">
+                            <span class="text-sm text-gray-600">{{ s.name }}</span>
+                            <span class="text-sm font-medium text-orange-700">{{ s.book_unpaid_amount|intcomma }}원</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-xs text-gray-400 py-1 px-2">미납 없음</p>
+                    {% endif %}
+                </div>
             </div>
-            {% endif %}
-            <div class="flex items-center justify-between {% if unpaid_students %}pt-2 border-t border-orange-200{% endif %}">
+
+            <div class="flex items-center justify-between pt-3 mt-3 border-t border-orange-200">
                 <div class="flex-1 space-y-1">
                     <div class="flex justify-between items-center py-1 px-2">
-                        <span class="text-sm text-gray-600">수강료 미납</span>
+                        <span class="text-sm text-gray-600">수강료 미납 합계</span>
                         <span class="text-sm font-medium {% if total_unpaid_tuition > 0 %}text-orange-700{% else %}text-gray-800{% endif %}">{{ total_unpaid_tuition|intcomma }}원</span>
                     </div>
                     <div class="flex justify-between items-center py-1 px-2">
-                        <span class="text-sm text-gray-600">교재 미납</span>
+                        <span class="text-sm text-gray-600">교재 미납 합계</span>
                         <span class="text-sm font-medium {% if total_unpaid_book > 0 %}text-orange-700{% else %}text-gray-800{% endif %}">{{ total_unpaid_book|intcomma }}원</span>
                     </div>
                 </div>
