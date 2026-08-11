@@ -75,7 +75,6 @@ INSTALLED_APPS = [
     'subjects',
     'grades',
     'maintenance',
-    'payment',
     'progress',
     'homepage',
     'classes',
