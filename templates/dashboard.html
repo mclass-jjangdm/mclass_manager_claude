@@ -10,8 +10,8 @@
         <p class="text-xs text-gray-500 mt-0.5">{{ today|date:"Y년 m월 d일 (D)" }} 기준</p>
     </div>
 
-    <!-- 핵심 지표 카드 (모바일 2열 / 태블릿~데스크탑 4열) -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <!-- 핵심 지표 카드 (모바일 2열 / 태블릿~데스크탑 3열) -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <!-- 재학생 -->
         <a href="{% url 'students:student_list' %}"
            class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
@@ -25,13 +25,6 @@
             <p class="text-2xl sm:text-3xl font-bold text-emerald-600">{{ active_teachers }}<span class="text-sm font-normal text-gray-400 ml-1">명</span></p>
             <p class="text-xs text-gray-400 mt-1">오늘 출근 {{ today_present }}명</p>
         </a>
-        <!-- 미납 학생 -->
-        <div class="bg-white rounded-xl shadow-sm border border-{% if unpaid_student_count > 0 %}red{% else %}gray{% endif %}-100 p-4">
-            <p class="text-xs font-medium text-gray-500 mb-1">미납 학생</p>
-            <p class="text-2xl sm:text-3xl font-bold text-{% if unpaid_student_count > 0 %}red{% else %}gray{% endif %}-600">
-                {{ unpaid_student_count }}<span class="text-sm font-normal text-gray-400 ml-1">명</span>
-            </p>
-        </div>
         <!-- 재고 부족 교재 -->
         <a href="{% url 'bookstore:book_list' %}"
            class="bg-white rounded-xl shadow-sm border border-{% if low_stock_count > 0 %}amber{% else %}gray{% endif %}-100 p-4 hover:shadow-md transition-shadow">
@@ -278,7 +271,18 @@
         <!-- 미납 현황 -->
         <div class="mt-4 rounded-lg bg-orange-50 border border-orange-100 p-4">
             <h3 class="text-xs font-semibold text-orange-600 uppercase tracking-wide mb-3">⚠️ 미납 현황 <span class="text-orange-400 font-normal normal-case">(누적 기준)</span></h3>
-            <div class="flex items-center justify-between">
+            {% if unpaid_students %}
+            <div class="space-y-0.5 mb-2">
+                {% for s in unpaid_students %}
+                <a href="{% url 'students:student_detail' s.pk %}"
+                   class="flex justify-between items-center py-1 px-2 rounded hover:bg-orange-100 transition-colors">
+                    <span class="text-sm text-gray-600">{{ s.name }}</span>
+                    <span class="text-sm font-medium text-orange-700">{{ s.unpaid_amount|intcomma }}원</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="flex items-center justify-between {% if unpaid_students %}pt-2 border-t border-orange-200{% endif %}">
                 <div class="flex-1 flex justify-between items-center py-1.5 px-2">
                     <span class="text-sm text-gray-600">교재 미납</span>
                     <span class="text-sm font-medium {% if total_unpaid_book > 0 %}text-orange-700{% else %}text-gray-800{% endif %}">{{ total_unpaid_book|intcomma }}원</span>

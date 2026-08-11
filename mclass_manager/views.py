@@ -94,8 +94,11 @@ class IndexView(TemplateView):
             # 재고 부족 교재 (3권 이하)
             low_stock_count = Book.objects.filter(stock__lte=3).count()
 
-            # 미납 학생 수 (unpaid_amount > 0)
-            unpaid_student_count = Student.objects.filter(is_active=True, unpaid_amount__gt=0).count()
+            # 미납 학생 (unpaid_amount > 0)
+            unpaid_students = Student.objects.filter(
+                is_active=True, unpaid_amount__gt=0
+            ).order_by('-unpaid_amount')
+            unpaid_student_count = unpaid_students.count()
 
             # 오늘 출근 교사 수
             today_present = Attendance.objects.filter(date=today, is_present=True).count()
@@ -268,6 +271,7 @@ class IndexView(TemplateView):
                 'month_inbound_payment': month_inbound_payment,
                 'month_unpaid_payment': month_unpaid_payment,
                 'low_stock_count': low_stock_count,
+                'unpaid_students': unpaid_students,
                 'unpaid_student_count': unpaid_student_count,
                 'today_present': today_present,
                 'month_rent': month_rent,
