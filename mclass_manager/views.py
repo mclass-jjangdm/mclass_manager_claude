@@ -241,6 +241,22 @@ class IndexView(TemplateView):
             for me in all_mes:
                 if (me.student_id, me.lesson_id, me.year, me.month) not in all_paid_quads:
                     tuition_unpaid_dict[me.student_id] = tuition_unpaid_dict.get(me.student_id, 0) + me.adjusted_tuition
+
+            # 특별 수업(is_special=True)은 MonthlyEnrollment를 생성하지 않고 Enrollment + TuitionPayment로
+            # 직접 관리되므로 별도로 미납액을 합산
+            special_enrollments = _Enrollment.objects.filter(
+                is_active=True, lesson__is_special=True,
+            ).select_related('lesson')
+            paid_special_enrollment_ids = set(
+                TuitionPayment.objects.filter(
+                    enrollment__lesson__is_special=True,
+                ).values_list('enrollment_id', flat=True)
+            )
+            for e in special_enrollments:
+                if e.pk in paid_special_enrollment_ids:
+                    continue
+                tuition_unpaid_dict[e.student_id] = tuition_unpaid_dict.get(e.student_id, 0) + e.adjusted_tuition
+
             tuition_unpaid_dict = {sid: amt for sid, amt in tuition_unpaid_dict.items() if amt > 0}
 
             tuition_unpaid_students = list(Student.objects.filter(pk__in=tuition_unpaid_dict.keys()))
