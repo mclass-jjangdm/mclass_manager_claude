@@ -10,8 +10,8 @@
         <p class="text-xs text-gray-500 mt-0.5">{{ today|date:"Y년 m월 d일 (D)" }} 기준</p>
     </div>
 
-    <!-- 핵심 지표 카드 (모바일 2열 / 태블릿~데스크탑 3열) -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <!-- 핵심 지표 카드 -->
+    <div class="grid grid-cols-2 gap-3">
         <!-- 재학생 -->
         <a href="{% url 'students:student_list' %}"
            class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
@@ -24,15 +24,6 @@
             <p class="text-xs font-medium text-gray-500 mb-1">재직 교사</p>
             <p class="text-2xl sm:text-3xl font-bold text-emerald-600">{{ active_teachers }}<span class="text-sm font-normal text-gray-400 ml-1">명</span></p>
             <p class="text-xs text-gray-400 mt-1">오늘 출근 {{ today_present }}명</p>
-        </a>
-        <!-- 재고 부족 교재 -->
-        <a href="{% url 'bookstore:book_list' %}"
-           class="bg-white rounded-xl shadow-sm border border-{% if low_stock_count > 0 %}amber{% else %}gray{% endif %}-100 p-4 hover:shadow-md transition-shadow">
-            <p class="text-xs font-medium text-gray-500 mb-1">재고 부족 교재</p>
-            <p class="text-2xl sm:text-3xl font-bold text-{% if low_stock_count > 0 %}amber{% else %}gray{% endif %}-600">
-                {{ low_stock_count }}<span class="text-sm font-normal text-gray-400 ml-1">종</span>
-            </p>
-            <p class="text-xs text-gray-400 mt-1">3권 이하</p>
         </a>
     </div>
 
@@ -126,16 +117,7 @@
                     </span>
                 </div>
                 {% endif %}
-                {% if low_stock_count > 0 %}
-                <a href="{% url 'bookstore:book_list' %}"
-                   class="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg p-3 hover:bg-amber-100 transition-colors">
-                    <span class="text-lg flex-shrink-0">📚</span>
-                    <span class="text-sm font-medium text-amber-800">
-                        재고 부족 교재 <strong>{{ low_stock_count }}종</strong>
-                    </span>
-                </a>
-                {% endif %}
-                {% if not pending_unavailability_count and not unpaid_student_count and not low_stock_count %}
+                {% if not pending_unavailability_count and not unpaid_student_count %}
                 <p class="text-sm text-gray-400 text-center py-4">처리할 알림이 없습니다. ✅</p>
                 {% endif %}
             </div>
@@ -283,9 +265,15 @@
             </div>
             {% endif %}
             <div class="flex items-center justify-between {% if unpaid_students %}pt-2 border-t border-orange-200{% endif %}">
-                <div class="flex-1 flex justify-between items-center py-1.5 px-2">
-                    <span class="text-sm text-gray-600">교재 미납</span>
-                    <span class="text-sm font-medium {% if total_unpaid_book > 0 %}text-orange-700{% else %}text-gray-800{% endif %}">{{ total_unpaid_book|intcomma }}원</span>
+                <div class="flex-1 space-y-1">
+                    <div class="flex justify-between items-center py-1 px-2">
+                        <span class="text-sm text-gray-600">수강료 미납</span>
+                        <span class="text-sm font-medium {% if total_unpaid_tuition > 0 %}text-orange-700{% else %}text-gray-800{% endif %}">{{ total_unpaid_tuition|intcomma }}원</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1 px-2">
+                        <span class="text-sm text-gray-600">교재 미납</span>
+                        <span class="text-sm font-medium {% if total_unpaid_book > 0 %}text-orange-700{% else %}text-gray-800{% endif %}">{{ total_unpaid_book|intcomma }}원</span>
+                    </div>
                 </div>
                 <div class="flex justify-between items-center py-1.5 px-3 ml-2 border-l border-orange-200 min-w-[120px]">
                     <span class="text-sm font-semibold text-orange-700">합계</span>

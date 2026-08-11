@@ -48,7 +48,7 @@ class IndexView(TemplateView):
         if self.request.user.is_authenticated:
             from students.models import Student
             from teachers.models import Teacher, TeacherStudentAssignment, TeacherUnavailability, Attendance, Salary
-            from bookstore.models import StudentBookProgress, Book, BookStockLog
+            from bookstore.models import StudentBookProgress, BookStockLog
             from maintenance.models import Maintenance
 
             today = timezone.now().date()
@@ -90,9 +90,6 @@ class IndexView(TemplateView):
             month_inbound_payment = inbound - returned
             month_unpaid_payment = month_logs.filter(is_paid=False, quantity__gt=0).aggregate(
                 s=Sum('total_payment'))['s'] or 0
-
-            # 재고 부족 교재 (3권 이하)
-            low_stock_count = Book.objects.filter(stock__lte=3).count()
 
             # 미납 학생 (unpaid_amount > 0)
             unpaid_students = Student.objects.filter(
@@ -237,10 +234,11 @@ class IndexView(TemplateView):
 
             total_expense = month_rent + month_charge + month_salary + month_inbound_payment
 
-            # 미납 현황 (누적) - BookSale 실시간 계산 기준
+            # 미납 현황 (누적) - BookSale + Student.unpaid_amount 실시간 계산 기준
             total_unpaid_book = BookSale.objects.filter(is_paid=False).aggregate(
                 s=Sum(F('price') * F('quantity')))['s'] or 0
-            total_unpaid = total_unpaid_book
+            total_unpaid_tuition = unpaid_students.aggregate(s=Sum('unpaid_amount'))['s'] or 0
+            total_unpaid = total_unpaid_book + total_unpaid_tuition
 
             # 다음 달 수강 현황 (MonthlyEnrollment 기준)
             import calendar as _cal
@@ -270,7 +268,6 @@ class IndexView(TemplateView):
                 'today_progress_records': today_progress_records,
                 'month_inbound_payment': month_inbound_payment,
                 'month_unpaid_payment': month_unpaid_payment,
-                'low_stock_count': low_stock_count,
                 'unpaid_students': unpaid_students,
                 'unpaid_student_count': unpaid_student_count,
                 'today_present': today_present,
@@ -288,6 +285,7 @@ class IndexView(TemplateView):
                 'month_book_unpaid': month_book_unpaid,
                 'total_billing': total_billing,
                 'total_unpaid_book': total_unpaid_book,
+                'total_unpaid_tuition': total_unpaid_tuition,
                 'total_unpaid': total_unpaid,
                 'next_year_val': next_year_val,
                 'next_month_val': next_month_val,
