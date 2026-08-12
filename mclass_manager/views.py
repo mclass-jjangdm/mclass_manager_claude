@@ -61,6 +61,7 @@ class IndexView(TemplateView):
             grade_dict = {item['grade']: item['count'] for item in grade_counts if item['grade']}
             grade_order = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12']
             grade_stats = [(grade, grade_dict.get(grade, 0)) for grade in grade_order if grade in grade_dict]
+            max_grade_count = max((count for _, count in grade_stats), default=0)
             total_students = Student.objects.filter(is_active=True).count()
 
             # 재직 중인 교사 수
@@ -343,6 +344,7 @@ class IndexView(TemplateView):
 
             context.update({
                 'grade_stats': grade_stats,
+                'max_grade_count': max_grade_count,
                 'total_students': total_students,
                 'active_teachers': active_teachers,
                 'pending_unavailability_count': pending_unavailability_count,
