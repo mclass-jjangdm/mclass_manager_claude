@@ -47,7 +47,7 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             from students.models import Student
-            from teachers.models import Teacher, TeacherStudentAssignment, TeacherUnavailability, Attendance, Salary
+            from teachers.models import Teacher, TeacherStudentAssignment, TeacherUnavailability, Salary
             from bookstore.models import StudentBookProgress, BookStockLog
             from maintenance.models import Maintenance
 
@@ -73,6 +73,23 @@ class IndexView(TemplateView):
                 status='pending'
             ).count()
 
+            # 오늘 출근 불가(승인된) 재직 교사 수
+            today_unavailable_teachers = TeacherUnavailability.objects.filter(
+                date=today,
+                status='approved',
+                teacher__resignation_date__isnull=True,
+            ).count()
+
+            # 오늘 출근 예정 교사 수 = 재직 교사 - 오늘 출근 불가 교사
+            today_expected_teachers = active_teachers - today_unavailable_teachers
+
+            # 오늘 실제로 학생이 배정된 교사 수 (결석/예외 처리 제외)
+            today_teachers_with_students = TeacherStudentAssignment.objects.filter(
+                date=today,
+                assignment_type__in=['normal', 'director'],
+                teacher__isnull=False,
+            ).values('teacher').distinct().count()
+
             # 오늘 학습 진도 통계
             today_assignments = TeacherStudentAssignment.objects.filter(date=today)
             today_assigned = today_assignments.filter(assignment_type='normal').count()
@@ -90,9 +107,6 @@ class IndexView(TemplateView):
             month_inbound_payment = inbound - returned
             month_unpaid_payment = month_logs.filter(is_paid=False, quantity__gt=0).aggregate(
                 s=Sum('total_payment'))['s'] or 0
-
-            # 오늘 출근 교사 수
-            today_present = Attendance.objects.filter(date=today, is_present=True).count()
 
             # 이번 달 수입 - 수강료 / 교재 판매
             from classes.models import MonthlyEnrollment, TuitionPayment
@@ -316,7 +330,9 @@ class IndexView(TemplateView):
                 'tuition_unpaid_students': tuition_unpaid_students,
                 'book_unpaid_students': book_unpaid_students,
                 'unpaid_student_count': unpaid_student_count,
-                'today_present': today_present,
+                'today_unavailable_teachers': today_unavailable_teachers,
+                'today_expected_teachers': today_expected_teachers,
+                'today_teachers_with_students': today_teachers_with_students,
                 'month_rent': month_rent,
                 'month_charge': month_charge,
                 'month_salary': month_salary,
