@@ -18,16 +18,22 @@
             <p class="text-xs font-medium text-gray-500 mb-1">재학생</p>
             <p class="text-2xl sm:text-3xl font-bold text-indigo-600">{{ total_students }}<span class="text-sm font-normal text-gray-400 ml-1">명</span></p>
         </a>
-        <!-- 재직 교사 -->
+        <!-- 재직 선생님 -->
         <a href="{% url 'teachers:teacher_list' %}"
            class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
-            <p class="text-xs font-medium text-gray-500 mb-1">재직 교사</p>
+            <p class="text-xs font-medium text-gray-500 mb-1">재직 선생님</p>
             <p class="text-2xl sm:text-3xl font-bold text-emerald-600">{{ active_teachers }}<span class="text-sm font-normal text-gray-400 ml-1">명</span></p>
             <p class="text-xs text-gray-400 mt-1">
                 오늘 출근 {{ today_expected_teachers }}명
                 {% if today_unavailable_teachers %}<span class="text-gray-300">(출근불가 {{ today_unavailable_teachers }}명 제외)</span>{% endif %}
             </p>
-            <p class="text-xs text-gray-400 mt-0.5">학생 배정 {{ today_teachers_with_students }}명</p>
+            {% if today_unavailable_teacher_names %}
+            <p class="text-xs text-gray-300 mt-0.5 truncate">출근불가: {{ today_unavailable_teacher_names|join:", " }}</p>
+            {% endif %}
+            <p class="text-xs text-gray-400 mt-1">학생 배정 {{ today_teachers_with_students }}명</p>
+            {% if today_unassigned_teacher_names %}
+            <p class="text-xs text-gray-300 mt-0.5 truncate">미배정: {{ today_unassigned_teacher_names|join:", " }}</p>
+            {% endif %}
         </a>
     </div>
 
