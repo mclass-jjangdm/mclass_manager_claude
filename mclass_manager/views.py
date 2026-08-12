@@ -111,6 +111,16 @@ class IndexView(TemplateView):
             today_absent = today_assignments.filter(assignment_type='absent').count()
             today_progress_records = StudentBookProgress.objects.filter(study_date=today).count()
 
+            # 오늘 결석/예외 학생 명단
+            today_absent_student_names = list(
+                today_assignments.filter(assignment_type='absent')
+                .order_by('student__name').values_list('student__name', flat=True).distinct()
+            )
+            today_exception_student_names = list(
+                today_assignments.filter(assignment_type='exception')
+                .order_by('student__name').values_list('student__name', flat=True).distinct()
+            )
+
             # 이번 달 입고 금액 / 미정산 금액
             # created_at__date__gte 는 이번 달 이후 전체를 포함하므로, year+month 로 이번 달만 정확히 필터
             month_logs = BookStockLog.objects.filter(
@@ -339,6 +349,8 @@ class IndexView(TemplateView):
                 'today': today,
                 'today_assigned': today_assigned,
                 'today_absent': today_absent,
+                'today_absent_student_names': today_absent_student_names,
+                'today_exception_student_names': today_exception_student_names,
                 'today_progress_records': today_progress_records,
                 'month_inbound_payment': month_inbound_payment,
                 'month_unpaid_payment': month_unpaid_payment,

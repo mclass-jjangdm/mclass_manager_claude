@@ -17,6 +17,12 @@
            class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
             <p class="text-xs font-medium text-gray-500 mb-1">재학생</p>
             <p class="text-2xl sm:text-3xl font-bold text-indigo-600">{{ total_students }}<span class="text-sm font-normal text-gray-400 ml-1">명</span></p>
+            {% if today_absent_student_names %}
+            <p class="text-xs text-gray-300 mt-1 truncate">결석: {{ today_absent_student_names|join:", " }}</p>
+            {% endif %}
+            {% if today_exception_student_names %}
+            <p class="text-xs text-gray-300 mt-0.5 truncate">예외: {{ today_exception_student_names|join:", " }}</p>
+            {% endif %}
         </a>
         <!-- 재직 선생님 -->
         <a href="{% url 'teachers:teacher_list' %}"
