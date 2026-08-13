@@ -2019,6 +2019,10 @@ class AssignmentCreateView(LoginRequiredMixin, View):
         return render(request, 'teachers/assignment_form.html', context)
 
     def post(self, request):
+        from django.http import JsonResponse
+
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
         date = request.POST.get('date')
         teacher_id = request.POST.get('teacher')
         student_ids = request.POST.getlist('students')
@@ -2026,10 +2030,14 @@ class AssignmentCreateView(LoginRequiredMixin, View):
 
         # 결석/예외인 경우 teacher_id가 없어도 됨
         if not date or not student_ids:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': '필수 정보가 누락되었습니다.'}, status=400)
             messages.error(request, '필수 정보가 누락되었습니다.')
             return redirect('progress:assignment_list')
 
         if assignment_type == 'normal' and not teacher_id:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': '교사를 선택해주세요.'}, status=400)
             messages.error(request, '교사를 선택해주세요.')
             return redirect('progress:assignment_list')
 
@@ -2047,6 +2055,9 @@ class AssignmentCreateView(LoginRequiredMixin, View):
             )
             if created:
                 created_count += 1
+
+        if is_ajax:
+            return JsonResponse({'success': True})
 
         if created_count > 0:
             if assignment_type == 'director':

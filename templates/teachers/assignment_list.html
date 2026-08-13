@@ -581,11 +581,11 @@
                 <span class="stat-label">교사</span>
             </div>
             <div class="stat-item assigned">
-                <span class="stat-value">{{ total_assigned }}</span>
+                <span class="stat-value" id="stat-assigned">{{ total_assigned }}</span>
                 <span class="stat-label">배정</span>
             </div>
             <div class="stat-item unassigned">
-                <span class="stat-value">{{ total_unassigned }}</span>
+                <span class="stat-value" id="stat-unassigned">{{ total_unassigned }}</span>
                 <span class="stat-label">미배정</span>
             </div>
         </div>
@@ -603,7 +603,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
                 미배정
-                <span class="count">{{ total_unassigned }}명</span>
+                <span class="count" id="unassigned-count">{{ total_unassigned }}명</span>
             </h3>
         </div>
         <div class="panel-body" id="unassigned-dropzone" data-dropzone="unassigned">
@@ -648,7 +648,7 @@
 
     <!-- 교사 영역 -->
     <div class="teachers-area">
-        <div class="teachers-grid">
+        <div class="teachers-grid" id="teachers-grid">
             {% for teacher, assignments in teacher_assignments.items %}
             <div class="teacher-card" data-teacher-id="{{ teacher.id }}">
                 <div class="teacher-header">
@@ -820,7 +820,7 @@
         <div class="panel-header">
             <h3>
                 미배정
-                <span class="count">{{ total_unassigned }}명</span>
+                <span class="count" id="unassigned-count-ss">{{ total_unassigned }}명</span>
             </h3>
         </div>
         <div class="panel-body" id="unassigned-dropzone-ss" data-dropzone="unassigned">
@@ -859,7 +859,7 @@
     <div class="spreadsheet-container">
         <table class="spreadsheet-table">
             <thead>
-                <tr>
+                <tr id="spreadsheet-thead-row">
                     {% for teacher, assignments in teacher_assignments.items %}
                     <th data-teacher-id="{{ teacher.id }}">
                         <span class="teacher-name">{{ teacher.name }}</span>
@@ -881,7 +881,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr id="spreadsheet-tbody-row">
                     {% for teacher, assignments in teacher_assignments.items %}
                     <td class="dropzone" data-teacher-id="{{ teacher.id }}" data-dropzone="teacher">
                         {% for assignment in assignments %}
@@ -1027,18 +1027,20 @@
     }
 
     // ========== 드래그 앤 드롭 기능 ==========
+    // refreshAssignmentUI()가 일부 컨테이너만 innerHTML로 교체하므로,
+    // 교체되지 않고 남아있는 요소(예: 드롭존 자체)에 리스너가 중복 등록되지 않도록 표시해둔다.
     function initDragDrop() {
-        // 모든 드래그 가능한 요소
-        const draggables = document.querySelectorAll('[draggable="true"]');
-        // 모든 드롭존
-        const dropzones = document.querySelectorAll('[data-dropzone]');
+        const draggables = document.querySelectorAll('[draggable="true"]:not([data-dnd-init])');
+        const dropzones = document.querySelectorAll('[data-dropzone]:not([data-dnd-init])');
 
         draggables.forEach(draggable => {
+            draggable.dataset.dndInit = '1';
             draggable.addEventListener('dragstart', handleDragStart);
             draggable.addEventListener('dragend', handleDragEnd);
         });
 
         dropzones.forEach(dropzone => {
+            dropzone.dataset.dndInit = '1';
             dropzone.addEventListener('dragover', handleDragOver);
             dropzone.addEventListener('dragleave', handleDragLeave);
             dropzone.addEventListener('drop', handleDrop);
@@ -1126,6 +1128,33 @@
         });
     }
 
+    // 리로드 없이 배정 현황(미배정 패널, 교사 카드, 스프레드시트, 통계)만 다시 그리기
+    const SYNC_IDS = [
+        'unassigned-dropzone', 'unassigned-dropzone-ss',
+        'unassigned-count', 'unassigned-count-ss',
+        'teachers-grid',
+        'spreadsheet-thead-row', 'spreadsheet-tbody-row',
+        'stat-assigned', 'stat-unassigned'
+    ];
+
+    function refreshAssignmentUI() {
+        return fetch(window.location.pathname + window.location.search, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            SYNC_IDS.forEach(id => {
+                const newEl = doc.getElementById(id);
+                const oldEl = document.getElementById(id);
+                if (newEl && oldEl) {
+                    oldEl.innerHTML = newEl.innerHTML;
+                }
+            });
+            initDragDrop();
+        });
+    }
+
     // API 함수들
     function assignStudent(teacherId, studentId, assignmentType) {
         const form = document.getElementById('assignmentForm');
@@ -1141,7 +1170,7 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
-            if (response.ok) window.location.reload();
+            if (response.ok) refreshAssignmentUI();
             else alert('배정 중 오류가 발생했습니다.');
         })
         .catch(error => {
@@ -1161,7 +1190,7 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
-            if (response.ok) window.location.reload();
+            if (response.ok) refreshAssignmentUI();
             else alert('교사 변경 중 오류가 발생했습니다.');
         })
         .catch(error => {
@@ -1181,7 +1210,7 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
-            if (response.ok) window.location.reload();
+            if (response.ok) refreshAssignmentUI();
             else alert('배정 유형 변경 중 오류가 발생했습니다.');
         })
         .catch(error => {
@@ -1200,7 +1229,7 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
-            if (response.ok) window.location.reload();
+            if (response.ok) refreshAssignmentUI();
             else alert('배정 해제 중 오류가 발생했습니다.');
         })
         .catch(error => {
