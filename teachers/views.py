@@ -1926,10 +1926,13 @@ class AssignmentListView(LoginRequiredMixin, View):
             elif assignment.teacher in teacher_assignments:
                 teacher_assignments[assignment.teacher].append(assignment)
 
+        # 과학 과목만 수강하는 학생은 진도 배정 대상에서 제외
+        science_only_ids = Student.get_science_only_student_ids()
+
         # 배정되지 않은 학생들
         unassigned_students = Student.objects.filter(
             is_active=True
-        ).exclude(id__in=assigned_student_ids).order_by('grade', 'name')
+        ).exclude(id__in=assigned_student_ids).exclude(id__in=science_only_ids).order_by('grade', 'name')
 
         # 학년별 그룹화 (미배정 학생)
         grade_order = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12']
@@ -1953,8 +1956,10 @@ class AssignmentListView(LoginRequiredMixin, View):
                 'students': no_grade_students
             }
 
-        # 모든 활성 학생
-        all_students = Student.objects.filter(is_active=True).order_by('grade', 'name')
+        # 모든 활성 학생 (과학 과목만 수강하는 학생 제외)
+        all_students = Student.objects.filter(
+            is_active=True
+        ).exclude(id__in=science_only_ids).order_by('grade', 'name')
 
         context = {
             'selected_date': check_date,

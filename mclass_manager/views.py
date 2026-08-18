@@ -54,15 +54,20 @@ class IndexView(TemplateView):
             today = timezone.now().date()
             this_month = today.replace(day=1)
 
-            # 학년별 학생 수 집계
-            grade_counts = Student.objects.filter(
-                is_active=True
+            # 학년별 학생 수 집계 (과학 과목만 수강하는 학생은 별도 막대로 분리)
+            science_only_ids = Student.get_science_only_student_ids()
+            active_students_qs = Student.objects.filter(is_active=True)
+            grade_counts = active_students_qs.exclude(
+                id__in=science_only_ids
             ).values('grade').annotate(count=Count('id'))
             grade_dict = {item['grade']: item['count'] for item in grade_counts if item['grade']}
             grade_order = ['K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11', 'K12']
             grade_stats = [(grade, grade_dict.get(grade, 0)) for grade in grade_order if grade in grade_dict]
+            science_only_count = active_students_qs.filter(id__in=science_only_ids).count()
+            if science_only_count:
+                grade_stats.append(('과학', science_only_count))
             max_grade_count = max((count for _, count in grade_stats), default=0)
-            total_students = Student.objects.filter(is_active=True).count()
+            total_students = active_students_qs.count()
 
             # 재직 중인 교사 수
             active_teachers = Teacher.objects.filter(

@@ -153,6 +153,30 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.student_id})"
+
+    @classmethod
+    def get_science_only_student_ids(cls):
+        """활성 수강 신청이 모두 '과학' 과목인 학생 ID 집합 반환 (수강 신청이 없는 학생은 제외)"""
+        from datetime import date
+        from django.db.models import Q
+        from classes.models import Enrollment
+
+        active_enrollments = Enrollment.objects.filter(
+            is_active=True,
+        ).filter(
+            Q(end_date__isnull=True) | Q(end_date__gte=date.today())
+        ).select_related('lesson__subject')
+
+        student_categories = {}
+        for enrollment in active_enrollments:
+            subject = enrollment.lesson.subject
+            category = subject.category if subject else None
+            student_categories.setdefault(enrollment.student_id, set()).add(category)
+
+        return {
+            student_id for student_id, categories in student_categories.items()
+            if categories == {'과학'}
+        }
     
     
 class StudentFile(models.Model):
