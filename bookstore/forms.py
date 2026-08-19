@@ -66,7 +66,7 @@ class BookStockLogForm(forms.ModelForm):
             'created_at': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'supplier': forms.Select(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'min': 1, 'autofocus': 'autofocus'}),
-            'cost_price': forms.NumberInput(attrs={'step': 50}),
+            'cost_price': forms.NumberInput(attrs={'step': 1}),
             'memo': forms.TextInput(attrs={'placeholder': '비고'}),
         }
         labels = {
@@ -80,7 +80,7 @@ class BookReturnForm(forms.ModelForm):
         widgets = {
             'supplier': forms.Select(attrs={'class': 'form-control'}),
             'quantity': forms.NumberInput(attrs={'min': 1, 'autofocus': 'autofocus'}),
-            'cost_price': forms.NumberInput(attrs={'step': 50}),
+            'cost_price': forms.NumberInput(attrs={'step': 1}),
             'total_payment': forms.NumberInput(attrs={'readonly': 'readonly', 'style': 'background-color: #eee;'}),
             'payment_date': forms.TextInput(attrs={'class': 'mclass-datepicker', 'readonly': 'readonly'}),
             'memo': forms.TextInput(attrs={'placeholder': '반품 사유'}),
