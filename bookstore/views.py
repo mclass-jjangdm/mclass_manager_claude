@@ -158,6 +158,7 @@ def book_update(request, pk):
                     memo="신규 도서 등록 (초기 재고)"
                 ).update(created_at=updated.created_at)
 
+            messages.success(request, f"'{updated.title}' 정보가 수정되었습니다.")
             return redirect('bookstore:book_list')
     else:
         form = BookForm(instance=book)
