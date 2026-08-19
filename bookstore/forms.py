@@ -103,6 +103,7 @@ class BookSaleForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['book'].queryset = Book.objects.filter(stock__gt=0).order_by('title')
         self.fields['book'].label = "판매할 교재"
+        self.fields['book'].label_from_instance = lambda obj: f"{obj.title} (재고 {obj.stock}권)"
 
 
 class BookContentUploadForm(forms.Form):
