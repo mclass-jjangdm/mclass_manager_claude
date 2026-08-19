@@ -34,6 +34,7 @@ urlpatterns = [
     path('<int:pk>/restock/', views.book_restock, name='book_restock'),
     path('<int:pk>/', views.book_detail, name='book_detail'),
     path('<int:pk>/return/', views.book_return, name='book_return'),
+    path('stock-log/<int:pk>/edit/', views.book_stock_log_update, name='book_stock_log_update'),
     # 일괄 등록 URL
     path('upload/', views.book_upload, name='book_upload'),
     # 구매처 관리 url

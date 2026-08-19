@@ -286,6 +286,44 @@ def book_return(request, pk):
     })
 
 
+def book_stock_log_update(request, pk):
+    """입고 기록 수정 (반품 기록은 별도 처리이므로 제외)"""
+    log = get_object_or_404(BookStockLog, pk=pk, quantity__gt=0)
+    book = log.book
+    old_quantity = log.quantity
+
+    if request.method == 'POST':
+        form = BookStockLogForm(request.POST, instance=log)
+        if form.is_valid():
+            updated_log = form.save(commit=False)
+            delta = updated_log.quantity - old_quantity
+
+            if book.stock + delta < 0:
+                messages.error(
+                    request,
+                    f"재고가 부족하여 수정할 수 없습니다. (현재 재고: {book.stock}권, 필요한 감소량: {abs(delta)}권)"
+                )
+                return redirect('bookstore:book_stock_log_update', pk=pk)
+
+            updated_log.total_payment = updated_log.quantity * updated_log.cost_price
+            updated_log.save()
+
+            book.stock += delta
+            book.cost_price = updated_log.cost_price
+            book.save()
+
+            messages.success(request, f"'{book.title}' 입고 기록이 수정되었습니다.")
+            return redirect('bookstore:book_detail', pk=book.pk)
+    else:
+        form = BookStockLogForm(instance=log, initial={'created_at': log.created_at.date()})
+
+    return render(request, 'bookstore/book_stock_log_form.html', {
+        'form': form,
+        'book': book,
+        'log': log,
+    })
+
+
 def book_upload(request):
     """엑셀/CSV 파일로 도서 일괄 등록"""
     if request.method == 'POST' and request.FILES.get('upload_file'):
