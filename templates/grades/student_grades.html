@@ -330,7 +330,7 @@
              data-update-url="{% url 'grades:test_record_update' rec.pk %}"
              data-record-type="{{ rec.record_type }}"
              data-title="{{ rec.title|escapejs }}"
-             data-date="{{ rec.date|default:'' }}"
+             data-date="{{ rec.date|date:'Y-m-d'|default:'' }}"
              data-score="{{ rec.score|default:'' }}"
              data-total-score="{{ rec.total_score|default:'' }}"
              data-achievement="{{ rec.achievement }}"
