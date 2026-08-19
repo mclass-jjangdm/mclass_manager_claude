@@ -20,6 +20,7 @@ import urllib3 # SSL 경고 숨기기용
 from django.db import transaction # 트랜잭션 필수
 from students.models import Student # 학생 모델 참조 필요
 from django.core.paginator import Paginator
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -580,15 +581,9 @@ def supplier_settle(request, pk):
     return redirect('bookstore:supplier_detail', pk=pk)
 
 
-def search_book_api(request):
-    """국립중앙도서관 API 조회 (Key 수정 및 데이터 정제)"""
-    isbn = request.GET.get('isbn')
-
-    # API
+def _search_book_nl(isbn):
+    """국립중앙도서관 Open API로 ISBN 조회. 못 찾거나 실패하면 None 반환."""
     API_KEY = "a36e5ab3c6a0d4359b7fffbca22dd34734921dea812fcdf66f711abf3ee10aae"
-
-    if not isbn:
-        return JsonResponse({'error': 'ISBN이 제공되지 않았습니다.'}, status=400)
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -605,55 +600,95 @@ def search_book_api(request):
     }
 
     try:
-        # 타임아웃은 안전하게 5초
-        response = requests.get(url, params=params, headers=headers, verify=False, timeout=5)
-
+        # 국립중앙도서관 API는 응답이 느릴 때가 있어(수 초) 여유있게 타임아웃 설정
+        response = requests.get(url, params=params, headers=headers, verify=False, timeout=8)
         if response.status_code != 200:
-            return JsonResponse({'error': 'API 서버 접속 실패'}, status=500)
+            return None
 
         data = response.json()
+        total = int(data.get('total', 0) or 0)
+        if total <= 0:
+            return None
 
-        # total이 문자열일 수도, 숫자일 수도 있어서 안전하게 변환
-        total = int(data.get('total', 0))
+        items = data.get('result', [])
+        if not items:
+            return None
 
-        if total > 0:
-            # result 키 사용
-            items = data.get('result', [])
+        item = items[0]
+        title = item.get('titleInfo', '')
+        author_raw = item.get('authorInfo', '')
+        publisher = item.get('pubInfo', '')
+        price_raw = item.get('priceInfo', '0')
 
-            if items:
-                item = items[0]
+        # 저자 정보에서 '지은이:' 제거 (예: "지은이: 유시민" -> "유시민")
+        author = author_raw.replace('지은이:', '').strip()
 
-                # [핵심 수정] 로그에 찍힌 정확한 Key 이름(camelCase) 사용
-                title = item.get('titleInfo', '')
-                author_raw = item.get('authorInfo', '')
-                publisher = item.get('pubInfo', '')
+        # 가격 정보에서 숫자만 추출
+        price = str(price_raw).replace('원', '').replace(',', '').strip()
+        if not price or not price.isdigit():
+            price = '0'
 
-                # 가격 정보는 로그에 없었으므로 일단 '0'으로 두거나 priceInfo 시도
-                price_raw = item.get('priceInfo', '0')
+        if not title:
+            return None
 
-                # [데이터 정제 1] 저자 정보에서 '지은이:' 제거
-                # 예: "지은이: 유시민" -> "유시민"
-                author = author_raw.replace('지은이:', '').strip()
+        return {'title': title, 'author': author, 'publisher': publisher, 'price': price}
+    except Exception:
+        return None
 
-                # [데이터 정제 2] 가격 정보에서 숫자만 추출
-                price = str(price_raw).replace('원', '').replace(',', '').strip()
-                if not price or not price.isdigit():
-                    price = '0'
 
-                result = {
-                    'title': title,
-                    'author': author,
-                    'publisher': publisher,
-                    'price': price,
-                }
-                return JsonResponse(result)
-            else:
-                return JsonResponse({'error': '도서 정보 리스트가 비어있습니다.'}, status=404)
-        else:
-            return JsonResponse({'error': '해당 도서 정보가 없습니다.'}, status=404)
+def _search_book_kakao(isbn):
+    """카카오 도서 검색 API로 ISBN 조회 (참고서/문제집 등 국립중앙도서관 미등록 도서 보완용).
+    settings.KAKAO_REST_API_KEY가 설정되어 있지 않으면 조회를 건너뛰고 None 반환."""
+    api_key = getattr(settings, 'KAKAO_REST_API_KEY', '')
+    if not api_key:
+        return None
 
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    url = "https://dapi.kakao.com/v3/search/book"
+    headers = {'Authorization': f'KakaoAK {api_key}'}
+    params = {'query': isbn, 'target': 'isbn'}
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=5)
+        if response.status_code != 200:
+            return None
+
+        documents = response.json().get('documents', [])
+        if not documents:
+            return None
+
+        item = documents[0]
+        title = item.get('title', '')
+        author = ', '.join(item.get('authors', []))
+        publisher = item.get('publisher', '')
+        price = item.get('sale_price') or item.get('price') or 0
+        price = str(price)
+        if not price.isdigit():
+            price = '0'
+
+        if not title:
+            return None
+
+        return {'title': title, 'author': author, 'publisher': publisher, 'price': price}
+    except Exception:
+        return None
+
+
+def search_book_api(request):
+    """ISBN으로 도서 정보 조회. 국립중앙도서관 API를 먼저 시도하고,
+    실패하거나 등록된 정보가 없으면(주로 참고서/문제집류) 카카오 도서 API로 재조회한다."""
+    isbn = request.GET.get('isbn')
+
+    if not isbn:
+        return JsonResponse({'error': 'ISBN이 제공되지 않았습니다.'}, status=400)
+
+    result = _search_book_nl(isbn)
+    if not result:
+        result = _search_book_kakao(isbn)
+
+    if result:
+        return JsonResponse(result)
+
+    return JsonResponse({'error': '해당 도서 정보를 찾을 수 없습니다.'}, status=404)
 
 
 def book_sale_create(request, student_pk):

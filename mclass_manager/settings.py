@@ -279,6 +279,9 @@ SMS_API_KEY = os.environ.get('SMS_API_KEY', getattr(mclass_settings, 'SMS_API_KE
 SMS_USER_ID = os.environ.get('SMS_USER_ID', getattr(mclass_settings, 'SMS_USER_ID', None) if mclass_settings else None)
 SMS_SENDER_NUMBER = os.environ.get('SMS_SENDER_NUMBER', getattr(mclass_settings, 'SMS_SENDER_NUMBER', None) if mclass_settings else None)
 
+# 카카오 도서 검색 API (ISBN 조회 보완용 - 국립중앙도서관에 없는 참고서/문제집 대비)
+KAKAO_REST_API_KEY = os.environ.get('KAKAO_REST_API_KEY', getattr(mclass_settings, 'KAKAO_REST_API_KEY', '') if mclass_settings else '')
+
 # Email 설정
 # 개발 환경에서는 console backend 사용 (실제 이메일 발송 안 함)
 # 프로덕션에서는 SMTP 설정 필요
