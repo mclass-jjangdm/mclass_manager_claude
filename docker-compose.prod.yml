@@ -5,6 +5,7 @@ services:
     container_name: mclass_db
     restart: always
     environment:
+      TZ: Asia/Seoul
       MYSQL_DATABASE: ${DB_NAME:-mclass_manager_db}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
@@ -38,6 +39,7 @@ services:
     expose:
       - "8000"
     environment:
+      - TZ=Asia/Seoul
       - DEBUG=False
       - SECRET_KEY=${SECRET_KEY}
       - DB_NAME=${DB_NAME:-mclass_manager_db}

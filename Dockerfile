@@ -5,12 +5,16 @@ FROM python:3.13-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    TZ=Asia/Seoul
 
 # 작업 디렉터리 설정
 WORKDIR /app
 
 # 시스템 패키지 설치 (MySQL 클라이언트 라이브러리 + 빌드 도구 포함)
+# tzdata: 컨테이너 시스템 시간대를 Asia/Seoul로 고정 (USE_TZ=False 상태에서
+# timezone.now()가 OS 시간대를 그대로 사용하므로, 컨테이너 기본 UTC와 어긋나면
+# 자동 기록되는 시각이 몇 시간씩 틀어지는 문제가 발생함)
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
@@ -20,6 +24,8 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     default-mysql-client \
     fonts-nanum \
+    tzdata \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
 # requirements.txt 복사 및 패키지 설치

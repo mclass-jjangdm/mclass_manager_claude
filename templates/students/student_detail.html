@@ -791,8 +791,8 @@ function togglePaidSales() {
                 </div>
                 <div>
                     <label class="block text-xs text-gray-600 mb-1">납부일</label>
-                    <input type="date" name="payment_date" id="tuition-edit-date"
-                           class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400">
+                    <input type="text" name="payment_date" id="tuition-edit-date"
+                           class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 mclass-datepicker" readonly>
                 </div>
             </div>
             <div class="flex justify-end gap-2 mt-5">
@@ -861,8 +861,8 @@ function togglePaidSales() {
                 </div>
                 <div>
                     <label class="block text-xs text-gray-600 mb-1">납부일</label>
-                    <input type="date" name="payment_date" id="modal-payment-date"
-                           class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400">
+                    <input type="text" name="payment_date" id="modal-payment-date"
+                           class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 mclass-datepicker" readonly>
                 </div>
             </div>
             <div class="flex justify-end gap-2 mt-5">
@@ -902,8 +902,8 @@ function togglePaidSales() {
                 </div>
                 <div>
                     <label class="block text-xs text-gray-600 mb-1">납부일</label>
-                    <input type="date" name="payment_date" id="book-modal-payment-date"
-                           class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400">
+                    <input type="text" name="payment_date" id="book-modal-payment-date"
+                           class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400 mclass-datepicker" readonly>
                 </div>
             </div>
             <div class="flex justify-end gap-2 mt-5">
@@ -942,8 +942,8 @@ function togglePaidSales() {
                 </div>
                 <div>
                     <label class="block text-xs text-gray-600 mb-1">납부일</label>
-                    <input type="date" name="payment_date" id="book-edit-modal-date"
-                           class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400">
+                    <input type="text" name="payment_date" id="book-edit-modal-date"
+                           class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 mclass-datepicker" readonly>
                 </div>
             </div>
             <div class="flex justify-end gap-2 mt-5">
@@ -980,7 +980,7 @@ document.getElementById('book-edit-modal').addEventListener('click', function(e)
 
 function openBookModal(salePk, bookTitle, amount, actionUrl) {
     const today = new Date();
-    const dateStr = today.toISOString().slice(0, 10);
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     document.getElementById('book-modal-title').textContent = bookTitle;
     document.getElementById('book-modal-amount').textContent = amount.toLocaleString() + '원';
     document.getElementById('book-modal-payment-date').value = dateStr;
