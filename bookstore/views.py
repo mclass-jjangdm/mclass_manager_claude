@@ -674,16 +674,17 @@ def _search_book_kakao(isbn):
 
 
 def search_book_api(request):
-    """ISBN으로 도서 정보 조회. 국립중앙도서관 API를 먼저 시도하고,
-    실패하거나 등록된 정보가 없으면(주로 참고서/문제집류) 카카오 도서 API로 재조회한다."""
+    """ISBN으로 도서 정보 조회. 카카오 도서 API를 먼저 시도하고(서점 카탈로그 기반이라
+    참고서/문제집 커버리지와 가격 정보가 더 정확함), 실패하거나 결과가 없으면
+    국립중앙도서관 API로 재조회한다."""
     isbn = request.GET.get('isbn')
 
     if not isbn:
         return JsonResponse({'error': 'ISBN이 제공되지 않았습니다.'}, status=400)
 
-    result = _search_book_nl(isbn)
+    result = _search_book_kakao(isbn)
     if not result:
-        result = _search_book_kakao(isbn)
+        result = _search_book_nl(isbn)
 
     if result:
         return JsonResponse(result)
