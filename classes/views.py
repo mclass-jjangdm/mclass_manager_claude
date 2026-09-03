@@ -422,23 +422,37 @@ def enrollment_create(request, pk):
         else:
             from students.models import Student
             success_count = 0
+            reactivated_count = 0
             for spk in student_pks:
-                try:
-                    student = Student.objects.get(pk=spk)
-                    Enrollment.objects.create(
-                        student=student,
-                        lesson=lesson,
-                        enrollment_date=enrollment_date,
-                        end_date=end_date,
-                        tuition_adjustment=tuition_adjustment,
-                        memo=memo,
-                        is_active=is_active,
-                    )
-                    success_count += 1
-                except Exception:
-                    messages.warning(request, f'{student.name} 학생은 이미 수강 중입니다.')
+                student = Student.objects.get(pk=spk)
+                existing = Enrollment.objects.filter(student=student, lesson=lesson).first()
+                if existing is not None:
+                    if existing.is_currently_active:
+                        messages.warning(request, f'{student.name} 학생은 이미 수강 중입니다.')
+                        continue
+                    # 퇴원 등으로 종료된 수강 → 재활성화 (unique_together 로 새 레코드 생성 불가)
+                    existing.enrollment_date = enrollment_date
+                    existing.end_date = end_date
+                    existing.tuition_adjustment = tuition_adjustment
+                    existing.memo = memo
+                    existing.is_active = is_active
+                    existing.save()
+                    reactivated_count += 1
+                    continue
+                Enrollment.objects.create(
+                    student=student,
+                    lesson=lesson,
+                    enrollment_date=enrollment_date,
+                    end_date=end_date,
+                    tuition_adjustment=tuition_adjustment,
+                    memo=memo,
+                    is_active=is_active,
+                )
+                success_count += 1
             if success_count:
                 messages.success(request, f'{success_count}명의 수강 신청이 완료되었습니다.')
+            if reactivated_count:
+                messages.success(request, f'{reactivated_count}명의 종료된 수강이 재개되었습니다.')
             return redirect('classes:lesson_detail', pk=lesson.pk)
 
     grade_groups, enrolled_ids = _get_grade_groups(lesson)

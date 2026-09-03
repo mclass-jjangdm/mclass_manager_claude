@@ -1267,17 +1267,57 @@ def student_quit(request, pk):
 
 @login_required
 def student_readmit(request, pk):
-    """학생 재입원 처리"""
+    """학생 재입원 처리
+
+    퇴원 시 비활성화(is_active=False, end_date=퇴원일)된 수강 신청을
+    재입원일 기준으로 다시 활성화한다. 이 처리를 하지 않으면 재입원해도
+    '월별 수강 신청 생성' 페이지에 학생이 나타나지 않는다.
+    """
+    import datetime as _dt
+    from classes.models import Enrollment
+
     student = get_object_or_404(Student, pk=pk)
 
+    # 퇴원 처리로 종료된 수강 신청 목록 (재활성화 후보)
+    ended_enrollments = Enrollment.objects.filter(
+        student=student, is_active=False,
+    ).select_related('lesson').order_by('lesson__name')
+
     if request.method == 'POST':
+        readmit_date_str = request.POST.get('readmit_date', '')
+        try:
+            readmit_date = _dt.date.fromisoformat(readmit_date_str)
+        except ValueError:
+            readmit_date = _dt.date.today()
+
         student.quit_date = None
         student.is_active = True
         student.save()
-        messages.success(request, f'{student.name} 학생이 재입원 처리되었습니다.')
+
+        selected_ids = set(request.POST.getlist('enrollment_ids'))
+        reactivated = 0
+        for enroll in ended_enrollments:
+            if str(enroll.pk) not in selected_ids:
+                continue
+            enroll.is_active = True
+            enroll.end_date = None
+            enroll.enrollment_date = readmit_date
+            note = f'{readmit_date} 재입원으로 수강 재개'
+            enroll.memo = f'{enroll.memo}\n{note}'.strip() if enroll.memo else note
+            enroll.save()
+            reactivated += 1
+
+        msg = f'{student.name} 학생이 재입원 처리되었습니다.'
+        if reactivated:
+            msg += f' (수강 {reactivated}건 재개, 시작일 {readmit_date})'
+        messages.success(request, msg)
         return redirect('students:student_detail', pk=pk)
 
-    return render(request, 'students/student_readmit_confirm.html', {'student': student})
+    return render(request, 'students/student_readmit_confirm.html', {
+        'student': student,
+        'ended_enrollments': ended_enrollments,
+        'today': datetime.date.today(),
+    })
 
 
 @login_required
