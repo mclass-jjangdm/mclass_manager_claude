@@ -223,12 +223,25 @@
                         <span class="text-xs text-gray-500">미납</span>
                         <span class="text-xs font-medium {% if month_tuition_unpaid > 0 %}text-red-500{% else %}text-gray-700{% endif %}">{{ month_tuition_unpaid|intcomma }}원</span>
                     </a>
-                    <!-- 교재비 (청구서 기준 = 누적 미납 교재) -->
+                    <!-- 교재비 그룹 -->
                     <div class="pt-1 border-t border-green-200"></div>
+                    <div class="flex justify-between items-center py-1 px-2">
+                        <span class="text-sm font-medium text-gray-700">교재비</span>
+                    </div>
                     <a href="{% url 'bookstore:book_list' %}"
-                       class="flex justify-between items-center py-1.5 px-2 rounded hover:bg-green-100 transition-colors">
-                        <span class="text-sm text-gray-600">교재비 <span class="text-xs text-gray-400">(미납 누계)</span></span>
-                        <span class="text-sm font-medium {% if total_unpaid_book > 0 %}text-orange-600{% else %}text-gray-800{% endif %}">{{ total_unpaid_book|intcomma }}원</span>
+                       class="flex justify-between items-center py-1 pl-5 pr-2 rounded hover:bg-green-100 transition-colors">
+                        <span class="text-xs text-gray-500">이번 달 판매</span>
+                        <span class="text-xs font-medium text-gray-700">{{ month_book_sold|intcomma }}원</span>
+                    </a>
+                    <a href="{% url 'bookstore:book_list' %}"
+                       class="flex justify-between items-center py-1 pl-5 pr-2 rounded hover:bg-green-100 transition-colors">
+                        <span class="text-xs text-gray-500">이번 달 수납</span>
+                        <span class="text-xs font-medium text-gray-700">{{ month_book_collected_period|intcomma }}원</span>
+                    </a>
+                    <a href="{% url 'bookstore:book_list' %}"
+                       class="flex justify-between items-center py-1 pl-5 pr-2 rounded hover:bg-green-100 transition-colors">
+                        <span class="text-xs text-gray-500">미납 누계 <span class="text-[10px] text-gray-400">(전체 학생 누적, 이번 달 수납액 아님)</span></span>
+                        <span class="text-xs font-medium {% if total_unpaid_book > 0 %}text-orange-600{% else %}text-gray-700{% endif %}">{{ total_unpaid_book|intcomma }}원</span>
                     </a>
                     <!-- 합계 (청구 기준) -->
                     <div class="pt-2 mt-1 border-t border-green-200 flex justify-between items-center px-2">

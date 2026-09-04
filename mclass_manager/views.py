@@ -245,6 +245,24 @@ class IndexView(TemplateView):
             month_book_collected = _book_qs['collected']  or 0
             month_book_unpaid    = month_book_billing - month_book_collected
 
+            # 이번 달 교재비 판매/수납 (실제 이번 달에 일어난 거래 - 미납 누계와는 다른 지표)
+            _book_period_qs = BookSale.objects.aggregate(
+                sold=Sum(
+                    F('price') * F('quantity'),
+                    filter=Q(sale_date__year=today.year, sale_date__month=today.month),
+                ),
+                collected_period=Sum(
+                    F('price') * F('quantity'),
+                    filter=Q(
+                        is_paid=True,
+                        payment_date__year=today.year,
+                        payment_date__month=today.month,
+                    ),
+                ),
+            )
+            month_book_sold            = _book_period_qs['sold'] or 0
+            month_book_collected_period = _book_period_qs['collected_period'] or 0
+
             # 합계 (청구 기준) = 수강료 청구 + 교재비 미납 누계
             total_billing = month_tuition_billing + month_book_unpaid
 
@@ -381,6 +399,8 @@ class IndexView(TemplateView):
                 'month_book_billing': month_book_billing,
                 'month_book_collected': month_book_collected,
                 'month_book_unpaid': month_book_unpaid,
+                'month_book_sold': month_book_sold,
+                'month_book_collected_period': month_book_collected_period,
                 'total_billing': total_billing,
                 'total_unpaid_book': total_unpaid_book,
                 'total_unpaid_tuition': total_unpaid_tuition,
