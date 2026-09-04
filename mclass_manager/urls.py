@@ -20,7 +20,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
-from .views import IndexView, AdminLoginView, billing_export
+from .views import IndexView, AdminLoginView, billing_export, payment_ledger
 from django.contrib.auth.views import LogoutView
 from common.views import (
     db_backup,
@@ -58,6 +58,7 @@ urlpatterns = [
     path('parent/drive/<int:student_pk>/file/<str:file_id>/', parent_student_drive_file_download, name='parent_student_drive_file_download'),
     path('parent/exit/', parent_logout, name='parent_logout'),
     path('billing/export/', billing_export, name='billing_export'),
+    path('payment-ledger/', payment_ledger, name='payment_ledger'),
     path('admin/db-backup/', db_backup, name='db_backup'),
     path('admin/seal/', seal_upload, name='seal_upload'),
     # Google Drive 관리

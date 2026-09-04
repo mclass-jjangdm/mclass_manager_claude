@@ -682,3 +682,93 @@ def billing_export(request):
         'month_options': month_options,
     }
     return render(request, 'billing_export.html', context)
+
+
+@login_required
+def payment_ledger(request):
+    """수강료 + 교재비 결제 내역을 기간별로 한눈에 조회 (실제 입금 기준)"""
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 사용 가능합니다.')
+        from django.shortcuts import redirect
+        return redirect('index')
+
+    from classes.models import TuitionPayment
+    from bookstore.models import BookSale
+
+    today = datetime.date.today()
+
+    start_str = request.GET.get('start_date')
+    end_str = request.GET.get('end_date')
+    try:
+        start_date = datetime.datetime.strptime(start_str, '%Y-%m-%d').date() if start_str else today
+        end_date = datetime.datetime.strptime(end_str, '%Y-%m-%d').date() if end_str else today
+    except ValueError:
+        start_date = end_date = today
+
+    tuition_qs = TuitionPayment.objects.filter(
+        payment_date__gte=start_date,
+        payment_date__lte=end_date,
+    ).select_related('enrollment__student', 'enrollment__lesson')
+
+    book_qs = BookSale.objects.filter(
+        is_paid=True,
+        payment_date__gte=start_date,
+        payment_date__lte=end_date,
+    ).select_related('student', 'book')
+
+    rows = []
+    for tp in tuition_qs:
+        rows.append({
+            'date': tp.payment_date,
+            'student': tp.enrollment.student,
+            'type': 'tuition',
+            'type_label': '수강료',
+            'detail': tp.enrollment.lesson.name,
+            'billed_period': f'{tp.year}년 {tp.month}월분',
+            'is_late': (tp.year, tp.month) != (tp.payment_date.year, tp.payment_date.month),
+            'amount': tp.amount,
+            'method': tp.get_payment_method_display(),
+        })
+    for bs in book_qs:
+        rows.append({
+            'date': bs.payment_date,
+            'student': bs.student,
+            'type': 'book',
+            'type_label': '교재비',
+            'detail': bs.book.title,
+            'billed_period': '',
+            'is_late': False,
+            'amount': bs.get_total_price(),
+            'method': bs.get_payment_method_display(),
+        })
+
+    rows.sort(key=lambda r: (r['date'], r['student'].name), reverse=True)
+
+    tuition_total = sum(r['amount'] for r in rows if r['type'] == 'tuition')
+    book_total = sum(r['amount'] for r in rows if r['type'] == 'book')
+    tuition_count = sum(1 for r in rows if r['type'] == 'tuition')
+    book_count = sum(1 for r in rows if r['type'] == 'book')
+
+    # 학생별 집계 (한 학생이 여러 건 결제한 경우 합산)
+    student_map = {}
+    for r in rows:
+        key = r['student'].pk
+        entry = student_map.setdefault(key, {'student': r['student'], 'tuition': 0, 'book': 0, 'total': 0})
+        entry[r['type']] += r['amount']
+        entry['total'] += r['amount']
+    student_summary = sorted(student_map.values(), key=lambda x: -x['total'])
+
+    context = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'today': today,
+        'rows': rows,
+        'student_summary': student_summary,
+        'tuition_total': tuition_total,
+        'book_total': book_total,
+        'grand_total': tuition_total + book_total,
+        'tuition_count': tuition_count,
+        'book_count': book_count,
+        'total_count': tuition_count + book_count,
+    }
+    return render(request, 'payment_ledger.html', context)
