@@ -605,10 +605,84 @@
 </div>
 </div><!-- /paid-sales-section -->
 
+<!-- 과제 이행률 -->
+<div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-900/5 overflow-hidden mb-6">
+    <button type="button" onclick="toggleHomeworkRate()"
+            class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/70 transition-colors">
+        <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <h3 class="text-base font-semibold text-gray-900">과제 이행률</h3>
+            {% if book_homework_stats %}
+            <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20">{{ book_homework_stats|length }}</span>
+            {% endif %}
+        </div>
+        <svg id="homework-rate-chevron" class="w-5 h-5 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+<div id="homework-rate-section" class="border-t border-gray-100">
+    {% if book_homework_stats %}
+    <div class="divide-y divide-gray-100">
+        {% for item in book_homework_stats %}
+        <div class="px-5 py-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <a href="{% url 'progress:student_book_progress_list' item.sale.pk %}"
+                   class="text-sm font-semibold text-gray-900 hover:text-indigo-600">
+                    {{ item.sale.book.title }}
+                </a>
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="font-bold text-lg
+                        {% if item.stats.rate == 100 %}text-green-600
+                        {% elif item.stats.rate >= 80 %}text-indigo-600
+                        {% elif item.stats.rate >= 50 %}text-amber-600
+                        {% else %}text-red-600{% endif %}">{{ item.stats.rate }}%</span>
+                    <span class="text-gray-400">({{ item.stats.completed }}/{{ item.stats.assigned }})</span>
+                </div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div class="h-2 rounded-full transition-all duration-300
+                    {% if item.stats.rate == 100 %}bg-green-500
+                    {% elif item.stats.rate >= 80 %}bg-indigo-500
+                    {% elif item.stats.rate >= 50 %}bg-amber-500
+                    {% else %}bg-red-500{% endif %}"
+                     style="width: {{ item.stats.rate }}%"></div>
+            </div>
+            {% if item.stats.incomplete_dates %}
+            <div class="text-xs text-gray-500">
+                <span class="font-medium text-gray-600">과제 미완료 날짜:</span>
+                <span class="inline-flex flex-wrap gap-1.5 align-middle">
+                    {% for d in item.stats.incomplete_dates %}
+                    <span class="inline-flex items-center rounded bg-red-50 px-1.5 py-0.5 text-red-700 ring-1 ring-inset ring-red-600/10">
+                        {% if d.date %}{{ d.date|date:"Y-m-d" }}{% else %}날짜 미입력{% endif %}
+                        <span class="ml-1 text-red-400">{{ d.completed }}/{{ d.assigned }}</span>
+                    </span>
+                    {% endfor %}
+                </span>
+            </div>
+            {% else %}
+            <div class="text-xs text-green-600">모든 부과 과제가 이행되었습니다.</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-4 py-12 text-center text-gray-500 text-sm">부과된 과제 기록이 없습니다.</div>
+    {% endif %}
+</div>
+</div><!-- /homework-rate-section -->
+
 <script>
 function togglePaidSales() {
     const section = document.getElementById('paid-sales-section');
     const chevron = document.getElementById('paid-sales-chevron');
+    section.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+}
+function toggleHomeworkRate() {
+    const section = document.getElementById('homework-rate-section');
+    const chevron = document.getElementById('homework-rate-chevron');
     section.classList.toggle('hidden');
     chevron.classList.toggle('rotate-180');
 }

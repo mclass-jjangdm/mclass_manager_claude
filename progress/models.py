@@ -398,7 +398,8 @@ class LearningRecord(models.Model):
     )
 
     # 체크 항목 (공통)
-    homework_checked = models.BooleanField(default=False, verbose_name="과제 확인")
+    homework_checked = models.BooleanField(default=False, verbose_name="과제 부과")
+    homework_completed = models.BooleanField(default=False, verbose_name="과제 이행")
     needs_review = models.BooleanField(default=False, verbose_name="보완 필요")
     quiz_results = models.JSONField(
         null=True,

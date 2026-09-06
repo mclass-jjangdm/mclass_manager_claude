@@ -181,6 +181,54 @@ class BookSale(models.Model):
             'progress_percent': round(completed / total * 100, 1) if total > 0 else 0
         }
 
+    def get_homework_stats(self):
+        """과제 이행률 통계 반환 (LearningRecord 사용)
+
+        과제 부과(homework_checked=True)된 항목을 대상으로,
+        과제 이행(homework_completed=True) 비율을 계산한다.
+        학습 날짜별로 묶어 100% 이행되지 않은 날짜 목록도 함께 반환.
+        """
+        from collections import defaultdict
+
+        records = self.learning_records.filter(
+            record_type='textbook', homework_checked=True
+        ).select_related('book_content')
+
+        assigned = 0
+        completed = 0
+        by_date = defaultdict(lambda: {'assigned': 0, 'completed': 0, 'items': []})
+
+        for r in records:
+            assigned += 1
+            by_date[r.date]['assigned'] += 1
+            by_date[r.date]['items'].append(r)
+            if r.homework_completed:
+                completed += 1
+                by_date[r.date]['completed'] += 1
+
+        incomplete_dates = sorted(
+            [
+                {
+                    'date': d,
+                    'assigned': v['assigned'],
+                    'completed': v['completed'],
+                    'missing': v['assigned'] - v['completed'],
+                    'items': v['items'],
+                }
+                for d, v in by_date.items()
+                if v['completed'] < v['assigned']
+            ],
+            key=lambda x: (x['date'] is None, x['date']),
+        )
+
+        return {
+            'assigned': assigned,
+            'completed': completed,
+            'remaining': assigned - completed,
+            'rate': round(completed / assigned * 100, 1) if assigned else None,
+            'incomplete_dates': incomplete_dates,
+        }
+
     def __str__(self):
         return f"{self.student.name} - {self.book.title}"
 

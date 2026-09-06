@@ -1163,6 +1163,7 @@ def student_book_progress_list(request, sale_pk):
     # LearningRecord 사용
     progress_records = sale.learning_records.filter(record_type='textbook').select_related('book_content', 'teacher').order_by('book_content__page')
     stats = sale.get_progress_stats()
+    homework_stats = sale.get_homework_stats()
 
     # 대단원별 그룹화
     chapters = {}
@@ -1202,6 +1203,7 @@ def student_book_progress_list(request, sale_pk):
         'progress_records': progress_records,
         'chapters': chapters,
         'stats': stats,
+        'homework_stats': homework_stats,
         'achievement_choices': LearningRecord.ACHIEVEMENT_CHOICES,
         'from_teacher_portal': from_teacher_portal,
         'today': today,
@@ -1250,8 +1252,11 @@ def student_book_progress_update(request, sale_pk, progress_pk):
             # 보완 추천 여부
             progress.needs_review = request.POST.get('needs_review') == 'on'
 
-            # 과제 수행 여부
+            # 과제 부과 여부
             progress.homework_checked = request.POST.get('homework_done') == 'on'
+
+            # 과제 이행 여부
+            progress.homework_completed = request.POST.get('homework_completed') == 'on'
 
             # 담당 교사 자동 설정: 오늘 날짜 기준 배정된 교사 찾기
             today = timezone.now().date()
@@ -1362,7 +1367,8 @@ def student_book_progress_bulk_update(request, sale_pk):
         logger.info(f"[bulk_update] sale={sale_pk}, user={request.user}, progress_ids={progress_ids}")
 
         if not progress_ids:
-            messages.warning(request, '저장할 항목을 선택해주세요. (체크박스를 선택하세요)')
+            if not request.POST.getlist('hw_ids'):
+                messages.warning(request, '저장할 항목을 선택해주세요. (체크박스를 선택하세요)')
         else:
             for progress_id in progress_ids:
                 try:
@@ -1373,12 +1379,14 @@ def student_book_progress_bulk_update(request, sale_pk):
                     achievement = request.POST.get(f'achievement_{progress_id}', '')
                     needs_review = request.POST.get(f'needs_review_{progress_id}') == 'on'
                     homework_done = request.POST.get(f'homework_done_{progress_id}') == 'on'
+                    homework_completed = request.POST.get(f'homework_completed_{progress_id}') == 'on'
 
                     # 학습 날짜가 비어있으면 오늘 날짜로 기본값 설정
                     progress.date = study_date if study_date else today
                     progress.achievement = achievement
                     progress.needs_review = needs_review
                     progress.homework_checked = homework_done
+                    progress.homework_completed = homework_completed
 
                     if teacher:
                         progress.teacher = teacher
@@ -1399,6 +1407,22 @@ def student_book_progress_bulk_update(request, sale_pk):
                 messages.success(request, f"{updated_count}개 항목이 완료 처리되었습니다.")
             elif progress_ids:
                 messages.error(request, '항목 저장에 실패했습니다. 다시 시도해주세요.')
+
+        # 완료 항목 섹션의 '과제 이행' 체크 동기화 (진도 저장과 독립적으로 처리)
+        hw_ids = request.POST.getlist('hw_ids')
+        hw_updated = 0
+        for hw_id in hw_ids:
+            try:
+                rec = LearningRecord.objects.get(pk=hw_id, book_sale=sale, record_type='textbook')
+            except LearningRecord.DoesNotExist:
+                continue
+            new_val = request.POST.get(f'homework_completed_{hw_id}') == 'on'
+            if rec.homework_completed != new_val:
+                rec.homework_completed = new_val
+                rec.save(update_fields=['homework_completed', 'updated_at'])
+                hw_updated += 1
+        if hw_updated:
+            messages.success(request, f"과제 이행 상태 {hw_updated}건이 저장되었습니다.")
 
         url = reverse('progress:student_book_progress_list', kwargs={'sale_pk': sale_pk})
         params = []
@@ -1431,6 +1455,7 @@ def student_book_progress_reset(request, sale_pk, progress_pk):
         progress.achievement = ''
         progress.needs_review = False
         progress.homework_checked = False
+        progress.homework_completed = False
         progress.teacher = None
         progress.save()
 
@@ -1460,6 +1485,7 @@ def student_book_progress_bulk_reset(request, sale_pk):
                 progress.achievement = ''
                 progress.needs_review = False
                 progress.homework_checked = False
+                progress.homework_completed = False
                 progress.teacher = None
                 progress.save()
                 reset_count += 1

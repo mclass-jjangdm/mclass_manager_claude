@@ -86,6 +86,30 @@
         {% endif %}
     </div>
 
+    {% if homework_stats.assigned > 0 %}
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-semibold text-gray-700">과제 이행률</h3>
+            <span>
+                <span class="font-bold text-lg
+                    {% if homework_stats.rate == 100 %}text-green-600{% elif homework_stats.rate >= 80 %}text-indigo-600{% elif homework_stats.rate >= 50 %}text-amber-600{% else %}text-red-600{% endif %}">{{ homework_stats.rate }}%</span>
+                <span class="text-gray-400 text-xs">({{ homework_stats.completed }}/{{ homework_stats.assigned }})</span>
+            </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="h-2 rounded-full
+                {% if homework_stats.rate == 100 %}bg-green-500{% elif homework_stats.rate >= 80 %}bg-indigo-500{% elif homework_stats.rate >= 50 %}bg-amber-500{% else %}bg-red-500{% endif %}"
+                 style="width: {{ homework_stats.rate }}%"></div>
+        </div>
+        {% if homework_stats.incomplete_dates %}
+        <div class="mt-2 text-xs text-gray-500">
+            <span class="font-medium text-gray-600">과제 미완료:</span>
+            {% for d in homework_stats.incomplete_dates %}<span class="text-red-600">{% if d.date %}{{ d.date|date:"Y-m-d" }}{% else %}날짜 미입력{% endif %} ({{ d.completed }}/{{ d.assigned }})</span>{% if not forloop.last %}, {% endif %}{% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
     {% if stats.total == 0 %}
     <div class="bg-white rounded-lg shadow p-12 text-center">
         <div class="text-gray-400 text-6xl mb-4">📝</div>
@@ -136,7 +160,14 @@
                     </svg>
                 </div>
             </div>
-            <div id="completed-section" class="{% if not show_completed %}hidden {% endif %}divide-y divide-gray-100">
+            <div class="{% if not show_completed %}hidden {% endif %}" id="completed-section">
+              <div class="px-4 py-2 bg-indigo-50 border-b border-indigo-100 flex flex-wrap justify-between items-center gap-2">
+                <span class="text-xs text-indigo-600">과제 이행 여부를 체크한 뒤 저장하세요</span>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm font-medium transition-colors">
+                    과제 이행 저장
+                </button>
+              </div>
+              <div class="divide-y divide-gray-100">
                 {% for record in progress_records %}
                 {% if record.is_completed %}
                 <div class="px-4 py-3 bg-green-50/30 completed-row">
@@ -167,14 +198,25 @@
                                 <span class="text-indigo-400">{{ record.book_content.chapter_num }}. {{ record.book_content.chapter_title }}</span>
                                 <span>{{ record.date|date:"Y-m-d"|default:"-" }}</span>
                                 {% if record.needs_review %}<span class="text-orange-500">● 보완</span>{% endif %}
-                                {% if record.homework_checked %}<span class="text-green-500">✓ 과제</span>{% endif %}
+                                {% if record.homework_checked %}<span class="text-green-500">✓ 과제부과</span>{% endif %}
                                 {% if record.teacher %}<span>{{ record.teacher.name }}</span>{% endif %}
                             </div>
+                            {% if record.homework_checked %}
+                            <div class="mt-1.5">
+                                <input type="hidden" name="hw_ids" value="{{ record.pk }}">
+                                <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer {% if record.homework_completed %}text-green-600{% else %}text-red-600{% endif %}">
+                                    <input type="checkbox" name="homework_completed_{{ record.pk }}" {% if record.homework_completed %}checked{% endif %}
+                                           class="rounded text-green-600">
+                                    과제 이행함
+                                </label>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
                 {% endif %}
                 {% endfor %}
+              </div>
             </div>
         </div>
         {% endif %}
@@ -272,7 +314,13 @@
                                                 <input type="checkbox" name="homework_done_{{ record.pk }}"
                                                        {% if record.homework_checked %}checked{% endif %}
                                                        class="rounded text-green-600">
-                                                과제
+                                                과제부과
+                                            </label>
+                                            <label class="flex items-center gap-1 text-xs text-indigo-600 cursor-pointer">
+                                                <input type="checkbox" name="homework_completed_{{ record.pk }}"
+                                                       {% if record.homework_completed %}checked{% endif %}
+                                                       class="rounded text-indigo-600">
+                                                이행
                                             </label>
                                         </div>
                                     </div>

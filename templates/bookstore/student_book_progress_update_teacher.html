@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- 보완 추천 여부 -->
                 <div class="flex items-center gap-3 p-4 bg-orange-50 rounded-lg">
                     <input type="checkbox"
@@ -77,7 +77,7 @@
                     </label>
                 </div>
 
-                <!-- 과제 수행 여부 -->
+                <!-- 과제 부과 여부 -->
                 <div class="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
                     <input type="checkbox"
                            name="homework_done"
@@ -85,8 +85,21 @@
                            {% if progress.homework_checked %}checked{% endif %}
                            class="h-5 w-5 rounded text-green-600 focus:ring-green-500">
                     <label for="homework_done" class="text-gray-700">
-                        <span class="font-medium">과제 완료</span>
-                        <span class="block text-sm text-gray-500">관련 과제를 수행했습니다</span>
+                        <span class="font-medium">과제 부과</span>
+                        <span class="block text-sm text-gray-500">이 항목을 과제로 내주었습니다</span>
+                    </label>
+                </div>
+
+                <!-- 과제 이행 여부 -->
+                <div class="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg">
+                    <input type="checkbox"
+                           name="homework_completed"
+                           id="homework_completed"
+                           {% if progress.homework_completed %}checked{% endif %}
+                           class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500">
+                    <label for="homework_completed" class="text-gray-700">
+                        <span class="font-medium">과제 이행</span>
+                        <span class="block text-sm text-gray-500">다음 수업에서 과제 수행을 확인했습니다</span>
                     </label>
                 </div>
             </div>

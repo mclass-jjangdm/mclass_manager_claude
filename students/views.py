@@ -212,6 +212,13 @@ def student_detail(request, pk):
     total_unpaid_books = sum(sale.get_total_price() for sale in unpaid_sales)
     total_paid_books = sum(sale.get_total_price() for sale in paid_sales)
 
+    # 과제 이행률 (교재별) - 과제가 부과된 항목이 있는 교재만
+    book_homework_stats = []
+    for sale in list(paid_sales) + list(unpaid_sales):
+        hs = sale.get_homework_stats()
+        if hs['assigned'] > 0:
+            book_homework_stats.append({'sale': sale, 'stats': hs})
+
     # 수강료 계산 - MonthlyEnrollment 기반
     from classes.models import MonthlyEnrollment, Enrollment, TuitionPayment
     from django.db.models import Sum, Q as dQ
@@ -504,6 +511,7 @@ def student_detail(request, pk):
         'paid_sales': paid_sales,
         'total_unpaid_books': total_unpaid_books,
         'total_paid_books': total_paid_books,
+        'book_homework_stats': book_homework_stats,
         'active_enrollments': active_enrollments,
         'current_month_tuition': current_month_tuition,
         'current_me_items': current_me_items,
