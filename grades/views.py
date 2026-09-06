@@ -842,15 +842,28 @@ def student_grades(request, student_pk):
         year_stats[grade.year]['total_credits'] += grade.credits
 
     # 학기별 평균 계산 및 정렬
+    def _grade_band_color(v):
+        if v <= 2: return 'indigo'
+        if v <= 3: return 'blue'
+        if v <= 4: return 'green'
+        if v <= 5: return 'yellow'
+        if v <= 6: return 'orange'
+        return 'red'
+
     semester_averages = []
     for (year, semester), stats in sorted(semester_stats.items()):
         if stats['total_credits'] > 0:
             avg = Decimal(stats['total_weighted']) / Decimal(stats['total_credits'])
+            avg_f = float(round(avg, 2))
+            # 등급 1~9 → 막대 높이 %: 1등급이 가장 높게 (9-avg)/8
+            bar_pct = max(4, min(100, round((9 - avg_f) / 8 * 100)))
             semester_averages.append({
                 'year': year,
                 'semester': semester,
                 'average': round(avg, 2),
                 'total_credits': stats['total_credits'],
+                'bar_pct': bar_pct,
+                'bar_color': _grade_band_color(avg_f),
             })
 
     # 전체 평균 등급 계산 (동일 가중치)
@@ -904,35 +917,42 @@ def student_grades(request, student_pk):
                 }
         chart_data.append(semester_data)
 
-    # 교과 조합별 평균 분석
-    category_combinations = [
-        {'name': '국수영과', 'categories': ['국어', '수학', '영어', '과학']},
-        {'name': '국수영사', 'categories': ['국어', '수학', '영어', '사회']},
-        {'name': '국수영사과', 'categories': ['국어', '수학', '영어', '사회', '과학']},
+    # 주요 5교과(국어·영어·수학·과학·사회) 조합별 평균 분석 — 최고 조합 자동 추천
+    from itertools import combinations as _combinations
+
+    MAIN_CATEGORIES = ['국어', '영어', '수학', '과학', '사회']
+    available_main = [
+        c for c in MAIN_CATEGORIES
+        if c in category_stats and category_stats[c]['total_credits'] > 0
     ]
 
-    combination_averages = []
-    for combo in category_combinations:
-        total_weighted = 0
-        total_credits = 0
-        missing_categories = []
+    all_combination_averages = []
+    for r in range(2, len(available_main) + 1):
+        for combo in _combinations(available_main, r):
+            total_weighted = sum(category_stats[c]['total_weighted'] for c in combo)
+            total_credits = sum(category_stats[c]['total_credits'] for c in combo)
+            if total_credits > 0:
+                avg = round(Decimal(total_weighted) / Decimal(total_credits), 2)
+                all_combination_averages.append({
+                    'name': '+'.join(combo),
+                    'categories': list(combo),
+                    'average': avg,
+                    'total_credits': total_credits,
+                })
 
-        for cat in combo['categories']:
-            if cat in category_stats and category_stats[cat]['total_credits'] > 0:
-                total_weighted += category_stats[cat]['total_weighted']
-                total_credits += category_stats[cat]['total_credits']
-            else:
-                missing_categories.append(cat)
-
-        if total_credits > 0:
-            avg = round(Decimal(total_weighted) / Decimal(total_credits), 2)
-            combination_averages.append({
-                'name': combo['name'],
-                'categories': combo['categories'],
-                'average': avg,
-                'total_credits': total_credits,
-                'missing': missing_categories,
-            })
+    # 등급이 낮을수록(우수) 앞으로 정렬 후 상위 조합 추천
+    all_combination_averages.sort(key=lambda x: x['average'])
+    best_combinations = all_combination_averages[:5]
+    # 개별 주요 교과 평균 (참고용)
+    main_category_averages = []
+    for c in available_main:
+        st = category_stats[c]
+        main_category_averages.append({
+            'name': c,
+            'average': round(Decimal(st['total_weighted']) / Decimal(st['total_credits']), 2),
+            'total_credits': st['total_credits'],
+        })
+    main_category_averages.sort(key=lambda x: x['average'])
 
     # 일반 내신 성적과 진로선택/융합선택 성적 분리
     regular_internal_grades = [g for g in internal_grades if g.subject_classification not in ('elective', 'fusion')]
@@ -1087,7 +1107,8 @@ def student_grades(request, student_pk):
         'semester_averages': semester_averages,
         'overall_average': overall_average,
         'weighted_averages': weighted_averages,
-        'combination_averages': combination_averages,
+        'best_combinations': best_combinations,
+        'main_category_averages': main_category_averages,
         'chart_data': json.dumps(chart_data, ensure_ascii=False),
         # 진도 평가 분석
         'book_progress_data': book_progress_data,
