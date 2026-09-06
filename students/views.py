@@ -715,7 +715,17 @@ def student_import(request):
 
 @login_required
 def student_export(request):
-    students = Student.objects.all()
+    # GET: 내보내기 옵션 선택 화면
+    if request.method != 'POST':
+        return render(request, 'students/student_export.html')
+
+    # 옵션 파싱
+    scope = request.POST.get('scope', 'active')  # 'active'(기본) 또는 'all'
+    include_email = request.POST.get('include_email') == 'on'
+
+    students = Student.objects.all().order_by('name')
+    if scope == 'active':
+        students = students.filter(is_active=True)
 
     # openpyxl로 Excel 파일 생성
     wb = Workbook()
@@ -723,29 +733,16 @@ def student_export(request):
     ws.title = '학생 목록'
 
     # 헤더 작성
-    headers = ['name', 'school', 'grade', 'phone_number', 'email', 'gender',
-               'parent_phone', 'receipt_number', 'interview_date', 'interview_score',
-               'interview_info', 'first_class_date', 'quit_date', 'etc']
+    headers = ['name', 'phone_number']
+    if include_email:
+        headers.append('email')
     ws.append(headers)
 
     # 데이터 작성
     for student in students:
-        row = [
-            student.name,
-            student.school.name if student.school else '',
-            student.grade,
-            student.phone_number,
-            student.email,
-            student.get_gender_display(),
-            student.parent_phone,
-            student.receipt_number,
-            student.interview_date.strftime('%Y-%m-%d') if student.interview_date else '',
-            student.interview_score,
-            student.interview_info,
-            student.first_class_date.strftime('%Y-%m-%d') if student.first_class_date else '',
-            student.quit_date.strftime('%Y-%m-%d') if student.quit_date else '',
-            student.etc,
-        ]
+        row = [student.name, student.phone_number]
+        if include_email:
+            row.append(student.email)
         ws.append(row)
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
