@@ -502,26 +502,23 @@
     <!-- 학기별 평균 내신 등급 -->
     <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg shadow">
         <h4 class="text-sm font-semibold text-gray-700 mb-3">학기별 평균 내신 등급 (진로선택 과목 제외)</h4>
-        <div class="flex flex-wrap items-start gap-4">
-            <div class="flex flex-wrap gap-3">
-                {% for avg in semester_averages %}
-                <div class="bg-white rounded-lg shadow-sm px-4 py-3 border border-gray-200">
-                    <div class="text-xs text-gray-500 mb-1">{{ avg.year }}학년 {{ avg.semester }}학기</div>
-                    <div class="text-2xl font-bold text-indigo-600">{{ avg.average }}</div>
-                    <div class="text-xs text-gray-400">{{ avg.total_credits }}단위</div>
-                </div>
-                {% endfor %}
+        <div class="flex flex-wrap items-stretch gap-3">
+            {% for avg in semester_averages %}
+            <div class="bg-white rounded-lg shadow-sm px-4 py-3 border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">{{ avg.year }}학년 {{ avg.semester }}학기</div>
+                <div class="text-2xl font-bold text-indigo-600">{{ avg.average }}</div>
+                <div class="text-xs text-gray-400">{{ avg.total_credits }}단위</div>
             </div>
+            {% endfor %}
 
-            <!-- 미니 히스토그램 (학기별 추이 한눈에) -->
+            <!-- 미니 히스토그램 -->
             {% if semester_averages|length > 1 %}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2">
-                <div class="text-[11px] text-gray-400 mb-1">학기별 추이</div>
-                <div class="flex items-end gap-2 h-20">
+            <div class="flex-1 min-w-[220px] bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3 flex flex-col">
+                <div class="flex items-end justify-around gap-3 flex-1 min-h-[3.5rem]">
                     {% for avg in semester_averages %}
-                    <div class="flex flex-col items-center justify-end h-full" title="{{ avg.year }}학년 {{ avg.semester }}학기 · 평균 {{ avg.average }}등급">
+                    <div class="flex flex-col items-center justify-end h-full flex-1 max-w-[3rem]" title="{{ avg.year }}학년 {{ avg.semester }}학기 · 평균 {{ avg.average }}등급">
                         <span class="text-[10px] font-bold text-gray-600 leading-none mb-0.5">{{ avg.average }}</span>
-                        <div class="w-5 rounded-t
+                        <div class="w-full rounded-t
                             {% if avg.bar_color == 'indigo' %}bg-indigo-500
                             {% elif avg.bar_color == 'blue' %}bg-blue-500
                             {% elif avg.bar_color == 'green' %}bg-green-500
@@ -532,12 +529,11 @@
                     </div>
                     {% endfor %}
                 </div>
-                <div class="flex gap-2 mt-1">
+                <div class="flex justify-around gap-3 mt-1.5">
                     {% for avg in semester_averages %}
-                    <div class="w-5 text-center text-[9px] text-gray-400 leading-tight">{{ avg.year }}-{{ avg.semester }}</div>
+                    <div class="flex-1 max-w-[3rem] text-center text-[9px] text-gray-400">{{ avg.year }}-{{ avg.semester }}</div>
                     {% endfor %}
                 </div>
-                <div class="text-[9px] text-gray-300 mt-1">막대가 높을수록 우수 (1등급)</div>
             </div>
             {% endif %}
         </div>
