@@ -900,37 +900,9 @@ def student_grades(request, student_pk):
                 semester_data['categories'][category] = {
                     'average': avg_grade,
                     'total_credits': stats['total_credits'],
+                    'total_weighted': stats['total_weighted'],
                 }
         chart_data.append(semester_data)
-
-    # 과목별 등급 추이 (꺾은선 그래프용)
-    subject_grades_map = {}  # {subject_name: {'category': str, 'data': {sem_label: grade_rank}}}
-    all_sems_ordered = []
-    seen_sems = set()
-    for grade in sorted(internal_grades, key=lambda g: (g.year, g.semester)):
-        if grade.grade_rank is None:
-            continue
-        if grade.subject_classification in ('elective', 'fusion'):
-            continue
-        sem_label = f"{grade.year}학년 {grade.semester}학기"
-        if sem_label not in seen_sems:
-            all_sems_ordered.append(sem_label)
-            seen_sems.add(sem_label)
-        sub_name = grade.subject.name if grade.subject else '기타'
-        if sub_name not in subject_grades_map:
-            subject_grades_map[sub_name] = {'category': grade.curriculum or '기타', 'data': {}}
-        subject_grades_map[sub_name]['data'][sem_label] = float(grade.grade_rank)
-    subject_trend_json = json.dumps({
-        'semesters': all_sems_ordered,
-        'subjects': [
-            {
-                'name': name,
-                'category': info['category'],
-                'data': [info['data'].get(sem) for sem in all_sems_ordered],
-            }
-            for name, info in subject_grades_map.items()
-        ],
-    }, ensure_ascii=False)
 
     # 교과 조합별 평균 분석
     category_combinations = [
@@ -1117,7 +1089,6 @@ def student_grades(request, student_pk):
         'weighted_averages': weighted_averages,
         'combination_averages': combination_averages,
         'chart_data': json.dumps(chart_data, ensure_ascii=False),
-        'subject_trend_json': subject_trend_json,
         # 진도 평가 분석
         'book_progress_data': book_progress_data,
         'overall_levels': overall_levels,

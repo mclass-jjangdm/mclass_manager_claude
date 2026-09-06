@@ -570,37 +570,11 @@
 
     <!-- 성적 추이 분석 (꺾은선 그래프) -->
     <div class="p-4 bg-white rounded-lg border border-gray-200 shadow">
-        <h4 class="text-sm font-semibold text-gray-700 mb-4">📈 성적 추이 분석</h4>
-
-        <!-- 탭 -->
-        <div class="flex border-b border-gray-200 mb-4">
-            <button onclick="showTrendTab('category')" id="trend-tab-category"
-                    class="trend-tab px-4 py-2 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600">
-                교과별 추이
-            </button>
-            <button onclick="showTrendTab('subject')" id="trend-tab-subject"
-                    class="trend-tab px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                과목별 추이
-            </button>
-        </div>
-
-        <!-- 교과별 꺾은선 -->
-        <div id="trend-category" class="h-80">
-            <canvas id="categoryTrendChart"></canvas>
-        </div>
-
-        <!-- 과목별 꺾은선 -->
-        <div id="trend-subject" class="hidden">
-            <div class="mb-3">
-                <select id="category-filter-trend"
-                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        onchange="updateSubjectTrendChart()">
-                    <option value="">전체 과목</option>
-                </select>
-            </div>
-            <div class="h-80">
-                <canvas id="subjectTrendChart"></canvas>
-            </div>
+        <h4 class="text-sm font-semibold text-gray-700 mb-2">📈 성적 추이 분석</h4>
+        <p class="text-xs text-gray-500 mb-3">학기별 <strong>전체 평균 등급</strong> 추이입니다. 아래에서 교과를 선택하면 해당 교과 조합의 평균 등급 추이가 함께 표시됩니다. (진로선택/융합선택 과목 제외)</p>
+        <div id="trend-category-checkboxes" class="flex flex-wrap gap-2 mb-4"></div>
+        <div class="h-80">
+            <canvas id="combinedTrendChart"></canvas>
         </div>
     </div>
 </div>
@@ -1142,7 +1116,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 maintainAspectRatio: false,
                 scales: {
                     y: {
-                        reverse: true,
                         min: 0,
                         max: 10,
                         ticks: {
@@ -1153,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         },
                         title: {
                             display: true,
-                            text: '등급 (낮을수록 좋음)'
+                            text: '등급 (아래일수록 우수)'
                         }
                     },
                     x: {
@@ -1190,38 +1163,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- 차트 데이터 -->
 <script type="application/json" id="chart-data">{{ chart_data|safe }}</script>
-<script type="application/json" id="subject-trend-data">{{ subject_trend_json|safe }}</script>
 
 <script>
-// ══ 성적 추이 꺾은선 차트 ══════════════════════════════════════════
+// ══ 성적 추이 꺾은선 차트 (전체 등급 + 교과 조합) ═══════════════════
 (function() {
     const chartDataEl = document.getElementById('chart-data');
-    const subjectDataEl = document.getElementById('subject-trend-data');
-    if (!chartDataEl || !subjectDataEl) return;
+    if (!chartDataEl) return;
 
     const CHART_DATA = JSON.parse(chartDataEl.textContent);
-    const SUBJECT_DATA = JSON.parse(subjectDataEl.textContent);
     if (!CHART_DATA || CHART_DATA.length === 0) return;
-
-    // 교과별 색상
-    const COLORS = {
-        '국어':      { line: 'rgb(239,68,68)',   fill: 'rgba(239,68,68,0.08)' },
-        '수학':      { line: 'rgb(59,130,246)',  fill: 'rgba(59,130,246,0.08)' },
-        '영어':      { line: 'rgb(34,197,94)',   fill: 'rgba(34,197,94,0.08)' },
-        '사회':      { line: 'rgb(245,158,11)',  fill: 'rgba(245,158,11,0.08)' },
-        '과학':      { line: 'rgb(168,85,247)',  fill: 'rgba(168,85,247,0.08)' },
-        '한국사':    { line: 'rgb(20,184,166)',  fill: 'rgba(20,184,166,0.08)' },
-        '기술/가정': { line: 'rgb(249,115,22)',  fill: 'rgba(249,115,22,0.08)' },
-        '체육':      { line: 'rgb(16,185,129)',  fill: 'rgba(16,185,129,0.08)' },
-        '음악/미술': { line: 'rgb(244,63,94)',   fill: 'rgba(244,63,94,0.08)' },
-        '제2외국어': { line: 'rgb(99,102,241)',  fill: 'rgba(99,102,241,0.08)' },
-        '한문':      { line: 'rgb(139,92,246)',  fill: 'rgba(139,92,246,0.08)' },
-        '교양':      { line: 'rgb(107,114,128)', fill: 'rgba(107,114,128,0.08)' },
-        '기타':      { line: 'rgb(156,163,175)', fill: 'rgba(156,163,175,0.08)' },
-    };
-    function getColor(key, i) {
-        return COLORS[key] || { line: `hsl(${i * 47},65%,50%)`, fill: `hsla(${i * 47},65%,50%,0.08)` };
-    }
 
     const Y_OPTIONS = {
         reverse: true,
@@ -1230,114 +1180,104 @@ document.addEventListener('DOMContentLoaded', function() {
         title: { display: true, text: '등급 (낮을수록 우수)', font: { size: 11 } },
     };
     const LEGEND_OPTIONS = {
-        position: 'right',
+        position: 'top',
         labels: { boxWidth: 12, font: { size: 11 }, padding: 10 },
     };
 
-    // ── 교과별 추이 차트 ────────────────────────────────
     const semesters = CHART_DATA.map(d => d.label);
     const allCategories = [...new Set(CHART_DATA.flatMap(d => Object.keys(d.categories)))];
 
-    const categoryDatasets = allCategories.map((cat, i) => {
-        const c = getColor(cat, i);
-        return {
-            label: cat,
-            data: CHART_DATA.map(d => d.categories[cat]?.average ?? null),
-            borderColor: c.line,
-            backgroundColor: c.fill,
-            borderWidth: 2.5,
+    // 특정 교과 집합의 학기별 가중평균 등급 계산 (cats 가 null 이면 전체)
+    function weightedTrend(cats) {
+        return CHART_DATA.map(d => {
+            let w = 0, c = 0;
+            Object.keys(d.categories).forEach(cat => {
+                if (cats && !cats.has(cat)) return;
+                const s = d.categories[cat];
+                const cw = (s.total_weighted != null) ? s.total_weighted : s.average * s.total_credits;
+                w += cw;
+                c += s.total_credits;
+            });
+            return c > 0 ? Math.round(w / c * 100) / 100 : null;
+        });
+    }
+
+    const overallData = weightedTrend(null);
+    const selected = new Set();
+
+    // ── 교과 체크박스 ──────────────────────────────────
+    const cbContainer = document.getElementById('trend-category-checkboxes');
+    allCategories.forEach(cat => {
+        const label = document.createElement('label');
+        label.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 border border-gray-300 rounded-lg text-xs cursor-pointer hover:bg-gray-50 transition-colors';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = cat;
+        cb.className = 'rounded text-indigo-600 focus:ring-indigo-500';
+        cb.addEventListener('change', () => {
+            if (cb.checked) { selected.add(cat); label.classList.add('bg-indigo-50', 'border-indigo-400'); }
+            else { selected.delete(cat); label.classList.remove('bg-indigo-50', 'border-indigo-400'); }
+            render();
+        });
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(cat));
+        cbContainer.appendChild(label);
+    });
+
+    let chart = null;
+    function render() {
+        const datasets = [{
+            label: '전체 등급',
+            data: overallData,
+            borderColor: 'rgb(79,70,229)',
+            backgroundColor: 'rgba(79,70,229,0.1)',
+            borderWidth: 3,
             pointRadius: 5,
             pointHoverRadius: 7,
             tension: 0.3,
             spanGaps: false,
-        };
-    });
+        }];
 
-    const catCtx = document.getElementById('categoryTrendChart');
-    if (catCtx) {
-        new Chart(catCtx.getContext('2d'), {
-            type: 'line',
-            data: { labels: semesters, datasets: categoryDatasets },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: LEGEND_OPTIONS },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: Y_OPTIONS,
-                },
-            },
-        });
-    }
-
-    // ── 과목별 추이 차트 ────────────────────────────────
-    if (!SUBJECT_DATA || !SUBJECT_DATA.subjects || !SUBJECT_DATA.subjects.length) return;
-
-    // 교과 필터 옵션 채우기
-    const filterSel = document.getElementById('category-filter-trend');
-    if (filterSel) {
-        const cats = [...new Set(SUBJECT_DATA.subjects.map(s => s.category))].sort();
-        cats.forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat; opt.textContent = cat;
-            filterSel.appendChild(opt);
-        });
-    }
-
-    let subjectChart = null;
-    window.updateSubjectTrendChart = function() {
-        const sel = document.getElementById('category-filter-trend');
-        const selectedCat = sel ? sel.value : '';
-        const filtered = selectedCat
-            ? SUBJECT_DATA.subjects.filter(s => s.category === selectedCat)
-            : SUBJECT_DATA.subjects;
-
-        const subjDatasets = filtered.map((subj, i) => {
-            const c = getColor(subj.category, i);
-            return {
-                label: subj.name,
-                data: subj.data,
-                borderColor: c.line,
-                backgroundColor: 'transparent',
-                borderWidth: 2,
+        if (selected.size > 0) {
+            datasets.push({
+                label: [...selected].join(' + ') + ' 조합',
+                data: weightedTrend(selected),
+                borderColor: 'rgb(234,88,12)',
+                backgroundColor: 'rgba(234,88,12,0.1)',
+                borderWidth: 3,
+                borderDash: [6, 3],
                 pointRadius: 5,
                 pointHoverRadius: 7,
                 tension: 0.3,
                 spanGaps: false,
-            };
-        });
+            });
+        }
 
-        if (subjectChart) subjectChart.destroy();
-        const subjCtx = document.getElementById('subjectTrendChart');
-        if (!subjCtx) return;
-        subjectChart = new Chart(subjCtx.getContext('2d'), {
+        if (chart) chart.destroy();
+        const ctx = document.getElementById('combinedTrendChart');
+        if (!ctx) return;
+        chart = new Chart(ctx.getContext('2d'), {
             type: 'line',
-            data: { labels: SUBJECT_DATA.semesters, datasets: subjDatasets },
+            data: { labels: semesters, datasets },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: LEGEND_OPTIONS },
+                plugins: {
+                    legend: LEGEND_OPTIONS,
+                    tooltip: {
+                        callbacks: {
+                            label: c => c.dataset.label + ': ' + (c.parsed.y != null ? c.parsed.y.toFixed(2) + '등급' : '-'),
+                        },
+                    },
+                },
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { size: 11 } } },
                     y: Y_OPTIONS,
                 },
             },
         });
-    };
+    }
 
-    // ── 탭 전환 ────────────────────────────────────────
-    window.showTrendTab = function(tab) {
-        ['category', 'subject'].forEach(t => {
-            const el = document.getElementById('trend-' + t);
-            const btn = document.getElementById('trend-tab-' + t);
-            if (el) el.classList.toggle('hidden', t !== tab);
-            if (btn) {
-                btn.classList.toggle('border-indigo-500', t === tab);
-                btn.classList.toggle('text-indigo-600', t === tab);
-                btn.classList.toggle('border-transparent', t !== tab);
-                btn.classList.toggle('text-gray-500', t !== tab);
-            }
-        });
-        if (tab === 'subject') updateSubjectTrendChart();
-    };
+    render();
 })();
 </script>
 
