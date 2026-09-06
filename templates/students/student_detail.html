@@ -627,19 +627,35 @@
     <div class="divide-y divide-gray-100">
         {% for item in book_homework_stats %}
         <div class="px-5 py-4">
-            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <a href="{% url 'progress:student_book_progress_list' item.sale.pk %}"
-                   class="text-sm font-semibold text-gray-900 hover:text-indigo-600">
-                    {{ item.sale.book.title }}
-                </a>
-                <div class="flex items-center gap-2 text-xs">
-                    <span class="font-bold text-lg
+            <a href="{% url 'progress:student_book_progress_list' item.sale.pk %}"
+               class="block text-sm font-semibold text-gray-900 hover:text-indigo-600 mb-2">
+                {{ item.sale.book.title }}
+            </a>
+
+            <!-- 교재 진행률 -->
+            <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-gray-500">교재 진행률</span>
+                <span>
+                    <span class="font-semibold text-indigo-600">{{ item.progress.progress_percent }}%</span>
+                    <span class="text-gray-400">({{ item.progress.completed }}/{{ item.progress.total }})</span>
+                </span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                <div class="h-2 rounded-full bg-indigo-500 transition-all duration-300"
+                     style="width: {{ item.progress.progress_percent }}%"></div>
+            </div>
+
+            <!-- 과제 이행률 -->
+            <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-gray-500">과제 이행률</span>
+                <span>
+                    <span class="font-semibold
                         {% if item.stats.rate == 100 %}text-green-600
                         {% elif item.stats.rate >= 80 %}text-indigo-600
                         {% elif item.stats.rate >= 50 %}text-amber-600
                         {% else %}text-red-600{% endif %}">{{ item.stats.rate }}%</span>
                     <span class="text-gray-400">({{ item.stats.completed }}/{{ item.stats.assigned }})</span>
-                </div>
+                </span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
                 <div class="h-2 rounded-full transition-all duration-300

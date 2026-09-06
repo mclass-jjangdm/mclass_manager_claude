@@ -217,7 +217,11 @@ def student_detail(request, pk):
     for sale in list(paid_sales) + list(unpaid_sales):
         hs = sale.get_homework_stats()
         if hs['assigned'] > 0:
-            book_homework_stats.append({'sale': sale, 'stats': hs})
+            book_homework_stats.append({
+                'sale': sale,
+                'stats': hs,
+                'progress': sale.get_progress_stats(),
+            })
 
     # 수강료 계산 - MonthlyEnrollment 기반
     from classes.models import MonthlyEnrollment, Enrollment, TuitionPayment
