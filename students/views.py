@@ -713,15 +713,37 @@ def student_import(request):
     return render(request, 'students/student_import.html', {'form': form})
 
 
+# 내보내기 가능한 필드 정의: (key, 한글 라벨, 값 추출 함수)
+# name 은 항상 포함되므로 아래 선택 목록에서 제외
+STUDENT_EXPORT_FIELDS = [
+    ('school', '학교', lambda s: s.school.name if s.school else ''),
+    ('grade', '학년', lambda s: s.grade),
+    ('phone_number', '전화번호', lambda s: s.phone_number),
+    ('email', '이메일', lambda s: s.email),
+    ('gender', '성별', lambda s: s.get_gender_display()),
+    ('parent_phone', '학부모 전화번호', lambda s: s.parent_phone),
+    ('receipt_number', '영수증 번호', lambda s: s.receipt_number),
+    ('interview_date', '상담일', lambda s: s.interview_date.strftime('%Y-%m-%d') if s.interview_date else ''),
+    ('interview_score', '상담 점수', lambda s: s.interview_score),
+    ('interview_info', '상담 내용', lambda s: s.interview_info),
+    ('first_class_date', '첫 수업일', lambda s: s.first_class_date.strftime('%Y-%m-%d') if s.first_class_date else ''),
+    ('quit_date', '퇴원일', lambda s: s.quit_date.strftime('%Y-%m-%d') if s.quit_date else ''),
+    ('etc', '기타', lambda s: s.etc),
+]
+
+
 @login_required
 def student_export(request):
+    field_labels = [{'key': k, 'label': label} for k, label, _ in STUDENT_EXPORT_FIELDS]
+
     # GET: 내보내기 옵션 선택 화면
     if request.method != 'POST':
-        return render(request, 'students/student_export.html')
+        return render(request, 'students/student_export.html', {'field_labels': field_labels})
 
     # 옵션 파싱
     scope = request.POST.get('scope', 'active')  # 'active'(기본) 또는 'all'
-    include_email = request.POST.get('include_email') == 'on'
+    selected_keys = set(request.POST.getlist('fields'))
+    selected_fields = [f for f in STUDENT_EXPORT_FIELDS if f[0] in selected_keys]
 
     students = Student.objects.all().order_by('name')
     if scope == 'active':
@@ -732,18 +754,12 @@ def student_export(request):
     ws = wb.active
     ws.title = '학생 목록'
 
-    # 헤더 작성
-    headers = ['name', 'phone_number']
-    if include_email:
-        headers.append('email')
-    ws.append(headers)
+    # 헤더 작성 (name 은 항상 포함)
+    ws.append(['name'] + [key for key, _, _ in selected_fields])
 
     # 데이터 작성
     for student in students:
-        row = [student.name, student.phone_number]
-        if include_email:
-            row.append(student.email)
-        ws.append(row)
+        ws.append([student.name] + [getter(student) for _, _, getter in selected_fields])
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="students.xlsx"'
