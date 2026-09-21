@@ -15,7 +15,7 @@
         <form method="get" class="flex items-end gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">퇴원일</label>
-                <input type="text" name="quit_date" value="{{ quit_date|date:'Y-m-d' }}"
+                <input type="text" name="quit_date" id="quit-date-picker" value="{{ quit_date|date:'Y-m-d' }}"
                        class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 mclass-datepicker" readonly>
             </div>
             <button type="submit"
@@ -118,4 +118,29 @@
         </a>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 퇴원일 선택 시 자동으로 환불 금액 재계산 (폼 재제출)
+    document.addEventListener('DOMContentLoaded', function() {
+        const picker = document.getElementById('quit-date-picker');
+        if (picker && picker._flatpickr) {
+            picker._flatpickr.config.onChange.push(function(selectedDates, dateStr) {
+                if (dateStr) {
+                    picker.form.submit();
+                }
+            });
+        } else {
+            flatpickr('#quit-date-picker', {
+                dateFormat: 'Y-m-d',
+                onChange: function(selectedDates, dateStr) {
+                    if (dateStr) {
+                        document.querySelector('#quit-date-picker').form.submit();
+                    }
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
