@@ -123,6 +123,8 @@ def lesson_list(request):
 
     today = datetime.date.today()
 
+    Lesson.deactivate_expired_specials()
+
     lessons = Lesson.objects.select_related('subject', 'teacher').prefetch_related('schedules')
     search = request.GET.get('search', '').strip()
     status = request.GET.get('status', 'active')
@@ -156,6 +158,10 @@ def lesson_list(request):
         # 특별 수업은 비교 대상 제외
         lesson.billing_missing_count = (
             0 if lesson.is_special else max(0, enrollment_count - me_count)
+        )
+        lesson.is_past_special = (
+            lesson.is_special and not lesson.is_active
+            and lesson.end_date is not None and lesson.end_date < today
         )
 
     # ── 시간표 데이터 (항상 활성 수업만, 검색 조건 무관) ──────────

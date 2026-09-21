@@ -96,6 +96,16 @@ class Lesson(models.Model):
             is_active=True, student__is_active=True,
         ).filter(Q(end_date__isnull=True) | Q(end_date__gte=date.today())).count()
 
+    @classmethod
+    def deactivate_expired_specials(cls):
+        """기간이 종료되고 수강생이 없는 특별 수업을 비활성화"""
+        from datetime import date
+        candidates = cls.objects.filter(is_special=True, is_active=True, end_date__lt=date.today())
+        expired_ids = [lesson.pk for lesson in candidates if lesson.active_enrollment_count == 0]
+        if expired_ids:
+            cls.objects.filter(pk__in=expired_ids).update(is_active=False)
+        return expired_ids
+
 
 class LessonSchedule(models.Model):
     lesson = models.ForeignKey(
