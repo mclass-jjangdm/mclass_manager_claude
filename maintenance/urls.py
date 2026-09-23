@@ -11,6 +11,7 @@ urlpatterns = [
     path('edit/<int:pk>/', views.MaintenanceUpdateView.as_view(), name='maintenance_edit'),
     path('pay/<int:pk>/', views.MaintenanceMarkPaidView.as_view(), name='mark_paid'),
     path('pay/<int:pk>/cancel/', views.MaintenanceCancelPaidView.as_view(), name='cancel_paid'),
+    path('delete/<int:pk>/', views.MaintenanceDeleteView.as_view(), name='maintenance_delete'),
     path('rooms/', views.RoomListView.as_view(), name='room_list'),
     path('rooms/add/', views.RoomCreateView.as_view(), name='room_add'),
     path('rooms/<int:pk>/edit/', views.RoomUpdateView.as_view(), name='room_edit'),

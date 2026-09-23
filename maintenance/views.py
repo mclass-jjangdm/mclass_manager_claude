@@ -224,6 +224,19 @@ class MaintenanceCancelPaidView(LoginRequiredMixin, View):
         )
 
 
+class MaintenanceDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        maintenance = get_object_or_404(Maintenance, pk=pk)
+        year, month = maintenance.date.year, maintenance.date.month
+        room_number = maintenance.room.number
+        maintenance.delete()
+        messages.success(request, f'{room_number}호 관리비 내역이 삭제되었습니다.')
+        return redirect(
+            reverse('maintenance:monthly_report')
+            + f'?year={year}&month={month}'
+        )
+
+
 class RoomListView(LoginRequiredMixin, ListView):
     model = Room
     template_name = 'maintenance/room_list.html'
